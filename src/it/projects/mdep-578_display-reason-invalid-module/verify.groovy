@@ -25,12 +25,12 @@ String buildLog = file.getText( "UTF-8" );
 // Cause message is JDK specific and can change over time
 
 // JDOMAbout$Author.class found in top-level directory (unnamed package not allowed in module)
-assert buildLog.contains( "Can't get module name from jdom-1.0.jar: " );
+assert buildLog.contains( "Can't extract module name from jdom-1.0.jar: " );
 
 // geronimo.servlet.2.4.spec: Invalid module name: '2' is not a Java identifier
-assert buildLog.contains( "Can't get module name from geronimo-servlet_2.4_spec-1.1.1.jar: " );
+assert buildLog.contains( "Can't extract module name from geronimo-servlet_2.4_spec-1.1.1.jar: " );
 
 // geronimo.jta.1.1.spec: Invalid module name: '1' is not a Java identifier
-assert buildLog.contains( "Can't get module name from geronimo-jta_1.1_spec-1.1.jar: " );
+assert buildLog.contains( "Can't extract module name from geronimo-jta_1.1_spec-1.1.jar: " );
 
 return true;
