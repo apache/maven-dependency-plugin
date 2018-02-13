@@ -67,7 +67,7 @@ public class TGFDependencyNodeVisitor
          * @param to edge end
          * @param label optional label.
          */
-        public EdgeAppender( DependencyNode from, DependencyNode to, String label )
+        EdgeAppender( DependencyNode from, DependencyNode to, String label )
         {
             super();
             this.from = from;

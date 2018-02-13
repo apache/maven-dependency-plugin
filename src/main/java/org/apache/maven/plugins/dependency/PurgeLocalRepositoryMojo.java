@@ -245,7 +245,7 @@ public class PurgeLocalRepositoryMojo
          *
          * @param directDependencies Set of dependencies objects which represent the direct dependencies of the project
          */
-        public DirectDependencyFilter( Artifact projectArtifact, List<Dependency> directDependencies )
+        DirectDependencyFilter( Artifact projectArtifact, List<Dependency> directDependencies )
         {
             this.projectArtifact = projectArtifact;
             this.directDependencies = directDependencies;
