@@ -206,7 +206,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-analyzer</artifactId>
-      <version>1.7</version>
+      <version>1.8</version>
       <exclusions>
         <exclusion>
           <artifactId>maven-project</artifactId>
@@ -322,6 +322,11 @@ under the License.
             </excludes>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <version>3.5</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -338,9 +343,11 @@ under the License.
               <rules>
                 <enforceBytecodeVersion>
                   <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
+                  <ignoreClasses>
+                    <ignoreClass>module-info</ignoreClass>
+                  </ignoreClasses>
                 </enforceBytecodeVersion>
               </rules>
-              <fail>true</fail>
             </configuration>
           </execution>
         </executions>
