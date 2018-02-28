@@ -671,7 +671,8 @@ public class TestCopyMojo
     {
         stubFactory.setCreateFiles( true );
         Artifact release = stubFactory.getReleaseArtifact();
-        assertTrue( release.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
+        assertTrue( release.getFile().setLastModified( 1000L ) );
+        assertEquals( 1000L, release.getFile().lastModified() );         
 
         ArtifactItem item = new ArtifactItem( release );
 
@@ -685,13 +686,13 @@ public class TestCopyMojo
 
         File copiedFile = new File( item.getOutputDirectory(), item.getDestFileName() );
 
-        // round up to the next second
-        long time = System.currentTimeMillis() - 2000;
-        assertTrue( copiedFile.setLastModified( time ) );
+        assertTrue( copiedFile.setLastModified( 2000L ) );
+        assertEquals( 2000L, copiedFile.lastModified() );
 
         mojo.execute();
 
-        assertTrue( time < copiedFile.lastModified() );
+        long timeCopyNow = copiedFile.lastModified();
+        assertEquals( 1000L, timeCopyNow );
     }
 
     public void testCopyOverWriteSnapshot()
@@ -699,7 +700,8 @@ public class TestCopyMojo
     {
         stubFactory.setCreateFiles( true );
         Artifact artifact = stubFactory.getSnapshotArtifact();
-        assertTrue( artifact.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
+        assertTrue( artifact.getFile().setLastModified( 1000L ) );
+        assertEquals( 1000L, artifact.getFile().lastModified() );         
 
         ArtifactItem item = new ArtifactItem( artifact );
 
@@ -714,13 +716,13 @@ public class TestCopyMojo
 
         File copiedFile = new File( item.getOutputDirectory(), item.getDestFileName() );
 
-        // round up to the next second
-        long time = System.currentTimeMillis() - 2000;
-        assertTrue( copiedFile.setLastModified( time ) );
+        assertTrue( copiedFile.setLastModified( 2000L ) );
+        assertEquals( 2000L, copiedFile.lastModified() );
 
         mojo.execute();
 
-        assertTrue( time < copiedFile.lastModified() );
+        long timeCopyNow = copiedFile.lastModified();
+        assertEquals( 1000L, timeCopyNow );
     }
 
     public void testCopyOverWriteIfNewer()
