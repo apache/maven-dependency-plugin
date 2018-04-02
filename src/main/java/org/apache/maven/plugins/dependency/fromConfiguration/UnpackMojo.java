@@ -37,7 +37,6 @@ import java.util.List;
  * Goal that retrieves a list of artifacts from the repository and unpacks them in a defined location.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  * @since 1.0
  */
 @Mojo( name = "unpack", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresProject = false, threadSafe = true )
@@ -140,6 +139,11 @@ public class UnpackMojo
                                      handler );
     }
 
+    /**
+     * @param removeVersion removeVersion.
+     * @return list of {@link ArtifactItem}
+     * @throws MojoExecutionException in case of an error.
+     */
     protected List<ArtifactItem> getProcessedArtifactItems( boolean removeVersion )
         throws MojoExecutionException
     {

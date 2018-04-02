@@ -26,18 +26,27 @@ import java.io.File;
 
 /**
  * @author <a href="mailto:dbradicich@comcast.net">Damian Bradicich</a>
- * @version $Id$
  */
 public class UnpackFileMarkerHandler
     extends DefaultFileMarkerHandler
 {
+    /**
+     * The ArtifactItem.
+     */
     protected ArtifactItem artifactItem;
 
+    /**
+     * @param markerFilesDirectory The marker files directory.
+     */
     public UnpackFileMarkerHandler( File markerFilesDirectory )
     {
         super( markerFilesDirectory );
     }
 
+    /**
+     * @param artifactItem {@link ArtifactItem}
+     * @param markerFilesDirectory the marker files directory.
+     */
     public UnpackFileMarkerHandler( ArtifactItem artifactItem, File markerFilesDirectory )
     {
         this( markerFilesDirectory );
@@ -79,6 +88,9 @@ public class UnpackFileMarkerHandler
         return markerFile;
     }
 
+    /**
+     * @param artifactItem {@link #artifactItem}
+     */
     public void setArtifactItem( ArtifactItem artifactItem )
     {
         this.artifactItem = artifactItem;
@@ -89,6 +101,9 @@ public class UnpackFileMarkerHandler
         }
     }
 
+    /**
+     * @return {@link #artifactItem}
+     */
     public ArtifactItem getArtifactItem()
     {
         return this.artifactItem;

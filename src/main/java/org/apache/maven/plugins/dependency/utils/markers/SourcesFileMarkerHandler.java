@@ -27,7 +27,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public class SourcesFileMarkerHandler
     extends DefaultFileMarkerHandler
@@ -35,11 +34,19 @@ public class SourcesFileMarkerHandler
 
     boolean resolved;
 
+    /**
+     * @param markerFilesDirectory the marker files directory.
+     */
     public SourcesFileMarkerHandler( File markerFilesDirectory )
     {
         super( markerFilesDirectory );
     }
 
+    /**
+     * @param artifact {@link Artifact}
+     * @param markerFilesDirectory marker files directory.
+     * @param isResolved true/false.
+     */ 
     public SourcesFileMarkerHandler( Artifact artifact, File markerFilesDirectory, boolean isResolved )
     {
         super( artifact, markerFilesDirectory );

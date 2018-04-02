@@ -64,7 +64,6 @@ import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyN
  * Displays the dependency tree for this project.
  *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
  * @since 2.0-alpha-5
  */
 @Mojo( name = "tree", requiresDependencyCollection = ResolutionScope.TEST, threadSafe = true )
@@ -291,11 +290,17 @@ public class TreeMojo
         return rootNode;
     }
 
+    /**
+     * @return {@link #skip}
+     */
     public boolean isSkip()
     {
         return skip;
     }
 
+    /**
+     * @param skip {@link #skip}
+     */
     public void setSkip( boolean skip )
     {
         this.skip = skip;
@@ -330,10 +335,10 @@ public class TreeMojo
     /**
      * Serializes the specified dependency tree to a string.
      *
-     * @param rootNode the dependency tree root node to serialize
+     * @param theRootNode the dependency tree root node to serialize
      * @return the serialized dependency tree
      */
-    private String serializeDependencyTree( DependencyNode rootNode )
+    private String serializeDependencyTree( DependencyNode theRootNode )
     {
         StringWriter writer = new StringWriter();
 
@@ -348,18 +353,22 @@ public class TreeMojo
         {
             CollectingDependencyNodeVisitor collectingVisitor = new CollectingDependencyNodeVisitor();
             DependencyNodeVisitor firstPassVisitor = new FilteringDependencyNodeVisitor( collectingVisitor, filter );
-            rootNode.accept( firstPassVisitor );
+            theRootNode.accept( firstPassVisitor );
 
             DependencyNodeFilter secondPassFilter =
                 new AncestorOrSelfDependencyNodeFilter( collectingVisitor.getNodes() );
             visitor = new FilteringDependencyNodeVisitor( visitor, secondPassFilter );
         }
 
-        rootNode.accept( visitor );
+        theRootNode.accept( visitor );
 
         return writer.toString();
     }
 
+    /**
+     * @param writer {@link Writer}
+     * @return {@link DependencyNodeVisitor}
+     */
     public DependencyNodeVisitor getSerializingDependencyNodeVisitor( Writer writer )
     {
         if ( "graphml".equals( outputType ) )
@@ -383,20 +392,20 @@ public class TreeMojo
     /**
      * Gets the graph tokens instance for the specified name.
      *
-     * @param tokens the graph tokens name
+     * @param theTokens the graph tokens name
      * @return the <code>GraphTokens</code> instance
      */
-    private GraphTokens toGraphTokens( String tokens )
+    private GraphTokens toGraphTokens( String theTokens )
     {
         GraphTokens graphTokens;
 
-        if ( "whitespace".equals( tokens ) )
+        if ( "whitespace".equals( theTokens ) )
         {
             getLog().debug( "+ Using whitespace tree tokens" );
 
             graphTokens = SerializingDependencyNodeVisitor.WHITESPACE_TOKENS;
         }
-        else if ( "extended".equals( tokens ) )
+        else if ( "extended".equals( theTokens ) )
         {
             getLog().debug( "+ Using extended tree tokens" );
 

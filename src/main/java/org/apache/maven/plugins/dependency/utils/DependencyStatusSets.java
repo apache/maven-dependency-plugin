@@ -26,7 +26,6 @@ import org.apache.maven.artifact.Artifact;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public class DependencyStatusSets
 {
@@ -36,11 +35,19 @@ public class DependencyStatusSets
 
     Set<Artifact> skippedDependencies = null;
 
+    /**
+     * Default ctor.
+     */
     public DependencyStatusSets()
     {
 
     }
 
+    /**
+     * @param resolved set of {@link Artifact}
+     * @param unResolved set of {@link Artifact}
+     * @param skipped set of {@link Artifact}
+     */
     public DependencyStatusSets( Set<Artifact> resolved, Set<Artifact> unResolved, Set<Artifact> skipped )
     {
         if ( resolved != null )

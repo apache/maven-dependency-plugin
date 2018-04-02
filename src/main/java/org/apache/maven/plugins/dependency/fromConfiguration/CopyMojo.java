@@ -34,7 +34,6 @@ import java.util.List;
  * Goal that copies a list of artifacts from the repository to defined locations.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  * @since 1.0
  */
 @Mojo( name = "copy", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresProject = false, threadSafe = true )

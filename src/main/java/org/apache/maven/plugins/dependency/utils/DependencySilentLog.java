@@ -26,7 +26,6 @@ import org.codehaus.plexus.logging.Logger;
  * This logger implements both types of logs currently in use and turns off logs.
  * 
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public class DependencySilentLog
     implements Log, Logger

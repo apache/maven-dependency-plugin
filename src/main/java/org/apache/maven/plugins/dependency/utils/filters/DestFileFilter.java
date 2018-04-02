@@ -32,7 +32,6 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public class DestFileFilter
     extends AbstractArtifactsFilter
@@ -62,11 +61,27 @@ public class DestFileFilter
 
     private File outputFileDirectory;
 
+    /**
+     * @param outputFileDirectory the output directory.
+     */
     public DestFileFilter( File outputFileDirectory )
     {
         this( false, false, false, false, false, false, false, false, false, false, outputFileDirectory );
     }
 
+    /**
+     * @param overWriteReleases true/false.
+     * @param overWriteSnapshots true/false.
+     * @param overWriteIfNewer true/false.
+     * @param useSubDirectoryPerArtifact true/false.
+     * @param useSubDirectoryPerType true/false.
+     * @param useSubDirectoryPerScope true/false.
+     * @param useRepositoryLayout true/false.
+     * @param removeVersion true/false.
+     * @param prependGroupId true/false.
+     * @param useBaseVersion true/false.
+     * @param outputFileDirectory the output directory.
+     */
     public DestFileFilter( boolean overWriteReleases, boolean overWriteSnapshots, boolean overWriteIfNewer,
                            boolean useSubDirectoryPerArtifact, boolean useSubDirectoryPerType,
                            boolean useSubDirectoryPerScope, boolean useRepositoryLayout, boolean removeVersion,

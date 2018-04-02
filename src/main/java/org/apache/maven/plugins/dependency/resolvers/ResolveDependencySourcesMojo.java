@@ -29,7 +29,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
  * Goal that resolves the project source dependencies from the repository.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  * @since 2.0-alpha2
  */
 //CHECKSTYLE_OFF: LineLength

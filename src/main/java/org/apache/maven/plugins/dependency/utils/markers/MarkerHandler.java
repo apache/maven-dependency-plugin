@@ -24,22 +24,40 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public interface MarkerHandler
 {
+    /**
+     * @return true/false.
+     * @throws MojoExecutionException in case of an error.
+     */
     boolean isMarkerSet()
         throws MojoExecutionException;
 
+    /**
+     * @throws MojoExecutionException in case of an error.
+     */
     void setMarker()
         throws MojoExecutionException;
 
+    /**
+     * @return true/false.
+     * @throws MojoExecutionException in case of an error.
+     */
     boolean clearMarker()
         throws MojoExecutionException;
 
+    /**
+     * @param artifact {@link Artifact}
+     * @return true/false.
+     * @throws MojoExecutionException in case of an error.
+     */
     boolean isMarkerOlder( Artifact artifact )
         throws MojoExecutionException;
 
+    /**
+     * @param artifact {@link Artifact}
+     */
     void setArtifact( Artifact artifact );
 
 }

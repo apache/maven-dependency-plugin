@@ -48,7 +48,6 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public abstract class AbstractDependencyMojo
     extends AbstractMojo
@@ -144,6 +143,10 @@ public abstract class AbstractDependencyMojo
         doExecute();
     }
 
+    /**
+     * @throws MojoExecutionException {@link MojoExecutionException}
+     * @throws MojoFailureException {@link MojoFailureException}
+     */
     protected abstract void doExecute()
         throws MojoExecutionException, MojoFailureException;
 
@@ -186,6 +189,12 @@ public abstract class AbstractDependencyMojo
         }
     }
 
+    /**
+     * @param artifact {@link Artifact}
+     * @param location The location.
+     * @param encoding The encoding.
+     * @throws MojoExecutionException in case of an error.
+     */
     protected void unpack( Artifact artifact, File location, String encoding )
         throws MojoExecutionException
     {
@@ -210,6 +219,15 @@ public abstract class AbstractDependencyMojo
         unpack( artifact, artifact.getType(), location, includes, excludes, encoding );
     }
 
+    /**
+     * @param artifact {@link Artifact}
+     * @param type The type.
+     * @param location The location.
+     * @param includes includes list.
+     * @param excludes excludes list.
+     * @param encoding the encoding.
+     * @throws MojoExecutionException in case of an error.
+     */
     protected void unpack( Artifact artifact, String type, File location, String includes, String excludes,
                            String encoding )
         throws MojoExecutionException
@@ -345,31 +363,49 @@ public abstract class AbstractDependencyMojo
         this.archiverManager = archiverManager;
     }
 
+    /**
+     * @return {@link #useJvmChmod}
+     */
     public boolean isUseJvmChmod()
     {
         return useJvmChmod;
     }
 
+    /**
+     * @param useJvmChmod {@link #useJvmChmod}
+     */
     public void setUseJvmChmod( boolean useJvmChmod )
     {
         this.useJvmChmod = useJvmChmod;
     }
 
+    /**
+     * @return {@link #skip}
+     */
     public boolean isSkip()
     {
         return skip;
     }
 
+    /**
+     * @param skip {@link #skip}
+     */
     public void setSkip( boolean skip )
     {
         this.skip = skip;
     }
 
+    /**
+     * @return {@link #silent}
+     */
     protected final boolean isSilent()
     {
         return silent;
     }
 
+    /**
+     * @param silent {@link #silent}
+     */
     public void setSilent( boolean silent )
     {
         this.silent = silent;

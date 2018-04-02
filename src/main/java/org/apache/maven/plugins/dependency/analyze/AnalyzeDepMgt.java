@@ -47,7 +47,6 @@ import org.codehaus.plexus.util.StringUtils;
  * false to detect these otherwise normal conditions.
  *
  * @author <a href="mailto:brianefox@gmail.com">Brian Fox</a>
- * @version $Id$
  * @since 2.0-alpha-3
  */
 @Mojo( name = "analyze-dep-mgt", requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true )
@@ -230,11 +229,19 @@ public class AnalyzeDepMgt
         return list;
     }
 
+    /**
+     * @param artifact {@link Artifact}
+     * @return The resulting GA.
+     */
     public String getExclusionKey( Artifact artifact )
     {
         return artifact.getGroupId() + ":" + artifact.getArtifactId();
     }
 
+    /**
+     * @param ex The exclusion key.
+     * @return The resulting combination of groupId+artifactId.
+     */
     public String getExclusionKey( Exclusion ex )
     {
         return ex.getGroupId() + ":" + ex.getArtifactId();

@@ -42,7 +42,6 @@ import java.util.ResourceBundle;
  * Analyzes the dependencies of this project and produces a report that summarizes which are: used and declared; used
  * and undeclared; unused and declared.
  *
- * @version $Id$
  * @since 2.0-alpha-5
  */
 @Mojo( name = "analyze-report", requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true )

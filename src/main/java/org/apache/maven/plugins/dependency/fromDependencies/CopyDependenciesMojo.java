@@ -46,7 +46,6 @@ import java.util.Set;
  * Goal that copies the project dependencies from the repository to a defined location.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  * @since 1.0
  */
 //CHECKSTYLE_OFF: LineLength
@@ -209,15 +208,15 @@ public class CopyDependenciesMojo
      * @param artifact representing the object to be copied.
      * @param removeVersion specifies if the version should be removed from the file name when copying.
      * @param prependGroupId specifies if the groupId should be prepend to the file while copying.
-     * @param useBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
+     * @param theUseBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
      * @throws MojoExecutionException with a message if an error occurs.
      * @see #copyArtifact(Artifact, boolean, boolean, boolean, boolean)
      */
     protected void copyArtifact( Artifact artifact, boolean removeVersion, boolean prependGroupId,
-                                 boolean useBaseVersion )
+                                 boolean theUseBaseVersion )
         throws MojoExecutionException
     {
-        copyArtifact( artifact, removeVersion, prependGroupId, useBaseVersion, false );
+        copyArtifact( artifact, removeVersion, prependGroupId, theUseBaseVersion, false );
     }
 
     /**
@@ -227,19 +226,19 @@ public class CopyDependenciesMojo
      * @param artifact representing the object to be copied.
      * @param removeVersion specifies if the version should be removed from the file name when copying.
      * @param prependGroupId specifies if the groupId should be prepend to the file while copying.
-     * @param useBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
+     * @param theUseBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
      * @param removeClassifier specifies if the classifier should be removed from the file name when copying.
      * @throws MojoExecutionException with a message if an error occurs.
      * @see #copyFile(File, File)
      * @see DependencyUtil#getFormattedOutputDirectory(boolean, boolean, boolean, boolean, boolean, File, Artifact)
      */
     protected void copyArtifact( Artifact artifact, boolean removeVersion, boolean prependGroupId,
-                                 boolean useBaseVersion, boolean removeClassifier )
+                                 boolean theUseBaseVersion, boolean removeClassifier )
         throws MojoExecutionException
     {
 
         String destFileName = DependencyUtil.getFormattedFileName( artifact, removeVersion, prependGroupId,
-                                                                   useBaseVersion, removeClassifier );
+                                                                   theUseBaseVersion, removeClassifier );
 
         File destDir;
         destDir = DependencyUtil.getFormattedOutputDirectory( useSubDirectoryPerScope, useSubDirectoryPerType,
@@ -296,6 +295,10 @@ public class CopyDependenciesMojo
         }
     }
 
+    /**
+     * @param artifact {@link Artifact}
+     * @return {@link Artifact}
+     */
     protected Artifact getResolvedPomArtifact( Artifact artifact )
     {
         DefaultArtifactCoordinate coordinate = new DefaultArtifactCoordinate();

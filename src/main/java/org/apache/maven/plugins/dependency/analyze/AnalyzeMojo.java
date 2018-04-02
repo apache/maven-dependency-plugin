@@ -35,7 +35,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
  * </p>
  *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
  * @see AnalyzeOnlyMojo
  * @since 2.0-alpha-3
  */

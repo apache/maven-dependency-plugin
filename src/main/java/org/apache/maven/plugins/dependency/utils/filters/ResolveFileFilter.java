@@ -26,12 +26,14 @@ import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterExceptio
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public class ResolveFileFilter
     extends MarkerFileFilter
 {
 
+    /**
+     * @param handler {@link MarkerHandler}
+     */
     public ResolveFileFilter( MarkerHandler handler )
     {
         super( true, true, true, handler );

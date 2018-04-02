@@ -27,20 +27,32 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public class DefaultFileMarkerHandler
     implements MarkerHandler
 {
+    /**
+     * The artifact.
+     */
     protected Artifact artifact;
 
+    /**
+     * The marker directory.
+     */
     protected File markerFilesDirectory;
 
+    /**
+     * @param theMarkerFilesDirectory The marker directory.
+     */
     public DefaultFileMarkerHandler( File theMarkerFilesDirectory )
     {
         this.markerFilesDirectory = theMarkerFilesDirectory;
     }
 
+    /**
+     * @param theArtifact {@link Artifact}
+     * @param theMarkerFilesDirectory The marker directory.
+     */
     public DefaultFileMarkerHandler( Artifact theArtifact, File theMarkerFilesDirectory )
     {
         this.artifact = theArtifact;

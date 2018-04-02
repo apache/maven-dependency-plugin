@@ -37,7 +37,6 @@ import java.io.File;
  * Goal that unpacks the project dependencies from the repository to a defined location.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  * @since 1.0
  */
 //CHECKSTYLE_OFF: LineLength

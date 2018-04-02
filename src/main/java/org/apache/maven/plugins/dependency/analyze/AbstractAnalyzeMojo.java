@@ -52,7 +52,6 @@ import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
  * and declared.
  *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
  * @since 2.0-alpha-5
  */
 public abstract class AbstractAnalyzeMojo
@@ -255,6 +254,10 @@ public abstract class AbstractAnalyzeMojo
         }
     }
 
+    /**
+     * @return {@link ProjectDependencyAnalyzer}
+     * @throws MojoExecutionException in case of an error.
+     */
     protected ProjectDependencyAnalyzer createProjectDependencyAnalyzer()
         throws MojoExecutionException
     {
@@ -276,12 +279,15 @@ public abstract class AbstractAnalyzeMojo
     }
 
     @Override
-    public void contextualize( Context context )
+    public void contextualize( Context theContext )
         throws ContextException
     {
-        this.context = context;
+        this.context = theContext;
     }
 
+    /**
+     * @return {@link #skip}
+     */
     protected final boolean isSkip()
     {
         return skip;

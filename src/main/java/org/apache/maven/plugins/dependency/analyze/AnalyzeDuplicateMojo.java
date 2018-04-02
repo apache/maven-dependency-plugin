@@ -45,7 +45,6 @@ import org.codehaus.plexus.util.ReaderFactory;
  * <code>pom.xml</code> and determines the duplicate declared dependencies.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  */
 @Mojo( name = "analyze-duplicate", aggregator = false, threadSafe = true )
 public class AnalyzeDuplicateMojo

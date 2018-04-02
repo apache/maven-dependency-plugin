@@ -59,7 +59,6 @@ import org.codehaus.plexus.util.StringUtils;
  * Class that encapsulates the plugin parameters, and contains methods that handle dependency filtering
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  * @see org.apache.maven.plugins.dependency.AbstractDependencyMojo
  */
 public abstract class AbstractDependencyFilterMojo
@@ -526,16 +525,25 @@ public abstract class AbstractDependencyFilterMojo
         this.prependGroupId = prependGroupId;
     }
 
+    /**
+     * @return {@link #artifactResolver}
+     */
     protected final ArtifactResolver getArtifactResolver()
     {
         return artifactResolver;
     }
 
+    /**
+     * @return {@link #dependencyResolver}
+     */
     protected final DependencyResolver getDependencyResolver()
     {
         return dependencyResolver;
     }
 
+    /**
+     * @return {@link #repositoryManager}
+     */
     protected final RepositoryManager getRepositoryManager()
     {
         return repositoryManager;

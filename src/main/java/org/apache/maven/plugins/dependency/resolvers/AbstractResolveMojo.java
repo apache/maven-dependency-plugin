@@ -40,7 +40,6 @@ import org.apache.maven.shared.dependencies.resolve.DependencyResolverException;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public abstract class AbstractResolveMojo
     extends AbstractDependencyFilterMojo
@@ -92,6 +91,9 @@ public abstract class AbstractResolveMojo
     @Parameter
     protected boolean ignorePermissions;
 
+    /**
+     * @return {@link FilterArtifacts}
+     */
     protected FilterArtifacts getPluginArtifactsFilter()
     {
         if ( excludeReactor )

@@ -290,36 +290,49 @@ public class GetMojo
         return layout;
     }
 
+    /**
+     * @return {@link #skip}
+     */
     protected boolean isSkip()
     {
         return skip;
     }
 
-    // @Parameter( alias = "groupId" )
+    /**
+     * @param groupId The groupId.
+     */
     public void setGroupId( String groupId )
     {
         this.coordinate.setGroupId( groupId );
     }
 
-    // @Parameter( alias = "artifactId" )
+    /**
+     * @param artifactId The artifactId.
+     */
     public void setArtifactId( String artifactId )
     {
         this.coordinate.setArtifactId( artifactId );
     }
 
-    // @Parameter( alias = "version" )
+    /**
+     * @param version The version.
+     */
     public void setVersion( String version )
     {
         this.coordinate.setVersion( version );
     }
 
-    // @Parameter( alias = "classifier" )
+    /**
+     * @param classifier The classifier to be used.
+     */
     public void setClassifier( String classifier )
     {
         this.coordinate.setClassifier( classifier );
     }
 
-    // @Parameter( alias = "packaging" )
+    /**
+     * @param type packaging.
+     */
     public void setPackaging( String type )
     {
         this.coordinate.setType( type );

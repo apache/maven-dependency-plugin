@@ -34,7 +34,6 @@ import org.apache.maven.shared.dependencies.collect.DependencyCollectorException
  * dependencies
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id: GoOfflineMojo.java 728546 2008-12-21 22:56:51Z bentmann $
  * @since 2.2
  */
 @Mojo( name = "list-repositories", requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true )

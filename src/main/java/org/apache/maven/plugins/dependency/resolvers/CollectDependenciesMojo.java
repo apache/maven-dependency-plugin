@@ -39,7 +39,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
  *
  * @author <a href="mailto:epabst@gmail.com">Eric Pabst</a>
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  * @since 3.0
  */
 //CHECKSTYLE_OFF: LineLength

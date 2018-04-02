@@ -51,7 +51,6 @@ import java.util.jar.Manifest;
  * module names will be visible as well.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  * @since 2.0
  */
 //CHECKSTYLE_OFF: LineLength
@@ -134,7 +133,13 @@ public class ResolveDependenciesMojo
         return new ResolveFileFilter( new SourcesFileMarkerHandler( this.markersDirectory ) );
     }
 
-    public String getOutput( boolean outputAbsoluteArtifactFilename, boolean outputScope, boolean sort )
+    /**
+     * @param outputAbsoluteArtifactFilename absolute artfiact filename.
+     * @param theOutputScope The output scope.
+     * @param theSort sort yes/no.
+     * @return The output.
+     */
+    public String getOutput( boolean outputAbsoluteArtifactFilename, boolean theOutputScope, boolean theSort )
     {
         StringBuilder sb = new StringBuilder();
         sb.append( "\n" );
@@ -146,7 +151,7 @@ public class ResolveDependenciesMojo
         else
         {
             sb.append( buildArtifactListOutput( results.getResolvedDependencies(), outputAbsoluteArtifactFilename,
-                                                outputScope, sort ) );
+                                                theOutputScope, theSort ) );
         }
 
         if ( results.getSkippedDependencies() != null && !results.getSkippedDependencies().isEmpty() )
@@ -155,8 +160,8 @@ public class ResolveDependenciesMojo
             sb.append( "The following files were skipped:\n" );
             Set<Artifact> skippedDependencies = new LinkedHashSet<Artifact>();
             skippedDependencies.addAll( results.getSkippedDependencies() );
-            sb.append( buildArtifactListOutput( skippedDependencies, outputAbsoluteArtifactFilename, outputScope,
-                                                sort ) );
+            sb.append( buildArtifactListOutput( skippedDependencies, outputAbsoluteArtifactFilename, theOutputScope,
+                                                theSort ) );
         }
 
         if ( results.getUnResolvedDependencies() != null && !results.getUnResolvedDependencies().isEmpty() )
@@ -165,8 +170,8 @@ public class ResolveDependenciesMojo
             sb.append( "The following files have NOT been resolved:\n" );
             Set<Artifact> unResolvedDependencies = new LinkedHashSet<Artifact>();
             unResolvedDependencies.addAll( results.getUnResolvedDependencies() );
-            sb.append( buildArtifactListOutput( unResolvedDependencies, outputAbsoluteArtifactFilename, outputScope,
-                                                sort ) );
+            sb.append( buildArtifactListOutput( unResolvedDependencies, outputAbsoluteArtifactFilename, theOutputScope,
+                                                theSort ) );
         }
         sb.append( "\n" );
 
@@ -174,7 +179,7 @@ public class ResolveDependenciesMojo
     }
 
     private StringBuilder buildArtifactListOutput( Set<Artifact> artifacts, boolean outputAbsoluteArtifactFilename,
-                                                   boolean outputScope, boolean sort )
+                                                   boolean theOutputScope, boolean theSort )
     {
         StringBuilder sb = new StringBuilder();
         List<String> artifactStringList = new ArrayList<String>();
@@ -184,7 +189,7 @@ public class ResolveDependenciesMojo
 
             messageBuilder.a( "   " );
 
-            if ( outputScope )
+            if ( theOutputScope )
             {
                 messageBuilder.a( artifact.toString() );
             }
@@ -208,7 +213,7 @@ public class ResolveDependenciesMojo
                 }
             }
 
-            if ( outputScope && artifact.isOptional() )
+            if ( theOutputScope && artifact.isOptional() )
             {
                 messageBuilder.a( " (optional) " );
             }
@@ -236,7 +241,7 @@ public class ResolveDependenciesMojo
             }
             artifactStringList.add( messageBuilder.toString() + "\n" );
         }
-        if ( sort )
+        if ( theSort )
         {
             Collections.sort( artifactStringList );
         }

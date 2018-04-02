@@ -27,7 +27,6 @@ import java.io.File;
  * Abstract Parent class used by mojos that get Artifact information from the project dependencies.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public abstract class AbstractFromDependenciesMojo
     extends AbstractDependencyFilterMojo
@@ -166,21 +165,33 @@ public abstract class AbstractFromDependenciesMojo
         this.useSubDirectoryPerType = theUseSubDirectoryPerType;
     }
 
+    /**
+     * @return {@link #failOnMissingClassifierArtifact}
+     */
     public boolean isFailOnMissingClassifierArtifact()
     {
         return failOnMissingClassifierArtifact;
     }
 
+    /**
+     * @param failOnMissingClassifierArtifact {@link #failOnMissingClassifierArtifact}
+     */
     public void setFailOnMissingClassifierArtifact( boolean failOnMissingClassifierArtifact )
     {
         this.failOnMissingClassifierArtifact = failOnMissingClassifierArtifact;
     }
 
+    /**
+     * @return {@link #stripVersion}
+     */
     public boolean isStripVersion()
     {
         return stripVersion;
     }
 
+    /**
+     * @param stripVersion {@link #stripVersion}
+     */
     public void setStripVersion( boolean stripVersion )
     {
         this.stripVersion = stripVersion;

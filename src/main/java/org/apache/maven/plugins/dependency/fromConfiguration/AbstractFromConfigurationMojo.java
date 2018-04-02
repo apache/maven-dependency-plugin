@@ -48,7 +48,6 @@ import org.codehaus.plexus.util.StringUtils;
  * ArtifactItems
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  * @see ArtifactItem
  */
 public abstract class AbstractFromConfigurationMojo
@@ -115,7 +114,11 @@ public abstract class AbstractFromConfigurationMojo
 
     abstract ArtifactItemFilter getMarkedArtifactFilter( ArtifactItem item );
 
-    // artifactItems is filled by either field injection or by setArtifact()
+    /**
+     * artifactItems is filled by either field injection or by setArtifact().
+     * 
+     * @throws MojoFailureException in case of an error.
+     */
     protected void verifyRequirements()
         throws MojoFailureException
     {
@@ -388,11 +391,18 @@ public abstract class AbstractFromConfigurationMojo
         this.overWriteSnapshots = theOverWriteSnapshots;
     }
 
+    /**
+     * @param localRepositoryDirectory {@link #localRepositoryDirectory}
+     */
     public void setLocalRepositoryDirectory( File localRepositoryDirectory )
     {
         this.localRepositoryDirectory = localRepositoryDirectory;
     }
 
+    /**
+     * @param artifact The artifact.
+     * @throws MojoFailureException in case of an error.
+     */
     public void setArtifact( String artifact )
         throws MojoFailureException
     {

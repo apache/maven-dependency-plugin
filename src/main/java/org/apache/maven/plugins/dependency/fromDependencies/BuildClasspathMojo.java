@@ -52,7 +52,6 @@ import java.util.regex.Pattern;
  * This goal will output a classpath string of dependencies from the local repository to a file or log.
  *
  * @author ankostis
- * @version $Id$
  * @since 2.0-alpha-2
  */
 // CHECKSTYLE_OFF: LineLength
@@ -255,6 +254,10 @@ public class BuildClasspathMojo
         }
     }
 
+    /**
+     * @param cpString The classpath.
+     * @throws MojoExecutionException in case of an error.
+     */
     protected void attachFile( String cpString )
         throws MojoExecutionException
     {
@@ -493,6 +496,9 @@ public class BuildClasspathMojo
         this.stripVersion = theStripVersion;
     }
 
+    /**
+     * @param localRepoProperty {@link #localRepoProperty}
+     */
     public void setLocalRepoProperty( String localRepoProperty )
     {
         this.localRepoProperty = localRepoProperty;

@@ -32,7 +32,6 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public class ClassifierTypeTranslator
     implements ArtifactTranslator

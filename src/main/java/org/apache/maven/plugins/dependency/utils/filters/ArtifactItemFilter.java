@@ -24,11 +24,15 @@ import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterExceptio
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public interface ArtifactItemFilter
 {
 
+    /**
+     * @param item {@link ArtifactItem}
+     * @return true/false.
+     * @throws ArtifactFilterException in case of an error.
+     */
     boolean isArtifactIncluded( ArtifactItem item )
         throws ArtifactFilterException;
 }

@@ -68,7 +68,6 @@ import org.codehaus.plexus.util.StringUtils;
  * Outside of a project, remove the manually given dependencies.
  *
  * @author jdcasey
- * @version $Id$
  * @since 2.0
  */
 @Mojo( name = "purge-local-repository", threadSafe = true, requiresProject = false )
@@ -76,13 +75,11 @@ public class PurgeLocalRepositoryMojo
     extends AbstractMojo
 {
 
-    public static final String FILE_FUZZINESS = "file";
+    private static final String VERSION_FUZZINESS = "version";
 
-    public static final String VERSION_FUZZINESS = "version";
+    private static final String ARTIFACT_ID_FUZZINESS = "artifactId";
 
-    public static final String ARTIFACT_ID_FUZZINESS = "artifactId";
-
-    public static final String GROUP_ID_FUZZINESS = "groupId";
+    private static final String GROUP_ID_FUZZINESS = "groupId";
 
     /**
      * The Maven projects in the reactor.
@@ -363,27 +360,27 @@ public class PurgeLocalRepositoryMojo
     /**
      * Purges the local repository for the dependencies in the given Maven project.
      *
-     * @param project Maven project.
+     * @param theProject Maven project.
      * @param resolvedArtifactsToPurge The artifacts that were already purged.
      * @throws MojoFailureException in case of errors during the purge.
      */
-    private void purgeLocalRepository( MavenProject project, Set<Artifact> purgedArtifacts )
+    private void purgeLocalRepository( MavenProject theProject, Set<Artifact> purgedArtifacts )
         throws MojoFailureException
     {
-        List<Dependency> dependencies = project.getDependencies();
+        List<Dependency> dependencies = theProject.getDependencies();
 
-        TransformableFilter dependencyFilter = createPurgeArtifactsFilter( project, dependencies, purgedArtifacts );
+        TransformableFilter dependencyFilter = createPurgeArtifactsFilter( theProject, dependencies, purgedArtifacts );
 
         Set<Artifact> resolvedArtifactsToPurge =
-            getFilteredResolvedArtifacts( project, dependencies, dependencyFilter );
+            getFilteredResolvedArtifacts( theProject, dependencies, dependencyFilter );
 
         if ( resolvedArtifactsToPurge.isEmpty() )
         {
-            getLog().info( "No artifacts included for purge for project: " + project.getId() );
+            getLog().info( "No artifacts included for purge for project: " + theProject.getId() );
             return;
         }
 
-        verbose( "Purging dependencies for project: " + project.getId() );
+        verbose( "Purging dependencies for project: " + theProject.getId() );
         purgeArtifacts( resolvedArtifactsToPurge );
         purgedArtifacts.addAll( resolvedArtifactsToPurge );
 
@@ -392,11 +389,11 @@ public class PurgeLocalRepositoryMojo
             ArtifactFilter artifactFilter = dependencyFilter.transform( new ArtifactIncludeFilterTransformer() );
             try
             {
-                reResolveArtifacts( project, resolvedArtifactsToPurge, artifactFilter );
+                reResolveArtifacts( theProject, resolvedArtifactsToPurge, artifactFilter );
             }
             catch ( ArtifactResolutionException e )
             {
-                String failureMessage = "Failed to refresh project dependencies for: " + project.getId();
+                String failureMessage = "Failed to refresh project dependencies for: " + theProject.getId();
                 MojoFailureException failure = new MojoFailureException( failureMessage );
                 failure.initCause( e );
 
@@ -404,7 +401,7 @@ public class PurgeLocalRepositoryMojo
             }
             catch ( ArtifactNotFoundException e )
             {
-                String failureMessage = "Failed to refresh project dependencies for: " + project.getId();
+                String failureMessage = "Failed to refresh project dependencies for: " + theProject.getId();
                 MojoFailureException failure = new MojoFailureException( failureMessage );
                 failure.initCause( e );
 
@@ -416,13 +413,13 @@ public class PurgeLocalRepositoryMojo
     /**
      * Purge/Delete artifacts from the local repository according to the given patterns.
      *
-     * @param inclusionPatterns
-     * @throws MojoExecutionException
+     * @param theIncludes The includes.
+     * @throws MojoExecutionException in case of an error.
      */
-    private void manualPurge( List<String> includes )
+    private void manualPurge( List<String> theIncludes )
         throws MojoExecutionException
     {
-        for ( String gavPattern : includes )
+        for ( String gavPattern : theIncludes )
         {
             if ( StringUtils.isEmpty( gavPattern ) )
             {
@@ -481,12 +478,12 @@ public class PurgeLocalRepositoryMojo
      * Create the includes exclude filter to use when resolving and purging dependencies Also excludes any "system"
      * scope dependencies
      *
-     * @param project The Maven project.
+     * @param theProject The Maven project.
      * @param dependencies The dependencies to use as a reference if we're excluding transitive dependencies
      * @param purgedArtifacts The artifacts already purged.
      * @return the created filter
      */
-    private TransformableFilter createPurgeArtifactsFilter( MavenProject project, List<Dependency> dependencies,
+    private TransformableFilter createPurgeArtifactsFilter( MavenProject theProject, List<Dependency> dependencies,
                                                             Set<Artifact> purgedArtifacts )
     {
         List<TransformableFilter> subFilters = new ArrayList<TransformableFilter>();
@@ -520,7 +517,7 @@ public class PurgeLocalRepositoryMojo
 
         if ( !actTransitively )
         {
-            subFilters.add( new DirectDependencyFilter( project.getArtifact(), dependencies ) );
+            subFilters.add( new DirectDependencyFilter( theProject.getArtifact(), dependencies ) );
         }
 
         List<String> exclusions = new ArrayList<String>( reactorProjects.size() );
@@ -554,29 +551,29 @@ public class PurgeLocalRepositoryMojo
     /**
      * Convert comma separated list of includes to List object
      *
-     * @param include
+     * @param theInclude The list of includes
      * @return the includes list
      */
-    private List<String> parseIncludes( String include )
+    private List<String> parseIncludes( String theInclude )
     {
-        List<String> includes = new ArrayList<String>();
+        List<String> theIncludes = new ArrayList<String>();
 
-        if ( include != null )
+        if ( theInclude != null )
         {
-            String[] elements = include.split( "," );
-            includes.addAll( Arrays.asList( elements ) );
+            String[] elements = theInclude.split( "," );
+            theIncludes.addAll( Arrays.asList( elements ) );
         }
 
-        return includes;
+        return theIncludes;
     }
 
-    private Set<Artifact> getFilteredResolvedArtifacts( MavenProject project, List<Dependency> dependencies,
+    private Set<Artifact> getFilteredResolvedArtifacts( MavenProject theProject, List<Dependency> dependencies,
                                                         TransformableFilter filter )
     {
         try
         {
             Iterable<ArtifactResult> results =
-                dependencyResolver.resolveDependencies( session.getProjectBuildingRequest(), project.getModel(),
+                dependencyResolver.resolveDependencies( session.getProjectBuildingRequest(), theProject.getModel(),
                                                         filter );
 
             Set<Artifact> resolvedArtifacts = new LinkedHashSet<Artifact>();
@@ -590,8 +587,8 @@ public class PurgeLocalRepositoryMojo
         }
         catch ( DependencyResolverException e )
         {
-            getLog().info( "Unable to resolve all dependencies for: " + project.getGroupId() + ":"
-                + project.getArtifactId() + ":" + project.getVersion()
+            getLog().info( "Unable to resolve all dependencies for: " + theProject.getGroupId() + ":"
+                + theProject.getArtifactId() + ":" + theProject.getVersion()
                 + ". Falling back to non-transitive mode for initial artifact resolution." );
         }
 
@@ -657,7 +654,7 @@ public class PurgeLocalRepositoryMojo
         }
     }
 
-    private void reResolveArtifacts( MavenProject project, Set<Artifact> artifacts, ArtifactFilter filter )
+    private void reResolveArtifacts( MavenProject theProject, Set<Artifact> artifacts, ArtifactFilter filter )
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
 
@@ -704,8 +701,8 @@ public class PurgeLocalRepositoryMojo
             }
             message.append( "\nfor the artifact:" );
 
-            throw new ArtifactResolutionException( message.toString(), project.getArtifact(),
-                                                   project.getRemoteArtifactRepositories() );
+            throw new ArtifactResolutionException( message.toString(), theProject.getArtifact(),
+                                                   theProject.getRemoteArtifactRepositories() );
         }
     }
 
@@ -741,11 +738,17 @@ public class PurgeLocalRepositoryMojo
         }
     }
 
+    /**
+     * @return {@link #skip}
+     */
     public boolean isSkip()
     {
         return skip;
     }
 
+    /**
+     * @param skip {@link #skip}
+     */
     public void setSkip( boolean skip )
     {
         this.skip = skip;

@@ -267,17 +267,21 @@ public final class DependencyUtil
         reader.close();
     }
 
-    //
-    // mainly used to parse excludes,includes configuration
-    //
+    /**
+     * mainly used to parse excludes,includes configuration
+     * @param str The string to be split.
+     * @return The result items.
+     */
     public static String[] tokenizer( String str )
     {
         return StringUtils.split( cleanToBeTokenizedString( str ), "," );
     }
 
-    //
-    // clean up configuration string before it can be tokenized
-    //
+    /**
+     * clean up configuration string before it can be tokenized
+     * @param str The str which should be cleaned.
+     * @return cleaned up string.
+     */
     public static String cleanToBeTokenizedString( String str )
     {
         String ret = "";

@@ -31,7 +31,6 @@ import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterExceptio
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public class MarkerFileFilter
     extends AbstractArtifactsFilter
@@ -44,8 +43,17 @@ public class MarkerFileFilter
 
     private boolean overWriteIfNewer;
 
+    /**
+     * The handler.
+     */
     protected final MarkerHandler handler;
 
+    /**
+     * @param overWriteReleases true/false.
+     * @param overWriteSnapshots true/false.
+     * @param overWriteIfNewer true/false.
+     * @param handler {@link MarkerHandler}
+     */
     public MarkerFileFilter( boolean overWriteReleases, boolean overWriteSnapshots, boolean overWriteIfNewer,
                              MarkerHandler handler )
     {

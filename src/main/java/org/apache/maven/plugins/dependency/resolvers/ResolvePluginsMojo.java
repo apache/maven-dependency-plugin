@@ -44,7 +44,6 @@ import org.apache.maven.shared.dependencies.resolve.DependencyResolverException;
  * Goal that resolves all project plugins and reports and their dependencies.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  * @since 2.0
  */
 @Mojo( name = "resolve-plugins", defaultPhase = LifecyclePhase.GENERATE_SOURCES, threadSafe = true )

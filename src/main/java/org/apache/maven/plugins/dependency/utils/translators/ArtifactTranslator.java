@@ -27,9 +27,13 @@ import org.apache.maven.shared.artifact.ArtifactCoordinate;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public interface ArtifactTranslator
 {
+    /**
+     * @param artifacts set of {@link Artifact}s.
+     * @param log {@link Log}
+     * @return {@link ArtifactCoordinate}
+     */
     Set<ArtifactCoordinate> translate( Set<Artifact> artifacts, Log log );
 }

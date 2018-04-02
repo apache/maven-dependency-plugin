@@ -32,7 +32,6 @@ import org.codehaus.plexus.util.StringUtils;
  *
  * @since 1.0
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  */
 public class ArtifactItem
     implements DependableCoordinate
@@ -121,11 +120,17 @@ public class ArtifactItem
      */
     private String excludes;
 
+    /**
+     * Default ctor.
+     */
     public ArtifactItem()
     {
         // default constructor
     }
 
+    /**
+     * @param artifact {@link Artifact}
+     */
     public ArtifactItem( Artifact artifact )
     {
         this.setArtifact( artifact );
@@ -154,11 +159,11 @@ public class ArtifactItem
     }
 
     /**
-     * @param artifact The artifactId to set.
+     * @param theArtifact The artifactId to set.
      */
-    public void setArtifactId( String artifact )
+    public void setArtifactId( String theArtifact )
     {
-        this.artifactId = filterEmptyString( artifact );
+        this.artifactId = filterEmptyString( theArtifact );
     }
 
     /**

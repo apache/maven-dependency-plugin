@@ -36,7 +36,6 @@ import org.apache.maven.project.MavenProject;
  * and contains the path to the resolved artifact.
  *
  * @author Paul Gier
- * @version $Id$
  * @since 2.2
  */
 //CHECKSTYLE_OFF: LineLength
@@ -84,6 +83,9 @@ public class PropertiesMojo
         }
     }
 
+    /**
+     * @return {@link #skip}
+     */
     public boolean isSkip()
     {
         return skip;

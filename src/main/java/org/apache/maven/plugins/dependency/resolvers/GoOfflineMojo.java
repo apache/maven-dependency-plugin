@@ -33,7 +33,6 @@ import java.util.Set;
  * Goal that resolves all project dependencies, including plugins and reports and their dependencies.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @version $Id$
  * @since 2.0
  */
 @Mojo( name = "go-offline", requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true )
