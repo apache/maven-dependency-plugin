@@ -19,7 +19,6 @@ package org.apache.maven.plugins.dependency.resolvers;
  * under the License.
  */
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,14 +37,14 @@ public class ResolveDependenciesMojoTest
     }
 
     public void testDependencyStatusLog()
-        throws IOException
+        throws Exception
     {
         Set<Artifact> artifacts = this.stubFactory.getMixedArtifacts();
         doTestDependencyStatusLog( artifacts );
     }
 
     public void testDependencyStatusLogNullFiles()
-        throws IOException
+        throws Exception
     {
         this.stubFactory.setCreateFiles( false );
         Set<Artifact> artifacts = this.stubFactory.getMixedArtifacts();
@@ -53,11 +52,12 @@ public class ResolveDependenciesMojoTest
     }
 
     public void testDependencyStatusEmptySet()
+        throws Exception
     {
         doTestDependencyStatusLog( new HashSet<Artifact>() );
     }
 
-    public void doTestDependencyStatusLog( Set<Artifact> artifacts )
+    public void doTestDependencyStatusLog( Set<Artifact> artifacts ) throws Exception
     {
         // TODO: implement logger to check correct output
         // this test is just looking for unexpected exceptions.
@@ -97,9 +97,10 @@ public class ResolveDependenciesMojoTest
         mojo.getOutput( true, false, false );
     }
 
-    private ResolveDependenciesMojo newMojo( final DependencyStatusSets dss )
+    private ResolveDependenciesMojo newMojo( final DependencyStatusSets dss ) throws Exception
     {
-        ResolveDependenciesMojo mojo = new ResolveDependenciesMojo();
+        ResolveDependenciesMojo mojo =
+            (ResolveDependenciesMojo) lookupMojo( "resolve", getTestFile( "target/test-classes/unit/resolve-test/plugin-config.xml" ) );
         mojo.results = dss;
         return mojo;
     }

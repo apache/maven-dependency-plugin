@@ -26,6 +26,7 @@ import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ResolveFileFilter;
 import org.apache.maven.plugins.dependency.utils.markers.SourcesFileMarkerHandler;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -33,18 +34,21 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.shared.utils.logging.MessageUtils;
+import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
+import org.codehaus.plexus.languages.java.jpms.LocationManager;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult.ModuleNameSource;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 
 /**
  * Goal that resolves the project dependencies from the repository. When using this goal while running on Java 9 the
@@ -88,6 +92,9 @@ public class ResolveDependenciesMojo
      */
     @Parameter( property = "includeParents", defaultValue = "false" )
     boolean includeParents;
+    
+    @Component
+    private LocationManager locationManager;
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.
@@ -183,6 +190,37 @@ public class ResolveDependenciesMojo
     {
         StringBuilder sb = new StringBuilder();
         List<String> artifactStringList = new ArrayList<String>();
+        
+        Collection<File> artifactFiles = new ArrayList<File>( artifacts.size() );
+        for ( Artifact artifact : artifacts )
+        {
+            if ( artifact.getFile() != null )
+            {
+                artifactFiles.add( artifact.getFile() );
+            }
+        }
+        
+        ResolvePathsRequest<File> request = ResolvePathsRequest.ofFiles( artifactFiles );
+        ResolvePathsResult<File> result = null;
+        try
+        {
+            result = locationManager.resolvePaths( request );
+        }
+        catch ( IOException e1 )
+        {
+            // noop
+        }
+        
+        for ( Map.Entry<File, Exception> entry : result.getPathExceptions().entrySet() )
+        {
+            Throwable cause = entry.getValue();
+            while ( cause.getCause() != null )
+            {
+                cause = cause.getCause();
+            }
+            getLog().info( "Can't extract module name from " + entry.getKey().getName() + ": " + cause.getMessage() );
+        }
+        
         for ( Artifact artifact : artifacts )
         {
             MessageBuilder messageBuilder = MessageUtils.buffer();
@@ -221,14 +259,15 @@ public class ResolveDependenciesMojo
             // dependencies:collect won't download jars
             if ( artifact.getFile() != null )
             {
-                ModuleDescriptor moduleDescriptor = getModuleDescriptor( artifact.getFile() );
+                JavaModuleDescriptor moduleDescriptor = result.getPathElements().get( artifact.getFile() );
                 if ( moduleDescriptor != null )
                 {
-                    messageBuilder.project( " -- module " + moduleDescriptor.name );
+                    messageBuilder.project( " -- module " + moduleDescriptor.name() );
 
-                    if ( moduleDescriptor.automatic )
+                    if ( moduleDescriptor.isAutomatic() )
                     {
-                        if ( "MANIFEST".equals( moduleDescriptor.moduleNameSource ) )
+                        if ( ModuleNameSource.MANIFEST.
+                                        equals( result.getModulepathElements().get( artifact.getFile() ) ) )
                         {
                             messageBuilder.strong( " [auto]" );
                         }
@@ -250,122 +289,5 @@ public class ResolveDependenciesMojo
             sb.append( artifactString );
         }
         return sb;
-    }
-
-    private ModuleDescriptor getModuleDescriptor( File artifactFile )
-    {
-        ModuleDescriptor moduleDescriptor = null;
-        try
-        {
-            // Use Java9 code to get moduleName, don't try to do it better with own implementation
-            Class<?> moduleFinderClass = Class.forName( "java.lang.module.ModuleFinder" );
-
-            java.nio.file.Path path = artifactFile.toPath();
-
-            Method ofMethod = moduleFinderClass.getMethod( "of", java.nio.file.Path[].class );
-            Object moduleFinderInstance = ofMethod.invoke( null, new Object[] { new java.nio.file.Path[] { path } } );
-
-            Method findAllMethod = moduleFinderClass.getMethod( "findAll" );
-            @SuppressWarnings( "unchecked" )
-            Set<Object> moduleReferences = (Set<Object>) findAllMethod.invoke( moduleFinderInstance );
-
-            // moduleReferences can be empty when referring to target/classes without module-info.class
-            if ( !moduleReferences.isEmpty() )
-            {
-                Object moduleReference = moduleReferences.iterator().next();
-                Method descriptorMethod = moduleReference.getClass().getMethod( "descriptor" );
-                Object moduleDescriptorInstance = descriptorMethod.invoke( moduleReference );
-
-                Method nameMethod = moduleDescriptorInstance.getClass().getMethod( "name" );
-                String name = (String) nameMethod.invoke( moduleDescriptorInstance );
-
-                moduleDescriptor = new ModuleDescriptor();
-                moduleDescriptor.name = name;
-
-                Method isAutomaticMethod = moduleDescriptorInstance.getClass().getMethod( "isAutomatic" );
-                moduleDescriptor.automatic = (Boolean) isAutomaticMethod.invoke( moduleDescriptorInstance );
-
-                if ( moduleDescriptor.automatic )
-                {
-                    if ( artifactFile.isFile() )
-                    {
-                        JarFile jarFile = null;
-                        try
-                        {
-                            jarFile = new JarFile( artifactFile );
-
-                            Manifest manifest = jarFile.getManifest();
-
-                            if ( manifest != null
-                                && manifest.getMainAttributes().getValue( "Automatic-Module-Name" ) != null )
-                            {
-                                moduleDescriptor.moduleNameSource = "MANIFEST";
-                            }
-                            else
-                            {
-                                moduleDescriptor.moduleNameSource = "FILENAME";
-                            }
-                        }
-                        catch ( IOException e )
-                        {
-                            // noop
-                        }
-                        finally
-                        {
-                            if ( jarFile != null )
-                            {
-                                try
-                                {
-                                    jarFile.close();
-                                }
-                                catch ( IOException e )
-                                {
-                                    // noop
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        catch ( ClassNotFoundException e )
-        {
-            // do nothing
-        }
-        catch ( NoSuchMethodException e )
-        {
-            e.printStackTrace();
-        }
-        catch ( SecurityException e )
-        {
-            // do nothing
-        }
-        catch ( IllegalAccessException e )
-        {
-            // do nothing
-        }
-        catch ( IllegalArgumentException e )
-        {
-            // do nothing
-        }
-        catch ( InvocationTargetException e )
-        {
-            Throwable cause = e.getCause();
-            while ( cause.getCause() != null )
-            {
-                cause = cause.getCause();
-            }
-            getLog().info( "Can't extract module name from " + artifactFile.getName() + ": " + cause.getMessage() );
-        }
-        return moduleDescriptor;
-    }
-
-    private class ModuleDescriptor
-    {
-        String name;
-
-        boolean automatic = true;
-
-        String moduleNameSource;
     }
 }
