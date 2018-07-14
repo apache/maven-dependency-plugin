@@ -61,6 +61,9 @@ public class FixWarningsMojo extends AbstractMojo implements Contextualizable {
     @Parameter(property = "analyzer", defaultValue = "default")
     private String analyzer;
 
+    @Parameter(property = "command", defaultValue = "mvn -q clean install")
+    private String command;
+
     @Parameter(property = "indent", defaultValue = "    ")
     private String indent;
 
@@ -90,13 +93,80 @@ public class FixWarningsMojo extends AbstractMojo implements Contextualizable {
 
         getLog().info("Step 3 - verify project");
         verify();
+
+        begin();
+        try {
+            getLog().info("Step 5 - remove all un-used dependencies");
+            removeAllUnusedDependencies(analysis.getUnusedDeclaredArtifacts());
+            commit();
+            return;
+        } catch (Exception e) {
+            rollBack();
+            getLog().info("Step 6 - remove un-used dependencies one-by-one");
+        }
+        removeUnusedDependencies(analysis.getUnusedDeclaredArtifacts());
     }
+
+    private void removeUnusedDependencies(Set<Artifact> unusedDeclaredArtifacts) throws IOException, SAXException, ParserConfigurationException {
+        PomFacade pomFacade = new PomFacade(new File(baseDir, "pom.xml"), indent);
+        for (Artifact artifact : unusedDeclaredArtifacts) {
+            getLog().info("- " + artifact);
+            begin();
+            try {
+                pomFacade.removeArtifact(artifact);
+                verify();
+                pomFacade.save();
+                commit();
+            } catch (Exception e) {
+                rollBack();
+            }
+        }
+    }
+
+
+    private void removeAllUnusedDependencies(Set<Artifact> unusedDeclaredArtifacts) throws IOException, SAXException, ParserConfigurationException {
+        PomFacade pomFacade = new PomFacade(new File(baseDir, "pom.xml"), indent);
+        for (Artifact artifact : unusedDeclaredArtifacts) {
+            getLog().info("- " + artifact);
+            pomFacade.removeArtifact(artifact);
+        }
+        pomFacade.save();
+
+    }
+
+    private void begin() throws IOException {
+        copyFile("pom.xml", "pom.xml.backup");
+    }
+
+    private void rollBack() throws IOException {
+        copyFile("pom.xml.backup", "pom.xml");
+        commit();
+    }
+
+    private void commit() {
+        if (new File(baseDir, "pom.xml.backup").delete()) {
+            throw new IllegalStateException();
+        }
+    }
+
+    private void copyFile(String from, String to) throws IOException {
+        try (BufferedReader in = new BufferedReader(new FileReader(new File(baseDir, from)))) {
+            try (PrintWriter out = new PrintWriter(new FileWriter(new File(baseDir, to)))) {
+                String line;
+                while ((line = in.readLine()) != null) {
+                    out.println(line);
+                }
+            }
+        }
+    }
+
     private void addUnusedDependencies(Set<Artifact> usedUndeclaredArtifacts) throws SAXException, IOException, ParserConfigurationException, TransformerException {
         PomFacade pomFacade = new PomFacade(new File(baseDir, "pom.xml"), indent);
         for (Artifact artifact : new TreeSet<>(usedUndeclaredArtifacts)) {
             getLog().info("+ " + artifact);
             pomFacade.addDependency(artifact);
         }
+        pomFacade.save();
     }
 
     private void verify() throws IOException, InterruptedException {
@@ -105,7 +175,7 @@ public class FixWarningsMojo extends AbstractMojo implements Contextualizable {
 
         Process process = new ProcessBuilder()
                 .directory(baseDir)
-                .command("mvn", "-q", "clean", "test-compile")
+                .command(command.split(" "))
                 .start();
 
         log(process.getInputStream(), new LogConsumer() {
@@ -128,9 +198,7 @@ public class FixWarningsMojo extends AbstractMojo implements Contextualizable {
 
     private interface LogConsumer {
         void consume(String line);
-
     }
-
 
     private void log(final InputStream inputStream, final LogConsumer log) {
         new Thread(new Runnable() {

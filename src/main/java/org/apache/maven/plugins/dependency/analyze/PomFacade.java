@@ -40,12 +40,16 @@ class PomFacade {
     private final Node dependencies;
     private final String indent;
 
-    PomFacade(File pom, String indent) throws ParserConfigurationException, SAXException, IOException {
+    PomFacade(File pom, String indent) {
         this.pom = pom;
         this.indent = indent;
-        this.doc = DocumentBuilderFactory.newInstance()
-                .newDocumentBuilder()
-                .parse(this.pom);
+        try {
+            this.doc = DocumentBuilderFactory.newInstance()
+                    .newDocumentBuilder()
+                    .parse(this.pom);
+        } catch (SAXException | IOException | ParserConfigurationException e) {
+            throw new IllegalStateException(e);
+        }
         this.dependencies = dependenciesFor(doc);
     }
 
@@ -68,10 +72,6 @@ class PomFacade {
         appendNewLine(dependency);
 
         append4Indents(dependency);
-        dependency.appendChild(doc.createComment("automatically added"));
-        appendNewLine(dependency);
-
-        append4Indents(dependency);
         Element groupId = doc.createElement("groupId");
         groupId.appendChild(doc.createTextNode(artifact.getGroupId()));
         dependency.appendChild(groupId);
@@ -79,7 +79,7 @@ class PomFacade {
 
         append4Indents(dependency);
         Element artifactId = doc.createElement("artifactId");
-        artifactId.appendChild(doc.createTextNode(artifact.getGroupId()));
+        artifactId.appendChild(doc.createTextNode(artifact.getArtifactId()));
         dependency.appendChild(artifactId);
         appendNewLine(dependency);
 
@@ -105,9 +105,33 @@ class PomFacade {
         return dependency.appendChild(doc.createTextNode("\n"));
     }
 
-    void save() throws TransformerException {
-        TransformerFactory.newInstance().newTransformer()
-                .transform(new DOMSource(doc), new StreamResult(pom));
+    void save() {
+        try {
+            TransformerFactory.newInstance().newTransformer()
+                    .transform(new DOMSource(doc), new StreamResult(pom));
+        } catch (TransformerException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    void removeArtifact(Artifact artifact) {
+        NodeList childNodes = dependencies.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node dependency = childNodes.item(i);
+            if (dependency.getNodeType() == Node.ELEMENT_NODE) {
+                Element element = (Element) dependency;
+
+                String groupId = element.getElementsByTagName("groupId").item(0).getTextContent();
+                String artifactId = element.getElementsByTagName("artifactId").item(0).getTextContent();
+
+                if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
+                    dependencies.removeChild(dependency);
+                    return;
+                }
+
+            }
+        }
+        throw new IllegalStateException();
     }
 }
 
