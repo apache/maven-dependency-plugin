@@ -43,14 +43,14 @@ class PomFacade {
     PomFacade(File pom, String indent) throws ParserConfigurationException, SAXException, IOException {
         this.pom = pom;
         this.indent = indent;
-        doc = DocumentBuilderFactory.newInstance()
+        this.doc = DocumentBuilderFactory.newInstance()
                 .newDocumentBuilder()
                 .parse(this.pom);
-        dependencies = getDependencies();
+        this.dependencies = dependenciesFor(doc);
     }
 
 
-    private Node getDependencies() {
+    private static Node dependenciesFor(Document doc) {
         NodeList childNodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node item = childNodes.item(i);
