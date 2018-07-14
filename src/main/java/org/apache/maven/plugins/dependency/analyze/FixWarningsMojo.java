@@ -19,11 +19,24 @@ package org.apache.maven.plugins.dependency.analyze;
  */
 
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.ContextEnabled;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
+import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
+import org.codehaus.plexus.PlexusConstants;
+import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.context.Context;
+import org.codehaus.plexus.context.ContextException;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
+
+import java.io.*;
+import java.util.function.Consumer;
 
 /**
  * Attempts to fix the warnings identified by analysis.
@@ -32,11 +45,100 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
  * @since 3.1.2
  */
 @Mojo(name = "fix-warnings", requiresDependencyResolution = ResolutionScope.TEST)
-public class FixWarningsMojo extends AbstractMojo {
+public class FixWarningsMojo extends AbstractMojo implements Contextualizable {
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    private MavenProject project;
 
+    private Context context;
+
+    @Parameter(defaultValue = "${basedir}", readonly = true)
+    private File baseDir;
+
+
+    @Parameter(property = "analyzer", defaultValue = "default")
+    private String analyzer;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
+        if (project.getPackaging().equals("pom")) {
+            getLog().info("skipping -pom packaging");
+            return;
+        }
+        try {
+            executeAux();
+        } catch (Exception e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+        }
+    }
+
+    private void executeAux() throws Exception {
+
+
+        verify();
+        ProjectDependencyAnalysis analysis = getAnalyzer().analyze(project);
+
+    }
+
+    private void verify() throws IOException, InterruptedException {
+
+
+        getLog().info("verifying " + baseDir);
+
+        Process process = new ProcessBuilder()
+                .directory(baseDir)
+                .command("mvn", "clean", "install")
+                .start();
+
+        log(process.getInputStream(), new LogConsumer() {
+            @Override
+            public void consume(String line) {
+                getLog().info(line);
+            }
+        });
+        log(process.getErrorStream(), new LogConsumer() {
+            @Override
+            public void consume(String line) {
+                getLog().error(line);
+            }
+        });
+
+        if (process.waitFor() != 0) {
+            throw new IllegalStateException(String.valueOf(process.exitValue()));
+        }
+    }
+
+    private interface LogConsumer {
+        void consume(String line);
+
+    }
+
+
+    private void log(final InputStream inputStream, final LogConsumer log) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(inputStream))) {
+
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        log.consume(line);
+                    }
+
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        }).start();
+    }
+
+    private ProjectDependencyAnalyzer getAnalyzer() throws ComponentLookupException, ContextException {
+        return (ProjectDependencyAnalyzer) ((PlexusContainer) context.get(PlexusConstants.PLEXUS_KEY)).lookup(ProjectDependencyAnalyzer.ROLE, this.analyzer);
+    }
+
+
+    @Override
+    public void contextualize(Context context) {
+        this.context = context;
     }
 }
