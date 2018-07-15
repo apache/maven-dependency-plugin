@@ -1,4 +1,4 @@
-package org.apache.maven.plugins.dependency.analyze;
+package org.apache.maven.plugins.dependency.analyze.internal;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -34,13 +34,16 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
 
-class PomFacade {
+/**
+ * Utility class for editing poms in-place.
+ */
+class PomEditor {
     private final File pom;
     private final Document doc;
     private final Node dependencies;
     private final String indent;
 
-    PomFacade(File pom, String indent) {
+    PomEditor(File pom, String indent) {
         this.pom = pom;
         this.indent = indent;
         try {
@@ -62,7 +65,7 @@ class PomFacade {
                 return item;
             }
         }
-        throw new IllegalStateException();
+        throw new IllegalStateException("no dependencies node");
     }
 
     void addDependency(Artifact artifact) {
@@ -131,7 +134,7 @@ class PomFacade {
 
             }
         }
-        throw new IllegalStateException();
+        throw new IllegalStateException("dependency " + artifact + " not found in " + childNodes);
     }
 }
 
