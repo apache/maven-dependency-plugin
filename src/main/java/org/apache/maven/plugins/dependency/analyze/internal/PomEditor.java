@@ -96,16 +96,16 @@ class PomEditor {
         dependencies.appendChild(doc.createTextNode("\n"));
     }
 
-    private Node append2Indents(Node dependencies) {
-        return dependencies.appendChild(doc.createTextNode(indent + indent));
+    private void append2Indents(Node dependencies) {
+        dependencies.appendChild(doc.createTextNode(indent + indent));
     }
 
-    private Node append4Indents(Element dependency) {
-        return dependency.appendChild(doc.createTextNode(indent + indent + indent));
+    private void append4Indents(Element dependency) {
+        dependency.appendChild(doc.createTextNode(indent + indent + indent));
     }
 
-    private Node appendNewLine(Element dependency) {
-        return dependency.appendChild(doc.createTextNode("\n"));
+    private void appendNewLine(Element dependency) {
+        dependency.appendChild(doc.createTextNode("\n"));
     }
 
     void save() {

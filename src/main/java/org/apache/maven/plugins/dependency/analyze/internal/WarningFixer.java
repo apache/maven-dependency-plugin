@@ -20,10 +20,7 @@ package org.apache.maven.plugins.dependency.analyze.internal;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.logging.Log;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
@@ -119,7 +116,7 @@ public class WarningFixer {
         log.info("Success.");
     }
 
-    private void addUsedUndeclaredDependencies() throws SAXException, IOException, ParserConfigurationException, TransformerException, InterruptedException {
+    private void addUsedUndeclaredDependencies() throws IOException, InterruptedException {
         log.info("Add " + usedUndeclaredArtifacts.size() + " used undeclared artifact(s).");
         PomBackup pomBackup = new PomBackup(baseDir);
         try {
