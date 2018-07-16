@@ -46,7 +46,7 @@ import java.util.Set;
  * @since 3.1.2
  */
 @Mojo(name = "remove-unused-declared", requiresDependencyResolution = ResolutionScope.TEST)
-public class RemoveUnusedDeclaredsMojo extends AbstractMojo implements Contextualizable {
+public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextualizable {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
