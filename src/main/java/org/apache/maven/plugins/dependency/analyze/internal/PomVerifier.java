@@ -53,7 +53,7 @@ public class PomVerifier {
         log(process.getErrorStream(), new LogConsumer() {
             @Override
             public void consume(String line) {
-                log.error(line);
+                log.warn(line);
             }
         });
 
