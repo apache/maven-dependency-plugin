@@ -1,4 +1,5 @@
 package org.apache.maven.plugins.dependency.analyze.internal;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,32 +18,13 @@ package org.apache.maven.plugins.dependency.analyze.internal;
  * specific language governing permissions and limitations
  * under the License.
  */
+public interface Verifier {
+    Verifier NOOP = new Verifier() {
+        @Override
+        public void verify() {
+            // noop
+        }
+    };
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-
-/**
- * Utility class for creating, discarding, and restoring backups of poms.
- */
-class PomBackup {
-    private final Path pom;
-    private final Path pomBackup;
-
-    PomBackup(File baseDir) throws IOException {
-        this.pom = new File(baseDir, "pom.xml").toPath();
-        this.pomBackup = new File(baseDir, "pom.xml.backup").toPath();
-        Files.copy(pom, pomBackup, REPLACE_EXISTING);
-    }
-
-    void restore() throws IOException {
-        Files.move(pomBackup, pom, REPLACE_EXISTING);
-    }
-
-    void discard() throws IOException {
-        Files.delete(pomBackup);
-    }
+    void verify() throws Exception;
 }

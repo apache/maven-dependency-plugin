@@ -1,9 +1,5 @@
 package org.apache.maven.plugins.dependency.analyze.internal;
 
-import org.apache.maven.plugin.logging.Log;
-
-import java.io.*;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,21 +19,29 @@ import java.io.*;
  * under the License.
  */
 
+import org.apache.maven.plugin.logging.Log;
+
+import java.io.*;
+
+
 /**
  * Utility class for verifying a pom is OK.
  */
-public class PomVerifier {
+public class CommandVerifier implements Verifier {
     private final Log log;
     private final File baseDir;
     private final String command;
 
-    public PomVerifier(Log log, File baseDir, String command) {
+    public CommandVerifier(Log log, File baseDir, String command) {
         this.log = log;
         this.baseDir = baseDir;
         this.command = command;
     }
 
-    void verify() throws IOException, InterruptedException {
+    @Override
+    public void verify() throws Exception {
+
+        log.info("Verifying.");
 
         Process process = new ProcessBuilder()
                 .directory(baseDir)
@@ -58,8 +62,11 @@ public class PomVerifier {
         });
 
         if (process.waitFor() != 0) {
+            log.info("Failure.");
             throw new IllegalStateException(String.valueOf(process.exitValue()));
         }
+
+        log.info("Success.");
     }
 
     private void log(final InputStream inputStream, final LogConsumer log) {

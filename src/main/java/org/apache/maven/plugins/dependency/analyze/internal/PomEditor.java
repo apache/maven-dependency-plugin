@@ -27,33 +27,34 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Properties;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * Utility class for editing poms in-place.
  */
-class PomEditor {
+public class PomEditor {
+    private final Properties properties;
     private final File pom;
-    private final Document doc;
-    private final Node dependencies;
+    private final File pomBackup;
+    private final Verifier verifier;
+    private Document doc;
     private final String indent;
+    private Node dependencies;
 
-    PomEditor(File pom, String indent) {
-        this.pom = pom;
+    public PomEditor(Properties properties, File baseDir, String indent, Verifier verifier) {
+        this.properties = properties;
+        this.pom = new File(baseDir, "pom.xml");
+        this.pomBackup = new File(baseDir, "pom.xml.backup");
         this.indent = indent;
-        try {
-            this.doc = DocumentBuilderFactory.newInstance()
-                    .newDocumentBuilder()
-                    .parse(this.pom);
-        } catch (SAXException | IOException | ParserConfigurationException e) {
-            throw new IllegalStateException(e);
-        }
-        this.dependencies = dependenciesFor(doc);
+        this.verifier = verifier;
     }
 
 
@@ -68,40 +69,39 @@ class PomEditor {
         throw new IllegalStateException("no dependencies node");
     }
 
-    void addDependency(Artifact artifact) {
+    public void addDependency(Artifact artifact) {
         append2Indents(dependencies);
         Element dependency = doc.createElement("dependency");
         dependencies.appendChild(dependency);
         appendNewLine(dependency);
 
-        append4Indents(dependency);
+        append3Indents(dependency);
         Element groupId = doc.createElement("groupId");
         groupId.appendChild(doc.createTextNode(artifact.getGroupId()));
         dependency.appendChild(groupId);
         appendNewLine(dependency);
 
-        append4Indents(dependency);
+        append3Indents(dependency);
         Element artifactId = doc.createElement("artifactId");
         artifactId.appendChild(doc.createTextNode(artifact.getArtifactId()));
         dependency.appendChild(artifactId);
         appendNewLine(dependency);
 
-        append4Indents(dependency);
+        append3Indents(dependency);
         Element version = doc.createElement("version");
         version.appendChild(doc.createTextNode(artifact.getVersion()));
         dependency.appendChild(version);
         appendNewLine(dependency);
-        append2Indents(dependency);
 
         if (!"compile".equals(artifact.getScope())) {
+            append3Indents(dependency);
             Element scope = doc.createElement("scope");
             scope.appendChild(doc.createTextNode(artifact.getScope()));
             dependency.appendChild(scope);
             appendNewLine(dependency);
-            append2Indents(dependency);
         }
 
-        append4Indents(dependency);
+        append2Indents(dependency);
         appendNewLine(dependencies);
     }
 
@@ -109,7 +109,7 @@ class PomEditor {
         element.appendChild(doc.createTextNode(indent + indent));
     }
 
-    private void append4Indents(Node element) {
+    private void append3Indents(Node element) {
         element.appendChild(doc.createTextNode(indent + indent + indent));
     }
 
@@ -117,33 +117,67 @@ class PomEditor {
         element.appendChild(doc.createTextNode("\n"));
     }
 
-    void save() {
+
+    public void start() throws IOException {
+        Files.copy(pom.toPath(), pomBackup.toPath(), REPLACE_EXISTING);
+        try {
+            this.doc = DocumentBuilderFactory.newInstance()
+                    .newDocumentBuilder()
+                    .parse(this.pom);
+        } catch (SAXException | IOException | ParserConfigurationException e) {
+            throw new IllegalStateException(e);
+        }
+        this.dependencies = dependenciesFor(doc);
+    }
+
+    public void end() throws Exception {
         try {
             TransformerFactory.newInstance().newTransformer()
                     .transform(new DOMSource(doc), new StreamResult(pom));
-        } catch (TransformerException e) {
-            throw new IllegalStateException(e);
+
+            verifier.verify();
+
+            Files.delete(pomBackup.toPath());
+        } catch (Exception e) {
+            Files.move(pomBackup.toPath(), pom.toPath(), REPLACE_EXISTING);
+            throw e;
+        } finally {
+            this.doc = null;
+            this.dependencies = null;
         }
     }
 
-    void removeArtifact(Artifact artifact) {
+    public void removeDependency(Artifact artifact) {
         NodeList childNodes = dependencies.getChildNodes();
+        boolean found = false;
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node dependency = childNodes.item(i);
             if (dependency.getNodeType() == Node.ELEMENT_NODE) {
                 Element element = (Element) dependency;
 
-                String groupId = element.getElementsByTagName("groupId").item(0).getTextContent();
-                String artifactId = element.getElementsByTagName("artifactId").item(0).getTextContent();
+
+                String groupId = subst(element.getElementsByTagName("groupId").item(0).getTextContent());
+                String artifactId = subst(element.getElementsByTagName("artifactId").item(0).getTextContent());
 
                 if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
                     dependencies.removeChild(dependency);
-                    return;
+                    found = true;
                 }
 
             }
         }
-        throw new IllegalStateException("dependency " + artifact + " not found in " + childNodes);
+        if (!found) {
+            throw new IllegalStateException("dependency " + artifact + " not found");
+        }
+    }
+
+    private String subst(String textContent) {
+
+        for (String key : properties.stringPropertyNames()) {
+            textContent = textContent.replace("${" + key + "}", properties.getProperty(key));
+        }
+
+        return textContent;
     }
 }
 

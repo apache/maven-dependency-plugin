@@ -18,16 +18,16 @@ package org.apache.maven.plugins.dependency.analyze;
  * under the License.
  */
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.plugins.dependency.analyze.internal.PomVerifier;
-import org.apache.maven.plugins.dependency.analyze.internal.WarningFixer;
+import org.apache.maven.plugins.dependency.analyze.internal.CommandVerifier;
+import org.apache.maven.plugins.dependency.analyze.internal.PomEditor;
+import org.apache.maven.plugins.dependency.analyze.internal.PropertiesFactory;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
@@ -37,6 +37,7 @@ import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 
 import java.io.File;
+import java.util.Set;
 
 /**
  * Attempts to fix the warnings identified by analysis.
@@ -44,8 +45,8 @@ import java.io.File;
  * @author <a href="mailto:alex@alexecollins.com">Alex Collins</a>
  * @since 3.1.2
  */
-@Mojo(name = "fix-warnings", requiresDependencyResolution = ResolutionScope.TEST)
-public class FixWarningsMojo extends AbstractMojo implements Contextualizable {
+@Mojo(name = "remove-unused-declared", requiresDependencyResolution = ResolutionScope.TEST)
+public class RemoveUnusedDeclaredsMojo extends AbstractMojo implements Contextualizable {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
@@ -63,8 +64,10 @@ public class FixWarningsMojo extends AbstractMojo implements Contextualizable {
     @Parameter(property = "indent", defaultValue = "    ")
     private String indent;
 
+    private PomEditor editor;
+
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
 
         String packaging = project.getPackaging();
         if (packaging.equals("pom")) {
@@ -72,26 +75,55 @@ public class FixWarningsMojo extends AbstractMojo implements Contextualizable {
             return;
         }
 
-
         try {
-            ProjectDependencyAnalysis analysis = getAnalyzer().analyze(project);
-            new WarningFixer(
-                    getLog(),
-                    baseDir,
-                    indent,
-                    new PomVerifier(getLog(), baseDir, command),
-                    analysis.getUsedUndeclaredArtifacts(),
-                    analysis.getUnusedDeclaredArtifacts()
-            ).execute();
+            Set<Artifact> unusedDeclaredArtifacts = getAnalyzer().analyze(project).getUnusedDeclaredArtifacts();
+
+            if (unusedDeclaredArtifacts.isEmpty()) {
+                getLog().info("Skipping because nothing to do");
+                return;
+            }
+            editor = new PomEditor(PropertiesFactory.getProperties(project), baseDir, indent, new CommandVerifier(getLog(), baseDir, command));
+
+            try {
+                tryToRemoveAllUnusedDeclaredDependenciesAtOnce(unusedDeclaredArtifacts);
+            } catch (Exception e) {
+                tryToRemoveUnusedDeclaredDependenciesOneByOne(unusedDeclaredArtifacts);
+            }
+
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 
-    private ProjectDependencyAnalyzer getAnalyzer() throws ComponentLookupException, ContextException {
-        return (ProjectDependencyAnalyzer) ((PlexusContainer) context.get(PlexusConstants.PLEXUS_KEY)).lookup(ProjectDependencyAnalyzer.ROLE, analyzer);
+    private ProjectDependencyAnalyzer getAnalyzer() throws ContextException, ComponentLookupException {
+        return (ProjectDependencyAnalyzer) ((PlexusContainer) context.get(PlexusConstants.PLEXUS_KEY))
+                .lookup(ProjectDependencyAnalyzer.ROLE, analyzer);
     }
 
+    private void tryToRemoveUnusedDeclaredDependenciesOneByOne(Set<Artifact> unusedDeclaredArtifacts) throws Exception {
+
+        getLog().info("Removing " + unusedDeclaredArtifacts.size() + " unused declared dependencies one-by-one.");
+
+        for (final Artifact artifact : unusedDeclaredArtifacts) {
+            getLog().info("- " + artifact);
+            editor.start();
+            editor.removeDependency(artifact);
+            editor.end();
+        }
+    }
+
+    private void tryToRemoveAllUnusedDeclaredDependenciesAtOnce(Set<Artifact> unusedDeclaredArtifacts) throws Exception {
+
+        getLog().info("Removing all " + unusedDeclaredArtifacts.size() + " unused declared dependencies all at once.");
+
+        editor.start();
+        for (final Artifact artifact : unusedDeclaredArtifacts) {
+            getLog().info("- " + artifact);
+            editor.removeDependency(artifact);
+
+        }
+        editor.end();
+    }
 
     @Override
     public void contextualize(Context context) {
