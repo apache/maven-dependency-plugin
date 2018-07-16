@@ -74,6 +74,9 @@ public class WarningFixer {
     }
 
     private void tryToRemoveUnusedDeclaredDependenciesOneByONe() throws Exception {
+        if (unusedDeclaredArtifacts.isEmpty()) {
+            return;
+        }
         log.info("Remove " + unusedDeclaredArtifacts.size() + " unused declared dependencies.");
 
         PomEditor editor = new PomEditor(new File(baseDir, "pom.xml"), indent);
@@ -95,6 +98,9 @@ public class WarningFixer {
 
 
     private void tryToRemoveAllUnusedDeclaredDependenciesAtOnce() throws Exception {
+        if (unusedDeclaredArtifacts.isEmpty()) {
+            return;
+        }
         log.info("Remove all " + unusedDeclaredArtifacts.size() + " unused declared dependencies.");
         PomBackup backup = new PomBackup(baseDir);
         try {
@@ -117,6 +123,9 @@ public class WarningFixer {
     }
 
     private void addUsedUndeclaredDependencies() throws IOException, InterruptedException {
+        if (usedUndeclaredArtifacts.isEmpty()) {
+            return;
+        }
         log.info("Add " + usedUndeclaredArtifacts.size() + " used undeclared artifact(s).");
         PomBackup pomBackup = new PomBackup(baseDir);
         try {
