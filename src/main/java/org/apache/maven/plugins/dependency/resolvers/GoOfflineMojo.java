@@ -21,13 +21,15 @@ package org.apache.maven.plugins.dependency.resolvers;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
+import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
-
-import java.util.Set;
+import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
 
 /**
  * Goal that resolves all project dependencies, including plugins and reports and their dependencies.
@@ -35,14 +37,24 @@ import java.util.Set;
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 2.0
  */
-@Mojo( name = "go-offline", requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true )
+@Mojo( name = "go-offline", requiresDependencyCollection = ResolutionScope.TEST, threadSafe = true )
 @Execute( goal = "resolve-plugins" )
 public class GoOfflineMojo
     extends AbstractResolveMojo
 {
 
     /**
-     * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.
+     * Include parent poms in the dependency resolution list.
+     *
+     * @since 3.1.2
+     */
+    @Parameter( property = "includeParents", defaultValue = "false" )
+    private boolean includeParents;
+
+    /**
+     * Main entry into mojo. Gets the list of dependencies, filters them by the include/exclude parameters
+     * provided and iterates through downloading the resolved version.
+     * if the version is not present in the local repository.
      *
      * @throws MojoExecutionException with a message if an error occurs.
      */
@@ -50,13 +62,24 @@ public class GoOfflineMojo
     protected void doExecute()
         throws MojoExecutionException
     {
-        Set<Artifact> artifacts = getProject().getArtifacts();
 
-        if ( !isSilent() )
+        DependencyStatusSets results = this.getDependencySets( false, includeParents );
+
+        ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
+        for ( Artifact artifact : results.getResolvedDependencies() )
         {
-            for ( Artifact artifact : artifacts )
+            try
             {
-                this.getLog().info( "Resolved: " + DependencyUtil.getFormattedFileName( artifact, false ) );
+                getArtifactResolver().resolveArtifact( buildingRequest, artifact );
+                if ( !isSilent() )
+                {
+                    this.getLog().info( "Resolved: "
+                            + DependencyUtil.getFormattedFileName( artifact, false ) );
+                }
+            }
+            catch ( ArtifactResolverException e )
+            {
+                throw new MojoExecutionException( "Failed to resolve artifact: " + artifact, e );
             }
         }
     }
