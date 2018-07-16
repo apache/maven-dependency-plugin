@@ -93,19 +93,28 @@ class PomEditor {
         appendNewLine(dependency);
         append2Indents(dependency);
 
-        dependencies.appendChild(doc.createTextNode("\n"));
+        if (!"compile".equals(artifact.getScope())) {
+            Element scope = doc.createElement("scope");
+            scope.appendChild(doc.createTextNode(artifact.getScope()));
+            dependency.appendChild(scope);
+            appendNewLine(dependency);
+            append2Indents(dependency);
+        }
+
+        append4Indents(dependency);
+        appendNewLine(dependencies);
     }
 
-    private void append2Indents(Node dependencies) {
-        dependencies.appendChild(doc.createTextNode(indent + indent));
+    private void append2Indents(Node element) {
+        element.appendChild(doc.createTextNode(indent + indent));
     }
 
-    private void append4Indents(Element dependency) {
-        dependency.appendChild(doc.createTextNode(indent + indent + indent));
+    private void append4Indents(Node element) {
+        element.appendChild(doc.createTextNode(indent + indent + indent));
     }
 
-    private void appendNewLine(Element dependency) {
-        dependency.appendChild(doc.createTextNode("\n"));
+    private void appendNewLine(Node element) {
+        element.appendChild(doc.createTextNode("\n"));
     }
 
     void save() {
