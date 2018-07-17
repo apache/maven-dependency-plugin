@@ -47,14 +47,16 @@ public class PomEditor {
     private final Verifier verifier;
     private Document doc;
     private final String indent;
+    private final boolean dependencyManaged;
     private Node dependencies;
 
-    public PomEditor(Properties properties, File baseDir, String indent, Verifier verifier) {
+    public PomEditor(Properties properties, File baseDir, String indent, Verifier verifier, boolean dependencyManaged) {
         this.properties = properties;
         this.pom = new File(baseDir, "pom.xml");
         this.pomBackup = new File(baseDir, "pom.xml.backup");
         this.indent = indent;
         this.verifier = verifier;
+        this.dependencyManaged = dependencyManaged;
     }
 
 
@@ -87,11 +89,15 @@ public class PomEditor {
         dependency.appendChild(artifactId);
         appendNewLine(dependency);
 
-        append3Indents(dependency);
-        Element version = doc.createElement("version");
-        version.appendChild(doc.createTextNode(artifact.getVersion()));
-        dependency.appendChild(version);
-        appendNewLine(dependency);
+        boolean reactor = artifact.getVersion().equals(subst("${project.version}"));
+
+        if (reactor || !dependencyManaged) {
+            append3Indents(dependency);
+            Element version = doc.createElement("version");
+            version.appendChild(doc.createTextNode(reactor ? "${project.version}" : artifact.getVersion()));
+            dependency.appendChild(version);
+            appendNewLine(dependency);
+        }
 
         if (!"compile".equals(artifact.getScope())) {
             append3Indents(dependency);

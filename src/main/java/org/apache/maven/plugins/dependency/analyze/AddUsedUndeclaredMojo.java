@@ -62,6 +62,9 @@ public class AddUsedUndeclaredMojo extends AbstractMojo implements Contextualiza
     @Parameter(property = "indent", defaultValue = "    ")
     private String indent;
 
+    @Parameter(property = "dependencyManaged", defaultValue = "false")
+    private boolean dependencyManaged;
+
     @Override
     public void execute() throws MojoExecutionException {
 
@@ -75,12 +78,13 @@ public class AddUsedUndeclaredMojo extends AbstractMojo implements Contextualiza
             Set<Artifact> usedUndeclaredArtifacts = getAnalyzer().analyze(project).getUsedUndeclaredArtifacts();
 
             if (usedUndeclaredArtifacts.isEmpty()) {
+                getLog().info("Skipping because nothing to do");
                 return;
             }
 
             getLog().info("Adding " + usedUndeclaredArtifacts.size() + " used undeclared artifact(s).");
 
-            PomEditor editor = new PomEditor(PropertiesFactory.getProperties(project), baseDir, indent, Verifier.NOOP);
+            PomEditor editor = new PomEditor(PropertiesFactory.getProperties(project), baseDir, indent, Verifier.NOOP, dependencyManaged);
             editor.start();
             for (Artifact artifact : new TreeSet<>(usedUndeclaredArtifacts)) {
                 getLog().info("+ " + artifact);

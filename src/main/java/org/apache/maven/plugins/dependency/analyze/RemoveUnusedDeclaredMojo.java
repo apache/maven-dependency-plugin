@@ -64,6 +64,9 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
     @Parameter(property = "indent", defaultValue = "    ")
     private String indent;
 
+    @Parameter(property = "dependencyManaged", defaultValue = "true")
+    private boolean dependencyManaged;
+
     private PomEditor editor;
 
     @Override
@@ -82,7 +85,7 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
                 getLog().info("Skipping because nothing to do");
                 return;
             }
-            editor = new PomEditor(PropertiesFactory.getProperties(project), baseDir, indent, new CommandVerifier(getLog(), baseDir, command));
+            editor = new PomEditor(PropertiesFactory.getProperties(project), baseDir, indent, new CommandVerifier(getLog(), baseDir, command), dependencyManaged);
 
             try {
                 tryToRemoveAllUnusedDeclaredDependenciesAtOnce(unusedDeclaredArtifacts);
