@@ -41,7 +41,10 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Attempts to fix the warnings identified by analysis.
+ * Attempts to add used dependencies.
+ *
+ * You must have compiled your main and test sources before you run this using {@code mvn clean test-compile} or
+ * similar.
  *
  * @author <a href="mailto:alex@alexecollins.com">Alex Collins</a>
  * @since 3.1.2
@@ -59,12 +62,18 @@ public class AddUsedUndeclaredMojo extends AbstractMojo implements Contextualiza
     @Parameter(property = "analyzer", defaultValue = "default")
     private String analyzer;
 
+    /**
+     * The indent used in your pom.xml.
+     */
     @Parameter(property = "indent", defaultValue = "    ")
     private String indent;
 
+    /**
+     * Large projects typically use a {@code dependencyManagement} section in their pom.xml to managed dependencies.
+     * When this is the case, you can set this to {@code true} and no {@code version} tags will be added to you pom.xml.
+     */
     @Parameter(property = "dependencyManaged", defaultValue = "false")
     private boolean dependencyManaged;
-
     @Override
     public void execute() throws MojoExecutionException {
 

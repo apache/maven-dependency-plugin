@@ -40,7 +40,13 @@ import java.io.File;
 import java.util.Set;
 
 /**
- * Attempts to fix the warnings identified by analysis.
+ * Attempts to remove un-used dependencies.
+ *
+ * You must have compiled your main and test sources before you run this using {@code mvn clean test-compile} or
+ * similar.
+ *
+ * Further more, this assumes that the project is correctly formed and will build when it starts. So you probably want
+ * to run {@code mvn clean install}.
  *
  * @author <a href="mailto:alex@alexecollins.com">Alex Collins</a>
  * @since 3.1.2
@@ -58,13 +64,31 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
     @Parameter(property = "analyzer", defaultValue = "default")
     private String analyzer;
 
+    /**
+     * This command is run in the project's directory after every change to verify that the change worked OK.
+     * <p>
+     * Simply removing dependencies can break a module, for example:
+     * <p>
+     * - The dependency generates code than is referenced.
+     * - The dependency is used by class-path scanning, and therefore not directly referenced.
+     * <p>
+     * This assumes that the command will catch the overwhelming majority of issues, but it quite possible for projects
+     * to not have adaquate tests in place.
+     */
     @Parameter(property = "command", defaultValue = "mvn -q clean install")
     private String command;
 
+    /**
+     * The indent used in your pom.xml.
+     */
     @Parameter(property = "indent", defaultValue = "    ")
     private String indent;
 
-    @Parameter(property = "dependencyManaged", defaultValue = "true")
+    /**
+     * Large projects typically use a {@code dependencyManagement} section in their pom.xml to managed dependencies.
+     * When this is the case, you can set this to {@code true} and no {@code version} tags will be added to you pom.xml.
+     */
+    @Parameter(property = "dependencyManaged", defaultValue = "false")
     private boolean dependencyManaged;
 
     private PomEditor editor;
@@ -85,6 +109,7 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
                 getLog().info("Skipping because nothing to do");
                 return;
             }
+
             editor = new PomEditor(PropertiesFactory.getProperties(project), baseDir, indent, new CommandVerifier(getLog(), baseDir, command), dependencyManaged);
 
             try {
@@ -111,7 +136,11 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
             getLog().info("- " + artifact);
             editor.start();
             editor.removeDependency(artifact);
-            editor.end();
+            try {
+                editor.end();
+            } catch (Exception ignored) {
+                // noop
+            }
         }
     }
 
