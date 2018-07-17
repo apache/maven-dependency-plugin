@@ -37,14 +37,15 @@ import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Attempts to remove un-used dependencies.
- *
+ * <p>
  * You must have compiled your main and test sources before you run this using {@code mvn clean test-compile} or
  * similar.
- *
+ * <p>
  * Further more, this assumes that the project is correctly formed and will build when it starts. So you probably want
  * to run {@code mvn clean install}.
  *
@@ -91,6 +92,12 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
     @Parameter(property = "dependencyManaged", defaultValue = "false")
     private boolean dependencyManaged;
 
+    /**
+     * The list of dependencies in the form of groupId:artifactId which should NOT be removed.
+     */
+    @Parameter(property = "exclude")
+    private String exclude;
+
     private PomEditor editor;
 
     @Override
@@ -103,7 +110,7 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
         }
 
         try {
-            Set<Artifact> unusedDeclaredArtifacts = getAnalyzer().analyze(project).getUnusedDeclaredArtifacts();
+            Set<Artifact> unusedDeclaredArtifacts = removeExcludes(getAnalyzer().analyze(project).getUnusedDeclaredArtifacts());
 
             if (unusedDeclaredArtifacts.isEmpty()) {
                 getLog().info("Skipping because nothing to do");
@@ -121,6 +128,31 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    private Set<Artifact> removeExcludes(Set<Artifact> in) {
+        Set<Artifact> out = new HashSet<>();
+
+        for (Artifact artifact : in) {
+            if (exclude(artifact)) {
+                getLog().info("x " + artifact);
+            } else {
+                out.add(artifact);
+
+            }
+        }
+        return out;
+    }
+
+    private boolean exclude(Artifact artifact) {
+        if (exclude != null) {
+            for (String exclude : exclude.split(",")) {
+                if (artifact.toString().contains(exclude)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private ProjectDependencyAnalyzer getAnalyzer() throws ContextException, ComponentLookupException {
