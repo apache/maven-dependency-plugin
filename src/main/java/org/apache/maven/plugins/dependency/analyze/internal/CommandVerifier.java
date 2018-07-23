@@ -21,7 +21,13 @@ package org.apache.maven.plugins.dependency.analyze.internal;
 
 import org.apache.maven.plugin.logging.Log;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -41,11 +47,14 @@ public class CommandVerifier implements Verifier {
     @Override
     public void verify() throws Exception {
 
+        List<String> strings = Arrays.asList(command.split("\\s+"));
+
         log.info("Verifying.");
+        log.info(String.valueOf(strings));
 
         Process process = new ProcessBuilder()
                 .directory(baseDir)
-                .command(command.split(" "))
+                .command(strings)
                 .start();
 
         log(process.getInputStream(), new LogConsumer() {

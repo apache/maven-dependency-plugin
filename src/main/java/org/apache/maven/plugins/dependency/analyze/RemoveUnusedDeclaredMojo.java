@@ -93,7 +93,15 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
     private boolean dependencyManaged;
 
     /**
+     * The list of dependencies in the form of groupId:artifactId which should be removed.
+     * Lower precedence than exclusion.
+     */
+    @Parameter(property = "include")
+    private String include;
+
+    /**
      * The list of dependencies in the form of groupId:artifactId which should NOT be removed.
+     * Higher precedence than inclusion.
      */
     @Parameter(property = "exclude")
     private String exclude;
@@ -116,7 +124,7 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
         }
 
         try {
-            Set<Artifact> unusedDeclaredArtifacts = removeExcludes(getAnalyzer().analyze(project).getUnusedDeclaredArtifacts());
+            Set<Artifact> unusedDeclaredArtifacts = filter(getAnalyzer().analyze(project).getUnusedDeclaredArtifacts());
 
             if (unusedDeclaredArtifacts.isEmpty()) {
                 getLog().info("Skipping because nothing to do");
@@ -137,28 +145,44 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
         }
     }
 
-    private Set<Artifact> removeExcludes(Set<Artifact> in) {
+    private Set<Artifact> filter(Set<Artifact> in) {
         Set<Artifact> out = new HashSet<>();
 
         for (Artifact artifact : in) {
-            if (exclude(artifact)) {
-                getLog().info("x " + artifact);
-            } else {
+            if (!exclude(artifact) && include(artifact)) {
                 out.add(artifact);
-
+            } else {
+                getLog().info("x " + artifact);
             }
         }
         return out;
     }
 
     private boolean exclude(Artifact artifact) {
-        if (exclude != null) {
-            for (String exclude : exclude.split(",")) {
-                if (artifact.toString().contains(exclude)) {
-                    return true;
-                }
+        if (exclude == null) {
+            return false;
+        }
+
+        for (String coordinate : exclude.split(",")) {
+            if (artifact.toString().contains(coordinate)) {
+                return true;
             }
         }
+
+        return false;
+    }
+
+    private boolean include(Artifact artifact) {
+        if (include == null) {
+            return true;
+        }
+
+        for (String coordinate : include.split(",")) {
+            if (artifact.toString().contains(coordinate)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
