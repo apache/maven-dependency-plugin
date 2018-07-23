@@ -98,6 +98,12 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
     @Parameter(property = "exclude")
     private String exclude;
 
+    /**
+     * How to remove them.
+     */
+    @Parameter(property = "strategies", defaultValue = "all-at-once,one-by-one")
+    private String strategies;
+
     private PomEditor editor;
 
     @Override
@@ -119,9 +125,10 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
 
             editor = new PomEditor(PropertiesFactory.getProperties(project), baseDir, indent, new CommandVerifier(getLog(), baseDir, command), dependencyManaged);
 
-            try {
+            if (strategies.contains("all-at-once")) {
                 tryToRemoveAllUnusedDeclaredDependenciesAtOnce(unusedDeclaredArtifacts);
-            } catch (Exception e) {
+            }
+            if (strategies.contains("one-by-one")) {
                 tryToRemoveUnusedDeclaredDependenciesOneByOne(unusedDeclaredArtifacts);
             }
 
@@ -186,7 +193,11 @@ public class RemoveUnusedDeclaredMojo extends AbstractMojo implements Contextual
             editor.removeDependency(artifact);
 
         }
-        editor.end();
+        try {
+            editor.end();
+        } catch (Exception ignored) {
+            // noop
+        }
     }
 
     @Override
