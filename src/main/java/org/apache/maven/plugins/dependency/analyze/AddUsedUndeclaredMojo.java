@@ -19,30 +19,18 @@ package org.apache.maven.plugins.dependency.analyze;
  */
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.analyze.internal.PomEditor;
-import org.apache.maven.plugins.dependency.analyze.internal.PropertiesFactory;
 import org.apache.maven.plugins.dependency.analyze.internal.Verifier;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
-import org.codehaus.plexus.PlexusConstants;
-import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.context.Context;
-import org.codehaus.plexus.context.ContextException;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 
-import java.io.File;
 import java.util.Set;
 import java.util.TreeSet;
 
 /**
  * Attempts to add used dependencies.
- *
+ * <p>
  * You must have compiled your main and test sources before you run this using {@code mvn clean test-compile} or
  * similar.
  *
@@ -50,30 +38,9 @@ import java.util.TreeSet;
  * @since 3.1.2
  */
 @Mojo(name = "add-used-undeclared", requiresDependencyResolution = ResolutionScope.TEST)
-public class AddUsedUndeclaredMojo extends AbstractMojo implements Contextualizable {
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
+public class AddUsedUndeclaredMojo extends AbstractFixDependenciesMojo {
 
-    private Context context;
 
-    @Parameter(defaultValue = "${basedir}", readonly = true)
-    private File baseDir;
-
-    @Parameter(property = "analyzer", defaultValue = "default")
-    private String analyzer;
-
-    /**
-     * The indent used in your pom.xml.
-     */
-    @Parameter(property = "indent", defaultValue = "    ")
-    private String indent;
-
-    /**
-     * Large projects typically use a {@code dependencyManagement} section in their pom.xml to managed dependencies.
-     * When this is the case, you can set this to {@code true} and no {@code version} tags will be added to you pom.xml.
-     */
-    @Parameter(property = "dependencyManaged", defaultValue = "false")
-    private boolean dependencyManaged;
     @Override
     public void execute() throws MojoExecutionException {
 
@@ -84,7 +51,7 @@ public class AddUsedUndeclaredMojo extends AbstractMojo implements Contextualiza
         }
 
         try {
-            Set<Artifact> usedUndeclaredArtifacts = getAnalyzer().analyze(project).getUsedUndeclaredArtifacts();
+            Set<Artifact> usedUndeclaredArtifacts = filter(getAnalysis().getUsedUndeclaredArtifacts());
 
             if (usedUndeclaredArtifacts.isEmpty()) {
                 getLog().info("Skipping because nothing to do");
@@ -93,7 +60,7 @@ public class AddUsedUndeclaredMojo extends AbstractMojo implements Contextualiza
 
             getLog().info("Adding " + usedUndeclaredArtifacts.size() + " used undeclared artifact(s).");
 
-            PomEditor editor = new PomEditor(PropertiesFactory.getProperties(project), baseDir, indent, Verifier.NOOP, dependencyManaged);
+            PomEditor editor = getEditor(Verifier.NOOP);
             editor.start();
             for (Artifact artifact : new TreeSet<>(usedUndeclaredArtifacts)) {
                 getLog().info("+ " + artifact);
@@ -105,13 +72,5 @@ public class AddUsedUndeclaredMojo extends AbstractMojo implements Contextualiza
         }
     }
 
-    private ProjectDependencyAnalyzer getAnalyzer() throws ComponentLookupException, ContextException {
-        return (ProjectDependencyAnalyzer) ((PlexusContainer) context.get(PlexusConstants.PLEXUS_KEY)).lookup(ProjectDependencyAnalyzer.ROLE, analyzer);
-    }
-
-    @Override
-    public void contextualize(Context context) {
-        this.context = context;
-    }
 
 }
