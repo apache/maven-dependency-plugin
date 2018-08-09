@@ -19,28 +19,28 @@ package org.apache.maven.plugins.dependency.fromDependencies;
  * under the License.
  */
 
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
-import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
+import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
 import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
-import org.apache.maven.shared.artifact.install.ArtifactInstaller;
-import org.apache.maven.shared.artifact.install.ArtifactInstallerException;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
-
-import java.io.File;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
+import org.apache.maven.shared.transfer.artifact.install.ArtifactInstaller;
+import org.apache.maven.shared.transfer.artifact.install.ArtifactInstallerException;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 
 /**
  * Goal that copies the project dependencies from the repository to a defined location.

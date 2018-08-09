@@ -24,7 +24,7 @@ import java.io.File;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.shared.dependencies.DependableCoordinate;
+import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
 import org.codehaus.plexus.util.StringUtils;
 

@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.shared.artifact.ArtifactCoordinate;
+import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
