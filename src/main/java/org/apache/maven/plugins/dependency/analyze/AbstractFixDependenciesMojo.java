@@ -20,6 +20,8 @@ package org.apache.maven.plugins.dependency.analyze;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.analyze.internal.ArtifactFilter;
 import org.apache.maven.plugins.dependency.analyze.internal.PomEditor;
@@ -39,6 +41,7 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import java.io.File;
 import java.util.Set;
 
+@Execute(phase = LifecyclePhase.TEST_COMPILE)
 abstract class AbstractFixDependenciesMojo extends AbstractMojo implements Contextualizable {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
