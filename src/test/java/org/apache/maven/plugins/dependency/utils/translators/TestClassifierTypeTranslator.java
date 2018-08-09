@@ -38,8 +38,8 @@ import org.apache.maven.plugin.testing.stubs.StubArtifactRepository;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.artifact.ArtifactCoordinate;
-import org.apache.maven.shared.repository.RepositoryManager;
+import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 

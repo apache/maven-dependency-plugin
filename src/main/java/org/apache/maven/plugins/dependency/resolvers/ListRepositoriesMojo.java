@@ -21,13 +21,13 @@ package org.apache.maven.plugins.dependency.resolvers;
 
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.shared.dependencies.collect.CollectorResult;
-import org.apache.maven.shared.dependencies.collect.DependencyCollector;
-import org.apache.maven.shared.dependencies.collect.DependencyCollectorException;
+import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
+import org.apache.maven.shared.transfer.dependencies.collect.CollectorResult;
+import org.apache.maven.shared.transfer.dependencies.collect.DependencyCollector;
+import org.apache.maven.shared.transfer.dependencies.collect.DependencyCollectorException;
 
 /**
  * Goal that resolves all project dependencies and then lists the repositories used by the build and by the transitive

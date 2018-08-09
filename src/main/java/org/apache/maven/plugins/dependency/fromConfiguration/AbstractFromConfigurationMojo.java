@@ -36,11 +36,11 @@ import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
-import org.apache.maven.shared.repository.RepositoryManager;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
+import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.codehaus.plexus.util.StringUtils;
 
 /**

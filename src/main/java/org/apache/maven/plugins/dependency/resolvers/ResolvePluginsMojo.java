@@ -36,9 +36,9 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
-import org.apache.maven.shared.dependencies.DefaultDependableCoordinate;
-import org.apache.maven.shared.dependencies.resolve.DependencyResolverException;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
+import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 
 /**
  * Goal that resolves all project plugins and reports and their dependencies.

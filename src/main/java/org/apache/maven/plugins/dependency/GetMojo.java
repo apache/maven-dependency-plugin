@@ -41,14 +41,14 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.artifact.ArtifactCoordinate;
-import org.apache.maven.shared.artifact.DefaultArtifactCoordinate;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
-import org.apache.maven.shared.dependencies.DefaultDependableCoordinate;
-import org.apache.maven.shared.dependencies.DependableCoordinate;
-import org.apache.maven.shared.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.dependencies.resolve.DependencyResolverException;
+import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
+import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
+import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
+import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 import org.codehaus.plexus.util.StringUtils;
 
 /**

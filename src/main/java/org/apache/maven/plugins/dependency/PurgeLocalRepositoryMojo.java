@@ -39,16 +39,13 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.MojoExecution.Source;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.MojoExecution.Source;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.dependencies.resolve.DependencyResolverException;
-import org.apache.maven.shared.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.artifact.filter.resolve.AbstractFilter;
 import org.apache.maven.shared.artifact.filter.resolve.AndFilter;
 import org.apache.maven.shared.artifact.filter.resolve.Node;
@@ -57,9 +54,13 @@ import org.apache.maven.shared.artifact.filter.resolve.PatternInclusionsFilter;
 import org.apache.maven.shared.artifact.filter.resolve.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
 import org.apache.maven.shared.artifact.filter.resolve.transform.ArtifactIncludeFilterTransformer;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
-import org.apache.maven.shared.artifact.resolve.ArtifactResult;
+import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
+import org.apache.maven.shared.transfer.artifact.TransferUtils;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -666,7 +667,7 @@ public class PurgeLocalRepositoryMojo
             {
                 //CHECKSTYLE_OFF: LineLength
                 artifactResolver.resolveArtifact( session.getProjectBuildingRequest(),
-                                                  org.apache.maven.shared.artifact.TransferUtils.toArtifactCoordinate( artifact ) );
+                                                  TransferUtils.toArtifactCoordinate( artifact ) );
                 //CHECKSTYLE_ON: LineLength
             }
             catch ( ArtifactResolverException e )
