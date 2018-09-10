@@ -53,3 +53,12 @@ mvn dependency:tree -Dverbose -Dincludes=commons-collections
 
   More specifically, in verbose mode the dependency tree shows dependencies that were omitted for: being a duplicate
   of another; conflicting with another's version and/or scope; and introducing a cycle into the dependency tree.
+
+* Verbose flag support in 3.0+ version
+
+  Support for <<<verbose>>> flag has been removed since maven-dependency-plugin 3.0 ({{{https://issues.apache.org/jira/browse/MDEP-494}MDEP-494}}).
+  Extra output can be obtained by using an older version until proper support is reintroduced.
+
++---+
+mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:tree -Dverbose=true
++---+
