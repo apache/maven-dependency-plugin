@@ -25,6 +25,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.shared.dependencies.DependableCoordinate;
+import org.codehaus.plexus.components.io.filemappers.FileMapper;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
@@ -119,6 +120,15 @@ public class ArtifactItem
      * A comma separated list of file patterns to exclude when unpacking the artifact.
      */
     private String excludes;
+
+    /**
+     * {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting shall happen.
+     *
+     * @since 3.1.2
+     *
+     * @parameter
+     */
+    private FileMapper[] fileMappers;
 
     /**
      * Default ctor.
@@ -380,5 +390,27 @@ public class ArtifactItem
     public void setIncludes( String includes )
     {
         this.includes = includes;
+    }
+
+    /**
+     * @return {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting shall
+     *         happen.
+     *
+     * @since 3.1.2
+     */
+    public FileMapper[] getFileMappers()
+    {
+        return this.fileMappers;
+    }
+
+    /**
+     * @param fileMappers {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
+     * rewriting shall happen.
+     *
+     * @since 3.1.2
+     */
+    public void setFileMappers( FileMapper[] fileMappers )
+    {
+        this.fileMappers = fileMappers;
     }
 }
