@@ -395,6 +395,10 @@ under the License.
               <filterProperties>
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
+              <properties>
+                <!-- e.g. ensure that Java7 picks up TLSv1.2 when connecting with Central -->
+                <https.protocols>${https.protocols}</https.protocols>
+              </properties>
             </configuration>
           </plugin>
           <plugin>
