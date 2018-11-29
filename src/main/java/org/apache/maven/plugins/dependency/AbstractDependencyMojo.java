@@ -41,6 +41,7 @@ import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
+import org.codehaus.plexus.components.io.filemappers.FileMapper;
 import org.codehaus.plexus.components.io.fileselectors.IncludeExcludeFileSelector;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
@@ -193,12 +194,14 @@ public abstract class AbstractDependencyMojo
      * @param artifact {@link Artifact}
      * @param location The location.
      * @param encoding The encoding.
+     * @param fileMappers {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting
+     *                    shall happen.
      * @throws MojoExecutionException in case of an error.
      */
-    protected void unpack( Artifact artifact, File location, String encoding )
+    protected void unpack( Artifact artifact, File location, String encoding, FileMapper[] fileMappers )
         throws MojoExecutionException
     {
-        unpack( artifact, location, null, null, encoding );
+        unpack( artifact, location, null, null, encoding, fileMappers );
     }
 
     /**
@@ -211,12 +214,14 @@ public abstract class AbstractDependencyMojo
      * @param excludes Comma separated list of file patterns to exclude i.e. <code>**&#47;*.xml,
      *                 **&#47;*.properties</code>
      * @param encoding Encoding of artifact. Set {@code null} for default encoding.
+     * @param fileMappers {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting
+     *                    shall happen.
      * @throws MojoExecutionException In case of errors.
      */
-    protected void unpack( Artifact artifact, File location, String includes, String excludes, String encoding )
-        throws MojoExecutionException
+    protected void unpack( Artifact artifact, File location, String includes, String excludes, String encoding,
+                           FileMapper[] fileMappers ) throws MojoExecutionException
     {
-        unpack( artifact, artifact.getType(), location, includes, excludes, encoding );
+        unpack( artifact, artifact.getType(), location, includes, excludes, encoding, fileMappers );
     }
 
     /**
@@ -226,10 +231,12 @@ public abstract class AbstractDependencyMojo
      * @param includes includes list.
      * @param excludes excludes list.
      * @param encoding the encoding.
+     * @param fileMappers {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting
+     *                    shall happen.
      * @throws MojoExecutionException in case of an error.
      */
     protected void unpack( Artifact artifact, String type, File location, String includes, String excludes,
-                           String encoding )
+                           String encoding, FileMapper[] fileMappers )
         throws MojoExecutionException
     {
         File file = artifact.getFile();
@@ -302,6 +309,8 @@ public abstract class AbstractDependencyMojo
             {
                 silenceUnarchiver( unArchiver );
             }
+
+            unArchiver.setFileMappers( fileMappers );
 
             unArchiver.extract();
         }

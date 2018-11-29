@@ -28,6 +28,7 @@ import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.components.io.filemappers.FileMapper;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
@@ -69,6 +70,14 @@ public class UnpackMojo
      */
     @Parameter( property = "mdep.unpack.excludes" )
     private String excludes;
+
+    /**
+     * {@link FileMapper} to be used for rewriting each target path, or {@code null} if no rewriting shall happen.
+     *
+     * @since 3.1.2
+     */
+    @Parameter( property = "mdep.unpack.filemappers" )
+    private FileMapper[] fileMappers;
 
     /**
      * The artifact to unpack from command line. A string of the form
@@ -126,7 +135,8 @@ public class UnpackMojo
         MarkerHandler handler = new UnpackFileMarkerHandler( artifactItem, this.markersDirectory );
 
         unpack( artifactItem.getArtifact(), artifactItem.getType(), artifactItem.getOutputDirectory(),
-                artifactItem.getIncludes(), artifactItem.getExcludes(), artifactItem.getEncoding() );
+                artifactItem.getIncludes(), artifactItem.getExcludes(), artifactItem.getEncoding(),
+                artifactItem.getFileMappers() );
         handler.setMarker();
     }
 
@@ -209,5 +219,27 @@ public class UnpackMojo
     public void setIncludes( String includes )
     {
         this.includes = includes;
+    }
+
+    /**
+     * @return {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting shall
+     *         happen.
+     *
+     * @since 3.1.2
+     */
+    public FileMapper[] getFileMappers()
+    {
+        return this.fileMappers;
+    }
+
+    /**
+     * @param fileMappers {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
+     * rewriting shall happen.
+     *
+     * @since 3.1.2
+     */
+    public void setFileMappers( FileMapper[] fileMappers )
+    {
+        this.fileMappers = fileMappers;
     }
 }

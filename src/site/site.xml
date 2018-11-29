@@ -37,6 +37,7 @@ under the License.
       <item name="Copying project dependencies" href="examples/copying-project-dependencies.html"/>
       <item name="Unpacking specific artifacts" href="examples/unpacking-artifacts.html"/>
       <item name="Unpacking the project dependencies" href="examples/unpacking-project-dependencies.html"/>
+      <item name="Rewriting target path and file name" href="examples/unpacking-filemapper.html"/>
       <item name="Using project dependencies' sources" href="examples/using-dependencies-sources.html"/>
       <item name="Failing the build on dependency analysis warnings" href="examples/failing-the-build-on-dependency-analysis-warnings.html"/>
       <item name="Exclude Dependencies from Dependency Analysis" href="examples/exclude-dependencies-from-dependency-analysis.html"/>

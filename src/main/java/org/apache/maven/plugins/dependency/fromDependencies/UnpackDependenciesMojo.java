@@ -30,6 +30,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
+import org.codehaus.plexus.components.io.filemappers.FileMapper;
 
 import java.io.File;
 
@@ -74,6 +75,14 @@ public class UnpackDependenciesMojo
     private String encoding;
 
     /**
+     * {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting shall happen.
+     *
+     * @since 3.1.2
+     */
+    @Parameter( property = "mdep.unpack.filemappers" )
+    private FileMapper[] fileMappers;
+
+    /**
      * Main entry into mojo. This method gets the dependencies and iterates through each one passing it to
      * DependencyUtil.unpackFile().
      *
@@ -93,7 +102,7 @@ public class UnpackDependenciesMojo
             destDir = DependencyUtil.getFormattedOutputDirectory( useSubDirectoryPerScope, useSubDirectoryPerType,
                                                                   useSubDirectoryPerArtifact, useRepositoryLayout,
                                                                   stripVersion, outputDirectory, artifact );
-            unpack( artifact, destDir, getIncludes(), getExcludes(), getEncoding() );
+            unpack( artifact, destDir, getIncludes(), getExcludes(), getEncoding(), getFileMappers() );
             DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler( artifact, this.markersDirectory );
             handler.setMarker();
         }
@@ -159,5 +168,27 @@ public class UnpackDependenciesMojo
     public String getEncoding()
     {
         return this.encoding;
+    }
+
+    /**
+     * @return {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting shall
+     *         happen.
+     *
+     * @since 3.1.2
+     */
+    public FileMapper[] getFileMappers()
+    {
+        return this.fileMappers;
+    }
+
+    /**
+     * @param fileMappers {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
+     *                   rewriting shall happen.
+     *
+     * @since 3.1.2
+     */
+    public void setFileMappers( FileMapper[] fileMappers )
+    {
+        this.fileMappers = fileMappers;
     }
 }

@@ -127,6 +127,8 @@ ${project.name}
 
   * {{{./examples/unpacking-project-dependencies.html}Unpacking the Project Dependencies}}
 
+  * {{{./examples/unpacking-filemapper.html}Rewriting target path and file name}}
+
   * {{{./examples/using-dependencies-sources.html}Using Project Dependencies' Sources}}
 
   * {{{./examples/failing-the-build-on-dependency-analysis-warnings.html}Failing the Build on Dependency Analysis Warnings}}
