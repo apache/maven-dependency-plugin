@@ -277,8 +277,6 @@ public abstract class AbstractDependencyMojo
                 getLog().info( "Unpacks '" + type + "' with encoding '" + encoding + "'." );
             }
 
-            unArchiver.setUseJvmChmod( useJvmChmod );
-
             unArchiver.setIgnorePermissions( ignorePermissions );
 
             unArchiver.setSourceFile( file );
