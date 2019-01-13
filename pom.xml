@@ -400,7 +400,7 @@ under the License.
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>mrm-maven-plugin</artifactId>
-            <version>1.0.0</version>
+            <version>1.2.0</version>
             <executions>
               <execution>
                 <goals>
