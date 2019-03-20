@@ -72,11 +72,13 @@ public class ResolvePluginsMojo
             final Set<Artifact> plugins = resolvePluginArtifacts();
 
             StringBuilder sb = new StringBuilder();
-            sb.append( "\n" );
-            sb.append( "The following plugins have been resolved:\n" );
+            sb.append( System.lineSeparator() );
+            sb.append( "The following plugins have been resolved:" );
+            sb.append( System.lineSeparator() );
             if ( plugins == null || plugins.isEmpty() )
             {
-                sb.append( "   none\n" );
+                sb.append( "   none" );
+                sb.append( System.lineSeparator() );
             }
             else
             {
@@ -98,7 +100,8 @@ public class ResolvePluginsMojo
                     }
 
                     String id = plugin.toString();
-                    sb.append( "   " + id + ( outputAbsoluteArtifactFilename ? ":" + artifactFilename : "" ) + "\n" );
+                    sb.append( "   " + id + ( outputAbsoluteArtifactFilename ? ":" + artifactFilename : "" ) );
+                    sb.append( System.lineSeparator() );
 
                     if ( !excludeTransitive )
                     {
@@ -126,11 +129,11 @@ public class ResolvePluginsMojo
 
                             id = artifact.toString();
                             sb.append( "      " + id + ( outputAbsoluteArtifactFilename ? ":" + artifactFilename : "" )
-                                + "\n" );
+                                + System.lineSeparator() );
                         }
                     }
                 }
-                sb.append( "\n" );
+                sb.append( System.lineSeparator() );
 
                 String output = sb.toString();
                 if ( outputFile == null )

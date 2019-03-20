@@ -54,7 +54,7 @@ public class DOTDependencyNodeVisitor
     {
         if ( node.getParent() == null || node.getParent() == node )
         {
-            writer.write( "digraph \"" + node.toNodeString() + "\" { \n" );
+            writer.write( "digraph \"" + node.toNodeString() + "\" { " + System.lineSeparator() );
         }
 
         // Generate "currentNode -> Child" lines

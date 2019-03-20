@@ -115,7 +115,8 @@ public class AnalyzeDuplicateMojo
 
             if ( !duplicateDependencies.isEmpty() )
             {
-                sb.append( "List of duplicate dependencies defined in <dependencies/> in your pom.xml:\n" );
+                sb.append( "List of duplicate dependencies defined in <dependencies/> in your pom.xml:" );
+                sb.append( System.lineSeparator() );
                 for ( Iterator<String> it = duplicateDependencies.iterator(); it.hasNext(); )
                 {
                     String dup = it.next();
@@ -123,7 +124,7 @@ public class AnalyzeDuplicateMojo
                     sb.append( "\to " ).append( dup );
                     if ( it.hasNext() )
                     {
-                        sb.append( "\n" );
+                        sb.append( System.lineSeparator() );
                     }
                 }
             }
@@ -132,9 +133,10 @@ public class AnalyzeDuplicateMojo
             {
                 if ( sb.length() > 0 )
                 {
-                    sb.append( "\n" );
+                    sb.append( System.lineSeparator() );
                 }
-                sb.append( "List of duplicate dependencies defined in <dependencyManagement/> in your pom.xml:\n" );
+                sb.append( "List of duplicate dependencies defined in <dependencyManagement/> in your pom.xml:" );
+                sb.append( System.lineSeparator() );
                 for ( Iterator<String> it = duplicateDependenciesManagement.iterator(); it.hasNext(); )
                 {
                     String dup = it.next();
@@ -142,7 +144,7 @@ public class AnalyzeDuplicateMojo
                     sb.append( "\to " ).append( dup );
                     if ( it.hasNext() )
                     {
-                        sb.append( "\n" );
+                        sb.append( System.lineSeparator() );
                     }
                 }
             }

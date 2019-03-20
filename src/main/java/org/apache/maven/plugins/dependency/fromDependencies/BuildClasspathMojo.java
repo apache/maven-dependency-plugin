@@ -235,7 +235,7 @@ public class BuildClasspathMojo
 
         if ( outputFile == null )
         {
-            getLog().info( "Dependencies classpath:\n" + cpString );
+            getLog().info( "Dependencies classpath:" + System.lineSeparator() + cpString );
         }
         else
         {

@@ -137,7 +137,7 @@ public class TestAnalyzeDuplicateMojo
 
             error.printStackTrace( pWriter );
 
-            System.err.println( "[error] " + content.toString() + "\n\n" + sWriter.toString() );
+            System.err.println( "[error] " + content.toString() + System.lineSeparator() + System.lineSeparator() + sWriter.toString() );
         }
 
         /**
@@ -188,7 +188,7 @@ public class TestAnalyzeDuplicateMojo
 
         private void print( String prefix, CharSequence content )
         {
-            sb.append( "[" ).append( prefix ).append( "] " ).append( content.toString() ).append( "\n" );
+            sb.append( "[" ).append( prefix ).append( "] " ).append( content.toString() ).append( System.lineSeparator() );
         }
 
         private void print( String prefix, Throwable error )
@@ -198,7 +198,7 @@ public class TestAnalyzeDuplicateMojo
 
             error.printStackTrace( pWriter );
 
-            sb.append( "[" ).append( prefix ).append( "] " ).append( sWriter.toString() ).append( "\n" );
+            sb.append( "[" ).append( prefix ).append( "] " ).append( sWriter.toString() ).append( System.lineSeparator() );
         }
 
         private void print( String prefix, CharSequence content, Throwable error )
@@ -208,8 +208,8 @@ public class TestAnalyzeDuplicateMojo
 
             error.printStackTrace( pWriter );
 
-            sb.append( "[" ).append( prefix ).append( "] " ).append( content.toString() ).append( "\n\n" );
-            sb.append( sWriter.toString() ).append( "\n" );
+            sb.append( "[" ).append( prefix ).append( "] " ).append( content.toString() ).append( System.lineSeparator() ).append( System.lineSeparator() );
+            sb.append( sWriter.toString() ).append( System.lineSeparator() );
         }
 
         protected String getContent()
