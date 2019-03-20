@@ -71,7 +71,7 @@ public abstract class AbstractDependencyMojoTestCase
             {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                fail( "Trying to remove directory:" + testDir + "\r\n" + e.toString() );
+                fail( "Trying to remove directory:" + testDir + System.lineSeparator() + e.toString() );
             }
             assertFalse( testDir.exists() );
 

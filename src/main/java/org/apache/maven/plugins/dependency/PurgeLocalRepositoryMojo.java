@@ -694,12 +694,14 @@ public class PurgeLocalRepositoryMojo
 
         if ( missingArtifacts.size() > 0 )
         {
-            StringBuffer message = new StringBuffer( "required artifacts missing:\n" );
+            StringBuffer message = new StringBuffer( "required artifacts missing:" );
+            message.append( System.lineSeparator() );
             for ( Artifact missingArtifact : missingArtifacts )
             {
-                message.append( "  " ).append( missingArtifact.getId() ).append( '\n' );
+                message.append( "  " ).append( missingArtifact.getId() ).append( System.lineSeparator() );
             }
-            message.append( "\nfor the artifact:" );
+            message.append( System.lineSeparator() );
+            message.append( "for the artifact:" );
 
             throw new ArtifactResolutionException( message.toString(), theProject.getArtifact(),
                                                    theProject.getRemoteArtifactRepositories() );

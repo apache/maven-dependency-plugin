@@ -460,7 +460,7 @@ public abstract class AbstractAnalyzeMojo
                 writer.endElement();
             }
 
-            getLog().info( "\n" + out.getBuffer() );
+            getLog().info( System.lineSeparator() + out.getBuffer() );
         }
     }
 
@@ -489,10 +489,10 @@ public abstract class AbstractAnalyzeMojo
                    .append( artifact.getBaseVersion() )
                    .append( ":" )
                    .append( artifact.getScope() )
-                   .append( "\n" );
+                   .append( System.lineSeparator() );
                 //CHECKSTYLE_ON: LineLength
             }
-            getLog().info( "\n" + buf );
+            getLog().info( System.lineSeparator() + buf );
         }
     }
 
