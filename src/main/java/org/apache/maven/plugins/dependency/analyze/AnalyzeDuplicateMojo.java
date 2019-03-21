@@ -50,6 +50,12 @@ import org.codehaus.plexus.util.ReaderFactory;
 public class AnalyzeDuplicateMojo
     extends AbstractMojo
 {
+    public static final String MESSAGE_DUPLICATE_DEP_IN_DEPENDENCIES =
+        "List of duplicate dependencies defined in <dependencies/> in your pom.xml:\n";
+
+    public static final String MESSAGE_DUPLICATE_DEP_IN_DEPMGMT =
+        "List of duplicate dependencies defined in <dependencyManagement/> in your pom.xml:\n";
+
     /**
      * Skip plugin execution completely.
      *
@@ -113,41 +119,8 @@ public class AnalyzeDuplicateMojo
         {
             StringBuilder sb = new StringBuilder();
 
-            if ( !duplicateDependencies.isEmpty() )
-            {
-                sb.append( "List of duplicate dependencies defined in <dependencies/> in your pom.xml:" );
-                sb.append( System.lineSeparator() );
-                for ( Iterator<String> it = duplicateDependencies.iterator(); it.hasNext(); )
-                {
-                    String dup = it.next();
-
-                    sb.append( "\to " ).append( dup );
-                    if ( it.hasNext() )
-                    {
-                        sb.append( System.lineSeparator() );
-                    }
-                }
-            }
-
-            if ( !duplicateDependenciesManagement.isEmpty() )
-            {
-                if ( sb.length() > 0 )
-                {
-                    sb.append( System.lineSeparator() );
-                }
-                sb.append( "List of duplicate dependencies defined in <dependencyManagement/> in your pom.xml:" );
-                sb.append( System.lineSeparator() );
-                for ( Iterator<String> it = duplicateDependenciesManagement.iterator(); it.hasNext(); )
-                {
-                    String dup = it.next();
-
-                    sb.append( "\to " ).append( dup );
-                    if ( it.hasNext() )
-                    {
-                        sb.append( System.lineSeparator() );
-                    }
-                }
-            }
+            createMessage( duplicateDependencies, sb, MESSAGE_DUPLICATE_DEP_IN_DEPENDENCIES );
+            createMessage( duplicateDependenciesManagement, sb, MESSAGE_DUPLICATE_DEP_IN_DEPMGMT );
 
             if ( sb.length() > 0 )
             {
@@ -160,7 +133,29 @@ public class AnalyzeDuplicateMojo
         }
     }
 
-    @SuppressWarnings( "unchecked" )
+    private void createMessage( Set<String> duplicateDependencies, StringBuilder sb,
+                                String messageDuplicateDepInDependencies )
+    {
+        if ( !duplicateDependencies.isEmpty() )
+        {
+            if ( sb.length() > 0 )
+            {
+                sb.append( "\n" );
+            }
+            sb.append( messageDuplicateDepInDependencies );
+            for ( Iterator<String> it = duplicateDependencies.iterator(); it.hasNext(); )
+            {
+                String dup = it.next();
+
+                sb.append( "\to " ).append( dup );
+                if ( it.hasNext() )
+                {
+                    sb.append( "\n" );
+                }
+            }
+        }
+    }
+
     private Set<String> findDuplicateDependencies( List<Dependency> modelDependencies )
     {
         List<String> modelDependencies2 = new ArrayList<String>();
@@ -169,10 +164,9 @@ public class AnalyzeDuplicateMojo
             modelDependencies2.add( dep.getManagementKey() );
         }
 
-        //@formatter:off
+        // @formatter:off
         return new LinkedHashSet<String>( 
-          CollectionUtils.disjunction( modelDependencies2, new LinkedHashSet<String>( modelDependencies2 ) ) 
-        );
-        //@formatter:on
+                CollectionUtils.disjunction( modelDependencies2, new LinkedHashSet<String>( modelDependencies2 ) ) );
+        // @formatter:on
     }
 }

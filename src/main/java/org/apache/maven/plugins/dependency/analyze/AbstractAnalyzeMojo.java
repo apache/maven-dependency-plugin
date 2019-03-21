@@ -174,7 +174,6 @@ public abstract class AbstractAnalyzeMojo
      * </p>
      *
      * @since 2.10
-     * @see StrictPatternIncludesArtifactFilter
      */
     @Parameter
     private String[] ignoredDependencies = new String[0];
@@ -194,7 +193,6 @@ public abstract class AbstractAnalyzeMojo
      * </p>
      *
      * @since 2.10
-     * @see StrictPatternIncludesArtifactFilter
      */
     @Parameter
     private String[] ignoredUsedUndeclaredDependencies = new String[0];
@@ -214,7 +212,6 @@ public abstract class AbstractAnalyzeMojo
      * </p>
      *
      * @since 2.10
-     * @see StrictPatternIncludesArtifactFilter
      */
     @Parameter
     private String[] ignoredUnusedDeclaredDependencies = new String[0];

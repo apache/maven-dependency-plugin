@@ -270,7 +270,6 @@ public class ResolveDependenciesMojo
             Object moduleFinderInstance = ofMethod.invoke( null, new Object[] { new java.nio.file.Path[] { path } } );
 
             Method findAllMethod = moduleFinderClass.getMethod( "findAll" );
-            @SuppressWarnings( "unchecked" )
             Set<Object> moduleReferences = (Set<Object>) findAllMethod.invoke( moduleFinderInstance );
 
             // moduleReferences can be empty when referring to target/classes without module-info.class
