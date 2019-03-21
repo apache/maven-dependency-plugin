@@ -362,7 +362,6 @@ public class PurgeLocalRepositoryMojo
      * Purges the local repository for the dependencies in the given Maven project.
      *
      * @param theProject Maven project.
-     * @param resolvedArtifactsToPurge The artifacts that were already purged.
      * @throws MojoFailureException in case of errors during the purge.
      */
     private void purgeLocalRepository( MavenProject theProject, Set<Artifact> purgedArtifacts )
