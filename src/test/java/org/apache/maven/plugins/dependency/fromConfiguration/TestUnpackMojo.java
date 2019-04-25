@@ -44,7 +44,6 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
-import org.junit.Ignore;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
@@ -119,12 +118,7 @@ public class TestUnpackMojo
     public void testGetArtifactItems()
         throws Exception
     {
-
-        ArtifactItem item = new ArtifactItem();
-
-        item.setArtifactId( "artifact" );
-        item.setGroupId( "groupId" );
-        item.setVersion( "1.0" );
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", "1.0", null, null );
 
         ArrayList<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
         list.add( createArtifact( item ) );
@@ -239,12 +233,7 @@ public class TestUnpackMojo
     public void testMissingVersionNotFound()
         throws Exception
     {
-        ArtifactItem item = new ArtifactItem();
-
-        item.setArtifactId( "artifactId" );
-        item.setClassifier( "" );
-        item.setGroupId( "groupId" );
-        item.setType( "type" );
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", null, "", "type");
 
         List<ArtifactItem> list = new ArrayList<ArtifactItem>();
         list.add( item );
@@ -287,12 +276,7 @@ public class TestUnpackMojo
     public void testMissingVersionFromDependencies()
         throws Exception
     {
-        ArtifactItem item = new ArtifactItem();
-
-        item.setArtifactId( "artifactId" );
-        item.setClassifier( "" );
-        item.setGroupId( "groupId" );
-        item.setType( "jar" );
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", null, "", "jar");
 
         List<ArtifactItem> list = new ArrayList<ArtifactItem>();
         list.add( item );
@@ -309,12 +293,8 @@ public class TestUnpackMojo
     public void testMissingVersionFromDependenciesWithClassifier()
         throws Exception
     {
-        ArtifactItem item = new ArtifactItem();
 
-        item.setArtifactId( "artifactId" );
-        item.setClassifier( "classifier" );
-        item.setGroupId( "groupId" );
-        item.setType( "war" );
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", null, "classifier", "war");
 
         List<ArtifactItem> list = new ArrayList<ArtifactItem>();
         list.add( item );
@@ -354,22 +334,12 @@ public class TestUnpackMojo
     public void testMissingVersionFromDependencyMgt()
         throws Exception
     {
-        ArtifactItem item = new ArtifactItem();
-
-        item.setArtifactId( "artifactId" );
-        item.setClassifier( "" );
-        item.setGroupId( "groupId" );
-        item.setType( "jar" );
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", null, "", "jar");
 
         MavenProject project = mojo.getProject();
         project.setDependencies( createArtifacts( getDependencyList( item ) ) );
 
-        item = new ArtifactItem();
-
-        item.setArtifactId( "artifactId-2" );
-        item.setClassifier( "" );
-        item.setGroupId( "groupId" );
-        item.setType( "jar" );
+        item = createArtifactItem( "groupId", "artifactId-2", null, "", "jar");
 
         List<ArtifactItem> list = new ArrayList<ArtifactItem>();
         list.add( item );
@@ -386,22 +356,12 @@ public class TestUnpackMojo
     public void testMissingVersionFromDependencyMgtWithClassifier()
         throws Exception
     {
-        ArtifactItem item = new ArtifactItem();
-
-        item.setArtifactId( "artifactId" );
-        item.setClassifier( "classifier" );
-        item.setGroupId( "groupId" );
-        item.setType( "jar" );
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", null, "classifier", "jar");
 
         MavenProject project = mojo.getProject();
         project.setDependencies( createArtifacts( getDependencyList( item ) ) );
 
-        item = new ArtifactItem();
-
-        item.setArtifactId( "artifactId-2" );
-        item.setClassifier( "classifier" );
-        item.setGroupId( "groupId" );
-        item.setType( "jar" );
+        item = createArtifactItem( "groupId", "artifactId-2", null, "classifier", "jar");
 
         stubFactory.createArtifact( "groupId", "artifactId-2", VersionRange.createFromVersion( "3.0-SNAPSHOT" ), null,
                                     "jar", "classifier", false );
@@ -436,13 +396,7 @@ public class TestUnpackMojo
     public void dotestArtifactExceptions( boolean are, boolean anfe )
         throws Exception
     {
-        ArtifactItem item = new ArtifactItem();
-
-        item.setArtifactId( "artifactId" );
-        item.setClassifier( "" );
-        item.setGroupId( "groupId" );
-        item.setType( "type" );
-        item.setVersion( "1.0" );
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", "1.0", "", "type" );
 
         List<ArtifactItem> list = new ArrayList<ArtifactItem>();
         list.add( item );
@@ -600,39 +554,82 @@ public class TestUnpackMojo
             + ": should be different", marker.lastModified() != unpackedFile.lastModified() );
     }
 
-//    @Ignore
-//    public void testVersionRangeFromResolvedFromDependencies()
+    public void testVersionRangeFromResolvedProjectDependencies()
+            throws Exception
+    {
+        stubFactory.setCreateFiles( true );
+
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", "[0,)", "", "jar");
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        list.add( item );
+        mojo.setArtifactItems( list );
+
+        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.0-SNAPSHOT" ), null,
+                "jar", "", false );
+        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.1" ), null, "jar",
+                "", false );
+
+        MavenProject project = mojo.getProject();
+        project.setDependencies( createArtifacts( getDependencyList( item ) ) );
+        project.setDependencyArtifacts( createArtifactSet( getDependencyList( item ) ) );
+
+        mojo.execute();
+        assertMarkerFile( true, item );
+        assertEquals( "2.1", item.getVersion() );
+    }
+
+    public void testVersionRangeFromResolvedProjectDependenciesWithMultipleDependencies()
+            throws Exception
+    {
+        stubFactory.setCreateFiles( true );
+
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", "[0,)", "", "jar");
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        list.add( item );
+        mojo.setArtifactItems( list );
+
+        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.0-SNAPSHOT" ), null,
+                "jar", "", false );
+        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.1" ), null, "jar",
+                "", false );
+
+        MavenProject project = mojo.getProject();
+        project.setDependencies( createArtifacts( getDependencyList( item ) ) );
+
+        Set<Artifact> dependencySet = createArtifactSet( getDependencyList( item ) );
+        dependencySet.addAll( createArtifactSet( getDependencyList( createArtifactItem( "groupId", "differentArtifactId", "1.0", "", "jar") ) ) );
+        dependencySet.addAll( createArtifactSet( getDependencyList( createArtifactItem( "differentGroupId", "artifactId", "1.0", "", "jar") ) ) );
+
+        project.setDependencyArtifacts( dependencySet );
+
+        mojo.execute();
+        assertMarkerFile( true, item );
+        assertEquals( "2.1", item.getVersion() );
+    }
+
+//
+//    public void testVersionRangeNoResolvedProjectDependencies()
 //            throws Exception
 //    {
-//        ArtifactItem item = new ArtifactItem();
+//        stubFactory.setCreateFiles( true );
 //
-//        item.setArtifactId( "artifactId" );
-//        item.setClassifier( "" );
-//        item.setGroupId( "groupId" );
-//        item.setType( "jar" );
-//        item.setVersion( "[0,)" );
+//        ArtifactItem item = createArtifactItem( "groupId", "artifactId", "[0,)", "", "jar");
 //
 //        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
 //        list.add( item );
 //        mojo.setArtifactItems( list );
 //
 //        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.0-SNAPSHOT" ), null,
-//                "jar", "classifier", false );
+//                "jar", "", false );
 //        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.1" ), null, "jar",
-//                "classifier", false );
-//
-//        MavenProject project = mojo.getProject();
-//        project.setDependencies( createArtifacts( getDependencyList( item ) ) );
-//        project.setDependencyArtifacts( createArtifactSet( getDependencyList( item ) ) );
-//
-////        project.getDependencyManagement().setDependencies( createArtifacts( getDependencyMgtList( item ) ) );
+//                "", false );
 //
 //        mojo.execute();
 //        assertMarkerFile( true, item );
 //        assertEquals( "2.1", item.getVersion() );
 //    }
-
-
 
 
     private void displayFile( String description, File file )
@@ -674,6 +671,28 @@ public class TestUnpackMojo
         assertTrue( unpackedFile.exists() );
         return unpackedFile;
 
+    }
+
+    private ArtifactItem createArtifactItem(
+            final String groupId,
+            final String artifactId,
+            final String version,
+            final String classifier,
+            final String type )
+    {
+
+        ArtifactItem item = new ArtifactItem();
+
+        item.setArtifactId( artifactId );
+        item.setClassifier( classifier );
+        item.setGroupId( groupId );
+
+        if ( type != null ) {
+            item.setType( type );
+        }
+        item.setVersion( version );
+
+        return item;
     }
 
     // respects the createUnpackableFile flag of the ArtifactStubFactory
