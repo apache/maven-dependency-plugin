@@ -1,6 +1,6 @@
 package org.apache.maven.plugins.dependency.fromConfiguration;
 
-/* 
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,7 +16,7 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.    
+ * under the License.
  */
 
 import java.io.File;
@@ -24,10 +24,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.artifact.handler.manager.DefaultArtifactHandlerManager;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
@@ -36,6 +44,7 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
+import org.junit.Ignore;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
@@ -44,6 +53,7 @@ public class TestUnpackMojo
 {
 
     UnpackMojo mojo;
+    DefaultArtifactHandlerManager artifactHandlerManager;
 
     public TestUnpackMojo()
     {
@@ -80,7 +90,24 @@ public class TestUnpackMojo
         DefaultRepositorySystemSession repoSession = (DefaultRepositorySystemSession) session.getRepositorySession();
 
         repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( stubFactory.getWorkingDir() ) );
+
+        artifactHandlerManager = new DefaultArtifactHandlerManager();
+
+        Map<String, ArtifactHandler> handlerMap = new HashMap<>();
+        handlerMap.put("", new DefaultArtifactHandler(""));
+        handlerMap.put("jar", new DefaultArtifactHandler("jar"));
+        artifactHandlerManager.addHandlers(handlerMap);
     }
+
+    @Override
+    protected void tearDown()
+    {
+        super.tearDown();
+
+        artifactHandlerManager = null;
+        mojo = null;
+    }
+
 
     public ArtifactItem getSingleArtifactItem( boolean removeVersion )
         throws MojoExecutionException
@@ -573,6 +600,41 @@ public class TestUnpackMojo
             + ": should be different", marker.lastModified() != unpackedFile.lastModified() );
     }
 
+//    @Ignore
+//    public void testVersionRangeFromResolvedFromDependencies()
+//            throws Exception
+//    {
+//        ArtifactItem item = new ArtifactItem();
+//
+//        item.setArtifactId( "artifactId" );
+//        item.setClassifier( "" );
+//        item.setGroupId( "groupId" );
+//        item.setType( "jar" );
+//        item.setVersion( "[0,)" );
+//
+//        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+//        list.add( item );
+//        mojo.setArtifactItems( list );
+//
+//        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.0-SNAPSHOT" ), null,
+//                "jar", "classifier", false );
+//        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.1" ), null, "jar",
+//                "classifier", false );
+//
+//        MavenProject project = mojo.getProject();
+//        project.setDependencies( createArtifacts( getDependencyList( item ) ) );
+//        project.setDependencyArtifacts( createArtifactSet( getDependencyList( item ) ) );
+//
+////        project.getDependencyManagement().setDependencies( createArtifacts( getDependencyMgtList( item ) ) );
+//
+//        mojo.execute();
+//        assertMarkerFile( true, item );
+//        assertEquals( "2.1", item.getVersion() );
+//    }
+
+
+
+
     private void displayFile( String description, File file )
     {
         System.out.println( description + ' ' + DateFormatUtils.ISO_DATETIME_FORMAT.format( file.lastModified() ) + ' '
@@ -626,6 +688,30 @@ public class TestUnpackMojo
                                         classifier, item.isOptional() );
         }
         return items;
+    }
+
+    // respects the createUnpackableFile flag of the ArtifactStubFactory
+    private Set<Artifact> createArtifactSet( List<Dependency> items )
+        throws IOException
+    {
+
+        Set<Artifact> set = new HashSet<>();
+
+        for ( Dependency item : items )
+        {
+            set.add(
+                new DefaultArtifact(
+                    item.getGroupId(),
+                    item.getArtifactId(),
+                    item.getVersion(),
+                    item.getScope(),
+                    item.getType(),
+                    item.getClassifier(),
+                    artifactHandlerManager.getArtifactHandler(item.getType())
+                )
+            );
+        }
+        return set;
     }
 
     private Artifact createArtifact( Artifact art )
