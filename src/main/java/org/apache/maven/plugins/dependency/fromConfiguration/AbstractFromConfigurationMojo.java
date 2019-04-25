@@ -237,17 +237,20 @@ public abstract class AbstractFromConfigurationMojo
             // dependencies:
             ComparableVersion foundVersion = null;
 
-            for ( Artifact a : getProject().getDependencyArtifacts() )
+            if ( getProject().getDependencyArtifacts() != null )
             {
-                if ( artifactItem.getArtifactId().equals( a.getArtifactId() )
-                        && artifactItem.getGroupId().equals( a.getGroupId() )
-                        && range.containsVersion( new DefaultArtifactVersion( a.getVersion() ) ) )
+                for ( Artifact a : getProject().getDependencyArtifacts() )
                 {
-
-                    ComparableVersion v = new ComparableVersion( a.getVersion() );
-                    if ( foundVersion == null || v.compareTo( foundVersion ) > 0 )
+                    if ( artifactItem.getArtifactId().equals( a.getArtifactId() )
+                            && artifactItem.getGroupId().equals( a.getGroupId() )
+                            && range.containsVersion( new DefaultArtifactVersion( a.getVersion() ) ) )
                     {
-                        foundVersion = v;
+
+                        ComparableVersion v = new ComparableVersion( a.getVersion() );
+                        if ( foundVersion == null || v.compareTo( foundVersion ) > 0 )
+                        {
+                            foundVersion = v;
+                        }
                     }
                 }
             }
@@ -274,17 +277,13 @@ public abstract class AbstractFromConfigurationMojo
                 catch ( DependencyResolverException are )
                 {
                     result = null;
-                    // Do something else!
+                    this.getLog().warn( are );
                 }
 
                 if ( result != null )
                 {
                     for ( ArtifactResult artifact : result )
                     {
-
-                        this.getLog().info( "Resolved version from: " + artifactItem.getVersion() + ", to: "
-                                + artifact.getArtifact().getVersion() );
-
                         ComparableVersion v = new ComparableVersion( artifact.getArtifact().getVersion() );
                         if ( foundVersion == null || v.compareTo( foundVersion ) > 0 )
                         {
