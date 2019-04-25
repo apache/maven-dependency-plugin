@@ -609,27 +609,41 @@ public class TestUnpackMojo
         assertEquals( "2.1", item.getVersion() );
     }
 
-//
-//    public void testVersionRangeNoResolvedProjectDependencies()
-//            throws Exception
-//    {
-//        stubFactory.setCreateFiles( true );
-//
-//        ArtifactItem item = createArtifactItem( "groupId", "artifactId", "[0,)", "", "jar");
-//
-//        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
-//        list.add( item );
-//        mojo.setArtifactItems( list );
-//
-//        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.0-SNAPSHOT" ), null,
-//                "jar", "", false );
-//        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.1" ), null, "jar",
-//                "", false );
-//
-//        mojo.execute();
-//        assertMarkerFile( true, item );
-//        assertEquals( "2.1", item.getVersion() );
-//    }
+    public void testVersionRangeNoResolvedProjectDependencies()
+            throws Exception
+    {
+        stubFactory.setCreateFiles( true );
+
+        DependencyResolverStub stubResolver = new DependencyResolverStub();
+        ReflectionUtils.setVariableValueInObject(mojo, "dependencyResolver", stubResolver);
+
+        DefaultDependableCoordinate coord = new DefaultDependableCoordinate();
+        coord.setArtifactId( "artifactId" );
+        coord.setGroupId( "groupId" );
+        coord.setVersion( "[0,)" );
+        coord.setType( "jar" );
+
+        DefaultArtifact depArtifact = new DefaultArtifact(
+            "groupId", "artifactId", "2.1", null, "jar", "", artifactHandlerManager.getArtifactHandler( "jar" )
+        );
+
+        stubResolver.addDependableCoordinateLookup(coord, depArtifact);
+
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", "[0,)", "", "jar" );
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        list.add( item );
+        mojo.setArtifactItems( list );
+
+        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.0-SNAPSHOT" ), null,
+                "jar", "", false );
+        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.1" ), null, "jar",
+                "", false );
+
+        mojo.execute();
+        assertMarkerFile( true, item );
+        assertEquals( "2.1", item.getVersion() );
+    }
 
 
     private void displayFile( String description, File file )
