@@ -20,538 +20,735 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  */
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.artifact.handler.manager.DefaultArtifactHandlerManager;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
-import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
+import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
+import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
-import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
-import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
-import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
+import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
-/**
- * Abstract parent class used by mojos that get Artifact information from the plugin configuration as an ArrayList of
- * ArtifactItems
- *
- * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @see ArtifactItem
- */
-public abstract class AbstractFromConfigurationMojo
-    extends AbstractDependencyMojo
+public class TestUnpackMojo
+    extends AbstractDependencyMojoTestCase
 {
-    /**
-     * Default output location used for mojo, unless overridden in ArtifactItem.
-     *
-     * @since 1.0
-     */
-    @Parameter( property = "outputDirectory", defaultValue = "${project.build.directory}/dependency" )
-    private File outputDirectory;
 
-    /**
-     * Overwrite release artifacts
-     *
-     * @since 1.0
-     */
-    @Parameter( property = "mdep.overWriteReleases", defaultValue = "false" )
-    private boolean overWriteReleases;
+    UnpackMojo mojo;
+    DefaultArtifactHandlerManager artifactHandlerManager;
 
-    /**
-     * Overwrite snapshot artifacts
-     *
-     * @since 1.0
-     */
-    @Parameter( property = "mdep.overWriteSnapshots", defaultValue = "false" )
-    private boolean overWriteSnapshots;
-
-    /**
-     * Overwrite if newer
-     *
-     * @since 2.0
-     */
-    @Parameter( property = "mdep.overIfNewer", defaultValue = "true" )
-    private boolean overWriteIfNewer;
-
-    /**
-     * Collection of ArtifactItems to work on. (ArtifactItem contains groupId, artifactId, version, type, classifier,
-     * outputDirectory, destFileName, overWrite and encoding.) See <a href="./usage.html">Usage</a> for details.
-     *
-     * @since 1.0
-     */
-    @Parameter
-    private List<ArtifactItem> artifactItems;
-
-    /**
-     * Path to override default local repository during plugin's execution. To remove all downloaded artifacts as part
-     * of the build, set this value to a location under your project's target directory
-     *
-     * @since 2.2
-     */
-    @Parameter
-    private File localRepositoryDirectory;
-
-    @Component
-    private ArtifactResolver artifactResolver;
-
-    @Component
-    private DependencyResolver dependencyResolver;
-
-    @Component
-    private RepositoryManager repositoryManager;
-
-    @Component
-    private ArtifactHandlerManager artifactHandlerManager;
-
-    abstract ArtifactItemFilter getMarkedArtifactFilter( ArtifactItem item );
-
-    /**
-     * artifactItems is filled by either field injection or by setArtifact().
-     *
-     * @throws MojoFailureException in case of an error.
-     */
-    protected void verifyRequirements()
-        throws MojoFailureException
+    public TestUnpackMojo()
     {
-        if ( artifactItems == null || artifactItems.isEmpty() )
-        {
-            throw new MojoFailureException( "Either artifact or artifactItems is required " );
-        }
+        super();
     }
 
-    /**
-     * Preprocesses the list of ArtifactItems. This method defaults the outputDirectory if not set and creates the
-     * output Directory if it doesn't exist.
-     *
-     * @param processArtifactItemsRequest preprocessing instructions
-     * @return An ArrayList of preprocessed ArtifactItems
-     * @throws MojoExecutionException with a message if an error occurs.
-     * @see ArtifactItem
-     */
-    protected List<ArtifactItem> getProcessedArtifactItems( ProcessArtifactItemsRequest processArtifactItemsRequest )
+    protected void setUp()
+        throws Exception
+    {
+        super.setUp( "unpack", true, false );
+
+        File testPom = new File( getBasedir(), "target/test-classes/unit/unpack-test/plugin-config.xml" );
+        mojo = (UnpackMojo) lookupMojo( "unpack", testPom );
+        mojo.setOutputDirectory( new File( this.testDir, "outputDirectory" ) );
+        mojo.setMarkersDirectory( new File( this.testDir, "markers" ) );
+        mojo.setSilent( true );
+
+        assertNotNull( mojo );
+        assertNotNull( mojo.getProject() );
+        // MavenProject project = mojo.getProject();
+        // init classifier things
+        // it needs to get the archivermanager
+        stubFactory.setUnpackableFile( mojo.getArchiverManager() );
+        // i'm using one file repeatedly to archive so I can test the name
+        // programmatically.
+        stubFactory.setSrcFile( new File( getBasedir() + File.separatorChar
+            + "target/test-classes/unit/unpack-dependencies-test/test.txt" ) );
+
+        mojo.setUseJvmChmod( true );
+
+        MavenSession session = newMavenSession( mojo.getProject() );
+        setVariableValueToObject( mojo, "session", session );
+
+        DefaultRepositorySystemSession repoSession = (DefaultRepositorySystemSession) session.getRepositorySession();
+
+        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( stubFactory.getWorkingDir() ) );
+
+        artifactHandlerManager = new DefaultArtifactHandlerManager();
+
+        Map<String, ArtifactHandler> handlerMap = new HashMap<>();
+        handlerMap.put("", new DefaultArtifactHandler(""));
+        handlerMap.put("jar", new DefaultArtifactHandler("jar"));
+        artifactHandlerManager.addHandlers(handlerMap);
+    }
+
+    @Override
+    protected void tearDown()
+    {
+        super.tearDown();
+
+        artifactHandlerManager = null;
+        mojo = null;
+    }
+
+
+    public ArtifactItem getSingleArtifactItem( boolean removeVersion )
         throws MojoExecutionException
     {
-
-        boolean removeVersion = processArtifactItemsRequest.isRemoveVersion(),
-                        prependGroupId = processArtifactItemsRequest.isPrependGroupId(),
-                        useBaseVersion = processArtifactItemsRequest.isUseBaseVersion();
-
-        boolean removeClassifier = processArtifactItemsRequest.isRemoveClassifier();
-
-        if ( artifactItems == null || artifactItems.size() < 1 )
-        {
-            throw new MojoExecutionException( "There are no artifactItems configured." );
-        }
-
-        for ( ArtifactItem artifactItem : artifactItems )
-        {
-            this.getLog().info( "Configured Artifact: " + artifactItem.toString() );
-
-            resolveArtifactRanges( artifactItem );
-
-            if ( artifactItem.getOutputDirectory() == null )
-            {
-                artifactItem.setOutputDirectory( this.outputDirectory );
-            }
-            artifactItem.getOutputDirectory().mkdirs();
-
-            // make sure we have a version.
-            if ( StringUtils.isEmpty( artifactItem.getVersion() ) )
-            {
-                fillMissingArtifactVersion( artifactItem );
-            }
-
-            artifactItem.setArtifact( this.getArtifact( artifactItem ) );
-
-            if ( StringUtils.isEmpty( artifactItem.getDestFileName() ) )
-            {
-                artifactItem.setDestFileName( DependencyUtil.getFormattedFileName( artifactItem.getArtifact(),
-                                                                                   removeVersion, prependGroupId,
-                                                                                   useBaseVersion, removeClassifier ) );
-            }
-
-            try
-            {
-                artifactItem.setNeedsProcessing( checkIfProcessingNeeded( artifactItem ) );
-            }
-            catch ( ArtifactFilterException e )
-            {
-                throw new MojoExecutionException( e.getMessage(), e );
-            }
-        }
-        return artifactItems;
+        List<ArtifactItem> list = mojo.getProcessedArtifactItems( removeVersion );
+        return list.get( 0 );
     }
 
-    /**
-     * If the artifact item has a version range, rather than a version, this
-     * method attempts to resolve this range by inspecting the list of resolved dependencies
-     * in the project for a match, before using the maven dependency resolver to resolve
-     * the range.
-     *
-     * If the dependency can be found and the version fits the artifact item's range
-     * then the artifact item is updated with the found version.
-     *
-     * If the dependency is not found or the range does not match, then the version
-     * is not changed.
-     *
-     * @param artifactItem  The artifact item to update, if required.
-     *
-     * @throws MojoExecutionException if
-     */
-    private void resolveArtifactRanges( final ArtifactItem artifactItem )
+    public void testGetArtifactItems()
+        throws Exception
     {
-        VersionRange range;
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", "1.0", null, null );
+
+        ArrayList<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        list.add( createArtifact( item ) );
+
+        mojo.setArtifactItems( list );
+
+        ArtifactItem result = getSingleArtifactItem( false );
+        assertEquals( mojo.getOutputDirectory(), result.getOutputDirectory() );
+
+        File output = new File( mojo.getOutputDirectory(), "override" );
+        item.setOutputDirectory( output );
+        result = getSingleArtifactItem( false );
+        assertEquals( output, result.getOutputDirectory() );
+    }
+
+    public void assertMarkerFiles( Collection<ArtifactItem> items, boolean exist )
+    {
+        for ( ArtifactItem item : items )
+        {
+            assertMarkerFile( exist, item );
+        }
+    }
+
+    public void assertMarkerFile( boolean val, ArtifactItem item )
+    {
+        UnpackFileMarkerHandler handle = new UnpackFileMarkerHandler( item, mojo.getMarkersDirectory() );
         try
         {
-            range = VersionRange.createFromVersionSpec( artifactItem.getVersion() );
+            assertEquals( val, handle.isMarkerSet() );
         }
-        catch ( InvalidVersionSpecificationException ivse )
+        catch ( MojoExecutionException e )
         {
-            this.getLog().warn( "Found invalid version range on artifact: " + artifactItem );
-            range = null;
-        }
-
-        if ( range != null && range.hasRestrictions() )
-        {
-            // First, try and find the artifact in the projects list of already, resolved
-            // dependencies:
-            ComparableVersion foundVersion = null;
-
-            if ( getProject().getDependencyArtifacts() != null )
-            {
-                for ( Artifact a : getProject().getDependencyArtifacts() )
-                {
-                    if ( artifactItem.getArtifactId().equals( a.getArtifactId() )
-                            && artifactItem.getGroupId().equals( a.getGroupId() )
-                            && range.containsVersion( new DefaultArtifactVersion( a.getVersion() ) ) )
-                    {
-
-                        ComparableVersion v = new ComparableVersion( a.getVersion() );
-                        if ( foundVersion == null || v.compareTo( foundVersion ) > 0 )
-                        {
-                            foundVersion = v;
-                        }
-                    }
-                }
-            }
-
-            if ( foundVersion == null )
-            {
-                // If we've not found the artifact in the resolved list of project dependencies,
-                // then attempt to use the dependency resolver to resolve the version range:
-
-                ProjectBuildingRequest request = newResolveArtifactProjectBuildingRequest();
-
-                DefaultDependableCoordinate searchDep = new DefaultDependableCoordinate();
-                searchDep.setGroupId( artifactItem.getGroupId() );
-                searchDep.setArtifactId( artifactItem.getArtifactId() );
-                searchDep.setVersion( artifactItem.getVersion() );
-                searchDep.setType( artifactItem.getType() );
-                searchDep.setClassifier( artifactItem.getClassifier() );
-
-                Iterable<ArtifactResult> result;
-                try
-                {
-                    result = dependencyResolver.resolveDependencies( request, searchDep, null );
-                }
-                catch ( DependencyResolverException are )
-                {
-                    result = null;
-                    this.getLog().warn( are );
-                }
-
-                if ( result != null )
-                {
-                    for ( ArtifactResult artifact : result )
-                    {
-                        ComparableVersion v = new ComparableVersion( artifact.getArtifact().getVersion() );
-                        if ( foundVersion == null || v.compareTo( foundVersion ) > 0 )
-                        {
-                            foundVersion = v;
-                        }
-                    }
-                }
-            }
-
-            if ( foundVersion != null )
-            {
-                this.getLog().info( "Resolved version from: " + range.toString() + ", to: " + foundVersion );
-                artifactItem.setVersion( foundVersion.toString() );
-            }
+            fail( e.getLongMessage() );
         }
     }
 
-    private boolean checkIfProcessingNeeded( ArtifactItem item )
-        throws MojoExecutionException, ArtifactFilterException
+    public void testUnpackFile()
+        throws Exception
     {
-        return StringUtils.equalsIgnoreCase( item.getOverWrite(), "true" )
-            || getMarkedArtifactFilter( item ).isArtifactIncluded( item );
+        List<ArtifactItem> list = stubFactory.getArtifactItems( stubFactory.getClassifiedArtifacts() );
+
+        mojo.setArtifactItems( list );
+
+        mojo.execute();
+
+        assertMarkerFiles( list, true );
     }
 
-    /**
-     * Resolves the Artifact from the remote repository if necessary. If no version is specified, it will be retrieved
-     * from the dependency list or from the DependencyManagement section of the pom.
-     *
-     * @param artifactItem containing information about artifact from plugin configuration.
-     * @return Artifact object representing the specified file.
-     * @throws MojoExecutionException with a message if the version can't be found in DependencyManagement.
-     */
-    protected Artifact getArtifact( ArtifactItem artifactItem )
-        throws MojoExecutionException
+    public void testSkip()
+        throws Exception
     {
-        Artifact artifact;
+        List<ArtifactItem> list = stubFactory.getArtifactItems( stubFactory.getClassifiedArtifacts() );
+
+        mojo.setSkip( true );
+        mojo.setArtifactItems( list );
+
+        mojo.execute();
+
+        assertMarkerFiles( list, false );
+    }
+
+    public void testUnpackToLocation()
+        throws Exception
+    {
+        List<ArtifactItem> list = stubFactory.getArtifactItems( stubFactory.getClassifiedArtifacts() );
+        ArtifactItem item = list.get( 0 );
+        item.setOutputDirectory( new File( mojo.getOutputDirectory(), "testOverride" ) );
+
+        mojo.setArtifactItems( list );
+
+        mojo.execute();
+
+        assertMarkerFiles( list, true );
+    }
+
+    public void testUnpackToLocationWhereLocationCannotBeCreatedThrowsException()
+        throws Exception
+    {
+        List<ArtifactItem> list = stubFactory.getArtifactItems( stubFactory.getClassifiedArtifacts() );
+        ArtifactItem item = list.get( 0 );
+        item.setOutputDirectory( new File( mojo.getOutputDirectory(), "testOverride" ) );
+
+        mojo.setArtifactItems( list );
+        final File currentFile = mojo.getOutputDirectory();
+
+        // pretend that the output directory cannot be found event after mkdirs has been called by the mojo
+        // ifor instance in the case when the outputDirectory cannot be created because of permissions on the
+        // parent of the output directory
+        mojo.setOutputDirectory( new File( currentFile.getAbsolutePath() )
+        {
+
+            private static final long serialVersionUID = -8559876942040177020L;
+
+            @Override
+            public boolean exists()
+            {
+                // this file will always report that it does not exist
+                return false;
+            }
+        } );
+        try
+        {
+            mojo.execute();
+            fail( "Expected Exception Here." );
+        }
+        catch ( MojoExecutionException e )
+        {
+            // caught the expected exception.
+        }
+    }
+
+    public void testMissingVersionNotFound()
+        throws Exception
+    {
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", null, "", "type");
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        list.add( item );
+        mojo.setArtifactItems( list );
 
         try
         {
-            // mdep-50 - rolledback for now because it's breaking some functionality.
-            /*
-             * List listeners = new ArrayList(); Set theSet = new HashSet(); theSet.add( artifact );
-             * ArtifactResolutionResult artifactResolutionResult = artifactCollector.collect( theSet, project
-             * .getArtifact(), managedVersions, this.local, project.getRemoteArtifactRepositories(),
-             * artifactMetadataSource, null, listeners ); Iterator iter =
-             * artifactResolutionResult.getArtifactResolutionNodes().iterator(); while ( iter.hasNext() ) {
-             * ResolutionNode node = (ResolutionNode) iter.next(); artifact = node.getArtifact(); }
-             */
-
-            ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
-
-            if ( localRepositoryDirectory != null )
-            {
-                buildingRequest =
-                    repositoryManager.setLocalRepositoryBasedir( buildingRequest, localRepositoryDirectory );
-            }
-
-            // Map dependency to artifact coordinate
-            DefaultArtifactCoordinate coordinate = new DefaultArtifactCoordinate();
-            coordinate.setGroupId( artifactItem.getGroupId() );
-            coordinate.setArtifactId( artifactItem.getArtifactId() );
-            coordinate.setVersion( artifactItem.getVersion() );
-            coordinate.setClassifier( artifactItem.getClassifier() );
-
-            final String extension;
-            ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler( artifactItem.getType() );
-            if ( artifactHandler != null )
-            {
-                extension = artifactHandler.getExtension();
-            }
-            else
-            {
-                extension = artifactItem.getType();
-            }
-            coordinate.setExtension( extension );
-
-            artifact = artifactResolver.resolveArtifact( buildingRequest, coordinate ).getArtifact();
+            mojo.execute();
+            fail( "Expected Exception Here." );
         }
-        catch ( ArtifactResolverException e )
+        catch ( MojoExecutionException e )
         {
-            throw new MojoExecutionException( "Unable to find/resolve artifact.", e );
+            // caught the expected exception.
         }
-
-        return artifact;
     }
 
-    /**
-     * Tries to find missing version from dependency list and dependency management. If found, the artifact is updated
-     * with the correct version. It will first look for an exact match on artifactId/groupId/classifier/type and if it
-     * doesn't find a match, it will try again looking for artifactId and groupId only.
-     *
-     * @param artifact representing configured file.
-     * @throws MojoExecutionException
-     */
-    private void fillMissingArtifactVersion( ArtifactItem artifact )
-        throws MojoExecutionException
+    public List<Dependency> getDependencyList( ArtifactItem item )
     {
-        MavenProject project = getProject();
-        List<Dependency> deps = project.getDependencies();
-        List<Dependency> depMngt = project.getDependencyManagement() == null ? Collections.<Dependency>emptyList()
-                        : project.getDependencyManagement().getDependencies();
+        Dependency dep = new Dependency();
+        dep.setArtifactId( item.getArtifactId() );
+        dep.setClassifier( item.getClassifier() );
+        dep.setGroupId( item.getGroupId() );
+        dep.setType( item.getType() );
+        dep.setVersion( "2.0-SNAPSHOT" );
 
-        if ( !findDependencyVersion( artifact, deps, false )
-            && ( project.getDependencyManagement() == null || !findDependencyVersion( artifact, depMngt, false ) )
-            && !findDependencyVersion( artifact, deps, true )
-            && ( project.getDependencyManagement() == null || !findDependencyVersion( artifact, depMngt, true ) ) )
+        Dependency dep2 = new Dependency();
+        dep2.setArtifactId( item.getArtifactId() );
+        dep2.setClassifier( "classifier" );
+        dep2.setGroupId( item.getGroupId() );
+        dep2.setType( item.getType() );
+        dep2.setVersion( "2.1" );
+
+        List<Dependency> list = new ArrayList<Dependency>( 2 );
+        list.add( dep2 );
+        list.add( dep );
+
+        return list;
+    }
+
+    public void testMissingVersionFromDependencies()
+        throws Exception
+    {
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", null, "", "jar");
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        list.add( item );
+        mojo.setArtifactItems( list );
+
+        MavenProject project = mojo.getProject();
+        project.setDependencies( createArtifacts( getDependencyList( item ) ) );
+
+        mojo.execute();
+        assertMarkerFile( true, item );
+        assertEquals( "2.0-SNAPSHOT", item.getVersion() );
+    }
+
+    public void testMissingVersionFromDependenciesWithClassifier()
+        throws Exception
+    {
+
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", null, "classifier", "war");
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        list.add( item );
+        mojo.setArtifactItems( list );
+
+        MavenProject project = mojo.getProject();
+        project.setDependencies( createArtifacts( getDependencyList( item ) ) );
+
+        mojo.execute();
+        assertMarkerFile( true, item );
+        assertEquals( "2.1", item.getVersion() );
+    }
+
+    public List<Dependency> getDependencyMgtList( ArtifactItem item )
+    {
+        Dependency dep = new Dependency();
+        dep.setArtifactId( item.getArtifactId() );
+        dep.setClassifier( item.getClassifier() );
+        dep.setGroupId( item.getGroupId() );
+        dep.setType( item.getType() );
+        dep.setVersion( "3.0-SNAPSHOT" );
+
+        Dependency dep2 = new Dependency();
+        dep2.setArtifactId( item.getArtifactId() );
+        dep2.setClassifier( "classifier" );
+        dep2.setGroupId( item.getGroupId() );
+        dep2.setType( item.getType() );
+        dep2.setVersion( "3.1" );
+
+        List<Dependency> list = new ArrayList<Dependency>( 2 );
+        list.add( dep2 );
+        list.add( dep );
+
+        return list;
+    }
+
+    public void testMissingVersionFromDependencyMgt()
+        throws Exception
+    {
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", null, "", "jar");
+
+        MavenProject project = mojo.getProject();
+        project.setDependencies( createArtifacts( getDependencyList( item ) ) );
+
+        item = createArtifactItem( "groupId", "artifactId-2", null, "", "jar");
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        list.add( item );
+
+        mojo.setArtifactItems( list );
+
+        project.getDependencyManagement().setDependencies( createArtifacts( getDependencyMgtList( item ) ) );
+
+        mojo.execute();
+        assertMarkerFile( true, item );
+        assertEquals( "3.0-SNAPSHOT", item.getVersion() );
+    }
+
+    public void testMissingVersionFromDependencyMgtWithClassifier()
+        throws Exception
+    {
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", null, "classifier", "jar");
+
+        MavenProject project = mojo.getProject();
+        project.setDependencies( createArtifacts( getDependencyList( item ) ) );
+
+        item = createArtifactItem( "groupId", "artifactId-2", null, "classifier", "jar");
+
+        stubFactory.createArtifact( "groupId", "artifactId-2", VersionRange.createFromVersion( "3.0-SNAPSHOT" ), null,
+                                    "jar", "classifier", false );
+        stubFactory.createArtifact( "groupId", "artifactId-2", VersionRange.createFromVersion( "3.1" ), null, "jar",
+                                    "classifier", false );
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        list.add( item );
+
+        mojo.setArtifactItems( list );
+
+        project.getDependencyManagement().setDependencies( createArtifacts( getDependencyMgtList( item ) ) );
+
+        mojo.execute();
+
+        assertMarkerFile( true, item );
+        assertEquals( "3.1", item.getVersion() );
+    }
+
+    public void testArtifactNotFound()
+        throws Exception
+    {
+        dotestArtifactExceptions( false, true );
+    }
+
+    public void testArtifactResolutionException()
+        throws Exception
+    {
+        dotestArtifactExceptions( true, false );
+    }
+
+    public void dotestArtifactExceptions( boolean are, boolean anfe )
+        throws Exception
+    {
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", "1.0", "", "type" );
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        list.add( item );
+        mojo.setArtifactItems( list );
+
+        try
         {
-            throw new MojoExecutionException( "Unable to find artifact version of " + artifact.getGroupId() + ":"
-                + artifact.getArtifactId() + " in either dependency list or in project's dependency management." );
+            mojo.execute();
+            fail( "ExpectedException" );
         }
-    }
-
-    /**
-     * Tries to find missing version from a list of dependencies. If found, the artifact is updated with the correct
-     * version.
-     *
-     * @param artifact representing configured file.
-     * @param dependencies list of dependencies to search.
-     * @param looseMatch only look at artifactId and groupId
-     * @return the found dependency
-     */
-    private boolean findDependencyVersion( ArtifactItem artifact, List<Dependency> dependencies, boolean looseMatch )
-    {
-        for ( Dependency dependency : dependencies )
+        catch ( MojoExecutionException e )
         {
-            if ( StringUtils.equals( dependency.getArtifactId(), artifact.getArtifactId() )
-                && StringUtils.equals( dependency.getGroupId(), artifact.getGroupId() )
-                && ( looseMatch || StringUtils.equals( dependency.getClassifier(), artifact.getClassifier() ) )
-                && ( looseMatch || StringUtils.equals( dependency.getType(), artifact.getType() ) ) )
-            {
-                artifact.setVersion( dependency.getVersion() );
-
-                return true;
-            }
+            assertEquals( "Unable to find/resolve artifact.", e.getMessage() );
         }
-
-        return false;
     }
 
-    /**
-     * @return Returns the artifactItems.
-     */
-    public List<ArtifactItem> getArtifactItems()
+    public void testNoArtifactItems()
     {
-        return this.artifactItems;
-    }
-
-    /**
-     * @param theArtifactItems The artifactItems to set.
-     */
-    public void setArtifactItems( List<ArtifactItem> theArtifactItems )
-    {
-        this.artifactItems = theArtifactItems;
-    }
-
-    /**
-     * @return Returns the outputDirectory.
-     */
-    public File getOutputDirectory()
-    {
-        return this.outputDirectory;
-    }
-
-    /**
-     * @param theOutputDirectory The outputDirectory to set.
-     */
-    public void setOutputDirectory( File theOutputDirectory )
-    {
-        this.outputDirectory = theOutputDirectory;
-    }
-
-    /**
-     * @return Returns the overWriteIfNewer.
-     */
-    public boolean isOverWriteIfNewer()
-    {
-        return this.overWriteIfNewer;
-    }
-
-    /**
-     * @param theOverWriteIfNewer The overWriteIfNewer to set.
-     */
-    public void setOverWriteIfNewer( boolean theOverWriteIfNewer )
-    {
-        this.overWriteIfNewer = theOverWriteIfNewer;
-    }
-
-    /**
-     * @return Returns the overWriteReleases.
-     */
-    public boolean isOverWriteReleases()
-    {
-        return this.overWriteReleases;
-    }
-
-    /**
-     * @param theOverWriteReleases The overWriteReleases to set.
-     */
-    public void setOverWriteReleases( boolean theOverWriteReleases )
-    {
-        this.overWriteReleases = theOverWriteReleases;
-    }
-
-    /**
-     * @return Returns the overWriteSnapshots.
-     */
-    public boolean isOverWriteSnapshots()
-    {
-        return this.overWriteSnapshots;
-    }
-
-    /**
-     * @param theOverWriteSnapshots The overWriteSnapshots to set.
-     */
-    public void setOverWriteSnapshots( boolean theOverWriteSnapshots )
-    {
-        this.overWriteSnapshots = theOverWriteSnapshots;
-    }
-
-    /**
-     * @param localRepositoryDirectory {@link #localRepositoryDirectory}
-     */
-    public void setLocalRepositoryDirectory( File localRepositoryDirectory )
-    {
-        this.localRepositoryDirectory = localRepositoryDirectory;
-    }
-
-    /**
-     * @param artifact The artifact.
-     * @throws MojoFailureException in case of an error.
-     */
-    public void setArtifact( String artifact )
-        throws MojoFailureException
-    {
-        if ( artifact != null )
+        try
         {
-            String packaging = "jar";
-            String classifier;
-            String[] tokens = StringUtils.split( artifact, ":" );
-            if ( tokens.length < 3 || tokens.length > 5 )
-            {
-                throw new MojoFailureException( "Invalid artifact, "
-                    + "you must specify groupId:artifactId:version[:packaging[:classifier]] " + artifact );
-            }
-            String groupId = tokens[0];
-            String artifactId = tokens[1];
-            String version = tokens[2];
-            if ( tokens.length >= 4 )
-            {
-                packaging = tokens[3];
-            }
-            if ( tokens.length == 5 )
-            {
-                classifier = tokens[4];
-            }
-            else
-            {
-                classifier = null;
-            }
-
-            ArtifactItem artifactItem = new ArtifactItem();
-            artifactItem.setGroupId( groupId );
-            artifactItem.setArtifactId( artifactId );
-            artifactItem.setVersion( version );
-            artifactItem.setType( packaging );
-            artifactItem.setClassifier( classifier );
-
-            setArtifactItems( Collections.singletonList( artifactItem ) );
+            mojo.getProcessedArtifactItems( false );
+            fail( "Expected Exception" );
         }
+        catch ( MojoExecutionException e )
+        {
+            assertEquals( "There are no artifactItems configured.", e.getMessage() );
+        }
+
+    }
+
+    public void testUnpackDontOverWriteReleases()
+        throws Exception
+    {
+        stubFactory.setCreateFiles( true );
+        Artifact release = stubFactory.getReleaseArtifact();
+        assertTrue( release.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
+
+        ArtifactItem item = new ArtifactItem( createArtifact( release ) );
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        list.add( item );
+        mojo.setArtifactItems( list );
+
+        mojo.setOverWriteIfNewer( false );
+
+        mojo.execute();
+
+        assertUnpacked( item, false );
+    }
+
+    public void testUnpackDontOverWriteSnapshots()
+        throws Exception
+    {
+        stubFactory.setCreateFiles( true );
+        Artifact artifact = stubFactory.getSnapshotArtifact();
+        assertTrue( artifact.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
+
+        ArtifactItem item = new ArtifactItem( createArtifact( artifact ) );
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        list.add( item );
+        mojo.setArtifactItems( list );
+
+        mojo.setOverWriteIfNewer( false );
+
+        mojo.execute();
+
+        assertUnpacked( item, false );
+    }
+
+    public void testUnpackOverWriteReleases()
+        throws Exception
+    {
+        stubFactory.setCreateFiles( true );
+        Artifact release = stubFactory.getReleaseArtifact();
+        assertTrue( release.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
+
+        ArtifactItem item = new ArtifactItem( createArtifact( release ) );
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        list.add( item );
+        mojo.setArtifactItems( list );
+
+        mojo.setOverWriteIfNewer( false );
+        mojo.setOverWriteReleases( true );
+        mojo.execute();
+
+        assertUnpacked( item, true );
+    }
+
+    public void testUnpackOverWriteSnapshot()
+        throws Exception
+    {
+        stubFactory.setCreateFiles( true );
+        Artifact artifact = stubFactory.getSnapshotArtifact();
+        assertTrue( artifact.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
+
+        ArtifactItem item = new ArtifactItem( createArtifact( artifact ) );
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        list.add( item );
+        mojo.setArtifactItems( list );
+
+        mojo.setOverWriteIfNewer( false );
+        mojo.setOverWriteReleases( false );
+        mojo.setOverWriteSnapshots( true );
+        mojo.execute();
+
+        assertUnpacked( item, true );
+    }
+
+    public void testUnpackOverWriteIfNewer()
+        throws Exception
+    {
+        final long now = System.currentTimeMillis();
+
+        mojo.setSilent( false );
+        stubFactory.setCreateFiles( true );
+        Artifact artifact = stubFactory.getSnapshotArtifact();
+        assertTrue( artifact.getFile().setLastModified( now - 20000 ) );
+
+        ArtifactItem item = new ArtifactItem( createArtifact( artifact ) );
+
+        List<ArtifactItem> list = Collections.singletonList( item );
+        mojo.setArtifactItems( list );
+        mojo.setOverWriteIfNewer( true );
+        mojo.execute();
+        File unpackedFile = getUnpackedFile( item );
+
+        // round down to the last second
+        long time = now;
+        time = time - ( time % 1000 );
+        // go back 10 more seconds for linux
+        time -= 10000;
+        // set to known value
+        assertTrue( unpackedFile.setLastModified( time ) );
+        // set source to be newer was 4s but test is brittle on MacOS if less than 5s
+        assertTrue( artifact.getFile().setLastModified( time + 5000 ) );
+
+        // manually set markerfile (must match getMarkerFile in DefaultMarkerFileHandler)
+        File marker = new File( mojo.getMarkersDirectory(), artifact.getId().replace( ':', '-' ) + ".marker" );
+        assertTrue( marker.setLastModified( time ) );
+
+        displayFile( "unpackedFile", unpackedFile );
+        displayFile( "artifact    ", artifact.getFile() );
+        displayFile( "marker      ", marker );
+        System.out.println( "mojo.execute()" );
+        mojo.execute();
+        displayFile( "unpackedFile", unpackedFile );
+        displayFile( "artifact    ", artifact.getFile() );
+        displayFile( "marker      ", marker );
+        System.out.println( "marker.lastModified() = " + marker.lastModified() );
+        System.out.println( "unpackedFile.lastModified() = " + unpackedFile.lastModified() );
+        assertTrue( "unpackedFile '" + unpackedFile + "' lastModified() == " + marker.lastModified()
+            + ": should be different", marker.lastModified() != unpackedFile.lastModified() );
+    }
+
+    public void testVersionRangeFromResolvedProjectDependencies()
+            throws Exception
+    {
+        stubFactory.setCreateFiles( true );
+
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", "[0,)", "", "jar");
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        list.add( item );
+        mojo.setArtifactItems( list );
+
+        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.0-SNAPSHOT" ), null,
+                "jar", "", false );
+        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.1" ), null, "jar",
+                "", false );
+
+        MavenProject project = mojo.getProject();
+        project.setDependencies( createArtifacts( getDependencyList( item ) ) );
+        project.setDependencyArtifacts( createArtifactSet( getDependencyList( item ) ) );
+
+        mojo.execute();
+        assertMarkerFile( true, item );
+        assertEquals( "2.1", item.getVersion() );
+    }
+
+    public void testVersionRangeFromResolvedProjectDependenciesWithMultipleDependencies()
+            throws Exception
+    {
+        stubFactory.setCreateFiles( true );
+
+        ArtifactItem item = createArtifactItem( "groupId", "artifactId", "[0,)", "", "jar");
+
+        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        list.add( item );
+        mojo.setArtifactItems( list );
+
+        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.0-SNAPSHOT" ), null,
+                "jar", "", false );
+        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.1" ), null, "jar",
+                "", false );
+
+        MavenProject project = mojo.getProject();
+        project.setDependencies( createArtifacts( getDependencyList( item ) ) );
+
+        Set<Artifact> dependencySet = createArtifactSet( getDependencyList( item ) );
+        dependencySet.addAll( createArtifactSet( getDependencyList( createArtifactItem( "groupId", "differentArtifactId", "1.0", "", "jar") ) ) );
+        dependencySet.addAll( createArtifactSet( getDependencyList( createArtifactItem( "differentGroupId", "artifactId", "1.0", "", "jar") ) ) );
+
+        project.setDependencyArtifacts( dependencySet );
+
+        mojo.execute();
+        assertMarkerFile( true, item );
+        assertEquals( "2.1", item.getVersion() );
+    }
+
+//
+//    public void testVersionRangeNoResolvedProjectDependencies()
+//            throws Exception
+//    {
+//        stubFactory.setCreateFiles( true );
+//
+//        ArtifactItem item = createArtifactItem( "groupId", "artifactId", "[0,)", "", "jar");
+//
+//        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+//        list.add( item );
+//        mojo.setArtifactItems( list );
+//
+//        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.0-SNAPSHOT" ), null,
+//                "jar", "", false );
+//        stubFactory.createArtifact( "groupId", "artifactId", VersionRange.createFromVersion( "2.1" ), null, "jar",
+//                "", false );
+//
+//        mojo.execute();
+//        assertMarkerFile( true, item );
+//        assertEquals( "2.1", item.getVersion() );
+//    }
+
+
+    private void displayFile( String description, File file )
+    {
+        System.out.println( description + ' ' + DateFormatUtils.ISO_DATETIME_FORMAT.format( file.lastModified() ) + ' '
+            + file.getPath().substring( getBasedir().length() ) );
+    }
+
+    public void assertUnpacked( ArtifactItem item, boolean overWrite )
+        throws Exception
+    {
+
+        File unpackedFile = getUnpackedFile( item );
+
+        Thread.sleep( 100 );
+        // round down to the last second
+        long time = System.currentTimeMillis();
+        time = time - ( time % 1000 );
+        assertTrue( unpackedFile.setLastModified( time ) );
+
+        assertEquals( time, unpackedFile.lastModified() );
+        mojo.execute();
+
+        if ( overWrite )
+        {
+            assertTrue( time != unpackedFile.lastModified() );
+        }
+        else
+        {
+            assertEquals( time, unpackedFile.lastModified() );
+        }
+    }
+
+    public File getUnpackedFile( ArtifactItem item )
+    {
+        File unpackedFile = new File( item.getOutputDirectory(),
+                                      DependencyArtifactStubFactory.getUnpackableFileName( item.getArtifact() ) );
+
+        assertTrue( unpackedFile.exists() );
+        return unpackedFile;
+
+    }
+
+    private ArtifactItem createArtifactItem(
+            final String groupId,
+            final String artifactId,
+            final String version,
+            final String classifier,
+            final String type )
+    {
+
+        ArtifactItem item = new ArtifactItem();
+
+        item.setArtifactId( artifactId );
+        item.setClassifier( classifier );
+        item.setGroupId( groupId );
+
+        if ( type != null ) {
+            item.setType( type );
+        }
+        item.setVersion( version );
+
+        return item;
+    }
+
+    // respects the createUnpackableFile flag of the ArtifactStubFactory
+    private List<Dependency> createArtifacts( List<Dependency> items )
+        throws IOException
+    {
+        for ( Dependency item : items )
+        {
+            String classifier = "".equals( item.getClassifier() ) ? null : item.getClassifier();
+            stubFactory.createArtifact( item.getGroupId(), item.getArtifactId(),
+                                        VersionRange.createFromVersion( item.getVersion() ), null, item.getType(),
+                                        classifier, item.isOptional() );
+        }
+        return items;
+    }
+
+    // respects the createUnpackableFile flag of the ArtifactStubFactory
+    private Set<Artifact> createArtifactSet( List<Dependency> items )
+        throws IOException
+    {
+
+        Set<Artifact> set = new HashSet<>();
+
+        for ( Dependency item : items )
+        {
+            set.add(
+                new DefaultArtifact(
+                    item.getGroupId(),
+                    item.getArtifactId(),
+                    item.getVersion(),
+                    item.getScope(),
+                    item.getType(),
+                    item.getClassifier(),
+                    artifactHandlerManager.getArtifactHandler(item.getType())
+                )
+            );
+        }
+        return set;
+    }
+
+    private Artifact createArtifact( Artifact art )
+        throws IOException
+    {
+        String classifier = "".equals( art.getClassifier() ) ? null : art.getClassifier();
+        stubFactory.createArtifact( art.getGroupId(), art.getArtifactId(),
+                                    VersionRange.createFromVersion( art.getVersion() ), null, art.getType(), classifier,
+                                    art.isOptional() );
+        return art;
+    }
+
+    private ArtifactItem createArtifact( ArtifactItem item )
+        throws IOException
+    {
+        String classifier = "".equals( item.getClassifier() ) ? null : item.getClassifier();
+        stubFactory.createArtifact( item.getGroupId(), item.getArtifactId(), item.getVersion(), null, item.getType(),
+                                    classifier );
+        return item;
     }
 }
