@@ -86,7 +86,7 @@ public class UnpackDependenciesMojo
      * @since 3.1.2
      */
     @Parameter( property = "mdep.unpack.overwrite", defaultValue = "true" )
-    private boolean overwrite;
+    private boolean overwrite = true;
 
     /**
      * Main entry into mojo. This method gets the dependencies and iterates through each one passing it to
