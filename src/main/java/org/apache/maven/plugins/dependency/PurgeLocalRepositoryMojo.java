@@ -61,6 +61,8 @@ import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverExcepti
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.apache.maven.shared.utils.logging.MessageBuilder;
+import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -349,7 +351,7 @@ public class PurgeLocalRepositoryMojo
     /**
      * Determines if all projects in the reactor should be purged from their dependencies. When this goal is started on
      * the command-line, it is always the case. When it is bound to a phase in the lifecycle, it is never the case.
-     * 
+     *
      * @return <code>true</code> if all projects in the reactor should be purged, <code>false</code> otherwise.
      */
     private boolean shouldPurgeAllProjectsInReactor()
@@ -624,6 +626,14 @@ public class PurgeLocalRepositoryMojo
     private void purgeArtifacts( Set<Artifact> artifacts )
         throws MojoFailureException
     {
+        MessageBuilder messageBuilder = MessageUtils.buffer();
+
+        getLog().info( messageBuilder.a( "Deleting " ).strong( artifacts.size() ).a( " projects' " )
+            .strong( actTransitively ? "transitive" : "direct" )
+            .a( " dependencies from " ).strong( localRepository.getBasedir() )
+            .a( " with artifact " ).strong( resolutionFuzziness ).a( " resolution fuzziness " )
+            .newline().toString() );
+
         for ( Artifact artifact : artifacts )
         {
             verbose( "Purging artifact: " + artifact.getId() );
