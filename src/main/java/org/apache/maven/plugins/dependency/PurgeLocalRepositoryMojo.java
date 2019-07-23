@@ -631,8 +631,8 @@ public class PurgeLocalRepositoryMojo
         getLog().info( messageBuilder.a( "Deleting " ).strong( artifacts.size() ).a( " projects' " )
             .strong( actTransitively ? "transitive" : "direct" )
             .a( " dependencies from " ).strong( localRepository.getBasedir() )
-            .a( " with artifact " ).strong( resolutionFuzziness ).a( " resolution fuzziness " )
-            .newline().toString() );
+            .a( " with artifact " ).strong( resolutionFuzziness ).a( " resolution fuzziness" )
+            .toString() );
 
         for ( Artifact artifact : artifacts )
         {
