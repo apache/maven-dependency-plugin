@@ -508,6 +508,121 @@ mvn dependency:purge-local-repository -DresolutionFuzziness=artifactId
   correct resolution.
 
 
+* <<<dependency:analyze>>>
+
+  This goal performs byte code analysis to determine missing or unused dependencies. This goal is meant to be launched from the command line. It will fork the build and execute test-compile so there are class files to analyze.
+  If you want to bind analyze in your pom, use the <<<dependency:analyze-only>>> instead.
+
+  This goal can be executed from the command line:
+
++---+
+mvn dependency:analyze
++---+
+
+  Sample output:
+
++---+
+[INFO] [dependency:analyze]
+[WARNING] Used undeclared dependencies found:
+[WARNING]    classworlds:classworlds:jar:1.1-alpha-2:compile
+[WARNING]    org.apache.maven.shared:maven-invoker:jar:2.0.7-SNAPSHOT:test
++---+
+
+
+* <<<dependency:analyze-dep-mgt>>>
+
+  This goal looks at the dependencies after final resolution and looks for mismatches in your dependencyManagement section. 
+  In versions of maven prior to 2.0.6, it was possible to inherit versions that didn't match your dependencyManagement. See {{{https://issues.apache.org/jira/browse/MNG-1577}MNG-1577}} for more info.
+
+  If this goal detects issues, you should attempt to resolve the discrepancies before upgrading to 2.0.6 to avoid any surprises. This can be done by upgrading or downgrading the version in dependencyManagement to match what is actually
+  being included at runtime, or you can specify a dependency in your project to override what is being included. You can check the results by rerunning this goal.
+  If you decide to override by using a dependency, be sure to note it so you can remove it later after upgrading to 2.0.6. You could also use the dependency:analyze goal to uncover this unused direct dependency.
+
+  This goal is also useful for just detecting projects that override the dependencyManagement directly. Set ignoreDirect to false to detect these otherwise normal conditions.
+
+  This goal can be executed from the command line:
+
++---+
+mvn dependency:analyze-dep-mgt
++---+
+
+  Sample output:
+
++---+
+[INFO] Found Resolved Dependency / DependencyManagement mismatches:
+[INFO]  Dependency: commons-lang:commons-lang:jar
+[INFO]          DepMgt  : 1.0
+[INFO]          Resolved: 2.3
+[INFO]  Dependency: commons-digester:commons-digester:jar
+[INFO]          DepMgt  : 1.6
+[INFO]          Resolved: 1.7
+[INFO]  Dependency: javax.servlet:servlet-api:jar
+[INFO]          DepMgt  : 2.3
+[INFO]          Resolved: 2.4
+[WARNING] Potential problems found in Dependency Management
++---+
+ 
+
+* <<<dependency:analyze-report>>>
+
+  This goal is used to include a report of the dependencies in the output of the <<<maven-site-plugin>>>.
+
++-------+
+ <reporting>
+   <plugins>
+    ...
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-dependency-plugin</artifactId>
+      <version>${project.version}</version>
+      <reportSets>
+        <reportSet>
+          <reports>
+            <report>analyze-report</report>
+          </reports>
+        </reportSet>
+      </reportSets>
+    </plugin>
+   </plugins>
+ </reporting>
++-------+
+
+
+* <<<dependency:tree>>>
+
+  This goal is used to view the dependency hierarchy of the project currently being built.
+  It will output the resolved tree of dependencies that the Maven build process actually uses.
+
+  This goal can be executed from the command line:
+
++-----+
+mvn dependency:tree
++-----+
+
+  Optionally, the <<<output>>> parameter can be specified to divert the output to a file:
+
++-----+
+mvn dependency:tree -Doutput=/path/to/file
++-----+
+
+  Also, the <<<outputType>>> parameter can be used to generate different formats of output.  The
+  following formats are currently supported:
+
+   * text
+
+   * dot
+
+   * graphml
+
+   * tgf
+
+   []
+
++-----+
+mvn dependency:tree -Doutput=/path/to/file.graphml -DoutputType=graphml
++-----+
+
+
 * <<<dependency:build-classpath>>>
 
    Since: 2.0-alpha-2
@@ -566,97 +681,12 @@ mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 </project>
 +---+
 
-* <<<dependency:analyze>>>
-
-  This goal performs byte code analysis to determine missing or unused dependencies. This goal is meant to be launched from the command line. It will fork the build and execute test-compile so there are class files to analyze.
-  If you want to bind analyze in your pom, use the <<<dependency:analyze-only>>> instead.
-
-  This goal can be executed from the command line:
-
-+---+
-mvn dependency:analyze
-+---+
-
-  Sample output:
-
-+---+
-[INFO] [dependency:analyze]
-[WARNING] Used undeclared dependencies found:
-[WARNING]    classworlds:classworlds:jar:1.1-alpha-2:compile
-[WARNING]    org.apache.maven.shared:maven-invoker:jar:2.0.7-SNAPSHOT:test
-+---+
-
-* <<<dependency:analyze-dep-mgt>>>
-
-  This goal looks at the dependencies after final resolution and looks for mismatches in your dependencyManagement section. 
-  In versions of maven prior to 2.0.6, it was possible to inherit versions that didn't match your dependencyManagement. See {{{https://issues.apache.org/jira/browse/MNG-1577}MNG-1577}} for more info.
-
-  If this goal detects issues, you should attempt to resolve the discrepancies before upgrading to 2.0.6 to avoid any surprises. This can be done by upgrading or downgrading the version in dependencyManagement to match what is actually
-  being included at runtime, or you can specify a dependency in your project to override what is being included. You can check the results by rerunning this goal.
-  If you decide to override by using a dependency, be sure to note it so you can remove it later after upgrading to 2.0.6. You could also use the dependency:analyze goal to uncover this unused direct dependency.
-
-  This goal is also useful for just detecting projects that override the dependencyManagement directly. Set ignoreDirect to false to detect these otherwise normal conditions.
-
-  This goal can be executed from the command line:
-
-+---+
-mvn dependency:analyze-dep-mgt
-+---+
-
-  Sample output:
-
-+---+
-[INFO] Found Resolved Dependency / DependencyManagement mismatches:
-[INFO]  Dependency: commons-lang:commons-lang:jar
-[INFO]          DepMgt  : 1.0
-[INFO]          Resolved: 2.3
-[INFO]  Dependency: commons-digester:commons-digester:jar
-[INFO]          DepMgt  : 1.6
-[INFO]          Resolved: 1.7
-[INFO]  Dependency: javax.servlet:servlet-api:jar
-[INFO]          DepMgt  : 2.3
-[INFO]          Resolved: 2.4
-[WARNING] Potential problems found in Dependency Management
-+---+
- 
-* <<<dependency:tree>>>
-
-  This goal is used to view the dependency hierarchy of the project currently being built.
-  It will output the resolved tree of dependencies that the Maven build process actually uses.
-
-  This goal can be executed from the command line:
-
-+-----+
-mvn dependency:tree
-+-----+
-
-  Optionally, the <<<output>>> parameter can be specified to divert the output to a file:
-
-+-----+
-mvn dependency:tree -Doutput=/path/to/file
-+-----+
-
-  Also, the <<<outputType>>> parameter can be used to generate different formats of output.  The
-  following formats are currently supported:
-
-   * text
-
-   * dot
-
-   * graphml
-
-   * tgf
-
-   []
-
-+-----+
-mvn dependency:tree -Doutput=/path/to/file.graphml -DoutputType=graphml
-+-----+
 
 * <<<dependency:list-repositories>>>
 
   This goal is used to list all the repositories that this build depends upon. It will show repositories defined in your settings, 
   poms and declared in transitive dependency poms.
+
 
 * <<<dependency:get>>>
 
@@ -667,27 +697,3 @@ mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=
 mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources -DremoteRepositories=http://repo1.maven.apache.org/maven2 
 mvn dependency:get -Dartifact=org.apache.maven:maven-core:2.2.1:jar:sources -DremoteRepositories=http://repo1.maven.apache.org/maven2 -Ddest=/tmp/myfile.jar
 +-----+
-
-* <<<dependency:analyze-report>>> Report
-
-  This goal is used to include a report of the dependencies in the output of the <<<maven-site-plugin>>>.
-
-+-------+
- <reporting>
-   <plugins>
-    ...
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-dependency-plugin</artifactId>
-      <version>${project.version}</version>
-      <reportSets>
-        <reportSet>
-          <reports>
-            <report>analyze-report</report>
-          </reports>
-        </reportSet>
-      </reportSets>
-    </plugin>
-   </plugins>
- </reporting>
-+-------+
