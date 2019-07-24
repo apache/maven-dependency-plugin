@@ -26,18 +26,10 @@
 
 Usage
  
-  Brief examples on how to use the dependency goals.
+  Brief examples on how to use the dependency goals:
+
+%{toc|fromDepth=2}
  
-* Generic Plugin configuration information
-
-  See the following links for information about including and configuring plugins in your project:
-  
-  *{{{http://maven.apache.org/guides/mini/guide-configuring-plugins.html}Configuring Plugins}}
-  
-  *{{{http://maven.apache.org/guides/plugin/guide-java-plugin-development.html}Plugin Development}}
-
-  *{{{http://maven.apache.org/guides/introduction/introduction-to-plugin-prefix-mapping.html}Plugin Prefix}}
-
 * The <<<dependency:copy>>> mojo
 
    This goal is meant to be bound to a lifecycle phase and configured in your
