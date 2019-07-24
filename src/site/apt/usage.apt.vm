@@ -30,7 +30,7 @@ Usage
 
 %{toc|fromDepth=2}
  
-* The <<<dependency:copy>>> mojo
+* <<<dependency:copy>>>
 
    This goal is meant to be bound to a lifecycle phase and configured in your
    <<<pom.xml>>>. It will resolve the artifact from the repository and place a copy
@@ -88,7 +88,7 @@ Usage
 </project>
 +---+
   
-  If you intend to configure this mojo for execution on the command line using:
+  If you intend to configure this goal for execution on the command line using:
 
 +---+
 mvn dependency:copy
@@ -145,7 +145,7 @@ mvn dependency:copy
       
     []
 
-* The <<<dependency:copy-dependencies>>> mojo
+* <<<dependency:copy-dependencies>>>
 
    This goal can be bound to a lifecycle phase and configured in your <<<pom.xml>>>.
    It will resolve the dependencies (including transitive dependencies) from
@@ -210,7 +210,7 @@ mvn dependency:copy
 +---+
 
 
-* The <<<dependency:unpack>>> mojo
+* <<<dependency:unpack>>>
 
    This goal is meant to be bound to a lifecycle and configured in your pom.xml.
    It will resolve the artifact from the repository and place a copy in the
@@ -256,7 +256,7 @@ mvn dependency:copy
 </project>
 +---+
 
-  If you intend to configure this mojo for execution on the command line using:
+  If you intend to configure this goal for execution on the command line using:
 
 +---+
 mvn dependency:unpack
@@ -297,7 +297,7 @@ mvn dependency:unpack
 +---+
 
 
-* The <<<dependency:unpack-dependencies>>> mojo
+* <<<dependency:unpack-dependencies>>>
 
    This goal can be bound to a lifecycle and configured in your pom.xml.
    It will resolve the dependencies (including transitive dependencies) from
@@ -376,7 +376,7 @@ mvn dependency:unpack
      
      Otherwise:
      
-     * For copy/unpack mojo only: if <<<artifactItem / overWrite>>> or <<<overWrite>>> is true, then it will force an overwrite.
+     * For copy/unpack goal only: if <<<artifactItem / overWrite>>> or <<<overWrite>>> is true, then it will force an overwrite.
      
      * Releases check the <<<overWriteReleases>>> value (default = false). If true, then it will force an overwrite.
 
@@ -399,7 +399,7 @@ mvn dependency:unpack
      
      
 
-* The <<<dependency:resolve>>> mojo
+* <<<dependency:resolve>>>
 
   Resolve is intended to be used from the command line like:
   <<<mvn dependency:resolve -Dsilent=true>>>
@@ -419,7 +419,7 @@ mvn dependency:unpack
   <<<mvn dependency:resolve -Dclassifer=test-jar>>> will try to find the
   test-jar for all dependencies resolve them to the local repository.
 
-* The <<<dependency:sources>>> mojo
+* <<<dependency:sources>>>
 
   Sources is intended to be used from the command line like:
   <<<mvn dependency:sources -Dsilent=true>>>
@@ -435,7 +435,7 @@ mvn dependency:unpack
   have the sources published. The plugin will store a marker file to describe if the sources were resolved or not. By placing
   them in a common location, multiple attempts to resolve non-existent sources will be avoided.
 
-* The <<<dependency:resolve-plugins>>> mojo
+* <<<dependency:resolve-plugins>>>
 
   Resolve-plugins is intended to be used from the command line like:
   <<<mvn dependency:resolve-plugins -Dsilent=true -DexcludeTransitive=true>>>
@@ -443,12 +443,12 @@ mvn dependency:unpack
   This is the same as the resolve goal except it resolves plugins and
   optionally their dependencies.
 
-* The <<<dependency:go-offline>>> mojo
+* <<<dependency:go-offline>>>
 
   This goal is exactly the same as calling
   <<<mvn dependency:resolve dependency:resolve-plugins>>>.
 
-* The <<<dependency:purge-local-repository>>> mojo
+* <<<dependency:purge-local-repository>>>
 
   This goal is meant to delete all of the dependencies for the current project
   (or projects, in the case of a multimodule build) from the local repository.
@@ -457,7 +457,7 @@ mvn dependency:unpack
   depth for deletion. By default, deleted artifacts can be re-resolved 
   afterwards; you can disable this by specifying <<<-DreResolve=false>>>.
 
-  In its simplest form, the mojo can be called like this:
+  In its simplest form, the goal can be called like this:
 
 +---+
 mvn dependency:purge-local-repository
@@ -474,7 +474,7 @@ mvn dependency:purge-local-repository -Dexclude=org.apache.maven:maven-plugin-ap
   groupId:artifactId pairs. It has a corresponding List-based parameter -
   <<<excludes>>> - for convenient use inside the POM.
 
-  Another handy aspect of this mojo is the ability to wipe out artifacts at
+  Another handy aspect of this goal is the ability to wipe out artifacts at
   varying depths. These depths are:
 
   * <<file>> - Delete just the artifact's file.
@@ -488,7 +488,7 @@ mvn dependency:purge-local-repository -Dexclude=org.apache.maven:maven-plugin-ap
   * <<groupId>> - Delete the groupId directory structure containing this artifact.
 
     At a minimum, this amounts to <<<file.getParentFile().getParentFile().getParentFile()>>>.
-    However, if the groupId contains multiple parts, the mojo will prune all groupId-part
+    However, if the groupId contains multiple parts, the goal will prune all groupId-part
     directories that contain only the files associated with this artifact. Again, note that
     the exception to this pruning algorithm is the lowest groupId part, which will always
     be pruned.
@@ -503,12 +503,12 @@ mvn dependency:purge-local-repository -Dexclude=org.apache.maven:maven-plugin-ap
 mvn dependency:purge-local-repository -DresolutionFuzziness=artifactId
 +---+
 
-  Finally, it's possible to bind this mojo to the build lifecycle. One reason for this
+  Finally, it's possible to bind this goal to the build lifecycle. One reason for this
   might be to clean out all dependencies when the build is initialized, to verify
   correct resolution.
 
 
-* The <<<dependency:build-classpath>>> mojo
+* <<<dependency:build-classpath>>>
 
    Since: 2.0-alpha-2
    
@@ -524,7 +524,7 @@ mvn dependency:purge-local-repository -DresolutionFuzziness=artifactId
 java -cp `cat resultFile` MyClass
 +---+
 
-  In its simplest form, to output the classpath to the log, the mojo can be called like this:
+  In its simplest form, to output the classpath to the log, the goal can be called like this:
 
 +---+
 mvn dependency:build-classpath
@@ -566,12 +566,12 @@ mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 </project>
 +---+
 
-* The <<<dependency:analyze>>> mojo
+* <<<dependency:analyze>>>
 
-  This mojo performs byte code analysis to determine missing or unused dependencies. This goal is meant to be launched from the command line. It will fork the build and execute test-compile so there are class files to analyze.
-  If you want to bind analyze in your pom, use the <<<dependency:analyze-only>>> mojo instead.
+  This goal performs byte code analysis to determine missing or unused dependencies. This goal is meant to be launched from the command line. It will fork the build and execute test-compile so there are class files to analyze.
+  If you want to bind analyze in your pom, use the <<<dependency:analyze-only>>> instead.
 
-  This mojo can be executed from the command line:
+  This goal can be executed from the command line:
 
 +---+
 mvn dependency:analyze
@@ -586,18 +586,18 @@ mvn dependency:analyze
 [WARNING]    org.apache.maven.shared:maven-invoker:jar:2.0.7-SNAPSHOT:test
 +---+
 
-* The <<<dependency:analyze-dep-mgt>>> mojo
+* <<<dependency:analyze-dep-mgt>>>
 
-  This mojo looks at the dependencies after final resolution and looks for mismatches in your dependencyManagement section. 
+  This goal looks at the dependencies after final resolution and looks for mismatches in your dependencyManagement section. 
   In versions of maven prior to 2.0.6, it was possible to inherit versions that didn't match your dependencyManagement. See {{{https://issues.apache.org/jira/browse/MNG-1577}MNG-1577}} for more info.
 
-  If this mojo detects issues, you should attempt to resolve the discrepancies before upgrading to 2.0.6 to avoid any surprises. This can be done by upgrading or downgrading the version in dependencyManagement to match what is actually
-  being included at runtime, or you can specify a dependency in your project to override what is being included. You can check the results by rerunning this mojo.
-  If you decide to override by using a dependency, be sure to note it so you can remove it later after upgrading to 2.0.6. You could also use the dependency:analyze mojo to uncover this unused direct dependency.
+  If this goal detects issues, you should attempt to resolve the discrepancies before upgrading to 2.0.6 to avoid any surprises. This can be done by upgrading or downgrading the version in dependencyManagement to match what is actually
+  being included at runtime, or you can specify a dependency in your project to override what is being included. You can check the results by rerunning this goal.
+  If you decide to override by using a dependency, be sure to note it so you can remove it later after upgrading to 2.0.6. You could also use the dependency:analyze goal to uncover this unused direct dependency.
 
-  This mojo is also usefull for just detecting projects that override the dependencyManagement directly. Set ignoreDirect to false to detect these otherwise normal conditions.
+  This goal is also useful for just detecting projects that override the dependencyManagement directly. Set ignoreDirect to false to detect these otherwise normal conditions.
 
-  This mojo can be executed from the command line:
+  This goal can be executed from the command line:
 
 +---+
 mvn dependency:analyze-dep-mgt
@@ -619,12 +619,12 @@ mvn dependency:analyze-dep-mgt
 [WARNING] Potential problems found in Dependency Management
 +---+
  
-* The <<<dependency:tree>>> Mojo
+* <<<dependency:tree>>>
 
-  This mojo is used to view the dependency hierarchy of the project currently being built.
+  This goal is used to view the dependency hierarchy of the project currently being built.
   It will output the resolved tree of dependencies that the Maven build process actually uses.
 
-  This mojo can be executed from the command line:
+  This goal can be executed from the command line:
 
 +-----+
 mvn dependency:tree
@@ -653,14 +653,14 @@ mvn dependency:tree -Doutput=/path/to/file
 mvn dependency:tree -Doutput=/path/to/file.graphml -DoutputType=graphml
 +-----+
 
-* The <<<dependency:list-repositories>>> Mojo
+* <<<dependency:list-repositories>>>
 
-  This mojo is used to list all the repositories that this build depends upon. It will show repositories defined in your settings, 
+  This goal is used to list all the repositories that this build depends upon. It will show repositories defined in your settings, 
   poms and declared in transitive dependency poms.
 
-* The <<<dependency:get>>> Mojo
+* <<<dependency:get>>>
 
-  This mojo is used to fetch an artifact and (optionally) its dependencies from remote repositories using its Maven coordinates.
+  This goal is used to fetch an artifact and (optionally) its dependencies from remote repositories using its Maven coordinates.
 
 +-----+
 mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources -DremoteRepositories=central::default::http://repo1.maven.apache.org/maven2,myrepo::::http://myrepo.com/maven2
@@ -668,9 +668,9 @@ mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=
 mvn dependency:get -Dartifact=org.apache.maven:maven-core:2.2.1:jar:sources -DremoteRepositories=http://repo1.maven.apache.org/maven2 -Ddest=/tmp/myfile.jar
 +-----+
 
-* The <<<dependency:analyze-report>>> Reporting Plugin
+* <<<dependency:analyze-report>>> Report
 
-  This mojo is used to include a report of the dependencies in the output of the <<<maven-site-plugin>>>.
+  This goal is used to include a report of the dependencies in the output of the <<<maven-site-plugin>>>.
 
 +-------+
  <reporting>
