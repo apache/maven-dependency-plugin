@@ -61,7 +61,10 @@ import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyN
 import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor.GraphTokens;
 
 /**
- * Displays the dependency tree for this project.
+ * Displays the dependency tree for this project. Multiple formats are supported: text (by default), but also
+ * <a href="https://en.wikipedia.org/wiki/DOT_language">DOT</a>,
+ * <a href="https://en.wikipedia.org/wiki/GraphML">graphml</a> and
+ * <a href="https://en.wikipedia.org/wiki/Trivial_Graph_Format">TGF</a>.
  *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @since 2.0-alpha-5
@@ -104,10 +107,8 @@ public class TreeMojo
 
     /**
      * If specified, this parameter will cause the dependency tree to be written using the specified format. Currently
-     * supported format are: <code>text</code>, <code>dot</code>, <code>graphml</code> and <code>tgf</code>.
-     * <p/>
-     * These formats can be plotted to image files. An example of how to plot a dot file using pygraphviz can be found
-     * <a href="http://networkx.lanl.gov/pygraphviz/tutorial.html#layout-and-drawing">here</a>.
+     * supported format are: <code>text</code> (default), <code>dot</code>, <code>graphml</code> and <code>tgf</code>.
+     * These additional formats can be plotted to image files.
      *
      * @since 2.2
      */
@@ -126,7 +127,7 @@ public class TreeMojo
 
     /**
      * Whether to include omitted nodes in the serialized dependency tree. Notice this feature actually uses Maven 2
-     * algorithm and <a href="http://maven.apache.org/shared/maven-dependency-tree/">may give wrong results when used
+     * algorithm and <a href="https://maven.apache.org/shared/maven-dependency-tree/">may give wrong results when used
      * with Maven 3</a>.
      *
      * @since 2.0-alpha-6

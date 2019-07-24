@@ -26,7 +26,7 @@ import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 
 /**
  * A dependency node visitor that serializes visited nodes to a writer using the
- * <a href="http://graphml.graphdrawing.org/">graphml format</a>.
+ * <a href="https://en.wikipedia.org/wiki/GraphML">graphml format</a>.
  * 
  * @author <a href="mailto:jerome.creignou@gmail.com">Jerome Creignou</a>
  * @since 2.1

@@ -27,8 +27,8 @@ import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 
 /**
- * A dependency node visitor that serializes visited nodes to a writer using the TGF format.
- * http://en.wikipedia.org/wiki/Trivial_Graph_Format
+ * A dependency node visitor that serializes visited nodes to a writer using the
+ * <a href="https://en.wikipedia.org/wiki/Trivial_Graph_Format">TGF format</a>.
  *
  * @author <a href="mailto:jerome.creignou@gmail.com">Jerome Creignou</a>
  * @since 2.1

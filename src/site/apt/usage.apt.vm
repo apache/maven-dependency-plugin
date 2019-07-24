@@ -610,11 +610,11 @@ mvn dependency:tree -Doutput=/path/to/file
 
    * text
 
-   * dot
+   * {{{https://en.wikipedia.org/wiki/DOT_language}dot}}
 
-   * graphml
+   * {{{https://en.wikipedia.org/wiki/GraphML}graphml}}
 
-   * tgf
+   * {{{https://en.wikipedia.org/wiki/Trivial_Graph_Format}tgf}}
 
    []
 
