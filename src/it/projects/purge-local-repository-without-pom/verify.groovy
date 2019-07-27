@@ -17,15 +17,16 @@
  * under the License.
  */
 
-import java.io.*;
-
-File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purged/1.0/purged-1.0.jar" );
-
-System.out.println( "Checking for absence of dummy JAR " + purgedJar );
-
-if ( purgedJar.exists() )
+void checkFileAbsence( String path )
 {
-    throw new Exception( "JAR was not purged: " + purgedJar );
+    File depJar = new File( localRepositoryPath, path );
+    if ( depJar.exists() )
+    {
+        throw new Exception( "Dependency jar was not purged: " + depJar );
+    }
 }
 
-return true;
+checkFileAbsence( "org/apache/maven/its/dependency/purged-without-pom/1.0/purged-without-pom-1.0.jar" );
+
+String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" );
+assert buildLog.contains( 'Deleting 1 manual dependency from ' );

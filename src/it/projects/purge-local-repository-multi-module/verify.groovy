@@ -17,15 +17,19 @@
  * under the License.
  */
 
-import java.io.*;
-
-File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purged-without-pom/1.0/purged-without-pom-1.0.jar" );
-
-System.out.println( "Checking for absence of dummy JAR " + purgedJar );
-
-if ( purgedJar.exists() )
+void checkFileAbsence( String path )
 {
-    throw new Exception( "JAR was not purged: " + purgedJar );
+  File depJar = new File( localRepositoryPath, path );
+  if ( depJar.exists() )
+  {
+    throw new Exception( "Dependency jar was not purged: " + depJar );
+  }
 }
 
-return true;
+checkFileAbsence("purged-a" );
+checkFileAbsence("purged-b" );
+
+String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" );
+assert buildLog.contains( 'Deleting 1 transitive dependency for project org.apache.maven.its.dependency:child1:1.0-SNAPSHOT from ' );
+assert buildLog.contains( 'Deleting 1 transitive dependency for project org.apache.maven.its.dependency:child2:1.0-SNAPSHOT from ' );
+assert buildLog.contains( 'with artifact version resolution fuzziness' );

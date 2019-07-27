@@ -17,6 +17,18 @@
  * under the License.
  */
 
+void checkFileAbsence( String path )
+{
+  File depJar = new File( localRepositoryPath, path );
+  System.out.println( "Checking for absence of dummy JAR " + depJar );
+  if ( depJar.exists() )
+  {
+    throw new Exception( "Dependency jar was not purged: " + depJar );
+  }
+}
+
+checkFileAbsence( "org/apache/maven/its/dependency/purged/1.0/purged-1.0.jar" );
+
 String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" );
-assert buildLog.contains( 'Deleting 2 projects\' transitive dependencies from' );
+assert buildLog.contains( 'Deleting 1 transitive dependency for project org.apache.maven.its.dependency:test:1.0-SNAPSHOT from ' );
 assert buildLog.contains( 'with artifact version resolution fuzziness' );

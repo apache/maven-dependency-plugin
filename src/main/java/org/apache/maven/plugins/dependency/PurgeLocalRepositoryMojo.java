@@ -235,7 +235,6 @@ public class PurgeLocalRepositoryMojo
     private class DirectDependencyFilter
         extends AbstractFilter
     {
-
         private Artifact projectArtifact;
 
         private List<Dependency> directDependencies;
@@ -379,16 +378,16 @@ public class PurgeLocalRepositoryMojo
 
         if ( resolvedArtifactsToPurge.isEmpty() )
         {
-            getLog().info( "No artifacts included for purge for project: " + theProject.getId() );
+            getLog().info( "No artifacts included for purge for project: " + getProjectKey( theProject ) );
             return;
         }
 
-        verbose( "Purging dependencies for project: " + theProject.getId() );
-        purgeArtifacts( resolvedArtifactsToPurge );
+        purgeArtifacts( theProject, resolvedArtifactsToPurge );
         purgedArtifacts.addAll( resolvedArtifactsToPurge );
 
         if ( reResolve )
         {
+            getLog().info( "Re-resolving dependencies" );
             ArtifactFilter artifactFilter = dependencyFilter.transform( new ArtifactIncludeFilterTransformer() );
             try
             {
@@ -422,17 +421,27 @@ public class PurgeLocalRepositoryMojo
     private void manualPurge( List<String> theIncludes )
         throws MojoExecutionException
     {
+        MessageBuilder messageBuilder = MessageUtils.buffer();
+
+        getLog().info( messageBuilder.a( "Deleting " ).strong( theIncludes.size() )
+            .a( " manual " )
+            .a( theIncludes.size() != 1 ? "dependencies" : "dependency" )
+            .a( " from " )
+            .strong( localRepository.getBasedir() )
+            .toString() );
+
         for ( String gavPattern : theIncludes )
         {
             if ( StringUtils.isEmpty( gavPattern ) )
             {
-                getLog().debug( "Skipping empty gav pattern: " + gavPattern );
+                getLog().debug( "Skipping empty gav pattern" );
                 continue;
             }
 
             String relativePath = gavToPath( gavPattern );
             if ( StringUtils.isEmpty( relativePath ) )
             {
+                getLog().debug( "Skipping empty relative path for gav pattern: " + gavPattern );
                 continue;
             }
 
@@ -448,6 +457,10 @@ public class PurgeLocalRepositoryMojo
                 {
                     throw new MojoExecutionException( "Unable to purge directory: " + purgeDir );
                 }
+            }
+            else
+            {
+                getLog().debug( "Directory: " + purgeDir + " doesn't exist" );
             }
         }
     }
@@ -573,6 +586,8 @@ public class PurgeLocalRepositoryMojo
     private Set<Artifact> getFilteredResolvedArtifacts( MavenProject theProject, List<Dependency> dependencies,
                                                         TransformableFilter filter )
     {
+        verbose( "Resolve dependencies for: " + getProjectKey( theProject ) );
+
         try
         {
             Iterable<ArtifactResult> results =
@@ -590,8 +605,7 @@ public class PurgeLocalRepositoryMojo
         }
         catch ( DependencyResolverException e )
         {
-            getLog().info( "Unable to resolve all dependencies for: " + theProject.getGroupId() + ":"
-                + theProject.getArtifactId() + ":" + theProject.getVersion()
+            getLog().info( "Unable to resolve all dependencies for: " + getProjectKey( theProject )
                 + ". Falling back to non-transitive mode for initial artifact resolution." );
         }
 
@@ -623,14 +637,16 @@ public class PurgeLocalRepositoryMojo
         return resolvedArtifacts;
     }
 
-    private void purgeArtifacts( Set<Artifact> artifacts )
+    private void purgeArtifacts( MavenProject theProject, Set<Artifact> artifacts )
         throws MojoFailureException
     {
         MessageBuilder messageBuilder = MessageUtils.buffer();
 
-        getLog().info( messageBuilder.a( "Deleting " ).strong( artifacts.size() ).a( " projects' " )
-            .strong( actTransitively ? "transitive" : "direct" )
-            .a( " dependencies from " ).strong( localRepository.getBasedir() )
+        getLog().info( messageBuilder.a( "Deleting " ).strong( artifacts.size() )
+            .a( " " ).strong( actTransitively ? "transitive" : "direct" )
+            .a( artifacts.size() != 1 ? " dependencies" : " dependency" )
+            .a( " for project " ).strong( getProjectKey( theProject ) )
+            .a( " from " ).strong( localRepository.getBasedir() )
             .a( " with artifact " ).strong( resolutionFuzziness ).a( " resolution fuzziness" )
             .toString() );
 
@@ -640,7 +656,7 @@ public class PurgeLocalRepositoryMojo
 
             File deleteTarget = findDeleteTarget( artifact );
 
-            verbose( "Deleting: " + deleteTarget );
+            getLog().info( "Deleting: " + deleteTarget );
 
             if ( deleteTarget.isDirectory() )
             {
@@ -668,7 +684,6 @@ public class PurgeLocalRepositoryMojo
     private void reResolveArtifacts( MavenProject theProject, Set<Artifact> artifacts, ArtifactFilter filter )
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
-
         // Always need to re-resolve the poms in case they were purged along with the artifact
         // because Maven 2 will not automatically re-resolve them when resolving the artifact
         for ( Artifact artifact : artifacts )
@@ -749,6 +764,11 @@ public class PurgeLocalRepositoryMojo
         {
             getLog().info( message );
         }
+    }
+
+    private String getProjectKey( MavenProject project )
+    {
+        return project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion();
     }
 
     /**
