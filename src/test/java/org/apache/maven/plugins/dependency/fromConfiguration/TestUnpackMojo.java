@@ -530,12 +530,9 @@ public class TestUnpackMojo
     public void testUnpackOverWriteIfNewer()
         throws Exception
     {
-        final long now = System.currentTimeMillis();
-
         mojo.setSilent( false );
         stubFactory.setCreateFiles( true );
         Artifact artifact = stubFactory.getSnapshotArtifact();
-        assertTrue( artifact.getFile().setLastModified( now - 20000 ) );
 
         ArtifactItem item = new ArtifactItem( createArtifact( artifact ) );
 
@@ -546,18 +543,14 @@ public class TestUnpackMojo
         File unpackedFile = getUnpackedFile( item );
 
         // round down to the last second
-        long time = now;
+        long time = unpackedFile.lastModified();
         time = time - ( time % 1000 );
-        // go back 10 more seconds for linux
-        time -= 10000;
-        // set to known value
-        assertTrue( unpackedFile.setLastModified( time ) );
-        // set source to be newer was 4s but test is brittle on MacOS if less than 5s
-        assertTrue( artifact.getFile().setLastModified( time + 5000 ) );
+        // set source to be newer
+        assertTrue( artifact.getFile().setLastModified( time + 2000 ) );
 
         // manually set markerfile (must match getMarkerFile in DefaultMarkerFileHandler)
         File marker = new File( mojo.getMarkersDirectory(), artifact.getId().replace( ':', '-' ) + ".marker" );
-        assertTrue( marker.setLastModified( time ) );
+        assertTrue( marker.setLastModified( time - 2000 ) );
 
         displayFile( "unpackedFile", unpackedFile );
         displayFile( "artifact    ", artifact.getFile() );
@@ -567,22 +560,21 @@ public class TestUnpackMojo
         displayFile( "unpackedFile", unpackedFile );
         displayFile( "artifact    ", artifact.getFile() );
         displayFile( "marker      ", marker );
-        System.out.println( "marker.lastModified() = " + marker.lastModified() );
-        System.out.println( "unpackedFile.lastModified() = " + unpackedFile.lastModified() );
-        assertTrue( "unpackedFile '" + unpackedFile + "' lastModified() == " + marker.lastModified()
-            + ": should be different", marker.lastModified() != unpackedFile.lastModified() );
+        assertTrue( "unpackedFile '" + unpackedFile + "' lastModified() != " + marker.lastModified()
+            + ": should be different", marker.lastModified() > unpackedFile.lastModified() );
+        assertTrue( "artifact '" + artifact.getFile() + "' lastModified() == " + marker.lastModified()
+            + ": should be equal", marker.lastModified() == artifact.getFile().lastModified() );
     }
 
     private void displayFile( String description, File file )
     {
-        System.out.println( description + ' ' + DateFormatUtils.ISO_DATETIME_FORMAT.format( file.lastModified() ) + ' '
-            + file.getPath().substring( getBasedir().length() ) );
+        System.out.println( description + ' ' + DateFormatUtils.ISO_DATETIME_FORMAT.format( file.lastModified() ) + " ("
+            + file.lastModified() + ") " + file.getPath().substring( getBasedir().length() ) );
     }
 
     public void assertUnpacked( ArtifactItem item, boolean overWrite )
         throws Exception
     {
-
         File unpackedFile = getUnpackedFile( item );
 
         Thread.sleep( 100 );
