@@ -586,8 +586,6 @@ public class PurgeLocalRepositoryMojo
     private Set<Artifact> getFilteredResolvedArtifacts( MavenProject theProject, List<Dependency> dependencies,
                                                         TransformableFilter filter )
     {
-        verbose( "Resolve dependencies for: " + getProjectKey( theProject ) );
-
         try
         {
             Iterable<ArtifactResult> results =
@@ -656,7 +654,7 @@ public class PurgeLocalRepositoryMojo
 
             File deleteTarget = findDeleteTarget( artifact );
 
-            getLog().info( "Deleting: " + deleteTarget );
+            verbose( "Deleting: " + deleteTarget );
 
             if ( deleteTarget.isDirectory() )
             {
@@ -688,6 +686,8 @@ public class PurgeLocalRepositoryMojo
         // because Maven 2 will not automatically re-resolve them when resolving the artifact
         for ( Artifact artifact : artifacts )
         {
+            verbose( "Resolving artifact: " + artifact.getId() );
+
             try
             {
                 //CHECKSTYLE_OFF: LineLength
@@ -705,8 +705,6 @@ public class PurgeLocalRepositoryMojo
 
         for ( Artifact artifact : artifacts )
         {
-            verbose( "Resolving artifact: " + artifact.getId() );
-
             try
             {
                 artifactResolver.resolveArtifact( session.getProjectBuildingRequest(), artifact );
@@ -768,7 +766,7 @@ public class PurgeLocalRepositoryMojo
 
     private String getProjectKey( MavenProject project )
     {
-        return project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion();
+        return project.getArtifactId();
     }
 
     /**

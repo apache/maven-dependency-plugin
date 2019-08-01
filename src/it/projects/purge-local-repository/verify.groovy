@@ -30,5 +30,5 @@ void checkFileAbsence( String path )
 checkFileAbsence( "org/apache/maven/its/dependency/purged/1.0/purged-1.0.jar" );
 
 String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" );
-assert buildLog.contains( 'Deleting 1 transitive dependency for project org.apache.maven.its.dependency:test:1.0-SNAPSHOT from ' );
+assert buildLog.contains( 'Deleting 1 transitive dependency for project test from ' );
 assert buildLog.contains( 'with artifact version resolution fuzziness' );

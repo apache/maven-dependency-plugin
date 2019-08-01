@@ -30,6 +30,6 @@ checkFileAbsence("purged-a" );
 checkFileAbsence("purged-b" );
 
 String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" );
-assert buildLog.contains( 'Deleting 1 transitive dependency for project org.apache.maven.its.dependency:child1:1.0-SNAPSHOT from ' );
-assert buildLog.contains( 'Deleting 1 transitive dependency for project org.apache.maven.its.dependency:child2:1.0-SNAPSHOT from ' );
+assert buildLog.contains( 'Deleting 1 transitive dependency for project child1 from ' );
+assert buildLog.contains( 'Deleting 1 transitive dependency for project child2 from ' );
 assert buildLog.contains( 'with artifact version resolution fuzziness' );
