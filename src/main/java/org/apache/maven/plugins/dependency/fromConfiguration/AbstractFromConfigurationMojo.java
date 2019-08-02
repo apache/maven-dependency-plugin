@@ -26,6 +26,10 @@ import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -40,6 +44,10 @@ import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterExceptio
 import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
+import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -107,6 +115,9 @@ public abstract class AbstractFromConfigurationMojo
     private ArtifactResolver artifactResolver;
 
     @Component
+    private DependencyResolver dependencyResolver;
+
+    @Component
     private RepositoryManager repositoryManager;
 
     @Component
@@ -116,7 +127,7 @@ public abstract class AbstractFromConfigurationMojo
 
     /**
      * artifactItems is filled by either field injection or by setArtifact().
-     * 
+     *
      * @throws MojoFailureException in case of an error.
      */
     protected void verifyRequirements()
@@ -156,6 +167,8 @@ public abstract class AbstractFromConfigurationMojo
         {
             this.getLog().info( "Configured Artifact: " + artifactItem.toString() );
 
+            resolveArtifactRanges( artifactItem );
+
             if ( artifactItem.getOutputDirectory() == null )
             {
                 artifactItem.setOutputDirectory( this.outputDirectory );
@@ -187,6 +200,105 @@ public abstract class AbstractFromConfigurationMojo
             }
         }
         return artifactItems;
+    }
+
+    /**
+     * If the artifact item has a version range, rather than a version, this
+     * method attempts to resolve this range by inspecting the list of resolved dependencies
+     * in the project for a match, before using the maven dependency resolver to resolve
+     * the range.
+     *
+     * If the dependency can be found and the version fits the artifact item's range
+     * then the artifact item is updated with the found version.
+     *
+     * If the dependency is not found or the range does not match, then the version
+     * is not changed.
+     *
+     * @param artifactItem  The artifact item to update, if required.
+     *
+     * @throws MojoExecutionException if
+     */
+    private void resolveArtifactRanges( final ArtifactItem artifactItem )
+    {
+        VersionRange range;
+        try
+        {
+            range = VersionRange.createFromVersionSpec( artifactItem.getVersion() );
+        }
+        catch ( InvalidVersionSpecificationException ivse )
+        {
+            this.getLog().warn( "Found invalid version range on artifact: " + artifactItem );
+            range = null;
+        }
+
+        if ( range != null && range.hasRestrictions() )
+        {
+            // First, try and find the artifact in the projects list of already, resolved
+            // dependencies:
+            ComparableVersion foundVersion = null;
+
+            if ( getProject().getDependencyArtifacts() != null )
+            {
+                for ( Artifact a : getProject().getDependencyArtifacts() )
+                {
+                    if ( artifactItem.getArtifactId().equals( a.getArtifactId() )
+                            && artifactItem.getGroupId().equals( a.getGroupId() )
+                            && range.containsVersion( new DefaultArtifactVersion( a.getVersion() ) ) )
+                    {
+
+                        ComparableVersion v = new ComparableVersion( a.getVersion() );
+                        if ( foundVersion == null || v.compareTo( foundVersion ) > 0 )
+                        {
+                            foundVersion = v;
+                        }
+                    }
+                }
+            }
+
+            if ( foundVersion == null )
+            {
+                // If we've not found the artifact in the resolved list of project dependencies,
+                // then attempt to use the dependency resolver to resolve the version range:
+
+                ProjectBuildingRequest request = newResolveArtifactProjectBuildingRequest();
+
+                DefaultDependableCoordinate searchDep = new DefaultDependableCoordinate();
+                searchDep.setGroupId( artifactItem.getGroupId() );
+                searchDep.setArtifactId( artifactItem.getArtifactId() );
+                searchDep.setVersion( artifactItem.getVersion() );
+                searchDep.setType( artifactItem.getType() );
+                searchDep.setClassifier( artifactItem.getClassifier() );
+
+                Iterable<ArtifactResult> result;
+                try
+                {
+                    result = dependencyResolver.resolveDependencies( request, searchDep, null );
+                }
+                catch ( DependencyResolverException are )
+                {
+                    result = null;
+                    this.getLog().warn( are );
+                }
+
+                if ( result != null )
+                {
+                    for ( ArtifactResult artifact : result )
+                    {
+                        ComparableVersion v = new ComparableVersion( artifact.getArtifact().getVersion() );
+                        if ( foundVersion == null || v.compareTo( foundVersion ) > 0 )
+                        {
+                            foundVersion = v;
+                        }
+                    }
+                }
+            }
+
+            if ( foundVersion != null )
+            {
+                this.getLog().info( "Resolved version from: " + range.toString() + ", to: " + foundVersion );
+                artifactItem.setVersion( foundVersion.toString() );
+            }
+        }
     }
 
     private boolean checkIfProcessingNeeded( ArtifactItem item )
