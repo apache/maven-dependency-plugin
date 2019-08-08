@@ -19,13 +19,6 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  * under the License.    
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.VersionRange;
@@ -38,6 +31,14 @@ import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler
 import org.apache.maven.project.MavenProject;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class TestUnpackMojo
     extends AbstractDependencyMojoTestCase
@@ -527,6 +528,12 @@ public class TestUnpackMojo
         assertUnpacked( item, true );
     }
 
+    /**
+     * The following code has been modified to prevent the
+     * JDK bug which is described in detail
+     * https://bugs.openjdk.java.net/browse/JDK-8177809
+     *
+     */
     public void testUnpackOverWriteIfNewer()
         throws Exception
     {
@@ -567,16 +574,25 @@ public class TestUnpackMojo
         displayFile( "unpackedFile", unpackedFile );
         displayFile( "artifact    ", artifact.getFile() );
         displayFile( "marker      ", marker );
+
+        long markerLastModifiedMillis = Files.getLastModifiedTime( marker.toPath() ).toMillis();
+        long unpackedFileLastModifiedMillis = Files.getLastModifiedTime( unpackedFile.toPath() ).toMillis();
+
         System.out.println( "marker.lastModified() = " + marker.lastModified() );
         System.out.println( "unpackedFile.lastModified() = " + unpackedFile.lastModified() );
-        assertTrue( "unpackedFile '" + unpackedFile + "' lastModified() == " + marker.lastModified()
-            + ": should be different", marker.lastModified() != unpackedFile.lastModified() );
+        System.out.println( "markerLastModifiedMillis = " + markerLastModifiedMillis );
+        System.out.println( "unpackedFileLastModifiedMillis = " + unpackedFileLastModifiedMillis );
+
+        assertTrue( "unpackedFile '" + unpackedFile + "' lastModified() == " + markerLastModifiedMillis
+                + ": should be different", markerLastModifiedMillis != unpackedFileLastModifiedMillis );
     }
 
-    private void displayFile( String description, File file )
+    private void displayFile( String description, File file ) throws IOException
     {
-        System.out.println( description + ' ' + DateFormatUtils.ISO_DATETIME_FORMAT.format( file.lastModified() ) + ' '
-            + file.getPath().substring( getBasedir().length() ) );
+        long toMillis = Files.getLastModifiedTime( file.toPath() ).toMillis();
+        System.out.println( description + ' ' + DateFormatUtils.ISO_DATETIME_FORMAT.format(
+                file.lastModified() ) + ' ' + toMillis + ' ' + file.getPath().substring(
+                getBasedir().length() ) );
     }
 
     public void assertUnpacked( ArtifactItem item, boolean overWrite )

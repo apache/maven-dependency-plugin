@@ -19,16 +19,18 @@ package org.apache.maven.plugins.dependency.utils.filters;
  * under the License.
  */
 
-import java.io.File;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.shared.artifact.filter.collection.AbstractArtifactsFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.codehaus.plexus.util.StringUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
@@ -266,7 +268,7 @@ public class DestFileFilter
     }
 
     @Override
-    public boolean isArtifactIncluded( ArtifactItem item )
+    public boolean isArtifactIncluded( ArtifactItem item ) throws ArtifactFilterException
     {
         Artifact artifact = item.getArtifact();
 
@@ -294,7 +296,28 @@ public class DestFileFilter
             destFile = new File( destFolder, item.getDestFileName() );
         }
 
-        return overWrite || !destFile.exists()
-            || ( overWriteIfNewer && artifact.getFile().lastModified() > destFile.lastModified() );
+        return overWrite || !destFile.exists() || ( overWriteIfNewer && getLastModified(
+                artifact.getFile() ) > getLastModified( destFile ) );
+    }
+
+    /**
+     * Using simply {@code File.getLastModified} will return sometimes a wrong value see JDK bug for details.
+     *
+     * https://bugs.openjdk.java.net/browse/JDK-8177809
+     *
+     * @param file {@link File}
+     * @return the last modification time in milliseconds.
+     * @throws ArtifactFilterException in case of a IO Exception.
+     */
+    private long getLastModified( File file ) throws ArtifactFilterException
+    {
+        try
+        {
+            return Files.getLastModifiedTime( file.toPath() ).toMillis();
+        }
+        catch ( IOException e )
+        {
+            throw new ArtifactFilterException( "IO Exception", e );
+        }
     }
 }
