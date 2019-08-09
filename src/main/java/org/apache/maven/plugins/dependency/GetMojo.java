@@ -41,6 +41,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.repository.RepositorySystem;
+import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
 import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
@@ -71,8 +73,8 @@ public class GetMojo
     private ArtifactResolver artifactResolver;
 
     /**
-    *
-    */
+     *
+     */
     @Component
     private DependencyResolver dependencyResolver;
 
@@ -84,6 +86,12 @@ public class GetMojo
      */
     @Component( role = ArtifactRepositoryLayout.class )
     private Map<String, ArtifactRepositoryLayout> repositoryLayouts;
+
+    /**
+     * The repository system.
+     */
+    @Component
+    private RepositorySystem repositorySystem;
 
     private DefaultDependableCoordinate coordinate = new DefaultDependableCoordinate();
 
@@ -216,6 +224,11 @@ public class GetMojo
 
             buildingRequest.setRemoteRepositories( repoList );
 
+            Settings settings = session.getSettings();
+            repositorySystem.injectMirror( repoList, settings.getMirrors() );
+            repositorySystem.injectProxy( repoList, settings.getProxies() );
+            repositorySystem.injectAuthentication( repoList, settings.getServers() );
+
             if ( transitive )
             {
                 getLog().info( "Resolving " + coordinate + " with transitive dependencies" );
@@ -264,7 +277,7 @@ public class GetMojo
             if ( !matcher.matches() )
             {
                 throw new MojoFailureException( repo, "Invalid syntax for repository: " + repo,
-                                                "Invalid syntax for repository. Use \"id::layout::url\" or \"URL\"." );
+                    "Invalid syntax for repository. Use \"id::layout::url\" or \"URL\"." );
             }
 
             id = matcher.group( 1 ).trim();
