@@ -62,13 +62,13 @@ public class TestGetMojo
         assertNotNull( mojo );
 
         LegacySupport legacySupport = lookup( LegacySupport.class );
-        MavenSession session = newMavenSession(new MavenProjectStub());
+        MavenSession session = newMavenSession( new MavenProjectStub() );
         Settings settings = session.getSettings();
         Server server = new Server();
         server.setId( "myserver" );
         server.setUsername( "foo" );
         server.setPassword( "bar" );
-        settings.addServer(server);
+        settings.addServer( server );
         legacySupport.setSession( session );
         DefaultRepositorySystemSession repoSession =
             (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
@@ -125,17 +125,21 @@ public class TestGetMojo
     public void testRemoteRepositoriesAuthentication()
         throws Exception
     {
-        org.eclipse.jetty.server.Server server = createServer( 8000 );
-        server.start();
+        org.eclipse.jetty.server.Server server = createServer();
+        try {
+            server.start();
 
-        setVariableValueToObject( mojo, "remoteRepositories", "myserver::default::http://localhost:8000/maven" );
-        mojo.setGroupId( "test" );
-        mojo.setArtifactId( "test" );
-        mojo.setVersion( "1.0" );
+            setVariableValueToObject( mojo, "remoteRepositories", "myserver::default::" + server.getURI() );
+            mojo.setGroupId( "test" );
+            mojo.setArtifactId( "test" );
+            mojo.setVersion( "1.0" );
 
-        mojo.execute();
-
-        server.stop();
+            mojo.execute();
+        }
+        finally
+        {
+            server.stop();
+        }
     }
 
     /**
@@ -193,24 +197,26 @@ public class TestGetMojo
         }
     }
 
-    private ContextHandler createContextHandler() {
+    private ContextHandler createContextHandler()
+    {
         ResourceHandler resourceHandler = new ResourceHandler();
-        Path resourceDirectory = Paths.get("src", "test", "resources", "unit", "get-test", "repository");
-        resourceHandler.setResourceBase(resourceDirectory.toString());
-        resourceHandler.setDirectoriesListed(true);
+        Path resourceDirectory = Paths.get( "src", "test", "resources", "unit", "get-test", "repository" );
+        resourceHandler.setResourceBase( resourceDirectory.toString() );
+        resourceHandler.setDirectoriesListed( true );
 
-        ContextHandler contextHandler = new ContextHandler("/maven");
-        contextHandler.setHandler(resourceHandler);
+        ContextHandler contextHandler = new ContextHandler( "/maven" );
+        contextHandler.setHandler( resourceHandler );
         return contextHandler;
     }
 
-    private org.eclipse.jetty.server.Server createServer( int port) {
-        org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server( port );
+    private org.eclipse.jetty.server.Server createServer()
+    {
+        org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server( 0 );
         server.setStopAtShutdown( true );
 
-        LoginService loginService = new HashLoginService("myrealm",
-            "src/test/resources/unit/get-test/realm.properties");
-        server.addBean(loginService);
+        LoginService loginService = new HashLoginService( "myrealm",
+            "src/test/resources/unit/get-test/realm.properties" );
+        server.addBean( loginService );
 
         ConstraintSecurityHandler security = new ConstraintSecurityHandler();
         server.setHandler( security );
