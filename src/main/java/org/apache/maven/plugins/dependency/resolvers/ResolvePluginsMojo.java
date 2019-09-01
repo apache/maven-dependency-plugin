@@ -181,7 +181,7 @@ public class ResolvePluginsMojo
         artifacts.addAll( reports );
         artifacts.addAll( plugins );
 
-        final FilterArtifacts filter = getPluginArtifactsFilter();
+        final FilterArtifacts filter = getArtifactsFilter();
         artifacts = filter.filter( artifacts );
 
         Set<Artifact> resolvedArtifacts = new LinkedHashSet<Artifact>( artifacts.size() );

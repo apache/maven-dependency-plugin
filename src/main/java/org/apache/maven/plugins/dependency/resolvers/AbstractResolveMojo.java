@@ -27,12 +27,12 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.fromDependencies.AbstractDependencyFilterMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ClassifierFilter;
 import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
 import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
+import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
@@ -72,7 +72,7 @@ public abstract class AbstractResolveMojo
     protected boolean appendOutput;
 
     /**
-     * Don't resolve plugins that are in the current reactor. Only works for plugins at the moment.
+     * Don't resolve plugins that are in the current reactor.
      *
      * @since 2.7
      */
@@ -94,40 +94,19 @@ public abstract class AbstractResolveMojo
     /**
      * @return {@link FilterArtifacts}
      */
-    protected FilterArtifacts getPluginArtifactsFilter()
+    protected FilterArtifacts getArtifactsFilter()
     {
-        if ( excludeReactor )
-        {
-            final StringBuilder exAids = new StringBuilder();
-            if ( this.excludeArtifactIds != null )
-            {
-                exAids.append( this.excludeArtifactIds );
-            }
-
-            for ( final MavenProject rp : reactorProjects )
-            {
-                if ( !"maven-plugin".equals( rp.getPackaging() ) )
-                {
-                    continue;
-                }
-
-                if ( exAids.length() > 0 )
-                {
-                    exAids.append( "," );
-                }
-
-                exAids.append( rp.getArtifactId() );
-            }
-
-            this.excludeArtifactIds = exAids.toString();
-        }
-
         final FilterArtifacts filter = new FilterArtifacts();
 
-        //CHECKSTYLE_OFF: LineLength
-        filter.addFilter( new org.apache.maven.shared.artifact.filter.collection.ScopeFilter( DependencyUtil.cleanToBeTokenizedString( this.includeScope ),
-                                                                                              DependencyUtil.cleanToBeTokenizedString( this.excludeScope ) ) );
-        //CHECKSTYLE_ON: LineLength
+        if ( excludeReactor )
+        {
+
+            filter.addFilter( new ExcludeReactorProjectsArtifactFilter( reactorProjects, getLog() ) );
+
+        }
+
+        filter.addFilter( new ScopeFilter( DependencyUtil.cleanToBeTokenizedString( this.includeScope ),
+                                           DependencyUtil.cleanToBeTokenizedString( this.excludeScope ) ) );
 
         filter.addFilter( new TypeFilter( DependencyUtil.cleanToBeTokenizedString( this.includeTypes ),
                                           DependencyUtil.cleanToBeTokenizedString( this.excludeTypes ) ) );
