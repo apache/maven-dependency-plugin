@@ -40,15 +40,15 @@ import java.util.Set;
 public class ExcludeReactorProjectsArtifactFilter extends AbstractArtifactsFilter
 {
     private final Log log;
-    private final Set<Artifact> reactorArtifacts;
+    private final Set<String> reactorArtifactKeys;
 
     public ExcludeReactorProjectsArtifactFilter( final List<MavenProject> reactorProjects, final Log log )
     {
         this.log = log;
-        this.reactorArtifacts = new HashSet<>( reactorProjects.size() );
+        this.reactorArtifactKeys = new HashSet<>( reactorProjects.size() );
         for ( final MavenProject project : reactorProjects )
         {
-            this.reactorArtifacts.add( project.getArtifact() );
+            this.reactorArtifactKeys.add( ArtifactUtils.key( project.getArtifact() ) );
         }
     }
 
@@ -79,9 +79,8 @@ public class ExcludeReactorProjectsArtifactFilter extends AbstractArtifactsFilte
 
     private boolean isArtifactInReactor( final Artifact artifact )
     {
-        for ( final Artifact reactorArtifact : reactorArtifacts )
+        for ( final String reactorArtifactKey : this.reactorArtifactKeys )
         {
-            final String reactorArtifactKey = ArtifactUtils.key( reactorArtifact );
             final String artifactKey = ArtifactUtils.key( artifact );
 
             // This check only includes GAV. Should we take a look at the types, too?
