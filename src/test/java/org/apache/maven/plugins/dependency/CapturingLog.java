@@ -1,10 +1,5 @@
 package org.apache.maven.plugins.dependency;
 
-import org.apache.maven.plugin.logging.Log;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,6 +18,11 @@ import java.io.StringWriter;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+import org.apache.maven.plugin.logging.Log;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /** Helper to do assertions on what is being logged. */
 public class CapturingLog

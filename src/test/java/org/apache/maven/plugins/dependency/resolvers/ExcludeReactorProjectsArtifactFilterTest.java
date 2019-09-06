@@ -1,19 +1,5 @@
 package org.apache.maven.plugins.dependency.resolvers;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.testing.stubs.ArtifactStub;
-import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
-import org.apache.maven.plugins.dependency.CapturingLog;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -32,6 +18,20 @@ import static java.util.Collections.singletonList;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.testing.stubs.ArtifactStub;
+import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
+import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.plugins.dependency.CapturingLog;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 
 public class ExcludeReactorProjectsArtifactFilterTest
         extends AbstractDependencyMojoTestCase
