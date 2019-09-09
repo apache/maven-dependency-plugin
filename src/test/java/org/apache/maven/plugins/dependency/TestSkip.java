@@ -1,8 +1,14 @@
 package org.apache.maven.plugins.dependency;
 
 import org.apache.maven.plugin.Mojo;
+import org.apache.maven.plugin.logging.Log;
+import org.mockito.ArgumentCaptor;
 
 import java.io.File;
+
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -158,11 +164,13 @@ public class TestSkip
         File testPom = new File( getBasedir(), "target/test-classes/unit/skip-test/" + configFile );
         Mojo mojo = lookupMojo( mojoName, testPom );
         assertNotNull( mojo );
-        CapturingLog log = new CapturingLog();
+        Log log = mock( Log.class );
         mojo.setLog( log );
         mojo.execute();
 
-        assertTrue( log.getContent().contains( "Skipping plugin execution" ) );
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass( String.class );
+        verify( log, atLeastOnce() ).info( captor.capture() );
+        assertTrue( captor.getValue().contains( "Skipping plugin execution" ) );
     }
 
 }

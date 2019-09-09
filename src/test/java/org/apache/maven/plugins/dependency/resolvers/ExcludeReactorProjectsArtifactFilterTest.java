@@ -20,18 +20,24 @@ package org.apache.maven.plugins.dependency.resolvers;
  */
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.stubs.ArtifactStub;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
-import org.apache.maven.plugins.dependency.CapturingLog;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
+import org.mockito.ArgumentCaptor;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ExcludeReactorProjectsArtifactFilterTest
         extends AbstractDependencyMojoTestCase
@@ -54,9 +60,11 @@ public class ExcludeReactorProjectsArtifactFilterTest
         artifacts.add( artifact1 );
         artifacts.add( artifact2 );
 
-        CapturingLog log = new CapturingLog();
         MavenProject project = new MavenProjectStub();
         project.setArtifact(artifact1);
+
+        Log log = mock( Log.class );
+        when( log.isDebugEnabled() ).thenReturn( false );
 
         ExcludeReactorProjectsArtifactFilter filter = new ExcludeReactorProjectsArtifactFilter(
                 singletonList( project ), log );
@@ -64,6 +72,7 @@ public class ExcludeReactorProjectsArtifactFilterTest
         Set<Artifact> result = filter.filter( artifacts );
 
         assertEquals( 1, result.size() );
+        verify( log, never() ).debug( any( String.class ) );
     }
 
     public void testFilterWithLogging()
@@ -74,15 +83,19 @@ public class ExcludeReactorProjectsArtifactFilterTest
         artifact.setArtifactId("maven-dependency-plugin-dummy");
         artifact.setVersion("1.0");
 
-        CapturingLog log = new CapturingLog();
         MavenProject project = new MavenProjectStub();
         project.setArtifact(artifact);
+
+        Log log = mock( Log.class );
+        when( log.isDebugEnabled() ).thenReturn( true );
 
         ExcludeReactorProjectsArtifactFilter filter = new ExcludeReactorProjectsArtifactFilter(
                 singletonList( project ), log );
 
         filter.filter( singleton( artifact ) );
 
-        assertTrue( log.getContent().contains( "Skipped artifact" ) );
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass( String.class );
+        verify( log ).debug( captor.capture() );
+        assertTrue( captor.getValue().contains( "Skipped artifact" ) );
     }
 }
