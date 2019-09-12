@@ -37,6 +37,13 @@
             <artifactId>test-sub-1</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+
+        <!-- this dependency should pull in a few transitive dependencies -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -20,16 +20,19 @@ package org.apache.maven.plugins.dependency.resolvers;
  */
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
-import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
+import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -78,7 +81,7 @@ public class GoOfflineMojo
             }
 
         }
-        catch ( ArtifactFilterException | ArtifactResolverException e )
+        catch ( DependencyResolverException e )
         {
             throw new MojoExecutionException( e.getMessage(), e );
         }
@@ -89,27 +92,60 @@ public class GoOfflineMojo
      * This method resolves the dependency artifacts from the project.
      *
      * @return set of resolved dependency artifacts.
-     * @throws ArtifactFilterException in case of an error while filtering the artifacts.
-     * @throws ArtifactResolverException in case of an error while resolving the artifacts.
+     * @throws DependencyResolverException in case of an error while resolving the artifacts.
      */
     protected Set<Artifact> resolveDependencyArtifacts()
-            throws ArtifactFilterException, ArtifactResolverException
+            throws DependencyResolverException
     {
-        final Set<Artifact> artifacts = getProject().getDependencyArtifacts();
+        final Collection<Dependency> dependencies = getProject().getDependencies();
+        final ProjectBuildingRequest buildingRequest =
+                new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
 
-        return resolveFilteredArtifacts( artifacts );
+        return resolveArtifacts( buildingRequest, dependencies );
+    }
+
+    private Set<Artifact> resolveArtifacts( final ProjectBuildingRequest buildingRequest,
+                                            final Collection<Dependency> dependencies )
+            throws DependencyResolverException
+    {
+        final TransformableFilter filter = getTransformableFilter();
+
+        final Iterable<ArtifactResult> artifactResults = getDependencyResolver().resolveDependencies(
+                buildingRequest, dependencies, null, filter );
+
+        final Set<Artifact> results = new HashSet<>();
+
+        for ( final ArtifactResult artifactResult : artifactResults )
+        {
+            results.add( artifactResult.getArtifact() );
+        }
+
+        return results;
+    }
+
+    private TransformableFilter getTransformableFilter()
+    {
+        if ( this.excludeReactor )
+        {
+            return new ExcludeReactorProjectsDependencyFilter( this.reactorProjects, getLog() );
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /**
      * This method resolves the plugin artifacts from the project.
      *
      * @return set of resolved plugin artifacts.
-     * @throws ArtifactFilterException in case of an error while filtering the artifacts.
-     * @throws ArtifactResolverException in case of an error while resolving the artifacts.
+     * @throws DependencyResolverException in case of an error while resolving the artifacts.
      */
     protected Set<Artifact> resolvePluginArtifacts()
-            throws ArtifactFilterException, ArtifactResolverException
+            throws DependencyResolverException
     {
+        final Set<Dependency> dependencies = new HashSet<>();
+
         final Set<Artifact> plugins = getProject().getPluginArtifacts();
         final Set<Artifact> reports = getProject().getReportArtifacts();
 
@@ -117,28 +153,26 @@ public class GoOfflineMojo
         artifacts.addAll( reports );
         artifacts.addAll( plugins );
 
-        return resolveFilteredArtifacts( artifacts );
-    }
+        final ProjectBuildingRequest buildingRequest =
+                new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
 
-    protected Set<Artifact> resolveFilteredArtifacts( final Set<Artifact> artifacts )
-            throws ArtifactFilterException, ArtifactResolverException
-    {
-        final FilterArtifacts filter = getArtifactsFilter();
-        final Set<Artifact> filteredArtifacts = filter.filter( artifacts );
-
-        final Set<Artifact> resolvedArtifacts = new LinkedHashSet<>( artifacts.size() );
-        for ( final Artifact artifact : filteredArtifacts )
+        for ( Artifact artifact : artifacts )
         {
-            final ProjectBuildingRequest buildingRequest =
-                    new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
-
-            // resolve the new artifact
-            final Artifact resolvedArtifact = getArtifactResolver()
-                    .resolveArtifact( buildingRequest, artifact ).getArtifact();
-            resolvedArtifacts.add( resolvedArtifact );
+            dependencies.add( createDependencyFromArtifact( artifact ) );
         }
 
-        return resolvedArtifacts;
+        return resolveArtifacts( buildingRequest, dependencies );
+    }
+
+    private Dependency createDependencyFromArtifact( final Artifact artifact )
+    {
+        final Dependency dependency = new Dependency();
+        dependency.setGroupId( artifact.getGroupId() );
+        dependency.setArtifactId( artifact.getArtifactId() );
+        dependency.setVersion( artifact.getVersion() );
+        dependency.setType( artifact.getType() );
+
+        return dependency;
     }
 
     @Override

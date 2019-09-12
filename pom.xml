@@ -90,6 +90,7 @@ under the License.
 
   <properties>
     <mavenVersion>3.0</mavenVersion>
+<!--    <mavenVersion>3.6.2</mavenVersion>-->
     <doxiaVersion>1.4</doxiaVersion>
     <pluginTestingVersion>2.1</pluginTestingVersion>
     <javaVersion>7</javaVersion>
@@ -130,6 +131,25 @@ under the License.
       <artifactId>maven-repository-metadata</artifactId>
       <version>${mavenVersion}</version>
     </dependency>
+
+<!--    <dependency>-->
+<!--      <groupId>org.eclipse.aether</groupId>-->
+<!--      <artifactId>aether-api</artifactId>-->
+<!--      <version>0.9.0.M2</version>-->
+<!--&lt;!&ndash;      <scope>provided</scope>&ndash;&gt;-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>org.eclipse.aether</groupId>-->
+<!--      <artifactId>aether-util</artifactId>-->
+<!--      <version>0.9.0.M2</version>-->
+<!--      &lt;!&ndash; provided scoped dependencies aren't shaded &ndash;&gt;-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>org.eclipse.aether</groupId>-->
+<!--      <artifactId>aether-impl</artifactId>-->
+<!--      <version>0.9.0.M2</version>-->
+<!--&lt;!&ndash;      <scope>provided</scope>&ndash;&gt;-->
+<!--    </dependency>-->
 
     <!-- reporting -->
     <dependency>
@@ -396,7 +416,7 @@ under the License.
                 <pomExclude>tree-verbose/pom.xml</pomExclude>
               </pomExcludes>
               <pomIncludes>
-                <pomInclude>*/pom.xml</pomInclude>
+                <pomInclude>mdep-204-go-offline-resolve-intermodule/pom.xml</pomInclude>
                 <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
               <!-- for mrm -->
