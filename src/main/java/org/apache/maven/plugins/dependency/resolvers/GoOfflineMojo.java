@@ -29,6 +29,8 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
+import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
+import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 
 import java.util.Collection;
@@ -98,26 +100,35 @@ public class GoOfflineMojo
             throws DependencyResolverException
     {
         final Collection<Dependency> dependencies = getProject().getDependencies();
+        final Set<DependableCoordinate> dependableCoordinates = new HashSet<>();
         final ProjectBuildingRequest buildingRequest =
                 new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
 
-        return resolveArtifacts( buildingRequest, dependencies );
+        for ( Dependency dependency : dependencies )
+        {
+            dependableCoordinates.add( createDependendableCoordinateFromDependency( dependency ) );
+        }
+
+        return resolveDependableCoordinate( buildingRequest, dependableCoordinates );
     }
 
-    private Set<Artifact> resolveArtifacts( final ProjectBuildingRequest buildingRequest,
-                                            final Collection<Dependency> dependencies )
+    private Set<Artifact> resolveDependableCoordinate( final ProjectBuildingRequest buildingRequest,
+                                                        final Collection<DependableCoordinate> dependableCoordinates )
             throws DependencyResolverException
     {
         final TransformableFilter filter = getTransformableFilter();
 
-        final Iterable<ArtifactResult> artifactResults = getDependencyResolver().resolveDependencies(
-                buildingRequest, dependencies, null, filter );
-
         final Set<Artifact> results = new HashSet<>();
 
-        for ( final ArtifactResult artifactResult : artifactResults )
+        for ( DependableCoordinate dependableCoordinate : dependableCoordinates )
         {
-            results.add( artifactResult.getArtifact() );
+            final Iterable<ArtifactResult> artifactResults = getDependencyResolver().resolveDependencies(
+                    buildingRequest, dependableCoordinate, filter );
+
+            for ( final ArtifactResult artifactResult : artifactResults )
+            {
+                results.add( artifactResult.getArtifact() );
+            }
         }
 
         return results;
@@ -144,7 +155,7 @@ public class GoOfflineMojo
     protected Set<Artifact> resolvePluginArtifacts()
             throws DependencyResolverException
     {
-        final Set<Dependency> dependencies = new HashSet<>();
+        final Set<DependableCoordinate> dependableCoordinates = new HashSet<>();
 
         final Set<Artifact> plugins = getProject().getPluginArtifacts();
         final Set<Artifact> reports = getProject().getReportArtifacts();
@@ -158,21 +169,32 @@ public class GoOfflineMojo
 
         for ( Artifact artifact : artifacts )
         {
-            dependencies.add( createDependencyFromArtifact( artifact ) );
+            dependableCoordinates.add( createDependendableCoordinateFromArtifact( artifact ) );
         }
 
-        return resolveArtifacts( buildingRequest, dependencies );
+        return resolveDependableCoordinate( buildingRequest, dependableCoordinates );
     }
 
-    private Dependency createDependencyFromArtifact( final Artifact artifact )
+    private DependableCoordinate createDependendableCoordinateFromArtifact( final Artifact artifact )
     {
-        final Dependency dependency = new Dependency();
-        dependency.setGroupId( artifact.getGroupId() );
-        dependency.setArtifactId( artifact.getArtifactId() );
-        dependency.setVersion( artifact.getVersion() );
-        dependency.setType( artifact.getType() );
+        final DefaultDependableCoordinate result = new DefaultDependableCoordinate();
+        result.setGroupId( artifact.getGroupId() );
+        result.setArtifactId( artifact.getArtifactId() );
+        result.setVersion( artifact.getVersion() );
+        result.setType( artifact.getType() );
 
-        return dependency;
+        return result;
+    }
+
+    private DependableCoordinate createDependendableCoordinateFromDependency( final Dependency dependency )
+    {
+        final DefaultDependableCoordinate result = new DefaultDependableCoordinate();
+        result.setGroupId( dependency.getGroupId() );
+        result.setArtifactId( dependency.getArtifactId() );
+        result.setVersion( dependency.getVersion() );
+        result.setType( dependency.getType() );
+
+        return result;
     }
 
     @Override
