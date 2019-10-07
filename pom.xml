@@ -90,7 +90,7 @@ under the License.
 
   <properties>
     <mavenVersion>3.0</mavenVersion>
-    <doxiaVersion>1.4</doxiaVersion>
+    <doxiaVersion>1.9</doxiaVersion>
     <pluginTestingVersion>2.1</pluginTestingVersion>
     <javaVersion>7</javaVersion>
   </properties>
@@ -140,7 +140,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>
       <artifactId>maven-reporting-impl</artifactId>
-      <version>2.3</version>
+      <version>3.0.0</version>
       <exclusions>
         <exclusion>
           <artifactId>maven-artifact-manager</artifactId>
@@ -170,6 +170,11 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>
       <artifactId>doxia-sink-api</artifactId>
+      <version>${doxiaVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-core</artifactId>
       <version>${doxiaVersion}</version>
     </dependency>
     <dependency>
