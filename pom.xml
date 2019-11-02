@@ -91,6 +91,7 @@ under the License.
   <properties>
     <mavenVersion>3.0</mavenVersion>
     <doxiaVersion>1.9</doxiaVersion>
+    <jettyVersion>9.2.28.v20190418</jettyVersion>
     <pluginTestingVersion>2.1</pluginTestingVersion>
     <javaVersion>7</javaVersion>
   </properties>
@@ -314,6 +315,25 @@ under the License.
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>${jettyVersion}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlet</artifactId>
+      <version>${jettyVersion}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-webapp</artifactId>
+      <version>${jettyVersion}</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -334,6 +354,11 @@ under the License.
               <exclude>src/it/projects/tree-multimodule/module-a/expected.txt</exclude>
               <exclude>src/it/projects/tree-multimodule/module-b/expected.txt</exclude>
               <exclude>src/it/projects/tree-verbose/expected.txt</exclude>
+              <!--
+                These files contain real repository artifacts.
+              -->
+              <exclude>src/test/resources/unit/get-test/repository/test/test/1.0/test-1.0.jar.sha1</exclude>
+              <exclude>src/test/resources/unit/get-test/repository/test/test/1.0/test-1.0.pom.sha1</exclude>
             </excludes>
           </configuration>
         </plugin>
