@@ -137,8 +137,14 @@ public class TreeMojo
 
     /**
      * If specified, this parameter will cause the dependency tree to be written using the specified format. Currently
-     * supported format are: <code>text</code> (default), <code>dot</code>, <code>graphml</code> and <code>tgf</code>.
-     * These additional formats can be plotted to image files.
+     * supported format are:
+     * <ul>
+     *   <li>text (default)</li>
+     *   <li>dot</li>
+     *   <li>graphml</li>
+     *   <li>tgf</li>
+     *   <li>xml</li>
+     * </ul>
      *
      * @since 2.2
      */
@@ -501,6 +507,10 @@ public class TreeMojo
         else if ( "dot".equals( outputType ) )
         {
             return new DOTDependencyNodeVisitor( writer );
+        }
+        else if ( "xml".equals( outputType ) )
+        {
+            return new XMLDependencyNodeVisitor( writer );
         }
         else
         {
