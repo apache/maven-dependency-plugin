@@ -29,13 +29,12 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
-
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import java.io.Writer;
 import java.util.List;
 
@@ -73,7 +72,7 @@ public class XMLDependencyNodeVisitor
                 DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
                 Document doc = dBuilder.newDocument();
-                Element rootElement = getNode( doc, node );
+                Element rootElement = getNode( doc, node, true );
                 doc.appendChild( rootElement );
 
                 List<DependencyNode> children = node.getChildren();
@@ -119,8 +118,9 @@ public class XMLDependencyNodeVisitor
      */
     private void handleChild( Document doc, DependencyNode node, Element parent )
     {
-        Element element = getNode( doc, node );
-        parent.appendChild( element );
+        Element element = getNode( doc, node, false );
+        Node dependencies = parent.getElementsByTagName( "dependencies" ).item(0);
+        dependencies.appendChild( element );
 
         List<DependencyNode> children = node.getChildren();
         for ( DependencyNode child : children )
@@ -135,14 +135,39 @@ public class XMLDependencyNodeVisitor
      * @param doc Docuemnt to use
      * @param node Node to get data from
      */
-    private Element getNode( Document doc, DependencyNode node )
+    private Element getNode( Document doc, DependencyNode node, Boolean root )
     {
         Artifact artifact = node.getArtifact();
-        Element element = doc.createElement( artifact.getArtifactId() );
-        element.setAttribute( "groupId", artifact.getGroupId() );
-        element.setAttribute( "version", artifact.getVersion() );
-        element.setAttribute( "scope", artifact.getScope() );
-        element.setAttribute( "type", artifact.getType() );
+        Element element = null;
+
+        if (root) {
+            element = doc.createElement( "project" );
+        } else {
+            element = doc.createElement( "dependency" );
+        }
+
+        Element groupId = doc.createElement( "groupId" );
+        groupId.setTextContent(artifact.getGroupId());
+        element.appendChild( groupId );
+
+        Element artifactId = doc.createElement( "artifactId" );
+        artifactId.setTextContent(artifact.getArtifactId());
+        element.appendChild( artifactId );
+
+        Element version = doc.createElement( "version" );
+        version.setTextContent(artifact.getVersion());
+        element.appendChild( version );
+
+        Element scope = doc.createElement( "scope" );
+        scope.setTextContent(artifact.getScope());
+        element.appendChild( scope );
+
+        Element type = doc.createElement( "type" );
+        type.setTextContent(artifact.getType());
+        element.appendChild( type );
+
+        Element dependencies = doc.createElement( "dependencies" );
+        element.appendChild( dependencies );
 
         return element;
     }
