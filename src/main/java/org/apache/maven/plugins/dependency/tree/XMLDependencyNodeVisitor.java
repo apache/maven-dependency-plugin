@@ -119,7 +119,7 @@ public class XMLDependencyNodeVisitor
     private void handleChild( Document doc, DependencyNode node, Element parent )
     {
         Element element = getNode( doc, node, false );
-        Node dependencies = parent.getElementsByTagName( "dependencies" ).item(0);
+        Node dependencies = parent.getElementsByTagName( "dependencies" ).item( 0 );
         dependencies.appendChild( element );
 
         List<DependencyNode> children = node.getChildren();
@@ -140,30 +140,33 @@ public class XMLDependencyNodeVisitor
         Artifact artifact = node.getArtifact();
         Element element = null;
 
-        if (root) {
+        if ( root )
+        {
             element = doc.createElement( "project" );
-        } else {
+        }
+        else
+        {
             element = doc.createElement( "dependency" );
         }
 
         Element groupId = doc.createElement( "groupId" );
-        groupId.setTextContent(artifact.getGroupId());
+        groupId.setTextContent( artifact.getGroupId() );
         element.appendChild( groupId );
 
         Element artifactId = doc.createElement( "artifactId" );
-        artifactId.setTextContent(artifact.getArtifactId());
+        artifactId.setTextContent( artifact.getArtifactId() );
         element.appendChild( artifactId );
 
         Element version = doc.createElement( "version" );
-        version.setTextContent(artifact.getVersion());
+        version.setTextContent( artifact.getVersion() );
         element.appendChild( version );
 
         Element scope = doc.createElement( "scope" );
-        scope.setTextContent(artifact.getScope());
+        scope.setTextContent( artifact.getScope() );
         element.appendChild( scope );
 
         Element type = doc.createElement( "type" );
-        type.setTextContent(artifact.getType());
+        type.setTextContent( artifact.getType() );
         element.appendChild( type );
 
         Element dependencies = doc.createElement( "dependencies" );
