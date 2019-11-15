@@ -161,13 +161,22 @@ public class XMLDependencyNodeVisitor
         version.setTextContent( artifact.getVersion() );
         element.appendChild( version );
 
-        Element scope = doc.createElement( "scope" );
-        scope.setTextContent( artifact.getScope() );
-        element.appendChild( scope );
+        if ( !root )
+        {
+            Element scope = doc.createElement( "scope" );
+            scope.setTextContent( artifact.getScope() );
+            element.appendChild( scope );
 
-        Element type = doc.createElement( "type" );
-        type.setTextContent( artifact.getType() );
-        element.appendChild( type );
+            Element type = doc.createElement( "type" );
+            type.setTextContent( artifact.getType() );
+            element.appendChild( type );
+        }
+        else
+        {
+            Element packaging = doc.createElement( "packaging" );
+            packaging.setTextContent( artifact.getType() );
+            element.appendChild( packaging );
+        }
 
         Element dependencies = doc.createElement( "dependencies" );
         element.appendChild( dependencies );
