@@ -35,7 +35,7 @@ public class TestGetMojo
 {
     GetMojo mojo;
 
-    protected void z_setUp()
+    protected void setUp()
         throws Exception
     {
         // required for mojo lookups to work
@@ -56,16 +56,12 @@ public class TestGetMojo
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }
 
-    public void testNothing()
-    {
-    }
-
     /**
      * Test transitive parameter
      * 
      * @throws Exception in case of errors
      */
-    public void z_testTransitive()
+    public void testTransitive()
         throws Exception
     {
         // Set properties, transitive = default value = true
@@ -88,7 +84,7 @@ public class TestGetMojo
      * 
      * @throws Exception in case of errors
      */
-    public void z_testRemoteRepositories()
+    public void testRemoteRepositories()
         throws Exception
     {
         setVariableValueToObject( mojo, "remoteRepositories", "central::default::http://repo1.maven.apache.org/maven2,"
@@ -105,7 +101,7 @@ public class TestGetMojo
      * 
      * @throws Exception in case of errors
      */
-    public void z_testParseRepository()
+    public void testParseRepository()
         throws Exception
     {
         ArtifactRepository repo;
