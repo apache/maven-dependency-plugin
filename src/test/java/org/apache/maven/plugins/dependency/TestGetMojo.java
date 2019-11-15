@@ -77,10 +77,6 @@ public class TestGetMojo
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }
 
-    public void testNothing()
-    {
-    }
-
     /**
      * Test transitive parameter
      * 
