@@ -96,6 +96,16 @@ under the License.
     <javaVersion>7</javaVersion>
   </properties>
 
+  <dependencyManagement>
+      <dependencies>
+          <dependency>
+              <groupId>org.ow2.asm</groupId>
+              <artifactId>asm</artifactId>
+              <version>7.2</version>
+          </dependency>
+      </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <!-- Remove once deprecated code has been replaced/removed  -->
     <dependency>
