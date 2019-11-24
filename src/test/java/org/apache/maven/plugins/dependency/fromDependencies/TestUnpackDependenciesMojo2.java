@@ -100,7 +100,7 @@ public class TestUnpackDependenciesMojo2
         throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
     {
 
-        Set<Artifact> artifacts = new HashSet<Artifact>();
+        Set<Artifact> artifacts = new HashSet<>();
         Artifact release = stubFactory.getReleaseArtifact();
         assertTrue( release.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
 
@@ -120,7 +120,7 @@ public class TestUnpackDependenciesMojo2
         throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
     {
 
-        Set<Artifact> artifacts = new HashSet<Artifact>();
+        Set<Artifact> artifacts = new HashSet<>();
         Artifact release = stubFactory.getReleaseArtifact();
         assertTrue( release.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
 
@@ -141,7 +141,7 @@ public class TestUnpackDependenciesMojo2
         throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
     {
 
-        Set<Artifact> artifacts = new HashSet<Artifact>();
+        Set<Artifact> artifacts = new HashSet<>();
         Artifact snap = stubFactory.getSnapshotArtifact();
         assertTrue( snap.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
 
@@ -163,7 +163,7 @@ public class TestUnpackDependenciesMojo2
         throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
     {
 
-        Set<Artifact> artifacts = new HashSet<Artifact>();
+        Set<Artifact> artifacts = new HashSet<>();
         Artifact snap = stubFactory.getSnapshotArtifact();
         assertTrue( snap.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
 
@@ -186,7 +186,7 @@ public class TestUnpackDependenciesMojo2
         throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
     {
 
-        Set<Artifact> artifacts = new HashSet<Artifact>();
+        Set<Artifact> artifacts = new HashSet<>();
         Artifact snap = stubFactory.getSnapshotArtifact();
         assertTrue( snap.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
 

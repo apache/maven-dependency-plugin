@@ -315,12 +315,12 @@ public abstract class AbstractAnalyzeMojo
             analysis = analysis.ignoreNonCompile();
         }
 
-        Set<Artifact> usedDeclared = new LinkedHashSet<Artifact>( analysis.getUsedDeclaredArtifacts() );
-        Set<Artifact> usedUndeclared = new LinkedHashSet<Artifact>( analysis.getUsedUndeclaredArtifacts() );
-        Set<Artifact> unusedDeclared = new LinkedHashSet<Artifact>( analysis.getUnusedDeclaredArtifacts() );
+        Set<Artifact> usedDeclared = new LinkedHashSet<>( analysis.getUsedDeclaredArtifacts() );
+        Set<Artifact> usedUndeclared = new LinkedHashSet<>( analysis.getUsedUndeclaredArtifacts() );
+        Set<Artifact> unusedDeclared = new LinkedHashSet<>( analysis.getUnusedDeclaredArtifacts() );
 
-        Set<Artifact> ignoredUsedUndeclared = new LinkedHashSet<Artifact>();
-        Set<Artifact> ignoredUnusedDeclared = new LinkedHashSet<Artifact>();
+        Set<Artifact> ignoredUsedUndeclared = new LinkedHashSet<>();
+        Set<Artifact> ignoredUnusedDeclared = new LinkedHashSet<>();
 
         ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclared, ignoredDependencies ) );
         ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclared, ignoredUsedUndeclaredDependencies ) );
@@ -497,7 +497,7 @@ public abstract class AbstractAnalyzeMojo
         throws MojoExecutionException
     {
         ArtifactFilter filter = new StrictPatternExcludesArtifactFilter( Arrays.asList( excludes ) );
-        List<Artifact> result = new ArrayList<Artifact>();
+        List<Artifact> result = new ArrayList<>();
 
         for ( Iterator<Artifact> it = artifacts.iterator(); it.hasNext(); )
         {

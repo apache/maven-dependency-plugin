@@ -19,6 +19,8 @@ package org.apache.maven.plugins.dependency.testUtils;
  * under the License.    
  */
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -28,13 +30,11 @@ import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.factory.DefaultArtifactFactory;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.handler.manager.DefaultArtifactHandlerManager;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.shared.model.fileset.FileSet;
 import org.apache.maven.shared.model.fileset.util.FileSetManager;
 import org.codehaus.plexus.util.ReflectionUtils;
-import static junit.framework.Assert.assertTrue;
 
 public class DependencyTestUtils
 {
@@ -66,7 +66,7 @@ public class DependencyTestUtils
     {
         ArtifactFactory artifactFactory;
         ArtifactHandlerManager manager = new DefaultArtifactHandlerManager();
-        setVariableValueToObject( manager, "artifactHandlers", new HashMap() );
+        setVariableValueToObject( manager, "artifactHandlers", new HashMap<>() );
 
         artifactFactory = new DefaultArtifactFactory();
         setVariableValueToObject( artifactFactory, "artifactHandlerManager", manager );

@@ -43,7 +43,7 @@ import org.apache.maven.plugin.testing.SilentLog;
 public class TestSourcesMarkerFileHandler
     extends TestCase
 {
-    List<Artifact> artifacts = new ArrayList<Artifact>();
+    List<Artifact> artifacts = new ArrayList<>();
 
     Log log = new SilentLog();
 

@@ -64,7 +64,7 @@ public class TestIncludeExcludeUnpackMojo
         stubFactory.setSrcFile( new File( getBasedir() + File.separatorChar + PACKED_FILE_PATH ) );
         Artifact artifact = stubFactory.createArtifact( "test", "test", "1.0", Artifact.SCOPE_COMPILE, "jar", null );
         ArtifactItem item = stubFactory.getArtifactItem( artifact );
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( item );
         assertNotNull( mojo );
         assertNotNull( mojo.getProject() );
@@ -229,7 +229,7 @@ public class TestIncludeExcludeUnpackMojo
         Artifact artifact = stubFactory.createArtifact( "test", "test", "1.0", Artifact.SCOPE_COMPILE, "jar", null );
         ArtifactItem item = stubFactory.getArtifactItem( artifact );
         item.setIncludes( "**/*" );
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( item );
         mojo.setArtifactItems( list );
         mojo.setIncludes( "**/test2" + UNPACKED_FILE_SUFFIX );
@@ -246,7 +246,7 @@ public class TestIncludeExcludeUnpackMojo
         Artifact artifact = stubFactory.createArtifact( "test", "test", "1.0", Artifact.SCOPE_COMPILE, "jar", null );
         ArtifactItem item = stubFactory.getArtifactItem( artifact );
         item.setExcludes( "**/*" );
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( item );
         mojo.setArtifactItems( list );
         mojo.setExcludes( "**/test2" + UNPACKED_FILE_SUFFIX );
@@ -260,7 +260,7 @@ public class TestIncludeExcludeUnpackMojo
     public void testIncludeArtifactItemMultipleMarker()
         throws Exception
     {
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         Artifact artifact = stubFactory.createArtifact( "test", "test", "1.0", Artifact.SCOPE_COMPILE, "jar", null );
         ArtifactItem item = stubFactory.getArtifactItem( artifact );
         item.setOverWrite( "false" );
@@ -282,7 +282,7 @@ public class TestIncludeExcludeUnpackMojo
     public void testIncludeArtifactItemMultipleExecutions()
         throws Exception
     {
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         Artifact artifact = stubFactory.createArtifact( "test", "test", "1.0", Artifact.SCOPE_COMPILE, "jar", null );
         ArtifactItem item = stubFactory.getArtifactItem( artifact );
         item.setOverWrite( "false" );

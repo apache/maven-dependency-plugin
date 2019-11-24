@@ -49,7 +49,7 @@ import org.sonatype.aether.util.DefaultRepositorySystemSession;
 public class TestClassifierTypeTranslator
     extends AbstractDependencyMojoTestCase
 {
-    Set<Artifact> artifacts = new HashSet<Artifact>();
+    Set<Artifact> artifacts = new HashSet<>();
 
     ArtifactFactory artifactFactory;
 
@@ -69,7 +69,7 @@ public class TestClassifierTypeTranslator
         super.setUp( "classifiertype-translator", false );
 
         artifactHandlerManager = new DefaultArtifactHandlerManager();
-        this.setVariableValueToObject( artifactHandlerManager, "artifactHandlers", new HashMap() );
+        this.setVariableValueToObject( artifactHandlerManager, "artifactHandlers", new HashMap<>() );
 
         artifactFactory = new DefaultArtifactFactory();
         this.setVariableValueToObject( artifactFactory, "artifactHandlerManager", artifactHandlerManager );

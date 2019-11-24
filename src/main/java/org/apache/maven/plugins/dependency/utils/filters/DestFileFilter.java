@@ -111,7 +111,7 @@ public class DestFileFilter
     public Set<Artifact> filter( Set<Artifact> artifacts )
         throws ArtifactFilterException
     {
-        Set<Artifact> result = new LinkedHashSet<Artifact>();
+        Set<Artifact> result = new LinkedHashSet<>();
 
         for ( Artifact artifact : artifacts )
         {

@@ -138,7 +138,7 @@ public abstract class AbstractResolveMojo
         Iterable<ArtifactResult> artifactResults =
             getDependencyResolver().resolveDependencies( buildingRequest, artifact, null );
 
-        Set<Artifact> artifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> artifacts = new LinkedHashSet<>();
 
         for ( final ArtifactResult artifactResult : artifactResults )
         {

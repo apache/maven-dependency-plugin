@@ -41,7 +41,7 @@ import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterExceptio
 public class TestDestFileFilter
     extends TestCase
 {
-    Set<Artifact> artifacts = new HashSet<Artifact>();
+    Set<Artifact> artifacts = new HashSet<>();
 
     Log log = new SilentLog();
 
@@ -215,7 +215,7 @@ public class TestDestFileFilter
     public void testGettersSetters()
     {
         DestFileFilter filter = new DestFileFilter( null );
-        assertTrue( filter.getOutputFileDirectory() == null );
+        assertNull( filter.getOutputFileDirectory() );
         filter.setOutputFileDirectory( outputFolder );
         assertSame( outputFolder, filter.getOutputFileDirectory() );
 

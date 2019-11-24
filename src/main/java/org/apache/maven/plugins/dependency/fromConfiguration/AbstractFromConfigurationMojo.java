@@ -22,6 +22,7 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
@@ -297,10 +298,10 @@ public abstract class AbstractFromConfigurationMojo
     {
         for ( Dependency dependency : dependencies )
         {
-            if ( StringUtils.equals( dependency.getArtifactId(), artifact.getArtifactId() )
-                && StringUtils.equals( dependency.getGroupId(), artifact.getGroupId() )
-                && ( looseMatch || StringUtils.equals( dependency.getClassifier(), artifact.getClassifier() ) )
-                && ( looseMatch || StringUtils.equals( dependency.getType(), artifact.getType() ) ) )
+            if ( Objects.equals( dependency.getArtifactId(), artifact.getArtifactId() )
+                && Objects.equals( dependency.getGroupId(), artifact.getGroupId() )
+                && ( looseMatch || Objects.equals( dependency.getClassifier(), artifact.getClassifier() ) )
+                && ( looseMatch || Objects.equals( dependency.getType(), artifact.getType() ) ) )
             {
                 artifact.setVersion( dependency.getVersion() );
 

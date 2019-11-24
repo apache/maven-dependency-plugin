@@ -66,7 +66,7 @@ public class ClassifierTypeTranslator
         Set<ArtifactCoordinate> results;
 
         log.debug( "Translating Artifacts using Classifier: " + this.classifier + " and Type: " + this.type );
-        results = new LinkedHashSet<ArtifactCoordinate>();
+        results = new LinkedHashSet<>();
         for ( Artifact artifact : artifacts )
         {
             // this translator must pass both type and classifier here so we

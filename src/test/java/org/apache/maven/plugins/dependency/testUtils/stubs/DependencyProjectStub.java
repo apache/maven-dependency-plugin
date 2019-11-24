@@ -39,9 +39,11 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.CiManagement;
 import org.apache.maven.model.Contributor;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.DistributionManagement;
+import org.apache.maven.model.Extension;
 import org.apache.maven.model.IssueManagement;
 import org.apache.maven.model.License;
 import org.apache.maven.model.MailingList;
@@ -50,7 +52,10 @@ import org.apache.maven.model.Organization;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginManagement;
 import org.apache.maven.model.Prerequisites;
+import org.apache.maven.model.Profile;
+import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.Reporting;
+import org.apache.maven.model.Repository;
 import org.apache.maven.model.Resource;
 import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.testing.stubs.DefaultArtifactHandlerStub;
@@ -75,29 +80,29 @@ public class DependencyProjectStub
 
     private MavenProject parent;
 
-    private List dependencies;
+    private List<Dependency> dependencies;
 
     private File file;
 
-    private List collectedProjects;
+    private List<MavenProject> collectedProjects;
 
-    private List attachedArtifacts;
+    private List<Artifact> attachedArtifacts;
 
-    private List compileSourceRoots;
+    private List<String> compileSourceRoots;
 
-    private List testCompileSourceRoots;
+    private List<String> testCompileSourceRoots;
 
-    private List scriptSourceRoots;
+    private List<String> scriptSourceRoots;
 
-    private List pluginArtifactRepositories;
+    private List<ArtifactRepository> pluginArtifactRepositories;
 
     // private ArtifactRepository releaseArtifactRepository;
 
     // private ArtifactRepository snapshotArtifactRepository;
 
-    private List activeProfiles;
+    private List<Profile> activeProfiles;
 
-    private Set dependencyArtifacts;
+    private Set<Artifact> dependencyArtifacts;
 
     private DependencyManagement dependencyManagement;
 
@@ -119,27 +124,27 @@ public class DependencyProjectStub
 
     private boolean executionRoot;
 
-    private List compileArtifacts;
+    private List<Artifact> compileArtifacts;
 
-    private List compileDependencies;
+    private List<Dependency> compileDependencies;
 
-    private List systemDependencies;
+    private List<Dependency> systemDependencies;
 
-    private List testClasspathElements;
+    private List<String> testClasspathElements;
 
-    private List testDependencies;
+    private List<Dependency> testDependencies;
 
-    private List systemClasspathElements;
+    private List<String> systemClasspathElements;
 
-    private List systemArtifacts;
+    private List<Artifact> systemArtifacts;
 
-    private List testArtifacts;
+    private List<Artifact> testArtifacts;
 
-    private List runtimeArtifacts;
+    private List<Artifact> runtimeArtifacts;
 
-    private List runtimeDependencies;
+    private List<Dependency> runtimeDependencies;
 
-    private List runtimeClasspathElements;
+    private List<String> runtimeClasspathElements;
 
     private String modelVersion;
 
@@ -155,7 +160,7 @@ public class DependencyProjectStub
 
     private String defaultGoal;
 
-    private Set artifacts;
+    private Set<Artifact> artifacts;
 
     private Properties properties;
 
@@ -218,14 +223,14 @@ public class DependencyProjectStub
         this.parent = mavenProject;
     }
 
-    public void setRemoteArtifactRepositories( List list )
+    public void setRemoteArtifactRepositories( List<ArtifactRepository> list )
     {
 
     }
 
-    public List getRemoteArtifactRepositories()
+    public List<ArtifactRepository> getRemoteArtifactRepositories()
     {
-        return Collections.singletonList( "" );
+        return Collections.emptyList();
     }
 
     public boolean hasParent()
@@ -248,16 +253,16 @@ public class DependencyProjectStub
         return new File( PlexusTestCase.getBasedir() );
     }
 
-    public void setDependencies( List list )
+    public void setDependencies( List<Dependency> list )
     {
         dependencies = list;
     }
 
-    public List getDependencies()
+    public List<Dependency> getDependencies()
     {
         if ( dependencies == null )
         {
-            dependencies = Collections.EMPTY_LIST;
+            dependencies = Collections.emptyList();
         }
         return dependencies;
     }
@@ -313,106 +318,106 @@ public class DependencyProjectStub
         }
     }
 
-    public List getCompileSourceRoots()
+    public List<String> getCompileSourceRoots()
     {
         return compileSourceRoots;
     }
 
-    public List getScriptSourceRoots()
+    public List<String> getScriptSourceRoots()
     {
         return scriptSourceRoots;
     }
 
-    public List getTestCompileSourceRoots()
+    public List<String> getTestCompileSourceRoots()
     {
         return testCompileSourceRoots;
     }
 
-    public List getCompileClasspathElements()
+    public List<String> getCompileClasspathElements()
         throws DependencyResolutionRequiredException
     {
         return compileSourceRoots;
     }
 
-    public void setCompileArtifacts( List compileArtifacts )
+    public void setCompileArtifacts( List<Artifact> compileArtifacts )
     {
         this.compileArtifacts = compileArtifacts;
     }
 
-    public List getCompileArtifacts()
+    public List<Artifact> getCompileArtifacts()
     {
         return compileArtifacts;
     }
 
-    public List getCompileDependencies()
+    public List<Dependency> getCompileDependencies()
     {
         return compileDependencies;
     }
 
-    public List getTestClasspathElements()
+    public List<String> getTestClasspathElements()
         throws DependencyResolutionRequiredException
     {
         return testClasspathElements;
     }
 
-    public List getTestArtifacts()
+    public List<Artifact> getTestArtifacts()
     {
         return testArtifacts;
     }
 
-    public List getTestDependencies()
+    public List<Dependency> getTestDependencies()
     {
         return testDependencies;
     }
 
-    public List getRuntimeClasspathElements()
+    public List<String> getRuntimeClasspathElements()
         throws DependencyResolutionRequiredException
     {
         return runtimeClasspathElements;
     }
 
-    public List getRuntimeArtifacts()
+    public List<Artifact> getRuntimeArtifacts()
     {
         return runtimeArtifacts;
     }
 
-    public List getRuntimeDependencies()
+    public List<Dependency> getRuntimeDependencies()
     {
         return runtimeDependencies;
     }
 
-    public List getSystemClasspathElements()
+    public List<String> getSystemClasspathElements()
         throws DependencyResolutionRequiredException
     {
         return systemClasspathElements;
     }
 
-    public List getSystemArtifacts()
+    public List<Artifact> getSystemArtifacts()
     {
         return systemArtifacts;
     }
 
-    public void setRuntimeClasspathElements( List runtimeClasspathElements )
+    public void setRuntimeClasspathElements( List<String> runtimeClasspathElements )
     {
         this.runtimeClasspathElements = runtimeClasspathElements;
     }
 
-    public void setAttachedArtifacts( List attachedArtifacts )
+    public void setAttachedArtifacts( List<Artifact> attachedArtifacts )
     {
         this.attachedArtifacts = attachedArtifacts;
     }
 
-    public void setCompileSourceRoots( List compileSourceRoots )
+    public void setCompileSourceRoots( List<String> compileSourceRoots )
     {
         this.compileSourceRoots = compileSourceRoots;
     }
 
-    public void setTestCompileSourceRoots( List testCompileSourceRoots )
+    public void setTestCompileSourceRoots( List<String> testCompileSourceRoots )
     {
         this.testCompileSourceRoots = testCompileSourceRoots;
     }
 
-    public void setScriptSourceRoots( List scriptSourceRoots )
+    public void setScriptSourceRoots( List<String> scriptSourceRoots )
     {
         this.scriptSourceRoots = scriptSourceRoots;
     }
@@ -447,47 +452,47 @@ public class DependencyProjectStub
         // this.buildOverlay = buildOverlay;
     }
 
-    public void setCompileDependencies( List compileDependencies )
+    public void setCompileDependencies( List<Dependency> compileDependencies )
     {
         this.compileDependencies = compileDependencies;
     }
 
-    public void setSystemDependencies( List systemDependencies )
+    public void setSystemDependencies( List<Dependency> systemDependencies )
     {
         this.systemDependencies = systemDependencies;
     }
 
-    public void setTestClasspathElements( List testClasspathElements )
+    public void setTestClasspathElements( List<String> testClasspathElements )
     {
         this.testClasspathElements = testClasspathElements;
     }
 
-    public void setTestDependencies( List testDependencies )
+    public void setTestDependencies( List<Dependency> testDependencies )
     {
         this.testDependencies = testDependencies;
     }
 
-    public void setSystemClasspathElements( List systemClasspathElements )
+    public void setSystemClasspathElements( List<String> systemClasspathElements )
     {
         this.systemClasspathElements = systemClasspathElements;
     }
 
-    public void setSystemArtifacts( List systemArtifacts )
+    public void setSystemArtifacts( List<Artifact> systemArtifacts )
     {
         this.systemArtifacts = systemArtifacts;
     }
 
-    public void setTestArtifacts( List testArtifacts )
+    public void setTestArtifacts( List<Artifact> testArtifacts )
     {
         this.testArtifacts = testArtifacts;
     }
 
-    public void setRuntimeArtifacts( List runtimeArtifacts )
+    public void setRuntimeArtifacts( List<Artifact> runtimeArtifacts )
     {
         this.runtimeArtifacts = runtimeArtifacts;
     }
 
-    public void setRuntimeDependencies( List runtimeDependencies )
+    public void setRuntimeDependencies( List<Dependency> runtimeDependencies )
     {
         this.runtimeDependencies = runtimeDependencies;
     }
@@ -497,7 +502,7 @@ public class DependencyProjectStub
         this.model = model;
     }
 
-    public List getSystemDependencies()
+    public List<Dependency> getSystemDependencies()
     {
         return systemDependencies;
     }
@@ -657,9 +662,9 @@ public class DependencyProjectStub
 
     }
 
-    public List getMailingLists()
+    public List<MailingList> getMailingLists()
     {
-        return Collections.singletonList( "" );
+        return Collections.emptyList();
     }
 
     public void addMailingList( MailingList mailingList )
@@ -672,9 +677,9 @@ public class DependencyProjectStub
 
     }
 
-    public List getDevelopers()
+    public List<Developer> getDevelopers()
     {
-        return Collections.singletonList( "" );
+        return Collections.emptyList();
     }
 
     public void addDeveloper( Developer developer )
@@ -682,14 +687,14 @@ public class DependencyProjectStub
 
     }
 
-    public void setContributors( List list )
+    public void setContributors( List<Contributor> list )
     {
 
     }
 
-    public List getContributors()
+    public List<Contributor> getContributors()
     {
-        return Collections.singletonList( "" );
+        return Collections.emptyList();
     }
 
     public void addContributor( Contributor contributor )
@@ -707,14 +712,14 @@ public class DependencyProjectStub
         return null;
     }
 
-    public List getResources()
+    public List<Resource> getResources()
     {
-        return Collections.singletonList( "" );
+        return Collections.emptyList();
     }
 
-    public List getTestResources()
+    public List<Resource> getTestResources()
     {
-        return Collections.singletonList( "" );
+        return Collections.emptyList();
     }
 
     public void addResource( Resource resource )
@@ -742,9 +747,9 @@ public class DependencyProjectStub
 
     }
 
-    public List getLicenses()
+    public List<License> getLicenses()
     {
-        return Collections.singletonList( "" );
+        return Collections.emptyList();
     }
 
     public void addLicense( License license )
@@ -752,16 +757,16 @@ public class DependencyProjectStub
 
     }
 
-    public void setArtifacts( Set set )
+    public void setArtifacts( Set<Artifact> set )
     {
         this.artifacts = set;
     }
 
-    public Set getArtifacts()
+    public Set<Artifact> getArtifacts()
     {
         if ( artifacts == null )
         {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
         else
         {
@@ -769,54 +774,54 @@ public class DependencyProjectStub
         }
     }
 
-    public Map getArtifactMap()
+    public Map<String, Artifact> getArtifactMap()
     {
-        return Collections.singletonMap( "", "" );
+        return Collections.emptyMap();
     }
 
-    public void setPluginArtifacts( Set set )
-    {
-
-    }
-
-    public Set getPluginArtifacts()
-    {
-        return Collections.singleton( "" );
-    }
-
-    public Map getPluginArtifactMap()
-    {
-        return Collections.singletonMap( "", "" );
-    }
-
-    public void setReportArtifacts( Set set )
+    public void setPluginArtifacts( Set<Artifact> set )
     {
 
     }
 
-    public Set getReportArtifacts()
+    public Set<Artifact> getPluginArtifacts()
     {
-        return Collections.singleton( "" );
+        return Collections.emptySet();
     }
 
-    public Map getReportArtifactMap()
+    public Map<String, Artifact> getPluginArtifactMap()
     {
-        return Collections.singletonMap( "", "" );
+        return Collections.emptyMap();
     }
 
-    public void setExtensionArtifacts( Set set )
+    public void setReportArtifacts( Set<Artifact> set )
     {
 
     }
 
-    public Set getExtensionArtifacts()
+    public Set<Artifact> getReportArtifacts()
     {
-        return Collections.singleton( "" );
+        return Collections.emptySet();
     }
 
-    public Map getExtensionArtifactMap()
+    public Map<String, Artifact> getReportArtifactMap()
     {
-        return Collections.singletonMap( "", "" );
+        return Collections.emptyMap();
+    }
+
+    public void setExtensionArtifacts( Set<Artifact> set )
+    {
+
+    }
+
+    public Set<Artifact> getExtensionArtifacts()
+    {
+        return Collections.emptySet();
+    }
+
+    public Map<String, Artifact> getExtensionArtifactMap()
+    {
+        return Collections.emptyMap();
     }
 
     public void setParentArtifact( Artifact artifact )
@@ -829,22 +834,22 @@ public class DependencyProjectStub
         return null;
     }
 
-    public List getRepositories()
+    public List<Repository> getRepositories()
     {
-        return Collections.singletonList( "" );
+        return Collections.emptyList();
     }
 
-    public List getReportPlugins()
+    public List<ReportPlugin> getReportPlugins()
     {
-        return Collections.singletonList( "" );
+        return Collections.emptyList();
     }
 
-    public List getBuildPlugins()
+    public List<Plugin> getBuildPlugins()
     {
-        return Collections.singletonList( "" );
+        return Collections.emptyList();
     }
 
-    public List getModules()
+    public List<String> getModules()
     {
         return Collections.singletonList( "" );
     }
@@ -864,22 +869,22 @@ public class DependencyProjectStub
 
     }
 
-    public List getCollectedProjects()
+    public List<MavenProject> getCollectedProjects()
     {
         return collectedProjects;
     }
 
-    public void setCollectedProjects( List list )
+    public void setCollectedProjects( List<MavenProject> list )
     {
         this.collectedProjects = list;
     }
 
-    public void setPluginArtifactRepositories( List list )
+    public void setPluginArtifactRepositories( List<ArtifactRepository> list )
     {
         this.pluginArtifactRepositories = list;
     }
 
-    public List getPluginArtifactRepositories()
+    public List<ArtifactRepository> getPluginArtifactRepositories()
     {
         return pluginArtifactRepositories;
     }
@@ -889,17 +894,17 @@ public class DependencyProjectStub
         return null;
     }
 
-    public List getPluginRepositories()
+    public List<Repository> getPluginRepositories()
     {
-        return Collections.singletonList( "" );
+        return Collections.emptyList();
     }
 
-    public void setActiveProfiles( List list )
+    public void setActiveProfiles( List<Profile> list )
     {
         activeProfiles = list;
     }
 
-    public List getActiveProfiles()
+    public List<Profile> getActiveProfiles()
     {
         return activeProfiles;
     }
@@ -916,7 +921,7 @@ public class DependencyProjectStub
         }
     }
 
-    public List getAttachedArtifacts()
+    public List<Artifact> getAttachedArtifacts()
     {
         return attachedArtifacts;
     }
@@ -953,12 +958,12 @@ public class DependencyProjectStub
 
     }
 
-    public Set getDependencyArtifacts()
+    public Set<Artifact> getDependencyArtifacts()
     {
         return dependencyArtifacts;
     }
 
-    public void setDependencyArtifacts( Set set )
+    public void setDependencyArtifacts( Set<Artifact> set )
     {
         this.dependencyArtifacts = set;
     }
@@ -983,15 +988,15 @@ public class DependencyProjectStub
         return originalModel;
     }
 
-    public List getBuildExtensions()
+    public List<Extension> getBuildExtensions()
     {
-        return Collections.singletonList( "" );
+        return Collections.emptyList();
     }
 
-    public Set createArtifacts( ArtifactFactory artifactFactory, String string, ArtifactFilter artifactFilter )
+    public Set<Artifact> createArtifacts( ArtifactFactory artifactFactory, String string, ArtifactFilter artifactFilter )
         throws InvalidDependencyVersionException
     {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     public void addProjectReference( MavenProject mavenProject )
@@ -1013,14 +1018,14 @@ public class DependencyProjectStub
         return properties;
     }
 
-    public List getFilters()
+    public List<String> getFilters()
     {
         return Collections.singletonList( "" );
     }
 
-    public Map getProjectReferences()
+    public Map<String, MavenProject> getProjectReferences()
     {
-        return Collections.singletonMap( "", "" );
+        return Collections.emptyMap();
     }
 
     public boolean isExecutionRoot()

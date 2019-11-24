@@ -427,7 +427,7 @@ public class TreeMojo
      */
     private DependencyNodeFilter createDependencyNodeFilter()
     {
-        List<DependencyNodeFilter> filters = new ArrayList<DependencyNodeFilter>();
+        List<DependencyNodeFilter> filters = new ArrayList<>();
 
         // filter includes
         if ( includes != null )

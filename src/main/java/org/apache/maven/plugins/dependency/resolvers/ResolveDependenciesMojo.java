@@ -161,7 +161,7 @@ public class ResolveDependenciesMojo
             sb.append( System.lineSeparator() );
             sb.append( "The following files were skipped:" );
             sb.append( System.lineSeparator() );
-            Set<Artifact> skippedDependencies = new LinkedHashSet<Artifact>();
+            Set<Artifact> skippedDependencies = new LinkedHashSet<>();
             skippedDependencies.addAll( results.getSkippedDependencies() );
             sb.append( buildArtifactListOutput( skippedDependencies, outputAbsoluteArtifactFilename, theOutputScope,
                                                 theSort ) );
@@ -172,7 +172,7 @@ public class ResolveDependenciesMojo
             sb.append( System.lineSeparator() );
             sb.append( "The following files have NOT been resolved:" );
             sb.append( System.lineSeparator() );
-            Set<Artifact> unResolvedDependencies = new LinkedHashSet<Artifact>();
+            Set<Artifact> unResolvedDependencies = new LinkedHashSet<>();
             unResolvedDependencies.addAll( results.getUnResolvedDependencies() );
             sb.append( buildArtifactListOutput( unResolvedDependencies, outputAbsoluteArtifactFilename, theOutputScope,
                                                 theSort ) );
@@ -186,7 +186,7 @@ public class ResolveDependenciesMojo
                                                    boolean theOutputScope, boolean theSort )
     {
         StringBuilder sb = new StringBuilder();
-        List<String> artifactStringList = new ArrayList<String>();
+        List<String> artifactStringList = new ArrayList<>();
         for ( Artifact artifact : artifacts )
         {
             MessageBuilder messageBuilder = MessageUtils.buffer();
@@ -331,25 +331,13 @@ public class ResolveDependenciesMojo
                 }
             }
         }
-        catch ( ClassNotFoundException e )
+        catch ( ClassNotFoundException | SecurityException | IllegalAccessException | IllegalArgumentException e )
         {
             // do nothing
         }
         catch ( NoSuchMethodException e )
         {
             e.printStackTrace();
-        }
-        catch ( SecurityException e )
-        {
-            // do nothing
-        }
-        catch ( IllegalAccessException e )
-        {
-            // do nothing
-        }
-        catch ( IllegalArgumentException e )
-        {
-            // do nothing
         }
         catch ( InvocationTargetException e )
         {

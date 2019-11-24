@@ -100,7 +100,7 @@ public class TestUnpackMojo
         item.setGroupId( "groupId" );
         item.setVersion( "1.0" );
 
-        ArrayList<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        ArrayList<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( createArtifact( item ) );
 
         mojo.setArtifactItems( list );
@@ -220,7 +220,7 @@ public class TestUnpackMojo
         item.setGroupId( "groupId" );
         item.setType( "type" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -251,7 +251,7 @@ public class TestUnpackMojo
         dep2.setType( item.getType() );
         dep2.setVersion( "2.1" );
 
-        List<Dependency> list = new ArrayList<Dependency>( 2 );
+        List<Dependency> list = new ArrayList<>( 2 );
         list.add( dep2 );
         list.add( dep );
 
@@ -268,7 +268,7 @@ public class TestUnpackMojo
         item.setGroupId( "groupId" );
         item.setType( "jar" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -290,7 +290,7 @@ public class TestUnpackMojo
         item.setGroupId( "groupId" );
         item.setType( "war" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -318,7 +318,7 @@ public class TestUnpackMojo
         dep2.setType( item.getType() );
         dep2.setVersion( "3.1" );
 
-        List<Dependency> list = new ArrayList<Dependency>( 2 );
+        List<Dependency> list = new ArrayList<>( 2 );
         list.add( dep2 );
         list.add( dep );
 
@@ -345,7 +345,7 @@ public class TestUnpackMojo
         item.setGroupId( "groupId" );
         item.setType( "jar" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
 
         mojo.setArtifactItems( list );
@@ -382,7 +382,7 @@ public class TestUnpackMojo
         stubFactory.createArtifact( "groupId", "artifactId-2", VersionRange.createFromVersion( "3.1" ), null, "jar",
                                     "classifier", false );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
 
         mojo.setArtifactItems( list );
@@ -418,7 +418,7 @@ public class TestUnpackMojo
         item.setType( "type" );
         item.setVersion( "1.0" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -456,7 +456,7 @@ public class TestUnpackMojo
 
         ArtifactItem item = new ArtifactItem( createArtifact( release ) );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -476,7 +476,7 @@ public class TestUnpackMojo
 
         ArtifactItem item = new ArtifactItem( createArtifact( artifact ) );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -496,7 +496,7 @@ public class TestUnpackMojo
 
         ArtifactItem item = new ArtifactItem( createArtifact( release ) );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -516,7 +516,7 @@ public class TestUnpackMojo
 
         ArtifactItem item = new ArtifactItem( createArtifact( artifact ) );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( item );
         mojo.setArtifactItems( list );
 
