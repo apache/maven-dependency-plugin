@@ -20,7 +20,6 @@ package org.apache.maven.plugins.dependency;
  */
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -200,7 +199,7 @@ public class GetMojo
             new ArtifactRepositoryPolicy( true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS,
                                           ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN );
 
-        List<ArtifactRepository> repoList = new ArrayList<ArtifactRepository>();
+        List<ArtifactRepository> repoList = new ArrayList<>();
 
         if ( pomRemoteRepositories != null )
         {
@@ -210,7 +209,7 @@ public class GetMojo
         if ( remoteRepositories != null )
         {
             // Use the same format as in the deploy plugin id::layout::url
-            List<String> repos = Arrays.asList( StringUtils.split( remoteRepositories, "," ) );
+            String[] repos = StringUtils.split( remoteRepositories, "," );
             for ( String repo : repos )
             {
                 repoList.add( parseRepository( repo, always ) );
@@ -240,11 +239,7 @@ public class GetMojo
                 artifactResolver.resolveArtifact( buildingRequest, toArtifactCoordinate( coordinate ) );
             }
         }
-        catch ( ArtifactResolverException e )
-        {
-            throw new MojoExecutionException( "Couldn't download artifact: " + e.getMessage(), e );
-        }
-        catch ( DependencyResolverException e )
+        catch ( ArtifactResolverException | DependencyResolverException e )
         {
             throw new MojoExecutionException( "Couldn't download artifact: " + e.getMessage(), e );
         }

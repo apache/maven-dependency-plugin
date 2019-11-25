@@ -37,7 +37,7 @@ import org.apache.maven.plugin.testing.SilentLog;
 public class TestUnpackMarkerFileHandler
     extends AbstractMojoTestCase
 {
-    List<ArtifactItem> artifactItems = new ArrayList<ArtifactItem>();
+    List<ArtifactItem> artifactItems = new ArrayList<>();
 
     Log log = new SilentLog();
 
@@ -180,13 +180,13 @@ public class TestUnpackMarkerFileHandler
     public void testGetterSetter()
     {
         UnpackFileMarkerHandler handler = new UnpackFileMarkerHandler( null, null );
-        assertTrue( handler.getArtifactItem() == null );
-        assertTrue( handler.getArtifact() == null );
+        assertNull( handler.getArtifactItem() );
+        assertNull( handler.getArtifact() );
         handler.setArtifactItem( artifactItems.get( 0 ) );
         assertSame( artifactItems.get( 0 ), handler.getArtifactItem() );
         assertSame( artifactItems.get( 0 ).getArtifact(), handler.getArtifact() );
 
-        assertTrue( handler.getMarkerFilesDirectory() == null );
+        assertNull( handler.getMarkerFilesDirectory() );
         handler.setMarkerFilesDirectory( outputFolder );
         assertSame( outputFolder, handler.getMarkerFilesDirectory() );
     }

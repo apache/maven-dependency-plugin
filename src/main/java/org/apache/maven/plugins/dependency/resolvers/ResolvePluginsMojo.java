@@ -100,8 +100,10 @@ public class ResolvePluginsMojo
                     }
 
                     String id = plugin.toString();
-                    sb.append( "   " + id + ( outputAbsoluteArtifactFilename ? ":" + artifactFilename : "" ) );
-                    sb.append( System.lineSeparator() );
+                    sb.append( "   " )
+                            .append( id )
+                            .append( outputAbsoluteArtifactFilename ? ":" + artifactFilename : "" )
+                            .append( System.lineSeparator() );
 
                     if ( !excludeTransitive )
                     {
@@ -128,8 +130,10 @@ public class ResolvePluginsMojo
                             }
 
                             id = artifact.toString();
-                            sb.append( "      " + id + ( outputAbsoluteArtifactFilename ? ":" + artifactFilename : "" )
-                                + System.lineSeparator() );
+                            sb.append( "      " )
+                                    .append( id )
+                                    .append( outputAbsoluteArtifactFilename ? ":" + artifactFilename : "" )
+                                    .append( System.lineSeparator() );
                         }
                     }
                 }
@@ -146,19 +150,7 @@ public class ResolvePluginsMojo
                 }
             }
         }
-        catch ( final IOException e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
-        }
-        catch ( final ArtifactFilterException e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
-        }
-        catch ( ArtifactResolverException e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
-        }
-        catch ( DependencyResolverException e )
+        catch ( IOException | ArtifactFilterException | ArtifactResolverException | DependencyResolverException e )
         {
             throw new MojoExecutionException( e.getMessage(), e );
         }
@@ -177,16 +169,16 @@ public class ResolvePluginsMojo
         final Set<Artifact> plugins = getProject().getPluginArtifacts();
         final Set<Artifact> reports = getProject().getReportArtifacts();
 
-        Set<Artifact> artifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> artifacts = new LinkedHashSet<>();
         artifacts.addAll( reports );
         artifacts.addAll( plugins );
 
         final FilterArtifacts filter = getArtifactsFilter();
         artifacts = filter.filter( artifacts );
 
-        Set<Artifact> resolvedArtifacts = new LinkedHashSet<Artifact>( artifacts.size() );
+        Set<Artifact> resolvedArtifacts = new LinkedHashSet<>( artifacts.size() );
         // final ArtifactFilter filter = getPluginFilter();
-        for ( final Artifact artifact : new LinkedHashSet<Artifact>( artifacts ) )
+        for ( final Artifact artifact : new LinkedHashSet<>( artifacts ) )
         {
             // if ( !filter.include( artifact ) )
             // {

@@ -20,13 +20,13 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  */
 
 import java.io.File;
+import java.util.Objects;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  * ArtifactItem represents information specified in the plugin configuration section for each artifact.
@@ -253,11 +253,11 @@ public class ArtifactItem
     {
         if ( this.classifier == null )
         {
-            return groupId + ":" + artifactId + ":" + StringUtils.defaultString( version, "?" ) + ":" + type;
+            return groupId + ":" + artifactId + ":" + Objects.toString( version, "?" ) + ":" + type;
         }
         else
         {
-            return groupId + ":" + artifactId + ":" + classifier + ":" + StringUtils.defaultString( version, "?" ) + ":"
+            return groupId + ":" + artifactId + ":" + classifier + ":" + Objects.toString( version, "?" ) + ":"
                 + type;
         }
     }

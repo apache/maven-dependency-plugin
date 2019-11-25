@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Objects;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
@@ -205,7 +206,7 @@ public final class DependencyUtil
         // if the classifier and type are the same (sources), then don't
         // repeat.
         // avoids names like foo-sources-sources
-        if ( !StringUtils.equals( artifact.getClassifier(), artifact.getType() ) )
+        if ( !Objects.equals( artifact.getClassifier(), artifact.getType() ) )
         {
             sb.append( "-" );
             sb.append( artifact.getType() );

@@ -43,7 +43,7 @@ import org.apache.maven.plugin.testing.SilentLog;
 public class TestDefaultMarkerFileHandler
     extends TestCase
 {
-    List<Artifact> artifacts = new ArrayList<Artifact>();
+    List<Artifact> artifacts = new ArrayList<>();
 
     Log log = new SilentLog();
 
@@ -163,11 +163,11 @@ public class TestDefaultMarkerFileHandler
     public void testGetterSetter()
     {
         DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler( null, null );
-        assertTrue( handler.getArtifact() == null );
+        assertNull( handler.getArtifact() );
         handler.setArtifact( artifacts.get( 0 ) );
         assertSame( artifacts.get( 0 ), handler.getArtifact() );
 
-        assertTrue( handler.getMarkerFilesDirectory() == null );
+        assertNull( handler.getMarkerFilesDirectory() );
         handler.setMarkerFilesDirectory( outputFolder );
         assertSame( outputFolder, handler.getMarkerFilesDirectory() );
     }

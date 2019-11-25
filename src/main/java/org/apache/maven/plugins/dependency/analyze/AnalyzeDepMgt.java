@@ -135,8 +135,8 @@ public class AnalyzeDepMgt
         if ( depMgtDependencies != null && !depMgtDependencies.isEmpty() )
         {
             // put all the dependencies from depMgt into a map for quick lookup
-            Map<String, Dependency> depMgtMap = new HashMap<String, Dependency>();
-            Map<String, Exclusion> exclusions = new HashMap<String, Exclusion>();
+            Map<String, Dependency> depMgtMap = new HashMap<>();
+            Map<String, Exclusion> exclusions = new HashMap<>();
             for ( Dependency depMgtDependency : depMgtDependencies )
             {
                 depMgtMap.put( depMgtDependency.getManagementKey(), depMgtDependency );
@@ -146,7 +146,7 @@ public class AnalyzeDepMgt
             }
 
             // get dependencies for the project (including transitive)
-            Set<Artifact> allDependencyArtifacts = new LinkedHashSet<Artifact>( project.getArtifacts() );
+            Set<Artifact> allDependencyArtifacts = new LinkedHashSet<>( project.getArtifacts() );
 
             // don't warn if a dependency that is directly listed overrides
             // depMgt. That's ok.
@@ -195,7 +195,7 @@ public class AnalyzeDepMgt
      */
     public Map<String, Exclusion> addExclusions( List<Exclusion> exclusionList )
     {
-        Map<String, Exclusion> exclusions = new HashMap<String, Exclusion>();
+        Map<String, Exclusion> exclusions = new HashMap<>();
         if ( exclusionList != null )
         {
             for ( Exclusion exclusion : exclusionList )
@@ -216,7 +216,7 @@ public class AnalyzeDepMgt
      */
     public List<Artifact> getExclusionErrors( Map<String, Exclusion> exclusions, Set<Artifact> allDependencyArtifacts )
     {
-        List<Artifact> list = new ArrayList<Artifact>();
+        List<Artifact> list = new ArrayList<>();
 
         for ( Artifact artifact : allDependencyArtifacts )
         {
@@ -257,7 +257,7 @@ public class AnalyzeDepMgt
     public Map<Artifact, Dependency> getMismatch( Map<String, Dependency> depMgtMap,
                                                   Set<Artifact> allDependencyArtifacts )
     {
-        Map<Artifact, Dependency> mismatchMap = new HashMap<Artifact, Dependency>();
+        Map<Artifact, Dependency> mismatchMap = new HashMap<>();
 
         for ( Artifact dependencyArtifact : allDependencyArtifacts )
         {

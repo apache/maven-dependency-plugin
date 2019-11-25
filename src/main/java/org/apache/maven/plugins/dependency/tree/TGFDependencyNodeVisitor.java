@@ -95,7 +95,7 @@ public class TGFDependencyNodeVisitor
     /**
      * List of edges.
      */
-    private List<EdgeAppender> edges = new ArrayList<EdgeAppender>();
+    private List<EdgeAppender> edges = new ArrayList<>();
 
     /**
      * Constructor.

@@ -306,7 +306,7 @@ public abstract class AbstractDependencyFilterMojo
         if ( includeParents )
         {
             // add dependencies parents
-            for ( Artifact dep : new ArrayList<Artifact>( artifacts ) )
+            for ( Artifact dep : new ArrayList<>( artifacts ) )
             {
                 addParentArtifacts( buildProjectFromArtifact( dep ), artifacts );
             }
@@ -391,7 +391,7 @@ public abstract class AbstractDependencyFilterMojo
     protected DependencyStatusSets getClassifierTranslatedDependencies( Set<Artifact> artifacts, boolean stopOnFailure )
         throws MojoExecutionException
     {
-        Set<Artifact> unResolvedArtifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> unResolvedArtifacts = new LinkedHashSet<>();
         Set<Artifact> resolvedArtifacts = artifacts;
         DependencyStatusSets status = new DependencyStatusSets();
 
@@ -410,7 +410,7 @@ public abstract class AbstractDependencyFilterMojo
             artifacts = status.getResolvedDependencies();
 
             // resolve the rest of the artifacts
-            resolvedArtifacts = resolve( new LinkedHashSet<ArtifactCoordinate>( coordinates ), stopOnFailure );
+            resolvedArtifacts = resolve( new LinkedHashSet<>( coordinates ), stopOnFailure );
 
             // calculate the artifacts not resolved.
             unResolvedArtifacts.addAll( artifacts );
@@ -450,7 +450,7 @@ public abstract class AbstractDependencyFilterMojo
         }
 
         // calculate the skipped artifacts
-        Set<Artifact> skippedArtifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> skippedArtifacts = new LinkedHashSet<>();
         skippedArtifacts.addAll( artifacts );
         skippedArtifacts.removeAll( unMarkedArtifacts );
 
@@ -469,7 +469,7 @@ public abstract class AbstractDependencyFilterMojo
     {
         ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
 
-        Set<Artifact> resolvedArtifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> resolvedArtifacts = new LinkedHashSet<>();
         for ( ArtifactCoordinate coordinate : coordinates )
         {
             try

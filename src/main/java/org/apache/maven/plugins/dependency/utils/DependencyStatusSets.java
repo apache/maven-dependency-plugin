@@ -52,15 +52,15 @@ public class DependencyStatusSets
     {
         if ( resolved != null )
         {
-            this.resolvedDependencies = new LinkedHashSet<Artifact>( resolved );
+            this.resolvedDependencies = new LinkedHashSet<>( resolved );
         }
         if ( unResolved != null )
         {
-            this.unResolvedDependencies = new LinkedHashSet<Artifact>( unResolved );
+            this.unResolvedDependencies = new LinkedHashSet<>( unResolved );
         }
         if ( skipped != null )
         {
-            this.skippedDependencies = new LinkedHashSet<Artifact>( skipped );
+            this.skippedDependencies = new LinkedHashSet<>( skipped );
         }
     }
 
@@ -79,7 +79,7 @@ public class DependencyStatusSets
     {
         if ( resolvedDependencies != null )
         {
-            this.resolvedDependencies = new LinkedHashSet<Artifact>( resolvedDependencies );
+            this.resolvedDependencies = new LinkedHashSet<>( resolvedDependencies );
         }
         else
         {
@@ -102,7 +102,7 @@ public class DependencyStatusSets
     {
         if ( skippedDependencies != null )
         {
-            this.skippedDependencies = new LinkedHashSet<Artifact>( skippedDependencies );
+            this.skippedDependencies = new LinkedHashSet<>( skippedDependencies );
         }
         else
         {
@@ -125,7 +125,7 @@ public class DependencyStatusSets
     {
         if ( unResolvedDependencies != null )
         {
-            this.unResolvedDependencies = new LinkedHashSet<Artifact>( unResolvedDependencies );
+            this.unResolvedDependencies = new LinkedHashSet<>( unResolvedDependencies );
         }
         else
         {

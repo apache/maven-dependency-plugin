@@ -295,7 +295,7 @@ public class PurgeLocalRepositoryMojo
     /**
      * Includes only snapshot artifacts
      */
-    private class SnapshotsFilter
+    private static class SnapshotsFilter
         extends AbstractFilter
     {
         @Override
@@ -333,7 +333,7 @@ public class PurgeLocalRepositoryMojo
             return;
         }
 
-        Set<Artifact> purgedArtifacts = new HashSet<Artifact>();
+        Set<Artifact> purgedArtifacts = new HashSet<>();
         if ( shouldPurgeAllProjectsInReactor() )
         {
             for ( MavenProject reactorProject : reactorProjects )
@@ -393,21 +393,10 @@ public class PurgeLocalRepositoryMojo
             {
                 reResolveArtifacts( theProject, resolvedArtifactsToPurge, artifactFilter );
             }
-            catch ( ArtifactResolutionException e )
+            catch ( ArtifactResolutionException | ArtifactNotFoundException e )
             {
                 String failureMessage = "Failed to refresh project dependencies for: " + theProject.getId();
-                MojoFailureException failure = new MojoFailureException( failureMessage );
-                failure.initCause( e );
-
-                throw failure;
-            }
-            catch ( ArtifactNotFoundException e )
-            {
-                String failureMessage = "Failed to refresh project dependencies for: " + theProject.getId();
-                MojoFailureException failure = new MojoFailureException( failureMessage );
-                failure.initCause( e );
-
-                throw failure;
+                throw new MojoFailureException( failureMessage, e );
             }
         }
     }
@@ -502,7 +491,7 @@ public class PurgeLocalRepositoryMojo
     private TransformableFilter createPurgeArtifactsFilter( MavenProject theProject, List<Dependency> dependencies,
                                                             Set<Artifact> purgedArtifacts )
     {
-        List<TransformableFilter> subFilters = new ArrayList<TransformableFilter>();
+        List<TransformableFilter> subFilters = new ArrayList<>();
 
         // System dependencies should never be purged
         subFilters.add( ScopeFilter.excluding( Artifact.SCOPE_SYSTEM ) );
@@ -536,7 +525,7 @@ public class PurgeLocalRepositoryMojo
             subFilters.add( new DirectDependencyFilter( theProject.getArtifact(), dependencies ) );
         }
 
-        List<String> exclusions = new ArrayList<String>( reactorProjects.size() );
+        List<String> exclusions = new ArrayList<>( reactorProjects.size() );
         // It doesn't make sense to include projects from the reactor here since they're likely not able to be resolved
         for ( MavenProject reactorProject : reactorProjects )
         {
@@ -572,7 +561,7 @@ public class PurgeLocalRepositoryMojo
      */
     private List<String> parseIncludes( String theInclude )
     {
-        List<String> theIncludes = new ArrayList<String>();
+        List<String> theIncludes = new ArrayList<>();
 
         if ( theInclude != null )
         {
@@ -592,7 +581,7 @@ public class PurgeLocalRepositoryMojo
                 dependencyResolver.resolveDependencies( session.getProjectBuildingRequest(), theProject.getModel(),
                                                         filter );
 
-            Set<Artifact> resolvedArtifacts = new LinkedHashSet<Artifact>();
+            Set<Artifact> resolvedArtifacts = new LinkedHashSet<>();
 
             for ( ArtifactResult artResult : results )
             {
@@ -607,7 +596,7 @@ public class PurgeLocalRepositoryMojo
                 + ". Falling back to non-transitive mode for initial artifact resolution." );
         }
 
-        Set<Artifact> resolvedArtifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> resolvedArtifacts = new LinkedHashSet<>();
 
         ArtifactFilter artifactFilter = filter.transform( new ArtifactIncludeFilterTransformer() );
 
@@ -701,7 +690,7 @@ public class PurgeLocalRepositoryMojo
             }
         }
 
-        List<Artifact> missingArtifacts = new ArrayList<Artifact>();
+        List<Artifact> missingArtifacts = new ArrayList<>();
 
         for ( Artifact artifact : artifacts )
         {
@@ -718,7 +707,7 @@ public class PurgeLocalRepositoryMojo
 
         if ( missingArtifacts.size() > 0 )
         {
-            StringBuffer message = new StringBuffer( "required artifacts missing:" );
+            StringBuilder message = new StringBuilder( "required artifacts missing:" );
             message.append( System.lineSeparator() );
             for ( Artifact missingArtifact : missingArtifacts )
             {

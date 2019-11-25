@@ -42,7 +42,7 @@ import org.codehaus.plexus.util.StringUtils;
 public class TestDependencyUtil
     extends TestCase
 {
-    List<Artifact> artifacts = new ArrayList<Artifact>();
+    List<Artifact> artifacts = new ArrayList<>();
 
     Log log = new SilentLog();
 

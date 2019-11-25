@@ -524,7 +524,7 @@ public class TestCopyDependenciesMojo
         throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
     {
 
-        Set<Artifact> artifacts = new HashSet<Artifact>();
+        Set<Artifact> artifacts = new HashSet<>();
         Artifact release = stubFactory.getReleaseArtifact();
         assertTrue( release.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
 
@@ -555,7 +555,7 @@ public class TestCopyDependenciesMojo
         throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
     {
 
-        Set<Artifact> artifacts = new HashSet<Artifact>();
+        Set<Artifact> artifacts = new HashSet<>();
         Artifact release = stubFactory.getReleaseArtifact();
 
         assertTrue( release.getFile().setLastModified( 1000L ) );
@@ -587,7 +587,7 @@ public class TestCopyDependenciesMojo
         throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
     {
 
-        Set<Artifact> artifacts = new HashSet<Artifact>();
+        Set<Artifact> artifacts = new HashSet<>();
         Artifact snap = stubFactory.getSnapshotArtifact();
         assertTrue( snap.getFile().setLastModified( 1000L ) );
         assertEquals( 1000L, snap.getFile().lastModified() );         
@@ -618,7 +618,7 @@ public class TestCopyDependenciesMojo
         throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
     {
 
-        Set<Artifact> artifacts = new HashSet<Artifact>();
+        Set<Artifact> artifacts = new HashSet<>();
         Artifact snap = stubFactory.getSnapshotArtifact();
         assertTrue( snap.getFile().setLastModified( 1000L ) );
         assertEquals( 1000L, snap.getFile().lastModified() );
@@ -758,7 +758,7 @@ public class TestCopyDependenciesMojo
     {
         mojo.setCopyPom( true );
 
-        Set<Artifact> set = new HashSet<Artifact>();
+        Set<Artifact> set = new HashSet<>();
         set.add( stubFactory.createArtifact( "org.apache.maven", "maven-artifact", "2.0.7", Artifact.SCOPE_COMPILE ) );
         stubFactory.createArtifact( "org.apache.maven", "maven-artifact", "2.0.7", Artifact.SCOPE_COMPILE, "pom",
                                     null );

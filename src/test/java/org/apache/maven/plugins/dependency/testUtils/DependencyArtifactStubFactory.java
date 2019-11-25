@@ -59,7 +59,7 @@ public class DependencyArtifactStubFactory
 
     public List<ArtifactItem> getArtifactItems( Collection<Artifact> artifacts )
     {
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         for ( Artifact artifact : artifacts )
         {
             list.add( getArtifactItem( artifact ) );

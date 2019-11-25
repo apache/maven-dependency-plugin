@@ -69,7 +69,7 @@ public class DisplayAncestorsMojo
 
     private ArrayList<String> collectAncestors()
     {
-        final ArrayList<String> ancestors = new ArrayList<String>();
+        final ArrayList<String> ancestors = new ArrayList<>();
 
         MavenProject currentAncestor = project.getParent();
         while ( currentAncestor != null )

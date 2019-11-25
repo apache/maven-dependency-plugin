@@ -124,7 +124,7 @@ public class TestCopyMojo
         item.setGroupId( "groupId" );
         item.setVersion( "1.0" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( createArtifact( item ) );
 
         mojo.setArtifactItems( createArtifactItemArtifacts( list ) );
@@ -204,8 +204,8 @@ public class TestCopyMojo
         for ( ArtifactItem item : list )
         {
             // these will be null because no processing has occured only when everything is skipped
-            assertEquals( null, item.getOutputDirectory() );
-            assertEquals( null, item.getDestFileName() );
+            assertNull( item.getOutputDirectory() );
+            assertNull( item.getDestFileName() );
         }
 
     }
@@ -310,7 +310,7 @@ public class TestCopyMojo
         item.setGroupId( "groupId" );
         item.setType( "type" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -341,7 +341,7 @@ public class TestCopyMojo
         dep2.setType( item.getType() );
         dep2.setVersion( "2.1" );
 
-        List<Dependency> list = new ArrayList<Dependency>( 2 );
+        List<Dependency> list = new ArrayList<>( 2 );
         list.add( dep2 );
         list.add( dep );
 
@@ -358,7 +358,7 @@ public class TestCopyMojo
         item.setGroupId( "groupId" );
         item.setType( "type" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -392,7 +392,7 @@ public class TestCopyMojo
         createArtifact( item );
         item.setVersion( null );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -411,7 +411,7 @@ public class TestCopyMojo
         item.setGroupId( "groupId" );
         item.setType( "type" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -439,7 +439,7 @@ public class TestCopyMojo
         dep2.setType( item.getType() );
         dep2.setVersion( "3.1" );
 
-        List<Dependency> list = new ArrayList<Dependency>( 2 );
+        List<Dependency> list = new ArrayList<>( 2 );
         list.add( dep2 );
         list.add( dep );
 
@@ -466,7 +466,7 @@ public class TestCopyMojo
         item.setGroupId( "groupId" );
         item.setType( "type" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
 
         mojo.setArtifactItems( list );
@@ -499,7 +499,7 @@ public class TestCopyMojo
         item.setGroupId( "groupId" );
         item.setType( "type" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
 
         mojo.setArtifactItems( list );
@@ -539,7 +539,7 @@ public class TestCopyMojo
         item.setGroupId( "groupId" );
         item.setType( "type" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
 
         mojo.setArtifactItems( list );
@@ -575,7 +575,7 @@ public class TestCopyMojo
         item.setType( "type" );
         item.setVersion( "1.0" );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>();
+        List<ArtifactItem> list = new ArrayList<>();
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -613,7 +613,7 @@ public class TestCopyMojo
 
         ArtifactItem item = new ArtifactItem( release );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -644,7 +644,7 @@ public class TestCopyMojo
 
         ArtifactItem item = new ArtifactItem( artifact );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -676,7 +676,7 @@ public class TestCopyMojo
 
         ArtifactItem item = new ArtifactItem( release );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -705,7 +705,7 @@ public class TestCopyMojo
 
         ArtifactItem item = new ArtifactItem( artifact );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( item );
         mojo.setArtifactItems( list );
 
@@ -734,7 +734,7 @@ public class TestCopyMojo
 
         ArtifactItem item = new ArtifactItem( artifact );
 
-        List<ArtifactItem> list = new ArrayList<ArtifactItem>( 1 );
+        List<ArtifactItem> list = new ArrayList<>( 1 );
         list.add( item );
         mojo.setArtifactItems( list );
         mojo.setOverWriteIfNewer( true );

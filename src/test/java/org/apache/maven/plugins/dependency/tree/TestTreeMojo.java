@@ -19,16 +19,15 @@ package org.apache.maven.plugins.dependency.tree;
  * under the License.
  */
 
-import java.io.File;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
-import java.util.Set;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
-import org.apache.maven.plugins.dependency.tree.TreeMojo;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 
@@ -174,7 +173,7 @@ public class TestTreeMojo
         mojo.execute();
 
         BufferedReader fp1 = new BufferedReader( new FileReader( outputFileName ) );
-        List<String> contents = new ArrayList<String>();
+        List<String> contents = new ArrayList<>();
 
         String line;
         while ( ( line = fp1.readLine() ) != null )

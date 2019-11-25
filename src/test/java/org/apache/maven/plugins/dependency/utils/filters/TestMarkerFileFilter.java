@@ -41,7 +41,7 @@ import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterExceptio
 public class TestMarkerFileFilter
     extends TestCase
 {
-    Set<Artifact> artifacts = new HashSet<Artifact>();
+    Set<Artifact> artifacts = new HashSet<>();
 
     Log log = new SilentLog();
 
@@ -127,11 +127,11 @@ public class TestMarkerFileFilter
         throws IOException, MojoExecutionException, ArtifactFilterException
     {
         // filter includes release artifact because no marker present
-        // filter includes snapshot artifact becaues it is newer than marker
+        // filter includes snapshot artifact because it is newer than marker
         DependencyArtifactStubFactory fileFact = new DependencyArtifactStubFactory( outputFolder, true );
         Artifact snap = fileFact.getSnapshotArtifact();
         Artifact release = fileFact.getReleaseArtifact();
-        Set<Artifact> tempArtifacts = new HashSet<Artifact>();
+        Set<Artifact> tempArtifacts = new HashSet<>();
         tempArtifacts.add( snap );
         tempArtifacts.add( release );
         DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler( snap, outputFolder );
@@ -165,17 +165,17 @@ public class TestMarkerFileFilter
     {
         MarkerFileFilter filter =
             new MarkerFileFilter( true, false, true, new DefaultFileMarkerHandler( outputFolder ) );
-        assertEquals( true, filter.isOverWriteReleases() );
-        assertEquals( false, filter.isOverWriteSnapshots() );
-        assertEquals( true, filter.isOverWriteIfNewer() );
+        assertTrue( filter.isOverWriteReleases() );
+        assertFalse( filter.isOverWriteSnapshots() );
+        assertTrue( filter.isOverWriteIfNewer() );
 
         filter.setOverWriteReleases( false );
         filter.setOverWriteSnapshots( true );
         filter.setOverWriteIfNewer( false );
 
-        assertEquals( false, filter.isOverWriteReleases() );
-        assertEquals( true, filter.isOverWriteSnapshots() );
-        assertEquals( false, filter.isOverWriteIfNewer() );
+        assertFalse( filter.isOverWriteReleases() );
+        assertTrue( filter.isOverWriteSnapshots() );
+        assertFalse( filter.isOverWriteIfNewer() );
 
     }
 

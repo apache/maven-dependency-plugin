@@ -158,7 +158,7 @@ public class AnalyzeDuplicateMojo
 
     private Set<String> findDuplicateDependencies( List<Dependency> modelDependencies )
     {
-        List<String> modelDependencies2 = new ArrayList<String>();
+        List<String> modelDependencies2 = new ArrayList<>();
         for ( Dependency dep : modelDependencies )
         {
             modelDependencies2.add( dep.getManagementKey() );
@@ -166,7 +166,7 @@ public class AnalyzeDuplicateMojo
 
         // @formatter:off
         return new LinkedHashSet<String>( 
-                CollectionUtils.disjunction( modelDependencies2, new LinkedHashSet<String>( modelDependencies2 ) ) );
+                CollectionUtils.disjunction( modelDependencies2, new LinkedHashSet<>( modelDependencies2 ) ) );
         // @formatter:on
     }
 }

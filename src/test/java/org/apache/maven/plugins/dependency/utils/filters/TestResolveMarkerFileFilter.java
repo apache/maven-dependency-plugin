@@ -44,7 +44,7 @@ import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterExceptio
 public class TestResolveMarkerFileFilter
     extends TestCase
 {
-    Set<Artifact> artifacts = new HashSet<Artifact>();
+    Set<Artifact> artifacts = new HashSet<>();
 
     Log log = new SilentLog();
 

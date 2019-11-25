@@ -190,7 +190,7 @@ public class BuildClasspathMojo
             getLog().info( "No dependencies found." );
         }
 
-        List<Artifact> artList = new ArrayList<Artifact>( artifacts );
+        List<Artifact> artList = new ArrayList<>( artifacts );
 
         StringBuilder sb = new StringBuilder();
         Iterator<Artifact> i = artList.iterator();
@@ -343,7 +343,7 @@ public class BuildClasspathMojo
         }
         catch ( IOException ex )
         {
-            throw new MojoExecutionException( "Error while writting to classpath file '" + out + "': " + ex.toString(),
+            throw new MojoExecutionException( "Error while writing to classpath file '" + out + "': " + ex.toString(),
                                               ex );
         }
         finally
