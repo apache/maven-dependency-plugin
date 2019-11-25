@@ -37,6 +37,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import java.io.Writer;
 import java.util.List;
+import org.slf4j.LoggerFactory;
 
 /**
  * A dependency node visitor that serializes visited nodes to
@@ -94,7 +95,7 @@ public class XMLDependencyNodeVisitor
         }
         catch ( ParserConfigurationException | TransformerException e )
         {
-            e.printStackTrace();
+            LoggerFactory.getLogger(XMLDependencyNodeVisitor.class).error(e.getMessage());
         }
 
         return true;
@@ -135,7 +136,7 @@ public class XMLDependencyNodeVisitor
      * @param doc Docuemnt to use
      * @param node Node to get data from
      */
-    private Element getNode( Document doc, DependencyNode node, Boolean root )
+    private Element getNode( Document doc, DependencyNode node, boolean root )
     {
         Artifact artifact = node.getArtifact();
         Element element = null;
