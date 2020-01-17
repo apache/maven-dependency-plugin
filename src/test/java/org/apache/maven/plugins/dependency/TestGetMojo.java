@@ -88,7 +88,7 @@ public class TestGetMojo
         // Set properties, transitive = default value = true
         setVariableValueToObject( mojo, "transitive", Boolean.FALSE );
         setVariableValueToObject( mojo, "remoteRepositories",
-                                  "central::default::http://repo1.maven.apache.org/maven2" );
+                                  "central::default::https://repo.maven.apache.org/maven2" );
         mojo.setGroupId( "org.apache.maven" );
         mojo.setArtifactId( "maven-model" );
         mojo.setVersion( "2.0.9" );
@@ -108,8 +108,8 @@ public class TestGetMojo
     public void testRemoteRepositories()
         throws Exception
     {
-        setVariableValueToObject( mojo, "remoteRepositories", "central::default::http://repo1.maven.apache.org/maven2,"
-            + "central::::http://repo1.maven.apache.org/maven2," + "http://repo1.maven.apache.org/maven2" );
+        setVariableValueToObject( mojo, "remoteRepositories", "central::default::https://repo.maven.apache.org/maven2,"
+            + "central::::https://repo.maven.apache.org/maven2," + "https://repo.maven.apache.org/maven2" );
         mojo.setGroupId( "org.apache.maven" );
         mojo.setArtifactId( "maven-model" );
         mojo.setVersion( "2.0.9" );
@@ -152,33 +152,33 @@ public class TestGetMojo
     {
         ArtifactRepository repo;
         ArtifactRepositoryPolicy policy = null;
-        repo = mojo.parseRepository( "central::default::http://repo1.maven.apache.org/maven2", policy );
+        repo = mojo.parseRepository( "central::default::https://repo.maven.apache.org/maven2", policy );
         assertEquals( "central", repo.getId() );
         assertEquals( DefaultRepositoryLayout.class, repo.getLayout().getClass() );
-        assertEquals( "http://repo1.maven.apache.org/maven2", repo.getUrl() );
+        assertEquals( "https://repo.maven.apache.org/maven2", repo.getUrl() );
 
         try
         {
-            repo = mojo.parseRepository( "central::legacy::http://repo1.maven.apache.org/maven2", policy );
+            repo = mojo.parseRepository( "central::legacy::https://repo.maven.apache.org/maven2", policy );
             fail( "Exception expected: legacy repository not supported anymore" );
         }
         catch ( MojoFailureException e )
         {
         }
 
-        repo = mojo.parseRepository( "central::::http://repo1.maven.apache.org/maven2", policy );
+        repo = mojo.parseRepository( "central::::https://repo.maven.apache.org/maven2", policy );
         assertEquals( "central", repo.getId() );
         assertEquals( DefaultRepositoryLayout.class, repo.getLayout().getClass() );
-        assertEquals( "http://repo1.maven.apache.org/maven2", repo.getUrl() );
+        assertEquals( "https://repo.maven.apache.org/maven2", repo.getUrl() );
 
-        repo = mojo.parseRepository( "http://repo1.maven.apache.org/maven2", policy );
+        repo = mojo.parseRepository( "https://repo.maven.apache.org/maven2", policy );
         assertEquals( "temp", repo.getId() );
         assertEquals( DefaultRepositoryLayout.class, repo.getLayout().getClass() );
-        assertEquals( "http://repo1.maven.apache.org/maven2", repo.getUrl() );
+        assertEquals( "https://repo.maven.apache.org/maven2", repo.getUrl() );
 
         try
         {
-            mojo.parseRepository( "::::http://repo1.maven.apache.org/maven2", policy );
+            mojo.parseRepository( "::::https://repo.maven.apache.org/maven2", policy );
             fail( "Exception expected" );
         }
         catch ( MojoFailureException e )
@@ -188,7 +188,7 @@ public class TestGetMojo
 
         try
         {
-            mojo.parseRepository( "central::http://repo1.maven.apache.org/maven2", policy );
+            mojo.parseRepository( "central::https://repo.maven.apache.org/maven2", policy );
             fail( "Exception expected" );
         }
         catch ( MojoFailureException e )

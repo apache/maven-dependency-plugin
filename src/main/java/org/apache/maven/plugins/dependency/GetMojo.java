@@ -128,7 +128,7 @@ public class GetMojo
 
     /**
      * Repositories in the format id::[layout]::url or just url, separated by comma. ie.
-     * central::default::http://repo1.maven.apache.org/maven2,myrepo::::http://repo.acme.com,http://repo.acme2.com
+     * central::default::https://repo.maven.apache.org/maven2,myrepo::::https://repo.acme.com,https://repo.acme2.com
      */
     @Parameter( property = "remoteRepositories" )
     private String remoteRepositories;
