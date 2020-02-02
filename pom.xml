@@ -25,7 +25,7 @@ under the License.
   <parent>
     <artifactId>maven-plugins</artifactId>
     <groupId>org.apache.maven.plugins</groupId>
-    <version>33</version>
+    <version>34</version>
     <relativePath>../../pom/maven/maven-plugins/pom.xml</relativePath>
   </parent>
 
@@ -94,6 +94,7 @@ under the License.
     <jettyVersion>9.2.28.v20190418</jettyVersion>
     <pluginTestingVersion>2.1</pluginTestingVersion>
     <javaVersion>7</javaVersion>
+    <project.build.outputTimestamp>2020-02-02T17:38:59Z</project.build.outputTimestamp>
   </properties>
 
   <dependencyManagement>
@@ -371,11 +372,6 @@ under the License.
               <exclude>src/test/resources/unit/get-test/repository/test/test/1.0/test-1.0.pom.sha1</exclude>
             </excludes>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-plugin-plugin</artifactId>
-          <version>3.5</version>
         </plugin>
       </plugins>
     </pluginManagement>
