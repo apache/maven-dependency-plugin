@@ -83,12 +83,18 @@ public class UnpackDependenciesMojo
     private FileMapper[] fileMappers;
 
     /**
+     * @since 3.1.2
+     */
+    @Parameter( property = "mdep.unpack.overwrite", defaultValue = "true" )
+    private boolean overwrite = true;
+
+    /**
      * Main entry into mojo. This method gets the dependencies and iterates through each one passing it to
      * DependencyUtil.unpackFile().
      *
      * @throws MojoExecutionException with a message if an error occurs.
      * @see #getDependencySets(boolean)
-     * @see #unpack(Artifact, File, String)
+     * @see #unpack(Artifact, String, File, String, String, String, FileMapper[], boolean)
      */
     @Override
     protected void doExecute()
@@ -102,7 +108,8 @@ public class UnpackDependenciesMojo
             destDir = DependencyUtil.getFormattedOutputDirectory( useSubDirectoryPerScope, useSubDirectoryPerType,
                                                                   useSubDirectoryPerArtifact, useRepositoryLayout,
                                                                   stripVersion, outputDirectory, artifact );
-            unpack( artifact, destDir, getIncludes(), getExcludes(), getEncoding(), getFileMappers() );
+            unpack( artifact, artifact.getType(), destDir, getIncludes(), getExcludes(),
+                    getEncoding(), getFileMappers(), isOverwrite() );
             DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler( artifact, this.markersDirectory );
             handler.setMarker();
         }
@@ -190,5 +197,21 @@ public class UnpackDependenciesMojo
     public void setFileMappers( FileMapper[] fileMappers )
     {
         this.fileMappers = fileMappers;
+    }
+
+    /**
+     * @since 3.1.2
+     */
+    public boolean isOverwrite()
+    {
+        return overwrite;
+    }
+
+    /**
+     * @since 3.1.2
+     */
+    public void setOverwrite( boolean overwrite )
+    {
+        this.overwrite = overwrite;
     }
 }
