@@ -32,7 +32,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.execution.MavenSession;
@@ -388,12 +387,11 @@ public class PurgeLocalRepositoryMojo
         if ( reResolve )
         {
             getLog().info( "Re-resolving dependencies" );
-            ArtifactFilter artifactFilter = dependencyFilter.transform( new ArtifactIncludeFilterTransformer() );
             try
             {
-                reResolveArtifacts( theProject, resolvedArtifactsToPurge, artifactFilter );
+                reResolveArtifacts( theProject, resolvedArtifactsToPurge );
             }
-            catch ( ArtifactResolutionException | ArtifactNotFoundException e )
+            catch ( ArtifactResolutionException e )
             {
                 String failureMessage = "Failed to refresh project dependencies for: " + theProject.getId();
                 throw new MojoFailureException( failureMessage, e );
@@ -625,7 +623,6 @@ public class PurgeLocalRepositoryMojo
     }
 
     private void purgeArtifacts( MavenProject theProject, Set<Artifact> artifacts )
-        throws MojoFailureException
     {
         MessageBuilder messageBuilder = MessageUtils.buffer();
 
@@ -668,8 +665,8 @@ public class PurgeLocalRepositoryMojo
         }
     }
 
-    private void reResolveArtifacts( MavenProject theProject, Set<Artifact> artifacts, ArtifactFilter filter )
-        throws ArtifactResolutionException, ArtifactNotFoundException
+    private void reResolveArtifacts( MavenProject theProject, Set<Artifact> artifacts )
+        throws ArtifactResolutionException
     {
         // Always need to re-resolve the poms in case they were purged along with the artifact
         // because Maven 2 will not automatically re-resolve them when resolving the artifact
