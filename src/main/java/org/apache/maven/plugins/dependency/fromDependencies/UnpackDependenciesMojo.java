@@ -88,7 +88,7 @@ public class UnpackDependenciesMojo
      *
      * @throws MojoExecutionException with a message if an error occurs.
      * @see #getDependencySets(boolean)
-     * @see #unpack(Artifact, File, String)
+     * @see #unpack(Artifact, File, String, FileMapper[])
      */
     @Override
     protected void doExecute()
