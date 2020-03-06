@@ -37,9 +37,7 @@ import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.plugin.testing.stubs.StubArtifactRepository;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
@@ -56,10 +54,6 @@ public class TestClassifierTypeTranslator
     ArtifactRepository artifactRepository;
 
     Log log = new SilentLog();
-
-    private RepositoryManager repoManager;
-
-    private ProjectBuildingRequest buildingRequest;
 
     private ArtifactHandlerManager artifactHandlerManager;
 
@@ -79,10 +73,7 @@ public class TestClassifierTypeTranslator
         DependencyArtifactStubFactory factory = new DependencyArtifactStubFactory( null, false );
         artifacts = factory.getMixedArtifacts();
 
-        repoManager = lookup( RepositoryManager.class );
-
         MavenSession session = newMavenSession( new MavenProjectStub() );
-        buildingRequest = session.getProjectBuildingRequest();
 
         DefaultRepositorySystemSession repoSession = (DefaultRepositorySystemSession) session.getRepositorySession();
         repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( stubFactory.getWorkingDir() ) );
