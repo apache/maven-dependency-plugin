@@ -98,8 +98,7 @@ public class UnpackDependenciesMojo
 
         for ( Artifact artifact : dss.getResolvedDependencies() )
         {
-            File destDir;
-            destDir = DependencyUtil.getFormattedOutputDirectory( useSubDirectoryPerScope, useSubDirectoryPerType,
+            File destDir = DependencyUtil.getFormattedOutputDirectory( useSubDirectoryPerScope, useSubDirectoryPerType,
                                                                   useSubDirectoryPerArtifact, useRepositoryLayout,
                                                                   stripVersion, outputDirectory, artifact );
             unpack( artifact, destDir, getIncludes(), getExcludes(), getEncoding(), getFileMappers() );
