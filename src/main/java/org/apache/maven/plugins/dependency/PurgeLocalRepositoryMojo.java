@@ -457,7 +457,7 @@ public class PurgeLocalRepositoryMojo
     /**
      * Convert a groupId:artifactId:version to a file system path
      *
-     * @param gav, the groupId:artifactId:version string
+     * @param gav the groupId:artifactId:version string
      * @return the corresponding path
      */
     private String gavToPath( String gav )

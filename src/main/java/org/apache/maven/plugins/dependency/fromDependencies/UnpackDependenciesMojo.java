@@ -88,9 +88,7 @@ public class UnpackDependenciesMojo
      *
      * @throws MojoExecutionException with a message if an error occurs.
      * @see #getDependencySets(boolean)
-     * @see #unpack(Artifact, String, File, String, String, String, FileMapper[])
      * @see #unpack(Artifact, File, String, FileMapper[])
-     * @see #unpack(Artifact, File, String, String, String, FileMapper[])
      */
     @Override
     protected void doExecute()
@@ -100,8 +98,7 @@ public class UnpackDependenciesMojo
 
         for ( Artifact artifact : dss.getResolvedDependencies() )
         {
-            File destDir;
-            destDir = DependencyUtil.getFormattedOutputDirectory( useSubDirectoryPerScope, useSubDirectoryPerType,
+            File destDir = DependencyUtil.getFormattedOutputDirectory( useSubDirectoryPerScope, useSubDirectoryPerType,
                                                                   useSubDirectoryPerArtifact, useRepositoryLayout,
                                                                   stripVersion, outputDirectory, artifact );
             unpack( artifact, destDir, getIncludes(), getExcludes(), getEncoding(), getFileMappers() );

@@ -158,7 +158,7 @@ public class CopyDependenciesMojo
      * install the artifact and the corresponding pom if copyPoms=true
      * 
      * @param artifact
-     * @param targetRepository
+     * @param buildingRequest
      */
     private void installArtifact( Artifact artifact, ProjectBuildingRequest buildingRequest )
     {
