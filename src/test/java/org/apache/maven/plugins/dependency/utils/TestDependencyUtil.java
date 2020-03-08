@@ -30,7 +30,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugin.testing.stubs.DefaultArtifactHandlerStub;
@@ -56,6 +55,7 @@ public class TestDependencyUtil
 
     Artifact sources;
 
+    @Override
     protected void setUp()
         throws Exception
     {
@@ -89,13 +89,7 @@ public class TestDependencyUtil
         assertFalse( outputFolder.exists() );
     }
 
-    protected void tearDown()
-    {
-
-    }
-
     public void testDirectoryName()
-        throws MojoExecutionException
     {
         File folder = new File( "target/a" );
         final Artifact artifact = artifacts.get( 0 );
@@ -142,7 +136,6 @@ public class TestDependencyUtil
     }
 
     public void testDirectoryName2()
-        throws MojoExecutionException
     {
         File folder = new File( "target/a" );
         final Artifact artifact = artifacts.get( 1 );
@@ -178,7 +171,6 @@ public class TestDependencyUtil
     }
 
     public void testDirectoryNameSources()
-        throws MojoExecutionException
     {
         File folder = new File( "target/a" );
         File name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, true, folder, sources );
@@ -191,7 +183,6 @@ public class TestDependencyUtil
     }
 
     public void testFileName()
-        throws MojoExecutionException
     {
         Artifact artifact = artifacts.get( 0 );
 
@@ -204,7 +195,6 @@ public class TestDependencyUtil
     }
 
     public void testFileNameUseBaseVersion()
-        throws MojoExecutionException
     {
         Artifact artifact = snapResolvedVersion;
 
@@ -230,7 +220,6 @@ public class TestDependencyUtil
     }
 
     public void testFileNameClassifier()
-        throws MojoExecutionException
     {
         ArtifactHandler ah = new DefaultArtifactHandlerStub( "jar", "sources" );
         VersionRange vr = VersionRange.createFromVersion( "1.1-SNAPSHOT" );
@@ -257,7 +246,6 @@ public class TestDependencyUtil
     }
 
     public void testFileNameClassifierWithFile()
-        throws MojoExecutionException
     {
         // specifically testing the default operation that getFormattedFileName
         // returns
