@@ -107,9 +107,9 @@ public class TestCopyDependenciesMojo
     }
 
     /**
-     * tests the proper discovery and configuration of the mojo
+     * Tests the proper discovery and configuration of the mojo.
      *
-     * @throws Exception in case of an error.
+     * @throws Exception in case of an error
      */
     public void testMojo()
         throws Exception
