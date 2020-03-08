@@ -27,7 +27,6 @@ import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.resolve.Node;
-import org.hamcrest.MatcherAssert;
 import org.mockito.ArgumentCaptor;
 
 import java.util.Collections;
@@ -36,6 +35,7 @@ import java.util.Set;
 
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -121,7 +121,7 @@ public class ExcludeReactorProjectsDependencyFilterTest extends AbstractDependen
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass( String.class );
         verify( log ).debug( captor.capture() );
-        MatcherAssert.assertThat( captor.getValue(), containsString( "Skipped dependency" ) );
+        assertThat( captor.getValue(), containsString( "Skipped dependency" ) );
     }
 
     public void testAccept()
