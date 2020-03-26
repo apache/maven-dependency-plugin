@@ -210,12 +210,6 @@ under the License.
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>file-management</artifactId>
       <version>3.0.0</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>maven-artifact-manager</artifactId>
-          <groupId>org.apache.maven</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
