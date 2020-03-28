@@ -287,7 +287,7 @@ public class TestCopyDependenciesMojo2
 
         File outputDirectory = mojo.outputDirectory;
         ArtifactRepository targetRepository =
-            new MavenArtifactRepository( "local", outputDirectory.toURI().toString(),
+            new MavenArtifactRepository( "local", outputDirectory.toURI().toURL().toExternalForm(),
                                          new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(),
                                          new ArtifactRepositoryPolicy() );
 
