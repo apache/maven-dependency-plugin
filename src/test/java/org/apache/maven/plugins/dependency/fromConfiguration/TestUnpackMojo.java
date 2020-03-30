@@ -19,7 +19,7 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  * under the License.    
  */
 
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
@@ -587,10 +587,10 @@ public class TestUnpackMojo
                 + ": should be different", markerLastModifiedMillis != unpackedFileLastModifiedMillis );
     }
 
-    private void displayFile( String description, File file ) throws IOException
+    private static void displayFile( String description, File file ) throws IOException
     {
         long toMillis = Files.getLastModifiedTime( file.toPath() ).toMillis();
-        System.out.println( description + ' ' + DateFormatUtils.ISO_DATETIME_FORMAT.format(
+        System.out.println( description + ' ' + DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(
                 file.lastModified() ) + ' ' + toMillis + ' ' + file.getPath().substring(
                 getBasedir().length() ) );
     }
