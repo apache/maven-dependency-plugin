@@ -19,7 +19,6 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  * under the License.    
  */
 
-import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
@@ -566,33 +565,13 @@ public class TestUnpackMojo
         File marker = new File( mojo.getMarkersDirectory(), artifact.getId().replace( ':', '-' ) + ".marker" );
         assertTrue( marker.setLastModified( time ) );
 
-        displayFile( "unpackedFile", unpackedFile );
-        displayFile( "artifact    ", artifact.getFile() );
-        displayFile( "marker      ", marker );
-        System.out.println( "mojo.execute()" );
         mojo.execute();
-        displayFile( "unpackedFile", unpackedFile );
-        displayFile( "artifact    ", artifact.getFile() );
-        displayFile( "marker      ", marker );
 
         long markerLastModifiedMillis = Files.getLastModifiedTime( marker.toPath() ).toMillis();
         long unpackedFileLastModifiedMillis = Files.getLastModifiedTime( unpackedFile.toPath() ).toMillis();
 
-        System.out.println( "marker.lastModified() = " + marker.lastModified() );
-        System.out.println( "unpackedFile.lastModified() = " + unpackedFile.lastModified() );
-        System.out.println( "markerLastModifiedMillis = " + markerLastModifiedMillis );
-        System.out.println( "unpackedFileLastModifiedMillis = " + unpackedFileLastModifiedMillis );
-
         assertTrue( "unpackedFile '" + unpackedFile + "' lastModified() == " + markerLastModifiedMillis
                 + ": should be different", markerLastModifiedMillis != unpackedFileLastModifiedMillis );
-    }
-
-    private void displayFile( String description, File file ) throws IOException
-    {
-        long toMillis = Files.getLastModifiedTime( file.toPath() ).toMillis();
-        System.out.println( description + ' ' + DateFormatUtils.ISO_DATETIME_FORMAT.format(
-                file.lastModified() ) + ' ' + toMillis + ' ' + file.getPath().substring(
-                getBasedir().length() ) );
     }
 
     public void assertUnpacked( ArtifactItem item, boolean overWrite )
