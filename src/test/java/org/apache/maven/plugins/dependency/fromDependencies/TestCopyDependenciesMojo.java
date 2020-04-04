@@ -44,6 +44,7 @@ public class TestCopyDependenciesMojo
 
     CopyDependenciesMojo mojo;
 
+    @Override
     protected void setUp()
         throws Exception
     {
@@ -106,9 +107,9 @@ public class TestCopyDependenciesMojo
     }
 
     /**
-     * tests the proper discovery and configuration of the mojo
+     * Tests the proper discovery and configuration of the mojo.
      *
-     * @throws Exception in case of an error.
+     * @throws Exception in case of an error
      */
     public void testMojo()
         throws Exception
@@ -485,20 +486,14 @@ public class TestCopyDependenciesMojo
         }
     }
 
-    public void testArtifactNotFound()
-        throws Exception
-    {
-        dotestArtifactExceptions( false, true );
-    }
-
     public void testArtifactResolutionException()
-        throws Exception
+        throws MojoFailureException
     {
-        dotestArtifactExceptions( true, false );
+        dotestArtifactExceptions();
     }
 
-    public void dotestArtifactExceptions( boolean are, boolean anfe )
-        throws Exception
+    public void dotestArtifactExceptions()
+        throws MojoFailureException
     {
         mojo.classifier = "jdk";
         mojo.type = "java-sources";
@@ -552,7 +547,7 @@ public class TestCopyDependenciesMojo
     }
 
     public void testOverWriteRelease()
-        throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
+        throws MojoExecutionException, IOException, MojoFailureException
     {
 
         Set<Artifact> artifacts = new HashSet<>();
@@ -584,7 +579,7 @@ public class TestCopyDependenciesMojo
     }
 
     public void testDontOverWriteSnap()
-        throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
+        throws MojoExecutionException, IOException, MojoFailureException
     {
 
         Set<Artifact> artifacts = new HashSet<>();
@@ -615,7 +610,7 @@ public class TestCopyDependenciesMojo
     }
 
     public void testOverWriteSnap()
-        throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
+        throws MojoExecutionException, IOException, MojoFailureException
     {
 
         Set<Artifact> artifacts = new HashSet<>();

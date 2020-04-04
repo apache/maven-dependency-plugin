@@ -34,9 +34,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.Collections.singletonList;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -79,9 +76,7 @@ public class ExcludeReactorProjectsDependencyFilterTest extends AbstractDependen
             }
         };
 
-        final boolean result = filter.accept( node , Collections.<Node>emptyList() );
-
-        assertThat( result, is( false ));
+        assertFalse( filter.accept( node , Collections.<Node>emptyList() ) );
     }
 
     public void testRejectWithLogging()
@@ -124,7 +119,7 @@ public class ExcludeReactorProjectsDependencyFilterTest extends AbstractDependen
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass( String.class );
         verify( log ).debug( captor.capture() );
-        assertThat( captor.getValue(), containsString( "Skipped dependency" ) );
+        assertTrue( captor.getValue().contains( "Skipped dependency" ) );
     }
 
     public void testAccept()
@@ -163,8 +158,6 @@ public class ExcludeReactorProjectsDependencyFilterTest extends AbstractDependen
             }
         };
 
-        final boolean result = filter.accept( node , Collections.<Node>emptyList() );
-
-        assertThat( result, is( true ));
+        assertTrue( filter.accept( node , Collections.<Node>emptyList() ) );
     }
 }
