@@ -91,6 +91,12 @@ public abstract class AbstractDependencyMojo
     private List<ArtifactRepository> remoteRepositories;
 
     /**
+     * Remote repositories which will be searched for plugins.
+     */
+    @Parameter( defaultValue = "${project.pluginArtifactRepositories}", readonly = true, required = true )
+    private List<ArtifactRepository> remotePluginRepositories;
+
+    /**
      * Contains the full list of projects in the reactor.
      */
     @Parameter( defaultValue = "${reactorProjects}", readonly = true )
