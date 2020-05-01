@@ -361,6 +361,20 @@ public abstract class AbstractDependencyMojo
     }
 
     /**
+     * @return Returns a new ProjectBuildingRequest populated from the current session and the current project remote
+     *         repositories, used to resolve plugins.
+     */
+    protected ProjectBuildingRequest newResolvePluginProjectBuildingRequest()
+    {
+        ProjectBuildingRequest buildingRequest =
+            new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
+
+        buildingRequest.setRemoteRepositories( remotePluginRepositories );
+
+        return buildingRequest;
+    }
+
+    /**
      * @return Returns the project.
      */
     public MavenProject getProject()
