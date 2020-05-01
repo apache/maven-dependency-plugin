@@ -21,17 +21,13 @@ package org.apache.maven.plugins.dependency.resolvers;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
@@ -50,12 +46,6 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverE
 public class ResolvePluginsMojo
     extends AbstractResolveMojo
 {
-
-    /**
-     * Remote repositories which will be searched for plugins.
-     */
-    @Parameter( defaultValue = "${project.pluginArtifactRepositories}", readonly = true, required = true )
-    private List<ArtifactRepository> remotePluginRepositories;
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.
@@ -194,10 +184,7 @@ public class ResolvePluginsMojo
             // continue;
             // }
 
-            ProjectBuildingRequest buildingRequest =
-                new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
-
-            buildingRequest.setRemoteRepositories( this.remotePluginRepositories );
+            ProjectBuildingRequest buildingRequest = newResolvePluginProjectBuildingRequest();
 
             // resolve the new artifact
             resolvedArtifacts.add( getArtifactResolver().resolveArtifact( buildingRequest, artifact ).getArtifact() );

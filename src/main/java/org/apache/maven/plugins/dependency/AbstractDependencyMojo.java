@@ -91,6 +91,12 @@ public abstract class AbstractDependencyMojo
     private List<ArtifactRepository> remoteRepositories;
 
     /**
+     * Remote repositories which will be searched for plugins.
+     */
+    @Parameter( defaultValue = "${project.pluginArtifactRepositories}", readonly = true, required = true )
+    private List<ArtifactRepository> remotePluginRepositories;
+
+    /**
      * Contains the full list of projects in the reactor.
      */
     @Parameter( defaultValue = "${reactorProjects}", readonly = true )
@@ -346,10 +352,24 @@ public abstract class AbstractDependencyMojo
      */
     public ProjectBuildingRequest newResolveArtifactProjectBuildingRequest()
     {
+        return newProjectBuildingRequest( remoteRepositories );
+    }
+
+    /**
+     * @return Returns a new ProjectBuildingRequest populated from the current session and the current project remote
+     *         repositories, used to resolve plugins.
+     */
+    protected ProjectBuildingRequest newResolvePluginProjectBuildingRequest()
+    {
+        return newProjectBuildingRequest( remotePluginRepositories );
+    }
+
+    private ProjectBuildingRequest newProjectBuildingRequest( List<ArtifactRepository> repositories )
+    {
         ProjectBuildingRequest buildingRequest =
             new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
 
-        buildingRequest.setRemoteRepositories( remoteRepositories );
+        buildingRequest.setRemoteRepositories( repositories );
 
         return buildingRequest;
     }
