@@ -25,7 +25,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
@@ -52,7 +51,6 @@ import static java.lang.String.format;
 public class GoOfflineMojo
     extends AbstractResolveMojo
 {
-
     /**
      * Main entry into mojo. Gets the list of dependencies, resolves all that are not in the Reactor, and iterates
      * through displaying the resolved versions.
@@ -104,8 +102,8 @@ public class GoOfflineMojo
     {
         final Collection<Dependency> dependencies = getProject().getDependencies();
         final Set<DependableCoordinate> dependableCoordinates = new HashSet<>();
-        final ProjectBuildingRequest buildingRequest =
-                new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
+
+        final ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
 
         for ( Dependency dependency : dependencies )
         {
@@ -174,8 +172,7 @@ public class GoOfflineMojo
         artifacts.addAll( reports );
         artifacts.addAll( plugins );
 
-        final ProjectBuildingRequest buildingRequest =
-                new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
+        final ProjectBuildingRequest buildingRequest = newResolvePluginProjectBuildingRequest();
 
         for ( Artifact artifact : artifacts )
         {
