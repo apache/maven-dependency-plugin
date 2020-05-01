@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency.resolvers;
  */
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
@@ -37,6 +38,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import static java.lang.String.format;
 
 /**
  * Goal that resolves all project dependencies, including plugins and reports and their dependencies.
@@ -109,16 +112,23 @@ public class GoOfflineMojo
             dependableCoordinates.add( createDependendableCoordinateFromDependency( dependency ) );
         }
 
-        return resolveDependableCoordinate( buildingRequest, dependableCoordinates );
+        return resolveDependableCoordinate( buildingRequest, dependableCoordinates, "dependencies" );
     }
 
     private Set<Artifact> resolveDependableCoordinate( final ProjectBuildingRequest buildingRequest,
-                                                        final Collection<DependableCoordinate> dependableCoordinates )
+                                                        final Collection<DependableCoordinate> dependableCoordinates,
+                                                       final String type )
             throws DependencyResolverException
     {
         final TransformableFilter filter = getTransformableFilter();
 
         final Set<Artifact> results = new HashSet<>();
+
+        this.getLog().debug( String.format( "Resolving %s with following repositories:", type ) );
+        for ( ArtifactRepository repo : buildingRequest.getRemoteRepositories() )
+        {
+            getLog().debug( format( "#%s (%s)", repo.getId(), repo.getUrl() ) );
+        }
 
         for ( DependableCoordinate dependableCoordinate : dependableCoordinates )
         {
@@ -172,7 +182,7 @@ public class GoOfflineMojo
             dependableCoordinates.add( createDependendableCoordinateFromArtifact( artifact ) );
         }
 
-        return resolveDependableCoordinate( buildingRequest, dependableCoordinates );
+        return resolveDependableCoordinate( buildingRequest, dependableCoordinates, "plugins" );
     }
 
     private DependableCoordinate createDependendableCoordinateFromArtifact( final Artifact artifact )
