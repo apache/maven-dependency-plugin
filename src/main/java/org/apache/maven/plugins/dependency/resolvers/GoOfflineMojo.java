@@ -20,11 +20,11 @@ package org.apache.maven.plugins.dependency.resolvers;
  */
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
@@ -49,7 +49,6 @@ import java.util.Set;
 public class GoOfflineMojo
     extends AbstractResolveMojo
 {
-
     /**
      * Main entry into mojo. Gets the list of dependencies, resolves all that are not in the Reactor, and iterates
      * through displaying the resolved versions.
@@ -101,24 +100,31 @@ public class GoOfflineMojo
     {
         final Collection<Dependency> dependencies = getProject().getDependencies();
         final Set<DependableCoordinate> dependableCoordinates = new HashSet<>();
-        final ProjectBuildingRequest buildingRequest =
-                new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
+
+        final ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
 
         for ( Dependency dependency : dependencies )
         {
             dependableCoordinates.add( createDependendableCoordinateFromDependency( dependency ) );
         }
 
-        return resolveDependableCoordinate( buildingRequest, dependableCoordinates );
+        return resolveDependableCoordinate( buildingRequest, dependableCoordinates, "dependencies" );
     }
 
     private Set<Artifact> resolveDependableCoordinate( final ProjectBuildingRequest buildingRequest,
-                                                        final Collection<DependableCoordinate> dependableCoordinates )
+                                                        final Collection<DependableCoordinate> dependableCoordinates,
+                                                       final String type )
             throws DependencyResolverException
     {
         final TransformableFilter filter = getTransformableFilter();
 
         final Set<Artifact> results = new HashSet<>();
+
+        this.getLog().debug( "Resolving '" + type + "' with following repositories:" );
+        for ( ArtifactRepository repo : buildingRequest.getRemoteRepositories() )
+        {
+            getLog().debug( repo.getId() + " (" + repo.getUrl() + ")" );
+        }
 
         for ( DependableCoordinate dependableCoordinate : dependableCoordinates )
         {
@@ -164,15 +170,14 @@ public class GoOfflineMojo
         artifacts.addAll( reports );
         artifacts.addAll( plugins );
 
-        final ProjectBuildingRequest buildingRequest =
-                new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
+        final ProjectBuildingRequest buildingRequest = newResolvePluginProjectBuildingRequest();
 
         for ( Artifact artifact : artifacts )
         {
             dependableCoordinates.add( createDependendableCoordinateFromArtifact( artifact ) );
         }
 
-        return resolveDependableCoordinate( buildingRequest, dependableCoordinates );
+        return resolveDependableCoordinate( buildingRequest, dependableCoordinates, "plugins" );
     }
 
     private DependableCoordinate createDependendableCoordinateFromArtifact( final Artifact artifact )
