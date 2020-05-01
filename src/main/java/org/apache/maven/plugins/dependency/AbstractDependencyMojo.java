@@ -352,12 +352,7 @@ public abstract class AbstractDependencyMojo
      */
     public ProjectBuildingRequest newResolveArtifactProjectBuildingRequest()
     {
-        ProjectBuildingRequest buildingRequest =
-            new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
-
-        buildingRequest.setRemoteRepositories( remoteRepositories );
-
-        return buildingRequest;
+        return newProjectBuildingRequest( remoteRepositories );
     }
 
     /**
@@ -366,10 +361,15 @@ public abstract class AbstractDependencyMojo
      */
     protected ProjectBuildingRequest newResolvePluginProjectBuildingRequest()
     {
+        return newProjectBuildingRequest( remotePluginRepositories );
+    }
+
+    private ProjectBuildingRequest newProjectBuildingRequest( List<ArtifactRepository> repositories )
+    {
         ProjectBuildingRequest buildingRequest =
             new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
 
-        buildingRequest.setRemoteRepositories( remotePluginRepositories );
+        buildingRequest.setRemoteRepositories( repositories );
 
         return buildingRequest;
     }
