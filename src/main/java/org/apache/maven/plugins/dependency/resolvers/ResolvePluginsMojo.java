@@ -146,7 +146,6 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
         final FilterArtifacts filter = getArtifactsFilter();
         artifacts = filter.filter(artifacts);
 
-        Set<Artifact> resolvedArtifacts = new LinkedHashSet<>(artifacts.size());
         // final ArtifactFilter filter = getPluginFilter();
         for (final Artifact artifact : new LinkedHashSet<>(artifacts)) {
             // if ( !filter.include( artifact ) )
@@ -166,9 +165,7 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
             ProjectBuildingRequest buildingRequest = newResolvePluginProjectBuildingRequest();
 
             // resolve the new artifact
-            resolvedArtifacts.add(getArtifactResolver()
-                    .resolveArtifact(buildingRequest, artifact)
-                    .getArtifact());
+            getArtifactResolver().resolveArtifact(buildingRequest, artifact).getArtifact();
         }
         return artifacts;
     }
