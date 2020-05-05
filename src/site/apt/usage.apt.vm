@@ -685,6 +685,17 @@ mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
   This goal is used to list all the repositories that this build depends upon. It will show repositories defined in your settings, 
   poms and declared in transitive dependency poms.
 
+  This goal can be executed from the command line:
+
++-----+
+mvn dependency:list-repositories
++-----+
+
+  Optionally, in verbose or debug mode it will display the location of the listed repository:
+
++-----+
+mvn dependency:list-repositories -Dverbose
++-----+
 
 * <<<dependency:get>>>
 
