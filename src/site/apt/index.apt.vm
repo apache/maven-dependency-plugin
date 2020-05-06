@@ -74,6 +74,8 @@ ${project.name}
 
   *{{{./list-repositories-mojo.html}dependency:list-repositories}} displays all project dependencies and then lists the repositories used.
 
+  *{{{./list-plugin-repositories-mojo.html}dependency:list-plugin-repositories}} lists the plugin repositories used.
+
   *{{{./properties-mojo.html}dependency:properties}} set a property for each project dependency containing the
   to the artifact on the file system.
 

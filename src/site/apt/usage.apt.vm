@@ -688,6 +688,24 @@ mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
   poms and declared in transitive dependency poms.
 
 
+* <<<dependency:list-repositories>>>
+
+  This goal is used to list all the plugin repositories that this build depends upon. It will show plugin repositories defined in your settings,
+  poms and declared in transitive dependency poms.
+
+  This goal can be executed from the command line:
+
++-----+
+mvn dependency:list-plugin-repositories
++-----+
+
+  Optionally, in verbose or debug mode it will display the location of the listed plugin repository:
+
++-----+
+mvn dependency:list-plugin-repositories -Dverbose
++-----+
+
+
 * <<<dependency:get>>>
 
   This goal is used to fetch an artifact and (optionally) its dependencies from remote repositories using its Maven coordinates.
