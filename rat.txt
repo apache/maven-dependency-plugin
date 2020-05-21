@@ -1,0 +1,574 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2020-05-21T11:27:22-04:00
+
+Notes: 0
+Binaries: 0
+Archives: 7
+Standards: 406
+
+Apache Licensed: 404
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+2 Unknown Licenses
+
+*****************************************************
+
+Files with unapproved licenses:
+
+  src/it/projects/tree-verbose/expected.txt
+  src/it/projects/tree-verbose/pom.xml
+
+*****************************************************
+
+Archives:
+
+ + src/it/mrm/repository/get-artifact-1.0.jar
+ 
+ + src/it/mrm/repository/get-artifact-maven-plugin-1.0.jar
+ 
+ + src/it/mrm/repository/get-artifact-transitive-1.0.jar
+ 
+ + src/it/projects/copy-from-remote-repository/repo/org/apache/maven/its/dependency/fake-remote-copy/1.0/fake-remote-copy-1.0.jar
+ 
+ + src/it/projects/unpack-from-remote-repository/repo/org/apache/maven/its/dependency/fake-remote-unpack/1.0/fake-remote-unpack-1.0.jar
+ 
+ + src/test/resources/unit/get-test/repository/test/test/1.0/test-1.0.jar
+ 
+ + src/test/resources/unit/unpack-dependencies-test/test.zip
+ 
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    .github/pull_request_template.md
+  AL    Jenkinsfile
+  AL    pom.xml
+  AL    README.md
+  AL    src/changes/changes.xml
+  A     src/it/mrm/repository/get-artifact-1.0.jar
+  AL    src/it/mrm/repository/get-artifact-1.0.pom
+  A     src/it/mrm/repository/get-artifact-maven-plugin-1.0.jar
+  AL    src/it/mrm/repository/get-artifact-maven-plugin-1.0.pom
+  A     src/it/mrm/repository/get-artifact-transitive-1.0.jar
+  AL    src/it/mrm/repository/get-artifact-transitive-1.0.pom
+  AL    src/it/mrm/repository/purge-local-repository-1.0.pom
+  AL    src/it/mrm/repository/purge-local-repository-2-1.0.pom
+  AL    src/it/mrm/repository/ResourceArtifact-1.0.jar/resource1.txt
+  AL    src/it/mrm/repository/ResourceArtifact-1.0.jar/resource2.txt
+  AL    src/it/mrm/repository/ResourceArtifact-1.0.pom
+  AL    src/it/mrm/settings.xml
+  AL    src/it/projects/analyze/invoker.properties
+  AL    src/it/projects/analyze/pom.xml
+  AL    src/it/projects/analyze/src/main/java/Main.java
+  AL    src/it/projects/analyze/verify.bsh
+  AL    src/it/projects/analyze-dep-mgt/invoker.properties
+  AL    src/it/projects/analyze-dep-mgt/pom.xml
+  AL    src/it/projects/analyze-ignore-dependency/invoker.properties
+  AL    src/it/projects/analyze-ignore-dependency/pom.xml
+  AL    src/it/projects/analyze-ignore-dependency/src/main/java/Main.java
+  AL    src/it/projects/analyze-ignore-unused-declared-dependency/invoker.properties
+  AL    src/it/projects/analyze-ignore-unused-declared-dependency/pom.xml
+  AL    src/it/projects/analyze-ignore-unused-declared-dependency/src/main/java/Main.java
+  AL    src/it/projects/analyze-ignore-used-undeclared-dependency/invoker.properties
+  AL    src/it/projects/analyze-ignore-used-undeclared-dependency/pom.xml
+  AL    src/it/projects/analyze-ignore-used-undeclared-dependency/src/main/java/Main.java
+  AL    src/it/projects/analyze-multimodule-project/invoker.properties
+  AL    src/it/projects/analyze-multimodule-project/module1/pom.xml
+  AL    src/it/projects/analyze-multimodule-project/module1/src/main/java/foo/Main.java
+  AL    src/it/projects/analyze-multimodule-project/module2/pom.xml
+  AL    src/it/projects/analyze-multimodule-project/module2/src/main/java/bar/Main.java
+  AL    src/it/projects/analyze-multimodule-project/pom.xml
+  AL    src/it/projects/analyze-report/invoker.properties
+  AL    src/it/projects/analyze-report/pom.xml
+  AL    src/it/projects/analyze-report/src/main/java/Main.java
+  AL    src/it/projects/analyze-report/verify.bsh
+  AL    src/it/projects/build-classpath/invoker.properties
+  AL    src/it/projects/build-classpath/pom.xml
+  AL    src/it/projects/build-classpath/test.properties
+  AL    src/it/projects/build-classpath/verify.bsh
+  AL    src/it/projects/build-classpath-output-file-and-property/invoker.properties
+  AL    src/it/projects/build-classpath-output-file-and-property/pom.xml
+  AL    src/it/projects/build-classpath-output-file-and-property/test.properties
+  AL    src/it/projects/build-classpath-output-file-and-property/verify.bsh
+  AL    src/it/projects/collect/invoker.properties
+  AL    src/it/projects/collect/pom.xml
+  AL    src/it/projects/collect/test.properties
+  AL    src/it/projects/copy/invoker.properties
+  AL    src/it/projects/copy/pom.xml
+  AL    src/it/projects/copy/verify.bsh
+  AL    src/it/projects/copy-and-unpack-with-alternate-local-repo/invoker.properties
+  AL    src/it/projects/copy-and-unpack-with-alternate-local-repo/pom.xml
+  AL    src/it/projects/copy-and-unpack-with-alternate-local-repo/verify.bsh
+  AL    src/it/projects/copy-cli/invoker.properties
+  AL    src/it/projects/copy-cli/pom.xml
+  AL    src/it/projects/copy-cli/test.properties
+  AL    src/it/projects/copy-cli/verify.bsh
+  AL    src/it/projects/copy-dependencies/invoker.properties
+  AL    src/it/projects/copy-dependencies/pom.xml
+  AL    src/it/projects/copy-dependencies/verify.bsh
+  AL    src/it/projects/copy-from-reactor/child-a/pom.xml
+  AL    src/it/projects/copy-from-reactor/child-a/src/main/resources/DoNotDelete.xml
+  AL    src/it/projects/copy-from-reactor/child-b/pom.xml
+  AL    src/it/projects/copy-from-reactor/invoker.properties
+  AL    src/it/projects/copy-from-reactor/pom.xml
+  AL    src/it/projects/copy-from-reactor/verify.bsh
+  AL    src/it/projects/copy-from-remote-repository/invoker.properties
+  AL    src/it/projects/copy-from-remote-repository/pom.xml
+  A     src/it/projects/copy-from-remote-repository/repo/org/apache/maven/its/dependency/fake-remote-copy/1.0/fake-remote-copy-1.0.jar
+  AL    src/it/projects/copy-from-remote-repository/setup.bsh
+  AL    src/it/projects/copy-from-remote-repository/verify.bsh
+  AL    src/it/projects/dependency-properties/invoker.properties
+  AL    src/it/projects/dependency-properties/pom.xml
+  AL    src/it/projects/dependency-properties/verify.bsh
+  AL    src/it/projects/filterunpack/pom.xml
+  AL    src/it/projects/filterunpack/verify.groovy
+  AL    src/it/projects/get-artifact/invoker.properties
+  AL    src/it/projects/get-artifact/pom.xml
+  AL    src/it/projects/get-artifact/setup.bsh
+  AL    src/it/projects/get-artifact/test.properties
+  AL    src/it/projects/get-artifact/verify.bsh
+  AL    src/it/projects/get-artifact-maven-plugin/invoker.properties
+  AL    src/it/projects/get-artifact-maven-plugin/pom.xml
+  AL    src/it/projects/get-artifact-maven-plugin/setup.bsh
+  AL    src/it/projects/get-artifact-maven-plugin/test.properties
+  AL    src/it/projects/get-artifact-maven-plugin/verify.bsh
+  AL    src/it/projects/get-artifact-no-transitive/invoker.properties
+  AL    src/it/projects/get-artifact-no-transitive/pom.xml
+  AL    src/it/projects/get-artifact-no-transitive/setup.bsh
+  AL    src/it/projects/get-artifact-no-transitive/test.properties
+  AL    src/it/projects/get-artifact-no-transitive/verify.bsh
+  AL    src/it/projects/get-gav/invoker.properties
+  AL    src/it/projects/get-gav/pom.xml
+  AL    src/it/projects/get-gav/setup.bsh
+  AL    src/it/projects/get-gav/test.properties
+  AL    src/it/projects/get-gav/verify.bsh
+  AL    src/it/projects/go-offline/invoker.properties
+  AL    src/it/projects/go-offline/pom.xml
+  AL    src/it/projects/go-offline/test.properties
+  AL    src/it/projects/list-repositories/invoker.properties
+  AL    src/it/projects/list-repositories/pom.xml
+  AL    src/it/projects/mdep-204-go-offline-resolve-intermodule/invoker.properties
+  AL    src/it/projects/mdep-204-go-offline-resolve-intermodule/module-1/pom.xml
+  AL    src/it/projects/mdep-204-go-offline-resolve-intermodule/module-2/pom.xml
+  AL    src/it/projects/mdep-204-go-offline-resolve-intermodule/pom.xml
+  AL    src/it/projects/mdep-439-analyze-java8/invoker.properties
+  AL    src/it/projects/mdep-439-analyze-java8/pom.xml
+  AL    src/it/projects/mdep-439-analyze-java8/src/main/java/org/sugis/maven/Java8Slf4jDep.java
+  AL    src/it/projects/mdep-450-project-with-ancestor/invoker.properties
+  AL    src/it/projects/mdep-450-project-with-ancestor/pom.xml
+  AL    src/it/projects/mdep-450-project-with-ancestor/verify.groovy
+  AL    src/it/projects/mdep-450-project-without-ancestor/invoker.properties
+  AL    src/it/projects/mdep-450-project-without-ancestor/pom.xml
+  AL    src/it/projects/mdep-450-project-without-ancestor/verify.groovy
+  AL    src/it/projects/mdep-506-dependency-without-version-in-depmgt/invoker.properties
+  AL    src/it/projects/mdep-506-dependency-without-version-in-depmgt/pom.xml
+  AL    src/it/projects/mdep-571-resolve-java9/invoker.properties
+  AL    src/it/projects/mdep-571-resolve-java9/pom.xml
+  AL    src/it/projects/mdep-571-resolve-java9/verify.groovy
+  AL    src/it/projects/mdep-572-unpack-tar-long-file/child1/assembly.xml
+  AL    src/it/projects/mdep-572-unpack-tar-long-file/child1/pom.xml
+  AL    src/it/projects/mdep-572-unpack-tar-long-file/child1/this-is-an-empty-text-file-with-a-name-that-is-longer-than-100-characters-to-verify-that-the-name-is-fully-kept-when-unpacking-from-a-tar.txt
+  AL    src/it/projects/mdep-572-unpack-tar-long-file/child2/pom.xml
+  AL    src/it/projects/mdep-572-unpack-tar-long-file/invoker.properties
+  AL    src/it/projects/mdep-572-unpack-tar-long-file/pom.xml
+  AL    src/it/projects/mdep-572-unpack-tar-long-file/verify.bsh
+  AL    src/it/projects/mdep-578_display-reason-invalid-module/invoker.properties
+  AL    src/it/projects/mdep-578_display-reason-invalid-module/pom.xml
+  AL    src/it/projects/mdep-578_display-reason-invalid-module/verify.groovy
+  AL    src/it/projects/mdep-580_display-manifest-automodules/invoker.properties
+  AL    src/it/projects/mdep-580_display-manifest-automodules/pom.xml
+  AL    src/it/projects/mdep-580_display-manifest-automodules/verify.groovy
+  AL    src/it/projects/mdep-586-unpacking-resources/pom.xml
+  AL    src/it/projects/mdep-586-unpacking-resources/verify.groovy
+  AL    src/it/projects/mdep-599-analyze-java9/invoker.properties
+  AL    src/it/projects/mdep-599-analyze-java9/pom.xml
+  AL    src/it/projects/mdep-599-analyze-java9/src/main/java/hello/Hello.java
+  AL    src/it/projects/mdep-599-analyze-java9/src/main/java/module-info.java
+  AL    src/it/projects/mdep-599-analyze-java9/src/test/java/hello/HelloTest.java
+  AL    src/it/projects/mdep-663_analyze_unsupported_version/invoker.properties
+  AL    src/it/projects/mdep-663_analyze_unsupported_version/pom.xml
+  AL    src/it/projects/mdep-663_analyze_unsupported_version/src/main/java/Main.java
+  AL    src/it/projects/purge-local-repository/invoker.properties
+  AL    src/it/projects/purge-local-repository/pom.xml
+  AL    src/it/projects/purge-local-repository/setup.bsh
+  AL    src/it/projects/purge-local-repository/test.properties
+  AL    src/it/projects/purge-local-repository/verify.groovy
+  AL    src/it/projects/purge-local-repository-bad-dep/invoker.properties
+  AL    src/it/projects/purge-local-repository-bad-dep/pom.xml
+  AL    src/it/projects/purge-local-repository-bad-dep/verify.groovy
+  AL    src/it/projects/purge-local-repository-bad-pom/bad-pom.xml
+  AL    src/it/projects/purge-local-repository-bad-pom/invoker.properties
+  AL    src/it/projects/purge-local-repository-bad-pom/pom.xml
+  AL    src/it/projects/purge-local-repository-bad-pom/setup.bsh
+  AL    src/it/projects/purge-local-repository-bad-pom/test.properties
+  AL    src/it/projects/purge-local-repository-bad-pom/verify.bsh
+  AL    src/it/projects/purge-local-repository-include/invoker.properties
+  AL    src/it/projects/purge-local-repository-include/pom.xml
+  AL    src/it/projects/purge-local-repository-include/test.properties
+  AL    src/it/projects/purge-local-repository-include/verify.groovy
+  AL    src/it/projects/purge-local-repository-multi-module/child1/pom.xml
+  AL    src/it/projects/purge-local-repository-multi-module/child2/pom.xml
+  AL    src/it/projects/purge-local-repository-multi-module/invoker.properties
+  AL    src/it/projects/purge-local-repository-multi-module/pom.xml
+  AL    src/it/projects/purge-local-repository-multi-module/setup.bsh
+  AL    src/it/projects/purge-local-repository-multi-module/test.properties
+  AL    src/it/projects/purge-local-repository-multi-module/verify.groovy
+  AL    src/it/projects/purge-local-repository-multi-module-execution/child1/pom.xml
+  AL    src/it/projects/purge-local-repository-multi-module-execution/child2/pom.xml
+  AL    src/it/projects/purge-local-repository-multi-module-execution/pom.xml
+  AL    src/it/projects/purge-local-repository-multi-module-execution/setup.bsh
+  AL    src/it/projects/purge-local-repository-multi-module-execution/test.properties
+  AL    src/it/projects/purge-local-repository-multi-module-execution/verify.bsh
+  AL    src/it/projects/purge-local-repository-non-transitive/invoker.properties
+  AL    src/it/projects/purge-local-repository-non-transitive/pom.xml
+  AL    src/it/projects/purge-local-repository-non-transitive/test.properties
+  AL    src/it/projects/purge-local-repository-non-transitive/verify.bsh
+  AL    src/it/projects/purge-local-repository-reresolve/invoker.properties
+  AL    src/it/projects/purge-local-repository-reresolve/pom.xml
+  AL    src/it/projects/purge-local-repository-reresolve/verify.bsh
+  AL    src/it/projects/purge-local-repository-snapshots-only/invoker.properties
+  AL    src/it/projects/purge-local-repository-snapshots-only/pom.xml
+  AL    src/it/projects/purge-local-repository-snapshots-only/setup.bsh
+  AL    src/it/projects/purge-local-repository-snapshots-only/test.properties
+  AL    src/it/projects/purge-local-repository-snapshots-only/verify.bsh
+  AL    src/it/projects/purge-local-repository-version-range/invoker.properties
+  AL    src/it/projects/purge-local-repository-version-range/pom.xml
+  AL    src/it/projects/purge-local-repository-version-range/test.properties
+  AL    src/it/projects/purge-local-repository-version-range/verify.bsh
+  AL    src/it/projects/purge-local-repository-without-pom/invoker.properties
+  AL    src/it/projects/purge-local-repository-without-pom/setup.bsh
+  AL    src/it/projects/purge-local-repository-without-pom/test.properties
+  AL    src/it/projects/purge-local-repository-without-pom/verify.groovy
+  AL    src/it/projects/resolve/invoker.properties
+  AL    src/it/projects/resolve/pom.xml
+  AL    src/it/projects/resolve/test.properties
+  AL    src/it/projects/resolve-plugins/invoker.properties
+  AL    src/it/projects/resolve-plugins/pom.xml
+  AL    src/it/projects/resolve-plugins/test.properties
+  AL    src/it/projects/resolve-plugins-exclude-reactor/child-a/pom.xml
+  AL    src/it/projects/resolve-plugins-exclude-reactor/child-a/src/main/resources/DoNotDelete.xml
+  AL    src/it/projects/resolve-plugins-exclude-reactor/child-b/pom.xml
+  AL    src/it/projects/resolve-plugins-exclude-reactor/invoker.properties
+  AL    src/it/projects/resolve-plugins-exclude-reactor/pom.xml
+  AL    src/it/projects/resolve-plugins-exclude-reactor/verify.groovy
+  AL    src/it/projects/resolve-plugins-with-exclude/invoker.properties
+  AL    src/it/projects/resolve-plugins-with-exclude/pom.xml
+  AL    src/it/projects/resolve-plugins-with-exclude/test.properties
+  AL    src/it/projects/resolve-plugins-with-exclude/verify.groovy
+  AL    src/it/projects/setup-custom-ear-lifecycle/invoker.properties
+  AL    src/it/projects/setup-custom-ear-lifecycle/manager/pom.xml
+  AL    src/it/projects/setup-custom-ear-lifecycle/manager/src/main/java/org/apache/maven/archiver/LogArchiver.java
+  AL    src/it/projects/setup-custom-ear-lifecycle/manager/src/main/java/org/apache/maven/archiver/LogUnArchiver.java
+  AL    src/it/projects/setup-custom-ear-lifecycle/manager/src/main/resources/META-INF/plexus/components.xml
+  AL    src/it/projects/setup-custom-ear-lifecycle/plugin/pom.xml
+  AL    src/it/projects/setup-custom-ear-lifecycle/plugin/src/main/java/org/apache/maven/plugins/EarMojo.java
+  AL    src/it/projects/setup-custom-ear-lifecycle/plugin/src/main/resources/META-INF/plexus/components.xml
+  AL    src/it/projects/setup-custom-ear-lifecycle/pom.xml
+  AL    src/it/projects/sources/invoker.properties
+  AL    src/it/projects/sources/pom.xml
+  AL    src/it/projects/sources/test.properties
+  AL    src/it/projects/tree/invoker.properties
+  AL    src/it/projects/tree/pom.xml
+  AL    src/it/projects/tree/test.properties
+  AL    src/it/projects/tree/verify.bsh
+  AL    src/it/projects/tree-includes/invoker.properties
+  AL    src/it/projects/tree-includes/pom.xml
+  AL    src/it/projects/tree-includes/test.properties
+  AL    src/it/projects/tree-includes/verify.bsh
+  AL    src/it/projects/tree-multimodule/invoker.properties
+  AL    src/it/projects/tree-multimodule/module-a/pom.xml
+  AL    src/it/projects/tree-multimodule/module-b/pom.xml
+  AL    src/it/projects/tree-multimodule/pom.xml
+  AL    src/it/projects/tree-multimodule/test.properties
+  AL    src/it/projects/tree-multimodule/verify.bsh
+ !????? src/it/projects/tree-verbose/expected.txt
+  AL    src/it/projects/tree-verbose/invoker.properties
+ !????? src/it/projects/tree-verbose/pom.xml
+  AL    src/it/projects/tree-verbose/verify.bsh
+  AL    src/it/projects/unpack/invoker.properties
+  AL    src/it/projects/unpack/pom.xml
+  AL    src/it/projects/unpack/verify.bsh
+  AL    src/it/projects/unpack-cli/invoker.properties
+  AL    src/it/projects/unpack-cli/pom.xml
+  AL    src/it/projects/unpack-cli/test.properties
+  AL    src/it/projects/unpack-cli/verify.bsh
+  AL    src/it/projects/unpack-custom-ear/invoker.properties
+  AL    src/it/projects/unpack-custom-ear/pom.xml
+  AL    src/it/projects/unpack-custom-ear/verify.groovy
+  AL    src/it/projects/unpack-dependencies/invoker.properties
+  AL    src/it/projects/unpack-dependencies/pom.xml
+  AL    src/it/projects/unpack-dependencies/verify.groovy
+  AL    src/it/projects/unpack-dependencies-with-filemappers/invoker.properties
+  AL    src/it/projects/unpack-dependencies-with-filemappers/pom.xml
+  AL    src/it/projects/unpack-dependencies-with-filemappers/verify.groovy
+  AL    src/it/projects/unpack-from-remote-repository/invoker.properties
+  AL    src/it/projects/unpack-from-remote-repository/pom.xml
+  A     src/it/projects/unpack-from-remote-repository/repo/org/apache/maven/its/dependency/fake-remote-unpack/1.0/fake-remote-unpack-1.0.jar
+  AL    src/it/projects/unpack-from-remote-repository/setup.bsh
+  AL    src/it/projects/unpack-from-remote-repository/verify.bsh
+  AL    src/it/projects/used-dependencies/annotation/pom.xml
+  AL    src/it/projects/used-dependencies/annotation/src/main/java/org/apache/maven/plugins/dependency/MySourceRetentionAnnotation.java
+  AL    src/it/projects/used-dependencies/invoker.properties
+  AL    src/it/projects/used-dependencies/module/pom.xml
+  AL    src/it/projects/used-dependencies/module/src/main/java/test/Main.java
+  AL    src/it/projects/used-dependencies/pom.xml
+  AL    src/it-harness-poms/copy-dependencies/pom.xml
+  AL    src/it-harness-poms/copy-dependencies2/pom.xml
+  AL    src/it-harness-poms/mdep-27/pom.xml
+  AL    src/it-harness-poms/mdep-50/pom.xml
+  AL    src/it-harness-poms/mdep-61/pom.xml
+  AL    src/it-harness-poms/mdep-66/pom.xml
+  AL    src/it-harness-poms/mdep-67/pom.xml
+  AL    src/main/java/org/apache/maven/plugins/dependency/AbstractDependencyMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/analyze/AbstractAnalyzeMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/analyze/AnalyzeDepMgt.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/analyze/AnalyzeDuplicateMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/analyze/AnalyzeMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/analyze/AnalyzeOnlyMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/analyze/AnalyzeReportMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/analyze/AnalyzeReportView.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/DisplayAncestorsMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/fromConfiguration/AbstractFromConfigurationMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/fromConfiguration/ArtifactItem.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/fromConfiguration/CopyMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/fromConfiguration/ProcessArtifactItemsRequest.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/fromConfiguration/UnpackMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/fromDependencies/AbstractDependencyFilterMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/fromDependencies/AbstractFromDependenciesMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/fromDependencies/BuildClasspathMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/fromDependencies/CopyDependenciesMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/fromDependencies/UnpackDependenciesMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/GetMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/PropertiesMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/PurgeLocalRepositoryMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/resolvers/AbstractResolveMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/resolvers/CollectDependenciesMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/resolvers/ExcludeReactorProjectsArtifactFilter.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/resolvers/ExcludeReactorProjectsDependencyFilter.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/resolvers/GoOfflineMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/resolvers/ListMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/resolvers/ListRepositoriesMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/resolvers/ResolveDependenciesMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/resolvers/ResolveDependencySourcesMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/resolvers/ResolvePluginsMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/tree/AbstractSerializingVisitor.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/tree/DOTDependencyNodeVisitor.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/tree/GraphmlDependencyNodeVisitor.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/tree/TGFDependencyNodeVisitor.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/tree/TreeMojo.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/DependencySilentLog.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/DependencyStatusSets.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/DependencyUtil.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/filters/ArtifactItemFilter.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/filters/DestFileFilter.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/filters/MarkerFileFilter.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/filters/ResolveFileFilter.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/markers/DefaultFileMarkerHandler.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/markers/MarkerHandler.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/markers/SourcesFileMarkerHandler.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/markers/UnpackFileMarkerHandler.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/translators/ArtifactTranslator.java
+  AL    src/main/java/org/apache/maven/plugins/dependency/utils/translators/ClassifierTypeTranslator.java
+  AL    src/main/resources/analyze-report.properties
+  AL    src/main/resources/analyze-report_de.properties
+  AL    src/main/resources/analyze-report_en.properties
+  AL    src/main/resources/analyze-report_pt_BR.properties
+  AL    src/main/resources/analyze-report_sv.properties
+  AL    src/main/resources/META-INF/plexus/components.xml
+  AL    src/site/apt/examples/copying-artifacts.apt.vm
+  AL    src/site/apt/examples/copying-project-dependencies.apt.vm
+  AL    src/site/apt/examples/exclude-dependencies-from-dependency-analysis.apt.vm
+  AL    src/site/apt/examples/failing-the-build-on-dependency-analysis-warnings.apt.vm
+  AL    src/site/apt/examples/filtering-the-dependency-tree.apt
+  AL    src/site/apt/examples/purging-local-repository.apt.vm
+  AL    src/site/apt/examples/unpacking-artifacts.apt.vm
+  AL    src/site/apt/examples/unpacking-filemapper.apt.vm
+  AL    src/site/apt/examples/unpacking-project-dependencies.apt.vm
+  AL    src/site/apt/examples/using-dependencies-sources.apt.vm
+  AL    src/site/apt/index.apt.vm
+  AL    src/site/apt/usage.apt.vm
+  AL    src/site/fml/faq.fml
+  AL    src/site/resources/download.cgi
+  AL    src/site/site.xml
+  AL    src/site/xdoc/download.xml.vm
+  AL    src/test/java/org/apache/maven/plugins/dependency/AbstractDependencyMojoTestCase.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/analyze/TestAnalyzeDepMgt.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/analyze/TestAnalyzeDuplicateMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/fromConfiguration/TestArtifactItem.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/fromConfiguration/TestCopyMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/fromConfiguration/TestIncludeExcludeUnpackMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/fromConfiguration/TestUnpackMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/fromDependencies/TestBuildClasspathMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/fromDependencies/TestCopyDependenciesMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/fromDependencies/TestCopyDependenciesMojo2.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/fromDependencies/TestIncludeExcludeUnpackDependenciesMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/fromDependencies/TestUnpackDependenciesMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/fromDependencies/TestUnpackDependenciesMojo2.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/resolvers/ExcludeReactorProjectsArtifactFilterTest.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/resolvers/ExcludeReactorProjectsDependencyFilterTest.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/resolvers/ResolveDependenciesMojoTest.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/resolvers/TestResolveMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/TestCollectMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/TestGetMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/TestPropertiesMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/TestSkip.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/testUtils/DependencyArtifactStubFactory.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/testUtils/DependencyTestUtils.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/testUtils/stubs/DependencyProjectStub.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/testUtils/stubs/DuplicateDependencies2ProjectStub.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/testUtils/stubs/DuplicateDependenciesProjectStub.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/testUtils/stubs/StubDefaultFileMarkerHandler.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/testUtils/stubs/StubMarkerFile.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/testUtils/stubs/StubSourcesFileMarkerHandler.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/testUtils/stubs/StubUnpackFileMarkerHandler.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/tree/TestTreeMojo.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/utils/filters/TestDestFileFilter.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/utils/filters/TestMarkerFileFilter.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/utils/filters/TestResolveMarkerFileFilter.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/utils/markers/TestDefaultMarkerFileHandler.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/utils/markers/TestSourcesMarkerFileHandler.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/utils/markers/TestUnpackMarkerFileHandler.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/utils/TestDependencyStatusSets.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/utils/TestDependencyUtil.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/utils/TestSilentLog.java
+  AL    src/test/java/org/apache/maven/plugins/dependency/utils/translators/TestClassifierTypeTranslator.java
+  AL    src/test/resources/unit/build-classpath-test/plugin-config.xml
+  AL    src/test/resources/unit/collect-test/plugin-config.xml
+  AL    src/test/resources/unit/copy-dependencies-test/plugin-config.xml
+  AL    src/test/resources/unit/copy-test/plugin-config.xml
+  AL    src/test/resources/unit/duplicate-dependencies/plugin-config.xml
+  AL    src/test/resources/unit/duplicate-dependencies/plugin-config2.xml
+  AL    src/test/resources/unit/get-test/plugin-config.xml
+  AL    src/test/resources/unit/get-test/realm.properties
+  A     src/test/resources/unit/get-test/repository/test/test/1.0/test-1.0.jar
+  AL    src/test/resources/unit/get-test/repository/test/test/1.0/test-1.0.pom
+  AL    src/test/resources/unit/properties-test/plugin-config.xml
+  AL    src/test/resources/unit/resolve-test/plugin-config.xml
+  AL    src/test/resources/unit/skip-test/plugin-analyze-report-config.xml
+  AL    src/test/resources/unit/skip-test/plugin-config.xml
+  AL    src/test/resources/unit/skip-test/plugin-get-config.xml
+  AL    src/test/resources/unit/skip-test/plugin-purge-local-repository-config.xml
+  AL    src/test/resources/unit/tree-test/plugin-config.xml
+  AL    src/test/resources/unit/unpack-dependencies-test/plugin-config.xml
+  AL    src/test/resources/unit/unpack-dependencies-test/test.txt
+  A     src/test/resources/unit/unpack-dependencies-test/test.zip
+  AL    src/test/resources/unit/unpack-test/plugin-config.xml
+ 
+*****************************************************
+
+ Printing headers for text files without a valid license header...
+ 
+=====================================================
+== File: src/it/projects/tree-verbose/expected.txt
+=====================================================
+org.apache.maven.its.dependency:tree-verbose:jar:1.0-SNAPSHOT
++- org.apache.maven:maven-project:jar:2.0.6:compile
+|  +- org.apache.maven:maven-settings:jar:2.0.6:compile
+|  |  +- (org.apache.maven:maven-model:jar:2.0.5:test - version managed from 2.0.6; scope managed from compile; omitted for duplicate)
+|  |  +- (org.codehaus.plexus:plexus-utils:jar:1.4.1:compile - omitted for duplicate)
+|  |  \- (org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1:compile - omitted for duplicate)
+|  +- (org.apache.maven:maven-profile:jar:2.0.6:compile - omitted for conflict with 2.0.4)
+|  +- (org.apache.maven:maven-model:jar:2.0.5:test - version managed from 2.0.4; scope managed from compile; omitted for conflict with 2.0.7)
+|  +- org.apache.maven:maven-artifact-manager:jar:2.0.6:compile
+|  |  +- org.apache.maven:maven-repository-metadata:jar:2.0.6:compile
+|  |  |  \- (org.codehaus.plexus:plexus-utils:jar:1.4.1:compile - omitted for duplicate)
+|  |  +- (org.codehaus.plexus:plexus-utils:jar:1.4.1:compile - omitted for duplicate)
+|  |  +- (org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1:compile - omitted for duplicate)
+|  |  \- org.apache.maven.wagon:wagon-provider-api:jar:1.0-beta-2:compile
+|  |     \- (org.codehaus.plexus:plexus-utils:jar:1.0.4:compile - omitted for conflict with 1.4.1)
+|  +- org.apache.maven:maven-plugin-registry:jar:2.0.6:compile
+|  |  +- (org.codehaus.plexus:plexus-utils:jar:1.4.1:compile - omitted for duplicate)
+|  |  \- (org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1:compile - omitted for duplicate)
+|  +- org.codehaus.plexus:plexus-utils:jar:1.4.1:compile
+|  \- org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1:compile
+|     +- junit:junit:jar:3.8.1:compile
+|     +- (org.codehaus.plexus:plexus-utils:jar:1.0.4:compile - omitted for conflict with 1.4.1)
+|     \- classworlds:classworlds:jar:1.1-alpha-2:compile
++- org.apache.maven:maven-profile:jar:2.0.4:test (scope not updated to compile)
+|  +- (org.apache.maven:maven-model:jar:2.0.5:test - version managed from 2.0.4; scope managed from compile; omitted for duplicate)
+|  +- (org.codehaus.plexus:plexus-utils:jar:1.1:test - omitted for conflict with 1.4.1)
+|  \- (org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9:test - omitted for conflict with 1.0-alpha-9-stable-1)
++- org.apache.maven:maven-model:jar:2.0.7:runtime
+|  \- (org.codehaus.plexus:plexus-utils:jar:1.4.1:runtime - omitted for duplicate)
+\- org.apache.xmlgraphics:batik-bridge:jar:1.7:compile
+   +- org.apache.xmlgraphics:batik-anim:jar:1.7:compile
+   |  +- (org.apache.xmlgraphics:batik-awt-util:jar:1.7:compile - omitted for duplicate)
+   |  +- (org.apache.xmlgraphics:batik-dom:jar:1.7:compile - omitted for duplicate)
+   |  +- (org.apache.xmlgraphics:batik-ext:jar:1.7:compile - omitted for duplicate)
+   |  +- (org.apache.xmlgraphics:batik-parser:jar:1.7:compile - omitted for duplicate)
+   |  +- (org.apache.xmlgraphics:batik-anim:jar:1.7:compile - omitted for cycle)
+   |  +- (org.apache.xmlgraphics:batik-svg-dom:jar:1.7:compile - omitted for duplicate)
+   |  +- (org.apache.xmlgraphics:batik-util:jar:1.7:compile - omitted for duplicate)
+   |  +- (xml-apis:xml-apis:jar:1.3.04:compile - omitted for duplicate)
+   |  \- (xml-apis:xml-apis-ext:jar:1.3.04:compile - omitted for duplicate)
+   +- org.apache.xmlgraphics:batik-awt-util:jar:1.7:compile
+   |  \- (org.apache.xmlgraphics:batik-util:jar:1.7:compile - omitted for duplicate)
+   +- org.apache.xmlgraphics:batik-css:jar:1.7:compile
+   |  +- (org.apache.xmlgraphics:batik-ext:jar:1.7:compile - omitted for duplicate)
+   |  +- (org.apache.xmlgraphics:batik-util:jar:1.7:compile - omitted for duplicate)
+   |  +- (xml-apis:xml-apis:jar:1.3.04:compile - omitted for duplicate)
+   |  \- (xml-apis:xml-apis-ext:jar:1.3.04:compile - omitted for duplicate)
+   +- org.apache.xmlgraphics:batik-dom:jar:1.7:compile
+   |  +- (org.apache.xmlgraphics:batik-css:jar:1.7:compile - omitted for duplicate)
+   |  +- (org.apache.xmlgraphics:batik-ext:jar:1.7:compile - omitted for duplicate)
+
+=====================================================
+== File: src/it/projects/tree-verbose/pom.xml
+=====================================================
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.apache.maven.its.dependency</groupId>
+  <artifactId>tree-verbose</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <name>VerboseTest</name>
+  <description>
+    Test verbose dependency:tree with actual Maven version.
+  </description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-model</artifactId>
+        <version>2.0.5</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-project</artifactId>
+      <version>2.0.6</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.maven</groupId>
+          <artifactId>maven-artifact</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-profile</artifactId>
+      <version>2.0.4</version>
+      <scope>test</scope>
+    </dependency>
