@@ -359,7 +359,7 @@ under the License.
               <exclude>src/it/projects/tree-multimodule/expected.txt</exclude>
               <exclude>src/it/projects/tree-multimodule/module-a/expected.txt</exclude>
               <exclude>src/it/projects/tree-multimodule/module-b/expected.txt</exclude>
-              <exclude>src/it/projects/tree-verbose/expected.txt</exclude>
+            <!--  <exclude>src/it/projects/tree-verbose/expected.txt</exclude> -->
               <!--
                 These files contain real repository artifacts.
               -->
