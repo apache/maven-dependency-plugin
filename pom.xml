@@ -359,7 +359,7 @@ under the License.
               <exclude>src/it/projects/tree-multimodule/expected.txt</exclude>
               <exclude>src/it/projects/tree-multimodule/module-a/expected.txt</exclude>
               <exclude>src/it/projects/tree-multimodule/module-b/expected.txt</exclude>
-            <!--  <exclude>src/it/projects/tree-verbose/expected.txt</exclude> -->
+              <exclude>src/it/projects/tree-verbose/expected.txt</exclude>
               <!--
                 These files contain real repository artifacts.
               -->
@@ -424,7 +424,7 @@ under the License.
               <pomExcludes>
                 <pomExclude>purge-local-repository-bad-pom/pom.xml</pomExclude>
                 <!-- verbose was using Maven2 code, removed with MDEP-494, requires MSHARED-339 to be fixed first -->
-                <pomExclude>tree-verbose/pom.xml</pomExclude>
+                <!-- <pomExclude>tree-verbose/pom.xml</pomExclude> -->
               </pomExcludes>
               <pomIncludes>
                 <pomInclude>*/pom.xml</pomInclude>
