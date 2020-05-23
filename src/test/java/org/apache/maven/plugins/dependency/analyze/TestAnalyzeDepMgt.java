@@ -34,6 +34,8 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
@@ -192,60 +194,30 @@ public class TestAnalyzeDepMgt
     }
 
     public void testMojo()
-        throws IOException
+        throws IOException, MojoExecutionException, MojoFailureException
     {
         mojo.setIgnoreDirect( false );
-        try
-        {
-            // test with nothing in depMgt
-            mojo.execute();
-        }
-        catch ( Exception e )
-        {
-            e.printStackTrace();
-            fail( "Caught Unexpected Exception:" + e.getLocalizedMessage() );
-        }
+        // test with nothing in depMgt
+        mojo.execute();
+
+        DependencyProjectStub project = (DependencyProjectStub) mojo.getProject();
+        project.setDependencyManagement( depMgt );
+        // test with exclusion
+        mojo.execute();
 
         try
         {
-            DependencyProjectStub project = (DependencyProjectStub) mojo.getProject();
-            project.setDependencyManagement( depMgt );
-            // test with exclusion
-            mojo.execute();
-        }
-        catch ( Exception e )
-        {
-            e.printStackTrace();
-            fail( "Caught Unexpected Exception:" + e.getLocalizedMessage() );
-        }
-
-        try
-        {
-            DependencyProjectStub project = (DependencyProjectStub) mojo.getProject();
-            project.setDependencyManagement( depMgt );
             // test with exclusion
             mojo.setFailBuild( true );
             mojo.execute();
             fail( "Expected exception to fail the build." );
         }
-        catch ( Exception e )
+        catch ( MojoExecutionException e )
         {
-            System.out.println( "Caught Expected Exception:" + e.getLocalizedMessage() );
         }
 
-        try
-        {
-            DependencyProjectStub project = (DependencyProjectStub) mojo.getProject();
-            project.setDependencyManagement( depMgt );
-            // test with exclusion
-            mojo.setFailBuild( true );
-            mojo.setIgnoreDirect( true );
-            mojo.execute();
-        }
-        catch ( Exception e )
-        {
-            e.printStackTrace();
-            fail( "Caught Unexpected Exception:" + e.getLocalizedMessage() );
-        }
+        mojo.setFailBuild( true );
+        mojo.setIgnoreDirect( true );
+        mojo.execute();
     }
 }
