@@ -34,8 +34,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.Collections.singletonList;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -121,7 +120,7 @@ public class ExcludeReactorProjectsDependencyFilterTest extends AbstractDependen
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass( String.class );
         verify( log ).debug( captor.capture() );
-        assertThat( captor.getValue(), containsString( "Skipped dependency" ) );
+        assertTrue( captor.getValue().contains( "Skipped dependency" ) );
     }
 
     public void testAccept()

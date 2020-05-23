@@ -57,6 +57,7 @@ public class TestClassifierTypeTranslator
 
     private ArtifactHandlerManager artifactHandlerManager;
 
+    @Override
     protected void setUp()
         throws Exception
     {
@@ -175,8 +176,7 @@ public class TestClassifierTypeTranslator
             {
                 ArtifactCoordinate translatedArtifact = resultIter.next();
                 if ( artifact.getArtifactId() == translatedArtifact.getArtifactId()
-                    && artifact.getGroupId() == translatedArtifact.getGroupId()
-                /* && artifact.getScope() == translatedArtifact.getScope() */ )
+                    && artifact.getGroupId() == translatedArtifact.getGroupId() )
                 {
                     assertEquals( translatedArtifact.getClassifier(), classifier );
                     assertEquals( translatedArtifact.getExtension(), type );

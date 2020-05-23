@@ -7,6 +7,7 @@ bin/
 # Intellij
 *.ipr
 *.iml
+*.versionsBackup
 .idea
 out/
 .DS_Store
@@ -14,4 +15,6 @@ out/
 /dependencies.xml
 .java-version
 .checkstyle
-
+# This file is being created by Mock Repository Manager
+# during integration tests
+src/it/mrm/repository/_ResourceArtifact-1.0.jar

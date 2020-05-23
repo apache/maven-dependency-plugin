@@ -612,7 +612,7 @@ public class DependencyProjectStub
     }
 
     @Override
-    public void setMailingLists( List list )
+    public void setMailingLists( List<MailingList> list )
     {
 
     }
@@ -628,7 +628,7 @@ public class DependencyProjectStub
     }
 
     @Override
-    public void setDevelopers( List list )
+    public void setDevelopers( List<Developer> list )
     {
 
     }
@@ -698,7 +698,7 @@ public class DependencyProjectStub
         return null;
     }
 
-    public void setLicenses( List list )
+    public void setLicenses( List<License> list )
     {
 
     }

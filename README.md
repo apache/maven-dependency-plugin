@@ -14,13 +14,14 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-Contributing to Apache Maven Dependency Plugin
+Contributing to [Apache Maven Dependency Plugin](https://maven.apache.org/plugins/maven-dependency-plugin/)
 ======================
 
+[![ASF Jira](https://img.shields.io/endpoint?url=https%3A%2F%2Fmaven.apache.org%2Fbadges%2Fasf_jira-MDEP.json)][jira]
 [![Apache License, Version 2.0, January 2004](https://img.shields.io/github/license/apache/maven.svg?label=License)][license]
-[![Maven Central](https://img.shields.io/maven-central/v/org.apache.maven.plugins/maven-dependency-plugin.svg?label=Maven%20Central)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.apache.maven.plugins%22%20AND%20a%3A%22maven-dependency-plugin%22)
-[![Jenkins Status](https://img.shields.io/jenkins/s/https/builds.apache.org/job/maven-box/job/maven-dependency-plugin/job/master.svg?style=flat-square)][build]
-[![Jenkins tests](https://img.shields.io/jenkins/t/https/builds.apache.org/job/maven-box/job/maven-dependency-plugin/job/master.svg?style=flat-square)][test-results]
+[![Maven Central](https://img.shields.io/maven-central/v/org.apache.maven.plugins/maven-dependency-plugin.svg?label=Maven%20Central)](https://search.maven.org/artifact/org.apache.maven.plugins/maven-dependency-plugin)
+[![Jenkins Status](https://img.shields.io/jenkins/s/https/builds.apache.org/job/maven-box/job/maven-dependency-plugin/job/master.svg?)][build]
+[![Jenkins tests](https://img.shields.io/jenkins/t/https/builds.apache.org/job/maven-box/job/maven-dependency-plugin/job/master.svg?)][test-results]
 
 
 You have found a bug or you have an idea for a cool new feature? Contributing
@@ -35,7 +36,7 @@ Getting Started
 + Make sure you have a [JIRA account](https://issues.apache.org/jira/).
 + Make sure you have a [GitHub account](https://github.com/signup/free).
 + If you're planning to implement a new feature, it makes sense to discuss your changes 
-  on the [dev list](https://maven.apache.org/mailing-lists.html) first. 
+  on the [dev list][ml-list] first. 
   This way you can make sure you're not wasting your time on something that isn't 
   considered to be in Apache Maven's scope.
 + Submit a ticket for your issue, assuming one does not already exist.
@@ -46,7 +47,7 @@ Getting Started
 Making and Submitting Changes
 --------------
 
-We accept Pull Requests via GitHub. The [developer mailing list][dev-ml-list] is the
+We accept Pull Requests via GitHub. The [developer mailing list][ml-list] is the
 main channel of communication for contributors.  
 There are some guidelines which will make applying PRs easier for us:
 + Create a topic branch from where you want to base your work (this is usually the master branch).
@@ -81,15 +82,16 @@ Additional Resources
 --------------------
 
 + [Contributing patches](https://maven.apache.org/guides/development/guide-maven-development.html#Creating_and_submitting_a_patch)
-+ [Apache Maven Dependency JIRA project page](https://issues.apache.org/jira/projects/MDEP/)
++ [Apache Maven Dependency JIRA project page][jira]
 + [Contributor License Agreement][cla]
 + [General GitHub documentation](https://help.github.com/)
 + [GitHub pull request documentation](https://help.github.com/send-pull-requests/)
 + [Apache Maven Twitter Account](https://twitter.com/ASFMavenProject)
 + #Maven IRC channel on freenode.org
 
+[jira]: https://issues.apache.org/jira/projects/MDEP/
 [license]: https://www.apache.org/licenses/LICENSE-2.0
-[dev-ml-list]: https://maven.apache.org/mailing-lists.html
+[ml-list]: https://maven.apache.org/mailing-lists.html
 [code-style]: https://maven.apache.org/developers/conventions/code.html
 [cla]: https://www.apache.org/licenses/#clas
 [maven-wiki]: https://cwiki.apache.org/confluence/display/MAVEN/Index
