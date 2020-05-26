@@ -62,7 +62,7 @@ public class TestGetClassesMojo
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }
 
-    public void test2()
+    public void testGetClassesNotTransitive()
             throws Exception
     {
         setVariableValueToObject( mojo, "remoteRepositories", "central::default::https://repo.maven.apache.org/maven2,"
@@ -74,7 +74,7 @@ public class TestGetClassesMojo
         return;
     }
 
-    public void test4()
+    public void testGetClassesTransitive()
             throws Exception
     {
         setVariableValueToObject( mojo, "remoteRepositories", "central::default::https://repo.maven.apache.org/maven2,"
