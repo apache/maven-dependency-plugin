@@ -57,6 +57,10 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 import org.codehaus.plexus.util.StringUtils;
 
+
+/**
+ * Retrieves and lists all class dependencies for the specified artifact from the specified remote repositories.
+ */
 @Mojo( name = "get-classes", requiresProject = false, threadSafe = true )
 public class GetClassesMojo
     extends AbstractMojo
@@ -162,7 +166,8 @@ public class GetClassesMojo
             getLog().info( "Retrieving classes of dependencies for " + artifact );
             if ( isTransitive() )
             {
-                Iterable<ArtifactResult> artifacts = getDependencyResolver().resolveDependencies( buildingRequest, coordinate, null );
+                Iterable<ArtifactResult> artifacts = getDependencyResolver()
+                        .resolveDependencies( buildingRequest, coordinate, null );
 
                 for ( ArtifactResult result : artifacts )
                 {
@@ -171,7 +176,8 @@ public class GetClassesMojo
             }
             else
             {
-                ArtifactResult result = getArtifactResolver().resolveArtifact( buildingRequest, toArtifactCoordinate( coordinate ) );
+                ArtifactResult result = getArtifactResolver()
+                        .resolveArtifact( buildingRequest, toArtifactCoordinate( coordinate ) );
 
                 printClassesFromArtifactResult( result );
             }
@@ -190,11 +196,12 @@ public class GetClassesMojo
 
         while ( e.hasMoreElements() )
         {
-            JarEntry entry = ( JarEntry )e.nextElement();
+            JarEntry entry = (JarEntry) e.nextElement();
             String name = entry.getName();
 
             // filter out files that do not end in .class
-            if ( name.length() <= 6 || !name.substring( name.length() - 6 ).equals( ".class" )) {
+            if ( name.length() <= 6 || !name.substring( name.length() - 6 ).equals( ".class" ) )
+            {
                 continue;
             }
 
@@ -268,7 +275,7 @@ public class GetClassesMojo
         return buildingRequest;
     }
 
-    protected ArtifactCoordinate toArtifactCoordinate(DependableCoordinate dependableCoordinate )
+    protected ArtifactCoordinate toArtifactCoordinate( DependableCoordinate dependableCoordinate )
     {
         ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler( dependableCoordinate.getType() );
         DefaultArtifactCoordinate artifactCoordinate = new DefaultArtifactCoordinate();
@@ -352,7 +359,10 @@ public class GetClassesMojo
     /**
      * @param artifact The artifact
      */
-    public void setArtifact( String artifact ) { this.artifact = artifact; }
+    public void setArtifact( String artifact )
+    {
+        this.artifact = artifact;
+    }
 
     /**
      * @param groupId The groupId.
