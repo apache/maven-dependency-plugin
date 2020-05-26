@@ -215,7 +215,7 @@ public class GetClassesMojo
     public ProjectBuildingRequest buildBuildingRequest()
             throws MojoExecutionException, MojoFailureException
     {
-        if ( coordinate.getArtifactId() == null && artifact == null )
+        if ( artifact == null )
         {
             throw new MojoFailureException( "You must specify an artifact, "
                     + "e.g. -Dartifact=org.apache.maven.plugins:maven-downloader-plugin:1.0" );

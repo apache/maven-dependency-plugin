@@ -71,7 +71,6 @@ public class TestGetClassesMojo
         setVariableValueToObject( mojo, "transitive", Boolean.FALSE );
 
         mojo.execute();
-        return;
     }
 
     public void testGetClassesTransitive()
@@ -83,6 +82,5 @@ public class TestGetClassesMojo
         setVariableValueToObject( mojo, "transitive", Boolean.TRUE );
 
         mojo.execute();
-        return;
     }
 }
