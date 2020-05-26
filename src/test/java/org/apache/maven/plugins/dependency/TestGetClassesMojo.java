@@ -24,6 +24,7 @@ import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
+import org.junit.Assert;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
@@ -32,7 +33,7 @@ import java.io.File;
 public class TestGetClassesMojo
         extends AbstractDependencyMojoTestCase
 {
-    GetClassesMojo mojo;
+    ListClassesMojo mojo;
 
     protected void setUp()
             throws Exception
@@ -41,8 +42,8 @@ public class TestGetClassesMojo
         super.setUp( "markers", false );
 
         File testPom = new File( getBasedir(), "target/test-classes/unit/get-test/plugin-config.xml" );
-        assert testPom.exists();
-        mojo = (GetClassesMojo) lookupMojo( "get-classes", testPom );
+        assertTrue(testPom.exists());
+        mojo = (ListClassesMojo) lookupMojo( "list-classes", testPom );
 
         assertNotNull( mojo );
 

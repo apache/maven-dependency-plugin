@@ -55,14 +55,13 @@ import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
-import org.codehaus.plexus.util.StringUtils;
 
 
 /**
- * Retrieves and lists all class dependencies for the specified artifact from the specified remote repositories.
+ * Retrieves and lists all classes contained in the specified artifact from the specified remote repositories.
  */
-@Mojo( name = "get-classes", requiresProject = false, threadSafe = true )
-public class GetClassesMojo
+@Mojo( name = "list-classes", requiresProject = false, threadSafe = true )
+public class ListClassesMojo
     extends AbstractMojo
 {
     private static final Pattern ALT_REPO_SYNTAX_PATTERN = Pattern.compile( "(.+)::(.*)::(.+)" );
@@ -94,13 +93,13 @@ public class GetClassesMojo
     private DefaultDependableCoordinate coordinate = new DefaultDependableCoordinate();
 
     /**
-     * The groupId of the artifact to download. Ignored if {@link #artifact} is used.
+     * The group ID of the artifact to download. Ignored if {@link #artifact} is used.
      */
     @Parameter( property = "groupId" )
     private String groupId;
 
     /**
-     * The artifactId of the artifact to download. Ignored if {@link #artifact} is used.
+     * The artifact ID of the artifact to download. Ignored if {@link #artifact} is used.
      */
     @Parameter( property = "artifactId" )
     private String artifactId;
@@ -126,7 +125,7 @@ public class GetClassesMojo
     private String packaging = "jar";
 
     /**
-     * Repositories in the format id::[layout]::url or just url, separated by comma. ie.
+     * Repositories in the format id::[layout]::url or just URLs, separated by comma. ie.
      * central::default::https://repo.maven.apache.org/maven2,myrepo::::https://repo.acme.com,https://repo.acme2.com
      */
     @Parameter( property = "remoteRepositories" )
@@ -144,13 +143,12 @@ public class GetClassesMojo
     /**
      * Download transitively, retrieving the specified artifact and all of its dependencies.
      */
-    @Parameter( property = "transitive", defaultValue = "true" )
-    private boolean transitive = true;
+    @Parameter( property = "transitive", defaultValue = "false" )
+    private boolean transitive = false;
 
     /**
      * Skip plugin execution completely.
      *
-     * @since 2.7
      */
     @Parameter( property = "mdep.skip", defaultValue = "false" )
     private boolean skip;
@@ -163,7 +161,6 @@ public class GetClassesMojo
 
         try
         {
-            getLog().info( "Retrieving classes of dependencies for " + artifact );
             if ( isTransitive() )
             {
                 Iterable<ArtifactResult> artifacts = getDependencyResolver()
@@ -188,19 +185,19 @@ public class GetClassesMojo
         }
     }
 
-    public void printClassesFromArtifactResult( ArtifactResult result )
+    private void printClassesFromArtifactResult( ArtifactResult result )
             throws IOException
     {
         JarFile jarFile = new JarFile( result.getArtifact().getFile() );
-        Enumeration e = jarFile.entries();
+        Enumeration entries = jarFile.entries();
 
-        while ( e.hasMoreElements() )
+        while ( entries.hasMoreElements() )
         {
-            JarEntry entry = (JarEntry) e.nextElement();
+            JarEntry entry = (JarEntry) entries.nextElement();
             String name = entry.getName();
 
             // filter out files that do not end in .class
-            if ( name.length() <= 6 || !name.substring( name.length() - 6 ).equals( ".class" ) )
+            if ( !name.endsWith( ".class" ) )
             {
                 continue;
             }
@@ -212,7 +209,7 @@ public class GetClassesMojo
         jarFile.close();
     }
 
-    public ProjectBuildingRequest buildBuildingRequest()
+    private ProjectBuildingRequest buildBuildingRequest()
             throws MojoExecutionException, MojoFailureException
     {
         if ( artifact == null )
@@ -222,7 +219,7 @@ public class GetClassesMojo
         }
         if ( artifact != null )
         {
-            String[] tokens = StringUtils.split( artifact, ":" );
+            String[] tokens = artifact.split( ":" );
             if ( tokens.length < 3 || tokens.length > 5 )
             {
                 throw new MojoFailureException( "Invalid artifact, you must specify "
@@ -255,7 +252,7 @@ public class GetClassesMojo
         if ( remoteRepositories != null )
         {
             // Use the same format as in the deploy plugin id::layout::url
-            String[] repos = StringUtils.split( remoteRepositories, "," );
+            String[] repos = remoteRepositories.split( "," );
             for ( String repo : repos )
             {
                 repoList.add( parseRepository( repo, always ) );
@@ -293,7 +290,6 @@ public class GetClassesMojo
         // if it's a simple url
         String id = "temp";
         ArtifactRepositoryLayout layout = getLayout( "default" );
-        String url = repo;
 
         // if it's an extended repo URL of the form id::layout::url
         if ( repo.contains( "::" ) )
@@ -306,13 +302,13 @@ public class GetClassesMojo
             }
 
             id = matcher.group( 1 ).trim();
-            if ( !StringUtils.isEmpty( matcher.group( 2 ) ) )
+            if ( !( matcher.group( 2 ) == null || matcher.group( 2 ).trim().isEmpty() ) )
             {
                 layout = getLayout( matcher.group( 2 ).trim() );
             }
-            url = matcher.group( 3 ).trim();
+            repo = matcher.group( 3 ).trim();
         }
-        return new MavenArtifactRepository( id, url, layout, policy, policy );
+        return new MavenArtifactRepository( id, repo, layout, policy, policy );
     }
 
     private ArtifactRepositoryLayout getLayout( String id )
@@ -357,7 +353,7 @@ public class GetClassesMojo
     }
 
     /**
-     * @param artifact The artifact
+     * @param artifact The artifact.
      */
     public void setArtifact( String artifact )
     {
@@ -365,7 +361,7 @@ public class GetClassesMojo
     }
 
     /**
-     * @param groupId The groupId.
+     * @param groupId The group ID.
      */
     public void setGroupId( String groupId )
     {
@@ -373,7 +369,7 @@ public class GetClassesMojo
     }
 
     /**
-     * @param artifactId The artifactId.
+     * @param artifactId The artifact ID.
      */
     public void setArtifactId( String artifactId )
     {
