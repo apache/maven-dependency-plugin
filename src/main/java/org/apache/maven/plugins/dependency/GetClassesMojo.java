@@ -166,14 +166,14 @@ public class GetClassesMojo
 
                 for ( ArtifactResult result : artifacts )
                 {
-                    PrintClassesFromArtifactResult( result );
+                    printClassesFromArtifactResult( result );
                 }
             }
             else
             {
                 ArtifactResult result = getArtifactResolver().resolveArtifact( buildingRequest, toArtifactCoordinate( coordinate ) );
 
-                PrintClassesFromArtifactResult( result );
+                printClassesFromArtifactResult( result );
             }
         }
         catch ( ArtifactResolverException | DependencyResolverException | IOException e )
@@ -182,7 +182,7 @@ public class GetClassesMojo
         }
     }
 
-    public void PrintClassesFromArtifactResult( ArtifactResult result )
+    public void printClassesFromArtifactResult( ArtifactResult result )
             throws IOException
     {
         JarFile jarFile = new JarFile( result.getArtifact().getFile() );
