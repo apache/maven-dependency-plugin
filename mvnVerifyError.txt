@@ -1,0 +1,2777 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------< org.apache.maven.plugins:maven-dependency-plugin >----------
+[INFO] Building Apache Maven Dependency Plugin 3.1.3-SNAPSHOT
+[INFO] ----------------------------[ maven-plugin ]----------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.4.1:enforce (enforce-maven-version) @ maven-dependency-plugin ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.4.1:enforce (enforce-bytecode-version) @ maven-dependency-plugin ---
+[INFO] Adding ignore: module-info
+[INFO] Adding ignore: module-info
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.4.1:enforce (ensure-no-container-api) @ maven-dependency-plugin ---
+[INFO] 
+[INFO] --- apache-rat-plugin:0.13:check (rat-check) @ maven-dependency-plugin ---
+[INFO] Enabled default license matchers.
+[INFO] Will parse SCM ignores for exclusions...
+[INFO] Parsing exclusions from C:\Users\ianla\Maven\maven-dependency-plugin\.gitignore
+[INFO] Finished adding exclusions from SCM ignore files.
+[INFO] 73 implicit excludes (use -debug for more details).
+[INFO] 14 explicit excludes (use -debug for more details).
+[INFO] 429 resources included (use -debug for more details)
+[INFO] Rat check: Summary over all files. Unapproved: 0, unknown: 0, generated: 0, approved: 422 licenses.
+[INFO] 
+[INFO] --- maven-plugin-plugin:3.5.2:helpmojo (generate-helpmojo) @ maven-dependency-plugin ---
+[INFO] Using 'UTF-8' encoding to read mojo source files.
+[INFO] java-javadoc mojo extractor found 0 mojo descriptor.
+[INFO] java-annotations mojo extractor found 23 mojo descriptors.
+[INFO] 
+[INFO] --- maven-remote-resources-plugin:1.7.0:process (process-resource-bundles) @ maven-dependency-plugin ---
+[INFO] Preparing remote bundle org.apache:apache-jar-resource-bundle:1.4
+[INFO] Copying 3 resources from 1 bundle.
+[INFO] 
+[INFO] --- maven-resources-plugin:3.1.0:resources (default-resources) @ maven-dependency-plugin ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 6 resources
+[INFO] Copying 3 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ maven-dependency-plugin ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 68 source files to C:\Users\ianla\Maven\maven-dependency-plugin\target\classes
+[INFO] /C:/Users/ianla/Maven/maven-dependency-plugin/src/main/java/org/apache/maven/plugins/dependency/resolvers/GoOfflineMojo.java: Some input files use or override a deprecated API.
+[INFO] /C:/Users/ianla/Maven/maven-dependency-plugin/src/main/java/org/apache/maven/plugins/dependency/resolvers/GoOfflineMojo.java: Recompile with -Xlint:deprecation for details.
+[INFO] /C:/Users/ianla/Maven/maven-dependency-plugin/src/main/java/org/apache/maven/plugins/dependency/resolvers/ResolveDependenciesMojo.java: Some input files use unchecked or unsafe operations.
+[INFO] /C:/Users/ianla/Maven/maven-dependency-plugin/src/main/java/org/apache/maven/plugins/dependency/resolvers/ResolveDependenciesMojo.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- maven-plugin-plugin:3.5.2:descriptor (default-descriptor) @ maven-dependency-plugin ---
+[INFO] Using 'UTF-8' encoding to read mojo source files.
+[INFO] java-javadoc mojo extractor found 0 mojo descriptor.
+[INFO] java-annotations mojo extractor found 23 mojo descriptors.
+[INFO] 
+[INFO] --- maven-resources-plugin:3.1.0:testResources (default-testResources) @ maven-dependency-plugin ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 23 resources
+[INFO] Copying 3 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ maven-dependency-plugin ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 41 source files to C:\Users\ianla\Maven\maven-dependency-plugin\target\test-classes
+[INFO] /C:/Users/ianla/Maven/maven-dependency-plugin/src/test/java/org/apache/maven/plugins/dependency/utils/translators/TestClassifierTypeTranslator.java: Some input files use or override a deprecated API.
+[INFO] /C:/Users/ianla/Maven/maven-dependency-plugin/src/test/java/org/apache/maven/plugins/dependency/utils/translators/TestClassifierTypeTranslator.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.22.0:test (default-test) @ maven-dependency-plugin ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running org.apache.maven.plugins.dependency.analyze.TestAnalyzeDepMgt
+[info] Found Resolved Dependency/DependencyManagement mismatches:
+[info] 	Nothing in DepMgt.
+[info] Found Resolved Dependency/DependencyManagement mismatches:
+[info] testGroupId:release:jar was excluded in DepMgt, but version 1.0 has been found in the dependency tree.
+[info] 	Dependency: testGroupId:release:jar
+[info] 		DepMgt  : 3.0
+[info] 		Resolved: 1.0
+[warn] Potential problems found in Dependency Management 
+[info] Found Resolved Dependency/DependencyManagement mismatches:
+[info] testGroupId:release:jar was excluded in DepMgt, but version 1.0 has been found in the dependency tree.
+[info] 	Dependency: testGroupId:release:jar
+[info] 		DepMgt  : 3.0
+[info] 		Resolved: 1.0
+Caught Expected Exception:Found Dependency errors.
+[info] Found Resolved Dependency/DependencyManagement mismatches:
+[info] 	Ignoring Direct Dependencies.
+[info] 	None
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.089 s - in org.apache.maven.plugins.dependency.analyze.TestAnalyzeDepMgt
+[INFO] Running org.apache.maven.plugins.dependency.analyze.TestAnalyzeDuplicateMojo
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.933 s - in org.apache.maven.plugins.dependency.analyze.TestAnalyzeDuplicateMojo
+[INFO] Running org.apache.maven.plugins.dependency.fromConfiguration.TestArtifactItem
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.238 s - in org.apache.maven.plugins.dependency.fromConfiguration.TestArtifactItem
+[INFO] Running org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo
+[ERROR] Tests run: 30, Failures: 0, Errors: 21, Skipped: 0, Time elapsed: 2.712 s <<< FAILURE! - in org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo
+[ERROR] testGetArtifactItems(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.2 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.getSingleArtifactItem(TestCopyMojo.java:76)
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testGetArtifactItems(TestCopyMojo.java:132)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.getSingleArtifactItem(TestCopyMojo.java:76)
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testGetArtifactItems(TestCopyMojo.java:132)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.getSingleArtifactItem(TestCopyMojo.java:76)
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testGetArtifactItems(TestCopyMojo.java:132)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.getSingleArtifactItem(TestCopyMojo.java:76)
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testGetArtifactItems(TestCopyMojo.java:132)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.getSingleArtifactItem(TestCopyMojo.java:76)
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testGetArtifactItems(TestCopyMojo.java:132)
+
+[ERROR] testCopyFileNoOverwrite(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.123 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileNoOverwrite(TestCopyMojo.java:225)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileNoOverwrite(TestCopyMojo.java:225)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileNoOverwrite(TestCopyMojo.java:225)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileNoOverwrite(TestCopyMojo.java:225)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileNoOverwrite(TestCopyMojo.java:225)
+
+[ERROR] testCopyOverWriteReleases(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.11 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteReleases(TestCopyMojo.java:685)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteReleases(TestCopyMojo.java:685)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteReleases(TestCopyMojo.java:685)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteReleases(TestCopyMojo.java:685)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteReleases(TestCopyMojo.java:685)
+
+[ERROR] testCopyStripClassifierSetInMojo(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.105 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyStripClassifierSetInMojo(TestCopyMojo.java:272)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyStripClassifierSetInMojo(TestCopyMojo.java:272)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyStripClassifierSetInMojo(TestCopyMojo.java:272)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyStripClassifierSetInMojo(TestCopyMojo.java:272)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyStripClassifierSetInMojo(TestCopyMojo.java:272)
+
+[ERROR] testCopyStripVersionSetInMojo(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.101 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyStripVersionSetInMojo(TestCopyMojo.java:255)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyStripVersionSetInMojo(TestCopyMojo.java:255)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyStripVersionSetInMojo(TestCopyMojo.java:255)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyStripVersionSetInMojo(TestCopyMojo.java:255)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyStripVersionSetInMojo(TestCopyMojo.java:255)
+
+[ERROR] testCopyOverWriteIfNewer(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.104 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteIfNewer(TestCopyMojo.java:741)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteIfNewer(TestCopyMojo.java:741)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteIfNewer(TestCopyMojo.java:741)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteIfNewer(TestCopyMojo.java:741)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteIfNewer(TestCopyMojo.java:741)
+
+[ERROR] testCopyOverWriteSnapshot(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.095 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteSnapshot(TestCopyMojo.java:715)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteSnapshot(TestCopyMojo.java:715)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteSnapshot(TestCopyMojo.java:715)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteSnapshot(TestCopyMojo.java:715)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyOverWriteSnapshot(TestCopyMojo.java:715)
+
+[ERROR] testCopyDontOverWriteReleases(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.07 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyDontOverWriteReleases(TestCopyMojo.java:622)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyDontOverWriteReleases(TestCopyMojo.java:622)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyDontOverWriteReleases(TestCopyMojo.java:622)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyDontOverWriteReleases(TestCopyMojo.java:622)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyDontOverWriteReleases(TestCopyMojo.java:622)
+
+[ERROR] testNonClassifierStrip(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.07 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testNonClassifierStrip(TestCopyMojo.java:286)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testNonClassifierStrip(TestCopyMojo.java:286)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testNonClassifierStrip(TestCopyMojo.java:286)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testNonClassifierStrip(TestCopyMojo.java:286)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testNonClassifierStrip(TestCopyMojo.java:286)
+
+[ERROR] testCopyFile(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.085 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFile(TestCopyMojo.java:171)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFile(TestCopyMojo.java:171)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFile(TestCopyMojo.java:171)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFile(TestCopyMojo.java:171)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFile(TestCopyMojo.java:171)
+
+[ERROR] testNonClassifierNoStrip(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.07 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testNonClassifierNoStrip(TestCopyMojo.java:298)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testNonClassifierNoStrip(TestCopyMojo.java:298)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testNonClassifierNoStrip(TestCopyMojo.java:298)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testNonClassifierNoStrip(TestCopyMojo.java:298)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testNonClassifierNoStrip(TestCopyMojo.java:298)
+
+[ERROR] testCopyToLocation(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.078 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyToLocation(TestCopyMojo.java:239)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyToLocation(TestCopyMojo.java:239)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyToLocation(TestCopyMojo.java:239)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyToLocation(TestCopyMojo.java:239)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyToLocation(TestCopyMojo.java:239)
+
+[ERROR] testCopyDontOverWriteSnapshots(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.062 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyDontOverWriteSnapshots(TestCopyMojo.java:653)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyDontOverWriteSnapshots(TestCopyMojo.java:653)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyDontOverWriteSnapshots(TestCopyMojo.java:653)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyDontOverWriteSnapshots(TestCopyMojo.java:653)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyDontOverWriteSnapshots(TestCopyMojo.java:653)
+
+[ERROR] testMissingVersionFromDependenciesWithClassifier(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.085 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependenciesWithClassifier(TestCopyMojo.java:421)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependenciesWithClassifier(TestCopyMojo.java:421)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependenciesWithClassifier(TestCopyMojo.java:421)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependenciesWithClassifier(TestCopyMojo.java:421)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependenciesWithClassifier(TestCopyMojo.java:421)
+
+[ERROR] testMissingVersionFromDependencies(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.072 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencies(TestCopyMojo.java:368)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencies(TestCopyMojo.java:368)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencies(TestCopyMojo.java:368)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencies(TestCopyMojo.java:368)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencies(TestCopyMojo.java:368)
+
+[ERROR] testCopyFileWithBaseVersion(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.086 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileWithBaseVersion(TestCopyMojo.java:190)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileWithBaseVersion(TestCopyMojo.java:190)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileWithBaseVersion(TestCopyMojo.java:190)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileWithBaseVersion(TestCopyMojo.java:190)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileWithBaseVersion(TestCopyMojo.java:190)
+
+[ERROR] testMissingVersionFromDependencyMgt(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.078 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgt(TestCopyMojo.java:476)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgt(TestCopyMojo.java:476)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgt(TestCopyMojo.java:476)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgt(TestCopyMojo.java:476)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgt(TestCopyMojo.java:476)
+
+[ERROR] testCopyFileWithOverideLocalRepo(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.099 s  <<< ERROR!
+java.lang.IllegalStateException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.repository.internal.Maven31RepositoryManager
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.repository.RepositoryManager annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.repository.RepositoryManager
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileWithOverideLocalRepo(TestCopyMojo.java:776)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.repository.internal.Maven31RepositoryManager
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.repository.RepositoryManager annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.repository.RepositoryManager
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileWithOverideLocalRepo(TestCopyMojo.java:776)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.repository.internal.Maven31RepositoryManager
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.repository.RepositoryManager annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileWithOverideLocalRepo(TestCopyMojo.java:776)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.repository.internal.Maven31RepositoryManager
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testCopyFileWithOverideLocalRepo(TestCopyMojo.java:776)
+
+[ERROR] testMissingVersionFromDependencyMgtLooseMatch(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.086 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgtLooseMatch(TestCopyMojo.java:516)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgtLooseMatch(TestCopyMojo.java:516)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgtLooseMatch(TestCopyMojo.java:516)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgtLooseMatch(TestCopyMojo.java:516)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgtLooseMatch(TestCopyMojo.java:516)
+
+[ERROR] testMissingVersionFromDependencyMgtWithClassifier(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.072 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgtWithClassifier(TestCopyMojo.java:549)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgtWithClassifier(TestCopyMojo.java:549)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgtWithClassifier(TestCopyMojo.java:549)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgtWithClassifier(TestCopyMojo.java:549)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependencyMgtWithClassifier(TestCopyMojo.java:549)
+
+[ERROR] testMissingVersionFromDependenciesLooseMatch(org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo)  Time elapsed: 0.076 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependenciesLooseMatch(TestCopyMojo.java:399)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependenciesLooseMatch(TestCopyMojo.java:399)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependenciesLooseMatch(TestCopyMojo.java:399)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependenciesLooseMatch(TestCopyMojo.java:399)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestCopyMojo.testMissingVersionFromDependenciesLooseMatch(TestCopyMojo.java:399)
+
+[INFO] Running org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo
+[INFO] Configured Artifact: test:test:1.0:jar
+[INFO] Configured Artifact: test:test:1.0:jar
+[INFO] Configured Artifact: test:test:1.0:jar
+[INFO] Configured Artifact: test:test:1.0:jar
+[INFO] Configured Artifact: test:test:1.0:jar
+[INFO] Configured Artifact: test:test:1.0:jar
+[INFO] Configured Artifact: test:test:1.0:jar
+[INFO] Configured Artifact: test:test:1.0:jar
+[INFO] Configured Artifact: test:test:1.0:jar
+[INFO] Configured Artifact: test:test:1.0:jar
+[INFO] Configured Artifact: test:test:1.0:jar
+[ERROR] Tests run: 11, Failures: 0, Errors: 11, Skipped: 0, Time elapsed: 0.826 s <<< FAILURE! - in org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo
+[ERROR] testNoIncludeExcludes(org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo)  Time elapsed: 0.001 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testNoIncludeExcludes(TestIncludeExcludeUnpackMojo.java:219)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testNoIncludeExcludes(TestIncludeExcludeUnpackMojo.java:219)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testNoIncludeExcludes(TestIncludeExcludeUnpackMojo.java:219)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testNoIncludeExcludes(TestIncludeExcludeUnpackMojo.java:219)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testNoIncludeExcludes(TestIncludeExcludeUnpackMojo.java:219)
+
+[ERROR] testIncludeArtifactItemOverride(org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo)  Time elapsed: 0.004 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemOverride(TestIncludeExcludeUnpackMojo.java:236)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemOverride(TestIncludeExcludeUnpackMojo.java:236)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemOverride(TestIncludeExcludeUnpackMojo.java:236)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemOverride(TestIncludeExcludeUnpackMojo.java:236)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemOverride(TestIncludeExcludeUnpackMojo.java:236)
+
+[ERROR] testUnpackIncludesManyFiles(org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo)  Time elapsed: 0.111 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesManyFiles(TestIncludeExcludeUnpackMojo.java:129)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesManyFiles(TestIncludeExcludeUnpackMojo.java:129)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesManyFiles(TestIncludeExcludeUnpackMojo.java:129)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesManyFiles(TestIncludeExcludeUnpackMojo.java:129)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesManyFiles(TestIncludeExcludeUnpackMojo.java:129)
+
+[ERROR] testExcludeArtifactItemOverride(org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo)  Time elapsed: 0.084 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testExcludeArtifactItemOverride(TestIncludeExcludeUnpackMojo.java:253)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testExcludeArtifactItemOverride(TestIncludeExcludeUnpackMojo.java:253)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testExcludeArtifactItemOverride(TestIncludeExcludeUnpackMojo.java:253)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testExcludeArtifactItemOverride(TestIncludeExcludeUnpackMojo.java:253)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testExcludeArtifactItemOverride(TestIncludeExcludeUnpackMojo.java:253)
+
+[ERROR] testUnpackExcludesAllFiles(org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo)  Time elapsed: 0.081 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesAllFiles(TestIncludeExcludeUnpackMojo.java:209)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesAllFiles(TestIncludeExcludeUnpackMojo.java:209)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesAllFiles(TestIncludeExcludeUnpackMojo.java:209)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesAllFiles(TestIncludeExcludeUnpackMojo.java:209)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesAllFiles(TestIncludeExcludeUnpackMojo.java:209)
+
+[ERROR] testUnpackIncludesAllFiles(org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo)  Time elapsed: 0.081 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesAllFiles(TestIncludeExcludeUnpackMojo.java:161)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesAllFiles(TestIncludeExcludeUnpackMojo.java:161)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesAllFiles(TestIncludeExcludeUnpackMojo.java:161)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesAllFiles(TestIncludeExcludeUnpackMojo.java:161)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesAllFiles(TestIncludeExcludeUnpackMojo.java:161)
+
+[ERROR] testIncludeArtifactItemMultipleMarker(org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo)  Time elapsed: 0.092 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemMultipleMarker(TestIncludeExcludeUnpackMojo.java:274)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemMultipleMarker(TestIncludeExcludeUnpackMojo.java:274)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemMultipleMarker(TestIncludeExcludeUnpackMojo.java:274)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemMultipleMarker(TestIncludeExcludeUnpackMojo.java:274)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemMultipleMarker(TestIncludeExcludeUnpackMojo.java:274)
+
+[ERROR] testUnpackIncludesSingleFile(org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo)  Time elapsed: 0.096 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesSingleFile(TestIncludeExcludeUnpackMojo.java:145)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesSingleFile(TestIncludeExcludeUnpackMojo.java:145)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesSingleFile(TestIncludeExcludeUnpackMojo.java:145)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesSingleFile(TestIncludeExcludeUnpackMojo.java:145)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackIncludesSingleFile(TestIncludeExcludeUnpackMojo.java:145)
+
+[ERROR] testUnpackExcludesSingleFile(org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo)  Time elapsed: 0.09 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesSingleFile(TestIncludeExcludeUnpackMojo.java:193)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesSingleFile(TestIncludeExcludeUnpackMojo.java:193)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesSingleFile(TestIncludeExcludeUnpackMojo.java:193)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesSingleFile(TestIncludeExcludeUnpackMojo.java:193)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesSingleFile(TestIncludeExcludeUnpackMojo.java:193)
+
+[ERROR] testIncludeArtifactItemMultipleExecutions(org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo)  Time elapsed: 0.106 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemMultipleExecutions(TestIncludeExcludeUnpackMojo.java:296)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemMultipleExecutions(TestIncludeExcludeUnpackMojo.java:296)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemMultipleExecutions(TestIncludeExcludeUnpackMojo.java:296)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemMultipleExecutions(TestIncludeExcludeUnpackMojo.java:296)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testIncludeArtifactItemMultipleExecutions(TestIncludeExcludeUnpackMojo.java:296)
+
+[ERROR] testUnpackExcludesManyFiles(org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo)  Time elapsed: 0.08 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesManyFiles(TestIncludeExcludeUnpackMojo.java:177)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesManyFiles(TestIncludeExcludeUnpackMojo.java:177)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesManyFiles(TestIncludeExcludeUnpackMojo.java:177)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesManyFiles(TestIncludeExcludeUnpackMojo.java:177)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestIncludeExcludeUnpackMojo.testUnpackExcludesManyFiles(TestIncludeExcludeUnpackMojo.java:177)
+
+[INFO] Running org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo
+[ERROR] Tests run: 18, Failures: 0, Errors: 12, Skipped: 0, Time elapsed: 1.206 s <<< FAILURE! - in org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo
+[ERROR] testGetArtifactItems(org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo)  Time elapsed: 0.01 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.getSingleArtifactItem(TestUnpackMojo.java:88)
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testGetArtifactItems(TestUnpackMojo.java:107)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.getSingleArtifactItem(TestUnpackMojo.java:88)
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testGetArtifactItems(TestUnpackMojo.java:107)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.getSingleArtifactItem(TestUnpackMojo.java:88)
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testGetArtifactItems(TestUnpackMojo.java:107)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.getSingleArtifactItem(TestUnpackMojo.java:88)
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testGetArtifactItems(TestUnpackMojo.java:107)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.getSingleArtifactItem(TestUnpackMojo.java:88)
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testGetArtifactItems(TestUnpackMojo.java:107)
+
+[ERROR] testUnpackToLocation(org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo)  Time elapsed: 0.099 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackToLocation(TestUnpackMojo.java:171)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackToLocation(TestUnpackMojo.java:171)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackToLocation(TestUnpackMojo.java:171)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackToLocation(TestUnpackMojo.java:171)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackToLocation(TestUnpackMojo.java:171)
+
+[ERROR] testMissingVersionFromDependenciesWithClassifier(org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo)  Time elapsed: 0.07 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependenciesWithClassifier(TestUnpackMojo.java:299)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependenciesWithClassifier(TestUnpackMojo.java:299)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependenciesWithClassifier(TestUnpackMojo.java:299)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependenciesWithClassifier(TestUnpackMojo.java:299)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependenciesWithClassifier(TestUnpackMojo.java:299)
+
+[ERROR] testUnpackDontOverWriteSnapshots(org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo)  Time elapsed: 0.067 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackDontOverWriteSnapshots(TestUnpackMojo.java:484)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackDontOverWriteSnapshots(TestUnpackMojo.java:484)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackDontOverWriteSnapshots(TestUnpackMojo.java:484)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackDontOverWriteSnapshots(TestUnpackMojo.java:484)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackDontOverWriteSnapshots(TestUnpackMojo.java:484)
+
+[ERROR] testUnpackOverWriteReleases(org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo)  Time elapsed: 0.074 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteReleases(TestUnpackMojo.java:504)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteReleases(TestUnpackMojo.java:504)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteReleases(TestUnpackMojo.java:504)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteReleases(TestUnpackMojo.java:504)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteReleases(TestUnpackMojo.java:504)
+
+[ERROR] testUnpackDontOverWriteReleases(org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo)  Time elapsed: 0.061 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackDontOverWriteReleases(TestUnpackMojo.java:464)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackDontOverWriteReleases(TestUnpackMojo.java:464)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackDontOverWriteReleases(TestUnpackMojo.java:464)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackDontOverWriteReleases(TestUnpackMojo.java:464)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackDontOverWriteReleases(TestUnpackMojo.java:464)
+
+[ERROR] testMissingVersionFromDependencies(org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo)  Time elapsed: 0.061 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencies(TestUnpackMojo.java:277)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencies(TestUnpackMojo.java:277)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencies(TestUnpackMojo.java:277)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencies(TestUnpackMojo.java:277)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencies(TestUnpackMojo.java:277)
+
+[ERROR] testUnpackOverWriteIfNewer(org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo)  Time elapsed: 0.069 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteIfNewer(TestUnpackMojo.java:551)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteIfNewer(TestUnpackMojo.java:551)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteIfNewer(TestUnpackMojo.java:551)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteIfNewer(TestUnpackMojo.java:551)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteIfNewer(TestUnpackMojo.java:551)
+
+[ERROR] testMissingVersionFromDependencyMgt(org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo)  Time elapsed: 0.086 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencyMgt(TestUnpackMojo.java:354)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencyMgt(TestUnpackMojo.java:354)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencyMgt(TestUnpackMojo.java:354)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencyMgt(TestUnpackMojo.java:354)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencyMgt(TestUnpackMojo.java:354)
+
+[ERROR] testUnpackFile(org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo)  Time elapsed: 0.093 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackFile(TestUnpackMojo.java:144)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackFile(TestUnpackMojo.java:144)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackFile(TestUnpackMojo.java:144)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackFile(TestUnpackMojo.java:144)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackFile(TestUnpackMojo.java:144)
+
+[ERROR] testUnpackOverWriteSnapshot(org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo)  Time elapsed: 0.061 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteSnapshot(TestUnpackMojo.java:525)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteSnapshot(TestUnpackMojo.java:525)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteSnapshot(TestUnpackMojo.java:525)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteSnapshot(TestUnpackMojo.java:525)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testUnpackOverWriteSnapshot(TestUnpackMojo.java:525)
+
+[ERROR] testMissingVersionFromDependencyMgtWithClassifier(org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo)  Time elapsed: 0.093 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: Unable to find/resolve artifact.
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencyMgtWithClassifier(TestUnpackMojo.java:391)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencyMgtWithClassifier(TestUnpackMojo.java:391)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencyMgtWithClassifier(TestUnpackMojo.java:391)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencyMgtWithClassifier(TestUnpackMojo.java:391)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromConfiguration.TestUnpackMojo.testMissingVersionFromDependencyMgtWithClassifier(TestUnpackMojo.java:391)
+
+[INFO] Running org.apache.maven.plugins.dependency.fromDependencies.TestBuildClasspathMojo
+[INFO] Dependencies classpath:
+C:\Users\ianla\Maven\maven-dependency-plugin\target\unit-tests\build-classpath\localTestRepo\release-1.0.jar;C:\Users\ianla\Maven\maven-dependency-plugin\target\unit-tests\build-classpath\localTestRepo\runtime-1.0.jar;C:\Users\ianla\Maven\maven-dependency-plugin\target\unit-tests\build-classpath\localTestRepo\compile-1.0.jar;C:\Users\ianla\Maven\maven-dependency-plugin\target\unit-tests\build-classpath\localTestRepo\provided-1.0.jar;C:\Users\ianla\Maven\maven-dependency-plugin\target\unit-tests\build-classpath\localTestRepo\test-1.0.jar;C:\Users\ianla\Maven\maven-dependency-plugin\target\unit-tests\build-classpath\localTestRepo\snapshot-2.0-SNAPSHOT.jar;C:\Users\ianla\Maven\maven-dependency-plugin\target\unit-tests\build-classpath\localTestRepo\system-1.0.jar
+[INFO] Wrote classpath file 'C:\Users\ianla\Maven\maven-dependency-plugin\target\unit-tests\build-classpath\buildClasspath.txt'.
+[INFO] Wrote classpath file 'C:\Users\ianla\Maven\maven-dependency-plugin\target\unit-tests\build-classpath\buildClasspath.txt'.
+[INFO] Skipped writing classpath file 'C:\Users\ianla\Maven\maven-dependency-plugin\target\unit-tests\build-classpath\buildClasspath.txt'.  No changes found.
+[ERROR] Tests run: 2, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.007 s <<< FAILURE! - in org.apache.maven.plugins.dependency.fromDependencies.TestBuildClasspathMojo
+[ERROR] testPath(org.apache.maven.plugins.dependency.fromDependencies.TestBuildClasspathMojo)  Time elapsed: 0 s  <<< ERROR!
+java.lang.IllegalStateException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.repository.internal.Maven31RepositoryManager
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.repository.RepositoryManager annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.repository.RepositoryManager
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromDependencies.TestBuildClasspathMojo.testPath(TestBuildClasspathMojo.java:140)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.repository.internal.Maven31RepositoryManager
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.repository.RepositoryManager annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.repository.RepositoryManager
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromDependencies.TestBuildClasspathMojo.testPath(TestBuildClasspathMojo.java:140)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.repository.internal.Maven31RepositoryManager
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.repository.RepositoryManager annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromDependencies.TestBuildClasspathMojo.testPath(TestBuildClasspathMojo.java:140)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.repository.internal.Maven31RepositoryManager
+
+1 error
+	at org.apache.maven.plugins.dependency.fromDependencies.TestBuildClasspathMojo.testPath(TestBuildClasspathMojo.java:140)
+
+[INFO] Running org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo
+[ERROR] Tests run: 32, Failures: 1, Errors: 2, Skipped: 0, Time elapsed: 4.107 s <<< FAILURE! - in org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo
+[ERROR] testCDMClassifier(org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo)  Time elapsed: 0.105 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: error resolving: testGroupId:release:jar:jdk14:1.0
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.dotestClassifierType(TestCopyDependenciesMojo.java:459)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.testCDMClassifier(TestCopyDependenciesMojo.java:429)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.dotestClassifierType(TestCopyDependenciesMojo.java:459)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.testCDMClassifier(TestCopyDependenciesMojo.java:429)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.dotestClassifierType(TestCopyDependenciesMojo.java:459)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.testCDMClassifier(TestCopyDependenciesMojo.java:429)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.dotestClassifierType(TestCopyDependenciesMojo.java:459)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.testCDMClassifier(TestCopyDependenciesMojo.java:429)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.dotestClassifierType(TestCopyDependenciesMojo.java:459)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.testCDMClassifier(TestCopyDependenciesMojo.java:429)
+
+[ERROR] testCopyPom(org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo)  Time elapsed: 0.097 s  <<< FAILURE!
+junit.framework.AssertionFailedError: C:\Users\ianla\Maven\maven-dependency-plugin\target\unit-tests\copy-dependencies\outputDirectory\maven-artifact-2.0.7.pom doesn't exist
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.testCopyPom(TestCopyDependenciesMojo.java:768)
+
+[ERROR] testCDMClassifierType(org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo)  Time elapsed: 0.097 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: error resolving: testGroupId:release:sources:jdk14:1.0
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.dotestClassifierType(TestCopyDependenciesMojo.java:459)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.testCDMClassifierType(TestCopyDependenciesMojo.java:441)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.dotestClassifierType(TestCopyDependenciesMojo.java:459)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.testCDMClassifierType(TestCopyDependenciesMojo.java:441)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.dotestClassifierType(TestCopyDependenciesMojo.java:459)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.testCDMClassifierType(TestCopyDependenciesMojo.java:441)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.dotestClassifierType(TestCopyDependenciesMojo.java:459)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.testCDMClassifierType(TestCopyDependenciesMojo.java:441)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.dotestClassifierType(TestCopyDependenciesMojo.java:459)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo.testCDMClassifierType(TestCopyDependenciesMojo.java:441)
+
+[INFO] Running org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo2
+[ERROR] Tests run: 11, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.862 s <<< FAILURE! - in org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo2
+[ERROR] testRepositoryLayout(org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo2)  Time elapsed: 0.059 s  <<< ERROR!
+java.lang.IllegalStateException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.repository.internal.Maven31RepositoryManager
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.repository.RepositoryManager annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.repository.RepositoryManager
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo2.testRepositoryLayout(TestCopyDependenciesMojo2.java:284)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.repository.internal.Maven31RepositoryManager
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.repository.RepositoryManager annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.repository.RepositoryManager
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo2.testRepositoryLayout(TestCopyDependenciesMojo2.java:284)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.repository.internal.Maven31RepositoryManager
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.repository.RepositoryManager annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo2.testRepositoryLayout(TestCopyDependenciesMojo2.java:284)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.repository.internal.Maven31RepositoryManager
+
+1 error
+	at org.apache.maven.plugins.dependency.fromDependencies.TestCopyDependenciesMojo2.testRepositoryLayout(TestCopyDependenciesMojo2.java:284)
+
+[INFO] Running org.apache.maven.plugins.dependency.fromDependencies.TestIncludeExcludeUnpackDependenciesMojo
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.201 s - in org.apache.maven.plugins.dependency.fromDependencies.TestIncludeExcludeUnpackDependenciesMojo
+[INFO] Running org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo
+[ERROR] Tests run: 28, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 7.106 s <<< FAILURE! - in org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo
+[ERROR] testCDMClassifier(org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo)  Time elapsed: 0.254 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: error resolving: testGroupId:release:jar:jdk14:1.0
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.dotestClassifierType(TestUnpackDependenciesMojo.java:552)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.testCDMClassifier(TestUnpackDependenciesMojo.java:523)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.dotestClassifierType(TestUnpackDependenciesMojo.java:552)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.testCDMClassifier(TestUnpackDependenciesMojo.java:523)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.dotestClassifierType(TestUnpackDependenciesMojo.java:552)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.testCDMClassifier(TestUnpackDependenciesMojo.java:523)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.dotestClassifierType(TestUnpackDependenciesMojo.java:552)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.testCDMClassifier(TestUnpackDependenciesMojo.java:523)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.dotestClassifierType(TestUnpackDependenciesMojo.java:552)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.testCDMClassifier(TestUnpackDependenciesMojo.java:523)
+
+[ERROR] testCDMClassifierType(org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo)  Time elapsed: 0.272 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: error resolving: testGroupId:release:war:jdk14:1.0
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.dotestClassifierType(TestUnpackDependenciesMojo.java:552)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.testCDMClassifierType(TestUnpackDependenciesMojo.java:535)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.dotestClassifierType(TestUnpackDependenciesMojo.java:552)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.testCDMClassifierType(TestUnpackDependenciesMojo.java:535)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.dotestClassifierType(TestUnpackDependenciesMojo.java:552)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.testCDMClassifierType(TestUnpackDependenciesMojo.java:535)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.dotestClassifierType(TestUnpackDependenciesMojo.java:552)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.testCDMClassifierType(TestUnpackDependenciesMojo.java:535)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.dotestClassifierType(TestUnpackDependenciesMojo.java:552)
+	at org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo.testCDMClassifierType(TestUnpackDependenciesMojo.java:535)
+
+[INFO] Running org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo2
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.435 s - in org.apache.maven.plugins.dependency.fromDependencies.TestUnpackDependenciesMojo2
+[INFO] Running org.apache.maven.plugins.dependency.resolvers.ExcludeReactorProjectsArtifactFilterTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.687 s - in org.apache.maven.plugins.dependency.resolvers.ExcludeReactorProjectsArtifactFilterTest
+[INFO] Running org.apache.maven.plugins.dependency.resolvers.ExcludeReactorProjectsDependencyFilterTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.137 s - in org.apache.maven.plugins.dependency.resolvers.ExcludeReactorProjectsDependencyFilterTest
+[INFO] Running org.apache.maven.plugins.dependency.resolvers.ResolveDependenciesMojoTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.213 s - in org.apache.maven.plugins.dependency.resolvers.ResolveDependenciesMojoTest
+[INFO] Running org.apache.maven.plugins.dependency.resolvers.TestResolveMojo
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.076 s - in org.apache.maven.plugins.dependency.resolvers.TestResolveMojo
+[INFO] Running org.apache.maven.plugins.dependency.TestCollectMojo
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.137 s - in org.apache.maven.plugins.dependency.TestCollectMojo
+[INFO] Running org.apache.maven.plugins.dependency.TestGetMojo
+[INFO] Resolving org.apache.maven:maven-model:jar:2.0.9 with transitive dependencies
+[INFO] Resolving test:test:jar:1.0 with transitive dependencies
+[INFO] Resolving org.apache.maven:maven-model:jar:2.0.9
+[ERROR] Tests run: 4, Failures: 0, Errors: 3, Skipped: 0, Time elapsed: 0.335 s <<< FAILURE! - in org.apache.maven.plugins.dependency.TestGetMojo
+[ERROR] testRemoteRepositories(org.apache.maven.plugins.dependency.TestGetMojo)  Time elapsed: 0.052 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: 
+Couldn't download artifact: com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.dependencies.resolve.internal.Maven31DependencyResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.TestGetMojo.testRemoteRepositories(TestGetMojo.java:117)
+Caused by: org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.dependencies.resolve.internal.Maven31DependencyResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.TestGetMojo.testRemoteRepositories(TestGetMojo.java:117)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.dependencies.resolve.internal.Maven31DependencyResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.TestGetMojo.testRemoteRepositories(TestGetMojo.java:117)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.dependencies.resolve.internal.Maven31DependencyResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.TestGetMojo.testRemoteRepositories(TestGetMojo.java:117)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.dependencies.resolve.internal.Maven31DependencyResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.TestGetMojo.testRemoteRepositories(TestGetMojo.java:117)
+
+[ERROR] testRemoteRepositoriesAuthentication(org.apache.maven.plugins.dependency.TestGetMojo)  Time elapsed: 0.168 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: 
+Couldn't download artifact: com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.dependencies.resolve.internal.Maven31DependencyResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.TestGetMojo.testRemoteRepositoriesAuthentication(TestGetMojo.java:137)
+Caused by: org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.dependencies.resolve.internal.Maven31DependencyResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.TestGetMojo.testRemoteRepositoriesAuthentication(TestGetMojo.java:137)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.dependencies.resolve.internal.Maven31DependencyResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.TestGetMojo.testRemoteRepositoriesAuthentication(TestGetMojo.java:137)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.dependencies.resolve.internal.Maven31DependencyResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.TestGetMojo.testRemoteRepositoriesAuthentication(TestGetMojo.java:137)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.dependencies.resolve.internal.Maven31DependencyResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.TestGetMojo.testRemoteRepositoriesAuthentication(TestGetMojo.java:137)
+
+[ERROR] testTransitive(org.apache.maven.plugins.dependency.TestGetMojo)  Time elapsed: 0.069 s  <<< ERROR!
+org.apache.maven.plugin.MojoExecutionException: 
+Couldn't download artifact: com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.TestGetMojo.testTransitive(TestGetMojo.java:96)
+Caused by: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.TestGetMojo.testTransitive(TestGetMojo.java:96)
+Caused by: org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+      role: org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver
+  roleHint: maven31
+	at org.apache.maven.plugins.dependency.TestGetMojo.testTransitive(TestGetMojo.java:96)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+  at ClassRealm[plexus.core, parent: null]
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver annotated with @com.google.inject.name.Named(value=maven31)
+
+1 error
+	at org.apache.maven.plugins.dependency.TestGetMojo.testTransitive(TestGetMojo.java:96)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.eclipse.aether.RepositorySystem was bound.
+  while locating org.apache.maven.shared.transfer.artifact.resolve.internal.Maven31ArtifactResolver
+
+1 error
+	at org.apache.maven.plugins.dependency.TestGetMojo.testTransitive(TestGetMojo.java:96)
+
+[INFO] Running org.apache.maven.plugins.dependency.TestPropertiesMojo
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s - in org.apache.maven.plugins.dependency.TestPropertiesMojo
+[INFO] Running org.apache.maven.plugins.dependency.TestSkip
+[ERROR] Tests run: 19, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 1.105 s <<< FAILURE! - in org.apache.maven.plugins.dependency.TestSkip
+[ERROR] testSkipTree(org.apache.maven.plugins.dependency.TestSkip)  Time elapsed: 0.037 s  <<< ERROR!
+org.codehaus.plexus.component.repository.exception.ComponentLookupException: 
+com.google.inject.ProvisionException: Guice provision errors:
+
+1) Error injecting: org.apache.maven.plugins.dependency.tree.TreeMojo
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.plugin.Mojo annotated with @com.google.inject.name.Named(value=org.apache.maven.plugins:maven-dependency-plugin:3.1.3-SNAPSHOT:tree)
+
+1 error
+      role: org.apache.maven.plugin.Mojo
+  roleHint: org.apache.maven.plugins:maven-dependency-plugin:3.1.3-SNAPSHOT:tree
+	at org.apache.maven.plugins.dependency.TestSkip.doConfigTest(TestSkip.java:165)
+	at org.apache.maven.plugins.dependency.TestSkip.doTest(TestSkip.java:152)
+	at org.apache.maven.plugins.dependency.TestSkip.testSkipTree(TestSkip.java:134)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) Error injecting: org.apache.maven.plugins.dependency.tree.TreeMojo
+  at ClassRealm[plexus.core, parent: null]
+  while locating org.apache.maven.plugin.Mojo annotated with @com.google.inject.name.Named(value=org.apache.maven.plugins:maven-dependency-plugin:3.1.3-SNAPSHOT:tree)
+
+1 error
+	at org.apache.maven.plugins.dependency.TestSkip.doConfigTest(TestSkip.java:165)
+	at org.apache.maven.plugins.dependency.TestSkip.doTest(TestSkip.java:152)
+	at org.apache.maven.plugins.dependency.TestSkip.testSkipTree(TestSkip.java:134)
+Caused by: com.google.inject.ProvisionException: 
+Guice provision errors:
+
+1) No implementation for org.apache.maven.plugins.dependency.tree.DependencyGraphBuilder was bound.
+  while locating org.apache.maven.plugins.dependency.tree.TreeMojo
+
+1 error
+	at org.apache.maven.plugins.dependency.TestSkip.doConfigTest(TestSkip.java:165)
+	at org.apache.maven.plugins.dependency.TestSkip.doTest(TestSkip.java:152)
+	at org.apache.maven.plugins.dependency.TestSkip.testSkipTree(TestSkip.java:134)
+
+[INFO] Running org.apache.maven.plugins.dependency.tree.TestTreeMojo
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.026 s - in org.apache.maven.plugins.dependency.tree.TestTreeMojo
+[INFO] Running org.apache.maven.plugins.dependency.utils.filters.TestDestFileFilter
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.053 s - in org.apache.maven.plugins.dependency.utils.filters.TestDestFileFilter
+[INFO] Running org.apache.maven.plugins.dependency.utils.filters.TestMarkerFileFilter
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.02 s - in org.apache.maven.plugins.dependency.utils.filters.TestMarkerFileFilter
+[INFO] Running org.apache.maven.plugins.dependency.utils.filters.TestResolveMarkerFileFilter
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s - in org.apache.maven.plugins.dependency.utils.filters.TestResolveMarkerFileFilter
+[INFO] Running org.apache.maven.plugins.dependency.utils.markers.TestDefaultMarkerFileHandler
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 s - in org.apache.maven.plugins.dependency.utils.markers.TestDefaultMarkerFileHandler
+[INFO] Running org.apache.maven.plugins.dependency.utils.markers.TestSourcesMarkerFileHandler
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.031 s - in org.apache.maven.plugins.dependency.utils.markers.TestSourcesMarkerFileHandler
+[INFO] Running org.apache.maven.plugins.dependency.utils.markers.TestUnpackMarkerFileHandler
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.446 s - in org.apache.maven.plugins.dependency.utils.markers.TestUnpackMarkerFileHandler
+[INFO] Running org.apache.maven.plugins.dependency.utils.TestDependencyStatusSets
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.086 s - in org.apache.maven.plugins.dependency.utils.TestDependencyStatusSets
+[INFO] Running org.apache.maven.plugins.dependency.utils.TestDependencyUtil
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s - in org.apache.maven.plugins.dependency.utils.TestDependencyUtil
+[INFO] Running org.apache.maven.plugins.dependency.utils.TestSilentLog
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s - in org.apache.maven.plugins.dependency.utils.TestSilentLog
+[INFO] Running org.apache.maven.plugins.dependency.utils.translators.TestClassifierTypeTranslator
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.238 s - in org.apache.maven.plugins.dependency.utils.translators.TestClassifierTypeTranslator
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   TestCopyDependenciesMojo.testCopyPom:768 C:\Users\ianla\Maven\maven-dependency-plugin\target\unit-tests\copy-dependencies\outputDirectory\maven-artifact-2.0.7.pom doesn't exist
+[ERROR] Errors: 
+[ERROR]   TestGetMojo.testRemoteRepositories:117 » MojoExecution Couldn't download artif...
+[ERROR]   TestGetMojo.testRemoteRepositoriesAuthentication:137 » MojoExecution Couldn't ...
+[ERROR]   TestGetMojo.testTransitive:96 » MojoExecution Couldn't download artifact: com....
+[ERROR]   TestSkip.testSkipTree:134->doTest:152->doConfigTest:165->AbstractMojoTestCase.lookupMojo:236->AbstractMojoTestCase.lookupMojo:291->PlexusTestCase.lookup:201 » ComponentLookup
+[ERROR]   TestCopyMojo.testCopyDontOverWriteReleases:622 » MojoExecution Unable to find/...
+[ERROR]   TestCopyMojo.testCopyDontOverWriteSnapshots:653 » MojoExecution Unable to find...
+[ERROR]   TestCopyMojo.testCopyFile:171 » MojoExecution Unable to find/resolve artifact.
+[ERROR]   TestCopyMojo.testCopyFileNoOverwrite:225 » MojoExecution Unable to find/resolv...
+[ERROR]   TestCopyMojo.testCopyFileWithBaseVersion:190 » MojoExecution Unable to find/re...
+[ERROR]   TestCopyMojo.testCopyFileWithOverideLocalRepo:776 » IllegalState com.google.in...
+[ERROR]   TestCopyMojo.testCopyOverWriteIfNewer:741 » MojoExecution Unable to find/resol...
+[ERROR]   TestCopyMojo.testCopyOverWriteReleases:685 » MojoExecution Unable to find/reso...
+[ERROR]   TestCopyMojo.testCopyOverWriteSnapshot:715 » MojoExecution Unable to find/reso...
+[ERROR]   TestCopyMojo.testCopyStripClassifierSetInMojo:272 » MojoExecution Unable to fi...
+[ERROR]   TestCopyMojo.testCopyStripVersionSetInMojo:255 » MojoExecution Unable to find/...
+[ERROR]   TestCopyMojo.testCopyToLocation:239 » MojoExecution Unable to find/resolve art...
+[ERROR]   TestCopyMojo.testGetArtifactItems:132->getSingleArtifactItem:76 » MojoExecution
+[ERROR]   TestCopyMojo.testMissingVersionFromDependencies:368 » MojoExecution Unable to ...
+[ERROR]   TestCopyMojo.testMissingVersionFromDependenciesLooseMatch:399 » MojoExecution ...
+[ERROR]   TestCopyMojo.testMissingVersionFromDependenciesWithClassifier:421 » MojoExecution
+[ERROR]   TestCopyMojo.testMissingVersionFromDependencyMgt:476 » MojoExecution Unable to...
+[ERROR]   TestCopyMojo.testMissingVersionFromDependencyMgtLooseMatch:516 » MojoExecution
+[ERROR]   TestCopyMojo.testMissingVersionFromDependencyMgtWithClassifier:549 » MojoExecution
+[ERROR]   TestCopyMojo.testNonClassifierNoStrip:298 » MojoExecution Unable to find/resol...
+[ERROR]   TestCopyMojo.testNonClassifierStrip:286 » MojoExecution Unable to find/resolve...
+[ERROR]   TestIncludeExcludeUnpackMojo.testExcludeArtifactItemOverride:253 » MojoExecution
+[ERROR]   TestIncludeExcludeUnpackMojo.testIncludeArtifactItemMultipleExecutions:296 » MojoExecution
+[ERROR]   TestIncludeExcludeUnpackMojo.testIncludeArtifactItemMultipleMarker:274 » MojoExecution
+[ERROR]   TestIncludeExcludeUnpackMojo.testIncludeArtifactItemOverride:236 » MojoExecution
+[ERROR]   TestIncludeExcludeUnpackMojo.testNoIncludeExcludes:219 » MojoExecution Unable ...
+[ERROR]   TestIncludeExcludeUnpackMojo.testUnpackExcludesAllFiles:209 » MojoExecution Un...
+[ERROR]   TestIncludeExcludeUnpackMojo.testUnpackExcludesManyFiles:177 » MojoExecution U...
+[ERROR]   TestIncludeExcludeUnpackMojo.testUnpackExcludesSingleFile:193 » MojoExecution ...
+[ERROR]   TestIncludeExcludeUnpackMojo.testUnpackIncludesAllFiles:161 » MojoExecution Un...
+[ERROR]   TestIncludeExcludeUnpackMojo.testUnpackIncludesManyFiles:129 » MojoExecution U...
+[ERROR]   TestIncludeExcludeUnpackMojo.testUnpackIncludesSingleFile:145 » MojoExecution ...
+[ERROR]   TestUnpackMojo.testGetArtifactItems:107->getSingleArtifactItem:88 » MojoExecution
+[ERROR]   TestUnpackMojo.testMissingVersionFromDependencies:277 » MojoExecution Unable t...
+[ERROR]   TestUnpackMojo.testMissingVersionFromDependenciesWithClassifier:299 » MojoExecution
+[ERROR]   TestUnpackMojo.testMissingVersionFromDependencyMgt:354 » MojoExecution Unable ...
+[ERROR]   TestUnpackMojo.testMissingVersionFromDependencyMgtWithClassifier:391 » MojoExecution
+[ERROR]   TestUnpackMojo.testUnpackDontOverWriteReleases:464 » MojoExecution Unable to f...
+[ERROR]   TestUnpackMojo.testUnpackDontOverWriteSnapshots:484 » MojoExecution Unable to ...
+[ERROR]   TestUnpackMojo.testUnpackFile:144 » MojoExecution Unable to find/resolve artif...
+[ERROR]   TestUnpackMojo.testUnpackOverWriteIfNewer:551 » MojoExecution Unable to find/r...
+[ERROR]   TestUnpackMojo.testUnpackOverWriteReleases:504 » MojoExecution Unable to find/...
+[ERROR]   TestUnpackMojo.testUnpackOverWriteSnapshot:525 » MojoExecution Unable to find/...
+[ERROR]   TestUnpackMojo.testUnpackToLocation:171 » MojoExecution Unable to find/resolve...
+[ERROR]   TestBuildClasspathMojo.testPath:140 » IllegalState com.google.inject.Provision...
+[ERROR]   TestCopyDependenciesMojo.testCDMClassifier:429->dotestClassifierType:459 » MojoExecution
+[ERROR]   TestCopyDependenciesMojo.testCDMClassifierType:441->dotestClassifierType:459 » MojoExecution
+[ERROR]   TestCopyDependenciesMojo2.testRepositoryLayout:284 » IllegalState com.google.i...
+[ERROR]   TestUnpackDependenciesMojo.testCDMClassifier:523->dotestClassifierType:552 » MojoExecution
+[ERROR]   TestUnpackDependenciesMojo.testCDMClassifierType:535->dotestClassifierType:552 » MojoExecution
+[INFO] 
+[ERROR] Tests run: 249, Failures: 1, Errors: 54, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  44.332 s
+[INFO] Finished at: 2020-05-27T16:27:31-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.0:test (default-test) on project maven-dependency-plugin: There are test failures.
+[ERROR] 
+[ERROR] Please refer to C:\Users\ianla\Maven\maven-dependency-plugin\target\surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date]-jvmRun[N].dump, [date].dumpstream and [date]-jvmRun[N].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

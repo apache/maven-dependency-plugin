@@ -374,6 +374,7 @@ under the License.
           <artifactId>apache-rat-plugin</artifactId>
           <configuration>
             <excludes combine.children="append">
+              <exclude>mvnVerifyError.txt</exclude>
               <!--
                 These files contain results for integration tests which can't contain license header
                 otherwise the IT's will fail.
