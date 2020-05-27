@@ -33,7 +33,7 @@ import java.io.File;
 public class TestGetClassesMojo
         extends AbstractDependencyMojoTestCase
 {
-    ListClassesMojo mojo;
+    private ListClassesMojo mojo;
 
     protected void setUp()
             throws Exception
@@ -68,7 +68,7 @@ public class TestGetClassesMojo
     {
         setVariableValueToObject( mojo, "remoteRepositories", "central::default::https://repo.maven.apache.org/maven2,"
                 + "central::::https://repo.maven.apache.org/maven2," + "https://repo.maven.apache.org/maven2" );
-        mojo.setArtifact("org.apache.commons:commons-lang3:3.6");
+        setVariableValueToObject( mojo, "artifact", "org.apache.commons:commons-lang3:3.6" );
         setVariableValueToObject( mojo, "transitive", Boolean.FALSE );
 
         mojo.execute();
@@ -79,7 +79,7 @@ public class TestGetClassesMojo
     {
         setVariableValueToObject( mojo, "remoteRepositories", "central::default::https://repo.maven.apache.org/maven2,"
                 + "central::::https://repo.maven.apache.org/maven2," + "https://repo.maven.apache.org/maven2" );
-        mojo.setArtifact("org.apache.commons:commons-lang3:3.6");
+        setVariableValueToObject( mojo, "artifact", "org.apache.commons:commons-lang3:3.6" );
         setVariableValueToObject( mojo, "transitive", Boolean.TRUE );
 
         mojo.execute();

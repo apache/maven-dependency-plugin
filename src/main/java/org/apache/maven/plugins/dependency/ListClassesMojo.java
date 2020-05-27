@@ -148,7 +148,6 @@ public class ListClassesMojo
 
     /**
      * Skip plugin execution completely.
-     *
      */
     @Parameter( property = "mdep.skip", defaultValue = "false" )
     private boolean skip;
@@ -160,7 +159,7 @@ public class ListClassesMojo
 
         try
         {
-            if ( isTransitive() )
+            if ( transitive )
             {
                 Iterable<ArtifactResult> artifacts = dependencyResolver
                         .resolveDependencies( buildingRequest, coordinate, null );
@@ -180,32 +179,34 @@ public class ListClassesMojo
         }
         catch ( ArtifactResolverException | DependencyResolverException | IOException e )
         {
-            throw new MojoExecutionException( "Couldn't download artifact " + artifact + ": " + e.getMessage(), e );
+            throw new MojoExecutionException( "Couldn't download artifact: " + e.getMessage(), e );
         }
     }
 
     private void printClassesFromArtifactResult( ArtifactResult result )
             throws IOException
     {
-        JarFile jarFile = new JarFile( result.getArtifact().getFile() );
-        Enumeration entries = jarFile.entries();
-
-        while ( entries.hasMoreElements() )
+        // open jar file in try-with-resources statement to guarantee the file closes after use regardless of errors
+        try ( JarFile jarFile = new JarFile( result.getArtifact().getFile() ) )
         {
-            JarEntry entry = (JarEntry) entries.nextElement();
-            String entryName = entry.getName();
+            Enumeration entries = jarFile.entries();
 
-            // filter out files that do not end in .class
-            if ( !entryName.endsWith( ".class" ) )
+            while ( entries.hasMoreElements() )
             {
-                continue;
-            }
+                JarEntry entry = (JarEntry) entries.nextElement();
+                String entryName = entry.getName();
 
-            // remove .class from the end and change format to use periods instead of forward slashes
-            String className = entryName.substring( 0, entryName.length() - 6 ).replace( '/', '.' );
-            getLog().info( className );
+                // filter out files that do not end in .class
+                if ( !entryName.endsWith( ".class" ) )
+                {
+                    continue;
+                }
+
+                // remove .class from the end and change format to use periods instead of forward slashes
+                String className = entryName.substring( 0, entryName.length() - 6 ).replace( '/', '.' );
+                getLog().info( className );
+            }
         }
-        jarFile.close();
     }
 
     private ProjectBuildingRequest makeBuildingRequest()
@@ -283,7 +284,7 @@ public class ListClassesMojo
         return artifactCoordinate;
     }
 
-    ArtifactRepository parseRepository( String repo, ArtifactRepositoryPolicy policy )
+    protected ArtifactRepository parseRepository( String repo, ArtifactRepositoryPolicy policy )
             throws MojoFailureException
     {
         // if it's a simple url
@@ -321,71 +322,5 @@ public class ListClassesMojo
         }
 
         return layout;
-    }
-
-    /**
-     * @return {@link #skip}
-     */
-    protected boolean isSkip()
-    {
-        return skip;
-    }
-
-    protected boolean isTransitive()
-    {
-        return transitive;
-    }
-
-    protected DefaultDependableCoordinate getCoordinate()
-    {
-        return coordinate;
-    }
-
-    /**
-     * @param artifact the artifact
-     */
-    protected void setArtifact( String artifact )
-    {
-        this.artifact = artifact;
-    }
-
-    /**
-     * @param groupId the group ID
-     */
-    protected void setGroupId( String groupId )
-    {
-        this.coordinate.setGroupId( groupId );
-    }
-
-    /**
-     * @param artifactId the artifact ID
-     */
-    protected void setArtifactId( String artifactId )
-    {
-        this.coordinate.setArtifactId( artifactId );
-    }
-
-    /**
-     * @param version the version
-     */
-    protected void setVersion( String version )
-    {
-        this.coordinate.setVersion( version );
-    }
-
-    /**
-     * @param classifier the classifier to be used
-     */
-    protected void setClassifier( String classifier )
-    {
-        this.coordinate.setClassifier( classifier );
-    }
-
-    /**
-     * @param type the packaging
-     */
-    protected void setPackaging( String type )
-    {
-        this.coordinate.setType( type );
     }
 }
