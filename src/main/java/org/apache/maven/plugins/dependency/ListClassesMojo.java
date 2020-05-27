@@ -125,7 +125,7 @@ public class ListClassesMojo
     private String packaging = "jar";
 
     /**
-     * Repositories in the format id::[layout]::url or just URLs, separated by comma. ie.
+     * Repositories in the format id::[layout]::url or just URLs, separated by comma. That is,
      * central::default::https://repo.maven.apache.org/maven2,myrepo::::https://repo.acme.com,https://repo.acme2.com
      */
     @Parameter( property = "remoteRepositories" )
@@ -156,14 +156,13 @@ public class ListClassesMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
-        ProjectBuildingRequest buildingRequest = buildBuildingRequest();
-        DefaultDependableCoordinate coordinate = getCoordinate();
+        ProjectBuildingRequest buildingRequest = makeBuildingRequest();
 
         try
         {
             if ( isTransitive() )
             {
-                Iterable<ArtifactResult> artifacts = getDependencyResolver()
+                Iterable<ArtifactResult> artifacts = dependencyResolver
                         .resolveDependencies( buildingRequest, coordinate, null );
 
                 for ( ArtifactResult result : artifacts )
@@ -173,7 +172,7 @@ public class ListClassesMojo
             }
             else
             {
-                ArtifactResult result = getArtifactResolver()
+                ArtifactResult result = artifactResolver
                         .resolveArtifact( buildingRequest, toArtifactCoordinate( coordinate ) );
 
                 printClassesFromArtifactResult( result );
@@ -181,7 +180,7 @@ public class ListClassesMojo
         }
         catch ( ArtifactResolverException | DependencyResolverException | IOException e )
         {
-            throw new MojoExecutionException( "Couldn't download artifact: " + e.getMessage(), e );
+            throw new MojoExecutionException( "Couldn't download artifact " + artifact + ": " + e.getMessage(), e );
         }
     }
 
@@ -194,22 +193,22 @@ public class ListClassesMojo
         while ( entries.hasMoreElements() )
         {
             JarEntry entry = (JarEntry) entries.nextElement();
-            String name = entry.getName();
+            String entryName = entry.getName();
 
             // filter out files that do not end in .class
-            if ( !name.endsWith( ".class" ) )
+            if ( !entryName.endsWith( ".class" ) )
             {
                 continue;
             }
 
             // remove .class from the end and change format to use periods instead of forward slashes
-            name = name.substring( 0, name.length() - 6 ).replace( '/', '.' );
-            getLog().info( name );
+            String className = entryName.substring( 0, entryName.length() - 6 ).replace( '/', '.' );
+            getLog().info( className );
         }
         jarFile.close();
     }
 
-    private ProjectBuildingRequest buildBuildingRequest()
+    private ProjectBuildingRequest makeBuildingRequest()
             throws MojoExecutionException, MojoFailureException
     {
         if ( artifact == null )
@@ -342,60 +341,50 @@ public class ListClassesMojo
         return coordinate;
     }
 
-    protected DependencyResolver getDependencyResolver()
-    {
-        return dependencyResolver;
-    }
-
-    protected ArtifactResolver getArtifactResolver()
-    {
-        return artifactResolver;
-    }
-
     /**
-     * @param artifact The artifact.
+     * @param artifact the artifact
      */
-    public void setArtifact( String artifact )
+    protected void setArtifact( String artifact )
     {
         this.artifact = artifact;
     }
 
     /**
-     * @param groupId The group ID.
+     * @param groupId the group ID
      */
-    public void setGroupId( String groupId )
+    protected void setGroupId( String groupId )
     {
         this.coordinate.setGroupId( groupId );
     }
 
     /**
-     * @param artifactId The artifact ID.
+     * @param artifactId the artifact ID
      */
-    public void setArtifactId( String artifactId )
+    protected void setArtifactId( String artifactId )
     {
         this.coordinate.setArtifactId( artifactId );
     }
 
     /**
-     * @param version The version.
+     * @param version the version
      */
-    public void setVersion( String version )
+    protected void setVersion( String version )
     {
         this.coordinate.setVersion( version );
     }
 
     /**
-     * @param classifier The classifier to be used.
+     * @param classifier the classifier to be used
      */
-    public void setClassifier( String classifier )
+    protected void setClassifier( String classifier )
     {
         this.coordinate.setClassifier( classifier );
     }
 
     /**
-     * @param type packaging.
+     * @param type the packaging
      */
-    public void setPackaging( String type )
+    protected void setPackaging( String type )
     {
         this.coordinate.setType( type );
     }
