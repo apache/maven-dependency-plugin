@@ -29,7 +29,7 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.plugins.dependency.tree.DependencyNode;
 
 /**
  * Tests <code>TreeMojo</code>.

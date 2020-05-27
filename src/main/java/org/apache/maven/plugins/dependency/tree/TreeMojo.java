@@ -36,6 +36,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.dependency.tree.internal.Maven31DependencyGraphBuilder;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -46,19 +47,19 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.artifact.filter.StrictPatternIncludesArtifactFilter;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.filter.AncestorOrSelfDependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.filter.AndDependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.filter.ArtifactDependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.filter.DependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.traversal.BuildingDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.FilteringDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor.GraphTokens;
+import org.apache.maven.plugins.dependency.tree.DependencyGraphBuilder;
+import org.apache.maven.plugins.dependency.tree.DependencyGraphBuilderException;
+import org.apache.maven.plugins.dependency.tree.DependencyNode;
+import org.apache.maven.plugins.dependency.tree.filter.AncestorOrSelfDependencyNodeFilter;
+import org.apache.maven.plugins.dependency.tree.filter.AndDependencyNodeFilter;
+import org.apache.maven.plugins.dependency.tree.filter.ArtifactDependencyNodeFilter;
+import org.apache.maven.plugins.dependency.tree.filter.DependencyNodeFilter;
+import org.apache.maven.plugins.dependency.tree.traversal.BuildingDependencyNodeVisitor;
+import org.apache.maven.plugins.dependency.tree.traversal.CollectingDependencyNodeVisitor;
+import org.apache.maven.plugins.dependency.tree.traversal.DependencyNodeVisitor;
+import org.apache.maven.plugins.dependency.tree.traversal.FilteringDependencyNodeVisitor;
+import org.apache.maven.plugins.dependency.tree.traversal.SerializingDependencyNodeVisitor;
+import org.apache.maven.plugins.dependency.tree.traversal.SerializingDependencyNodeVisitor.GraphTokens;
 
 /**
  * Displays the dependency tree for this project. Multiple formats are supported: text (by default), but also
@@ -225,7 +226,7 @@ public class TreeMojo
 
         try
         {
-            String dependencyTreeString;
+            String dependencyTreeString = null;
 
             // TODO: note that filter does not get applied due to MSHARED-4
             ArtifactFilter artifactFilter = createResolvingArtifactFilter();
@@ -234,19 +235,26 @@ public class TreeMojo
             {
                 // To fix we probably need a different DependencyCollector in Aether, which doesn't remove nodes which
                 // have already been resolved.
-                getLog().info( "Verbose not supported since maven-dependency-plugin 3.0" );
+                ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
+
+                buildingRequest.setProject( project );
+
             }
+            else
+            {
 
-            ProjectBuildingRequest buildingRequest =
-                new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
+                ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
 
-            buildingRequest.setProject( project );
+                buildingRequest.setProject( project );
 
-            // non-verbose mode use dependency graph component, which gives consistent results with Maven version
-            // running
-            rootNode = dependencyGraphBuilder.buildDependencyGraph( buildingRequest, artifactFilter, reactorProjects );
+                // non-verbose mode use dependency graph component, which gives consistent results with Maven version
+                // running
+                Maven31DependencyGraphBuilder builder = new Maven31DependencyGraphBuilder();
+                rootNode = builder.buildDependencyGraph( buildingRequest, artifactFilter, reactorProjects );
+                        //dependencyGraphBuilder.buildDependencyGraph( buildingRequest, artifactFilter, reactorProjects );
 
-            dependencyTreeString = serializeDependencyTree( rootNode );
+                dependencyTreeString = serializeDependencyTree( rootNode );
+            }
 
             if ( outputFile != null )
             {

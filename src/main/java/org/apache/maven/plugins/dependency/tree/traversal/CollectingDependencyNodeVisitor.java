@@ -1,4 +1,4 @@
-package org.apache.maven.plugins.dependency.tree;
+package org.apache.maven.plugins.dependency.tree.traversal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,30 +22,38 @@ package org.apache.maven.plugins.dependency.tree;
 import org.apache.maven.plugins.dependency.tree.DependencyNode;
 import org.apache.maven.plugins.dependency.tree.traversal.DependencyNodeVisitor;
 
-import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * A dependency node visitor that serializes visited nodes to <a href="https://en.wikipedia.org/wiki/DOT_language">DOT
- * format</a>
- *
- * @author <a href="mailto:pi.songs@gmail.com">Pi Song</a>
- * @since 2.1
+ * A dependency node visitor that collects visited nodes for further processing.
+ * 
+ * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
+ * @version $Id$
+ * @since 1.1
  */
-public class DOTDependencyNodeVisitor
-    extends AbstractSerializingVisitor
-    implements DependencyNodeVisitor
+public class CollectingDependencyNodeVisitor
+        implements DependencyNodeVisitor
 {
+    // fields -----------------------------------------------------------------
 
     /**
-     * Constructor.
-     *
-     * @param writer the writer to write to.
+     * The collected list of nodes.
      */
-    public DOTDependencyNodeVisitor( Writer writer )
+    private final List<DependencyNode> nodes;
+
+    // constructors -----------------------------------------------------------
+
+    /**
+     * Creates a dependency node visitor that collects visited nodes for further processing.
+     */
+    public CollectingDependencyNodeVisitor()
     {
-        super( writer );
+        nodes = new ArrayList<DependencyNode>();
     }
+
+    // DependencyNodeVisitor methods ------------------------------------------
 
     /**
      * {@inheritDoc}
@@ -53,19 +61,8 @@ public class DOTDependencyNodeVisitor
     @Override
     public boolean visit( DependencyNode node )
     {
-        if ( node.getParent() == null || node.getParent() == node )
-        {
-            writer.write( "digraph \"" + node.toNodeString() + "\" { " + System.lineSeparator() );
-        }
-
-        // Generate "currentNode -> Child" lines
-
-        List<DependencyNode> children = node.getChildren();
-
-        for ( DependencyNode child : children )
-        {
-            writer.println( "\t\"" + node.toNodeString() + "\" -> \"" + child.toNodeString() + "\" ; " );
-        }
+        // collect node
+        nodes.add( node );
 
         return true;
     }
@@ -76,11 +73,18 @@ public class DOTDependencyNodeVisitor
     @Override
     public boolean endVisit( DependencyNode node )
     {
-        if ( node.getParent() == null || node.getParent() == node )
-        {
-            writer.write( " } " );
-        }
         return true;
     }
 
+    // public methods ---------------------------------------------------------
+
+    /**
+     * Gets the list of collected dependency nodes.
+     * 
+     * @return the list of collected dependency nodes
+     */
+    public List<DependencyNode> getNodes()
+    {
+        return Collections.unmodifiableList( nodes );
+    }
 }
