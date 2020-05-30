@@ -41,10 +41,8 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * This mojo looks at the dependencies after final resolution and looks for mismatches in your dependencyManagement
- * section. In versions of maven prior to 2.0.6, it was possible to inherit versions that didn't match your
- * dependencyManagement. See <a href="https://issues.apache.org/jira/browse/MNG-1577">MNG-1577</a> for more info. This
- * mojo is also useful for just detecting projects that override the dependencyManagement directly. Set ignoreDirect to
- * false to detect these otherwise normal conditions.
+ * section. This mojo is also useful for detecting projects that override the dependencyManagement directly.
+ * Set ignoreDirect to false to detect these otherwise normal conditions.
  *
  * @author <a href="mailto:brianefox@gmail.com">Brian Fox</a>
  * @since 2.0-alpha-3

@@ -7,6 +7,7 @@ bin/
 # Intellij
 *.ipr
 *.iml
+*.versionsBackup
 .idea
 out/
 .DS_Store

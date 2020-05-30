@@ -96,10 +96,6 @@ public class DependencyProjectStub
 
     private List<ArtifactRepository> pluginArtifactRepositories;
 
-    // private ArtifactRepository releaseArtifactRepository;
-
-    // private ArtifactRepository snapshotArtifactRepository;
-
     private List<Profile> activeProfiles;
 
     private Set<Artifact> dependencyArtifacts;
@@ -108,19 +104,7 @@ public class DependencyProjectStub
 
     private Artifact artifact;
 
-    // private Map artifactMap;
-
     private Model originalModel;
-
-    // private Map pluginArtifactMap;
-
-    // private Map reportArtifactMap;
-
-    // private Map extensionArtifactMap;
-
-    // private Map projectReferences;
-
-    // private Build buildOverlay;
 
     private boolean executionRoot;
 
@@ -422,36 +406,6 @@ public class DependencyProjectStub
         this.scriptSourceRoots = scriptSourceRoots;
     }
 
-    public void setArtifactMap( Map artifactMap )
-    {
-        // this.artifactMap = artifactMap;
-    }
-
-    public void setPluginArtifactMap( Map pluginArtifactMap )
-    {
-        // this.pluginArtifactMap = pluginArtifactMap;
-    }
-
-    public void setReportArtifactMap( Map reportArtifactMap )
-    {
-        // this.reportArtifactMap = reportArtifactMap;
-    }
-
-    public void setExtensionArtifactMap( Map extensionArtifactMap )
-    {
-        // this.extensionArtifactMap = extensionArtifactMap;
-    }
-
-    public void setProjectReferences( Map projectReferences )
-    {
-        // this.projectReferences = projectReferences;
-    }
-
-    public void setBuildOverlay( Build buildOverlay )
-    {
-        // this.buildOverlay = buildOverlay;
-    }
-
     public void setCompileDependencies( List<Dependency> compileDependencies )
     {
         this.compileDependencies = compileDependencies;
@@ -657,7 +611,8 @@ public class DependencyProjectStub
         return null;
     }
 
-    public void setMailingLists( List list )
+    @Override
+    public void setMailingLists( List<MailingList> list )
     {
 
     }
@@ -672,7 +627,8 @@ public class DependencyProjectStub
 
     }
 
-    public void setDevelopers( List list )
+    @Override
+    public void setDevelopers( List<Developer> list )
     {
 
     }
@@ -742,7 +698,7 @@ public class DependencyProjectStub
         return null;
     }
 
-    public void setLicenses( List list )
+    public void setLicenses( List<License> list )
     {
 
     }
@@ -993,6 +949,7 @@ public class DependencyProjectStub
         return Collections.emptyList();
     }
 
+    @Override
     public Set<Artifact> createArtifacts( ArtifactFactory artifactFactory, String string, ArtifactFilter artifactFilter )
         throws InvalidDependencyVersionException
     {

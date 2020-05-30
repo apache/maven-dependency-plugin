@@ -134,10 +134,10 @@ public class ResolveDependenciesMojo
     }
 
     /**
-     * @param outputAbsoluteArtifactFilename absolute artfiact filename.
-     * @param theOutputScope The output scope.
-     * @param theSort sort yes/no.
-     * @return The output.
+     * @param outputAbsoluteArtifactFilename absolute artifact filename
+     * @param theOutputScope the output scope
+     * @param theSort sort yes/no
+     * @return the output
      */
     public String getOutput( boolean outputAbsoluteArtifactFilename, boolean theOutputScope, boolean theSort )
     {

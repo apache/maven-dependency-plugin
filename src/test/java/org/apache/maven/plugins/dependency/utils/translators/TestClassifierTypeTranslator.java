@@ -55,7 +55,6 @@ public class TestClassifierTypeTranslator
 
     Log log = new SilentLog();
 
-
     private ArtifactHandlerManager artifactHandlerManager;
 
     @Override
@@ -74,7 +73,6 @@ public class TestClassifierTypeTranslator
 
         DependencyArtifactStubFactory factory = new DependencyArtifactStubFactory( null, false );
         artifacts = factory.getMixedArtifacts();
-
 
         MavenSession session = newMavenSession( new MavenProjectStub() );
 

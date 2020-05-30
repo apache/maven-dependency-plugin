@@ -65,15 +65,9 @@ public class GetMojo
     @Parameter( defaultValue = "${session}", required = true, readonly = true )
     private MavenSession session;
 
-    /**
-     *
-     */
     @Component
     private ArtifactResolver artifactResolver;
 
-    /**
-     *
-     */
     @Component
     private DependencyResolver dependencyResolver;
 

@@ -479,9 +479,12 @@ public class TreeMojo
                     return true;
                 }
             }
+            return false;
         }
-
-        // only singular versions ever have a recommendedVersion
-        return recommendedVersion.compareTo( theVersion ) <= 0;
+        else
+        {
+            // only singular versions ever have a recommendedVersion
+            return recommendedVersion.compareTo( theVersion ) <= 0;
+        }
     }
 }
