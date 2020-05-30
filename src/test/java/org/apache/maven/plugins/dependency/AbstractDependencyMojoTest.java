@@ -33,99 +33,116 @@ import static org.apache.maven.plugins.dependency.AbstractDependencyMojoTest.Con
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AbstractDependencyMojoTest extends TestCase {
+public class AbstractDependencyMojoTest extends TestCase
+{
+    private MavenSession session = mock( MavenSession.class );
 
-    private MavenSession session = mock(MavenSession.class);
-
-    private ProjectBuildingRequest buildingRequest = mock(ProjectBuildingRequest.class);
+    private ProjectBuildingRequest buildingRequest = mock( ProjectBuildingRequest.class );
 
     private ArrayList<ArtifactRepository> artifactRepos = new ArrayList<>();
 
     private ArrayList<ArtifactRepository> pluginRepos = new ArrayList<>();
 
-    static class ConcreteDependencyMojo extends AbstractDependencyMojo {
-        static ConcreteDependencyMojo createConcreteDependencyMojoWithArtifactRepositories(MavenSession mavenSession, List<ArtifactRepository> artifactRepos) throws NoSuchFieldException, IllegalAccessException {
+    static class ConcreteDependencyMojo extends AbstractDependencyMojo
+    {
+        static ConcreteDependencyMojo createConcreteDependencyMojoWithArtifactRepositories(
+                MavenSession mavenSession, List<ArtifactRepository> artifactRepos )
+                throws NoSuchFieldException, IllegalAccessException
+        {
             ConcreteDependencyMojo cdm = new ConcreteDependencyMojo();
             cdm.session = mavenSession;
 
-            Field par = AbstractDependencyMojo.class.getDeclaredField("remoteRepositories");
-            par.setAccessible(true);
-            par.set(cdm, artifactRepos);
+            Field par = AbstractDependencyMojo.class.getDeclaredField( "remoteRepositories" );
+            par.setAccessible( true );
+            par.set( cdm, artifactRepos );
 
             return cdm;
         }
 
-        static ConcreteDependencyMojo createConcreteDependencyMojoWithPluginRepositories(MavenSession mavenSession, List<ArtifactRepository> pluginRepos) throws NoSuchFieldException, IllegalAccessException {
+        static ConcreteDependencyMojo createConcreteDependencyMojoWithPluginRepositories(
+                MavenSession mavenSession, List<ArtifactRepository> pluginRepos )
+                throws NoSuchFieldException, IllegalAccessException
+        {
             ConcreteDependencyMojo cdm = new ConcreteDependencyMojo();
             cdm.session = mavenSession;
 
-            Field par = AbstractDependencyMojo.class.getDeclaredField("remotePluginRepositories");
-            par.setAccessible(true);
-            par.set(cdm, pluginRepos);
+            Field par = AbstractDependencyMojo.class.getDeclaredField( "remotePluginRepositories" );
+            par.setAccessible( true );
+            par.set( cdm, pluginRepos );
 
             return cdm;
         }
 
         @Override
-        protected void doExecute() {
+        protected void doExecute()
+        {
         }
     }
 
     @Override
-    protected void setUp() throws Exception {
-        pluginRepos.add(newRepositoryWithId("#pr-central"));
-        pluginRepos.add(newRepositoryWithId("#pr-plugins"));
+    protected void setUp() throws Exception
+    {
+        pluginRepos.add( newRepositoryWithId( "#pr-central" ) );
+        pluginRepos.add( newRepositoryWithId( "#pr-plugins" ) );
 
-        artifactRepos.add(newRepositoryWithId("#ar-central"));
-        artifactRepos.add(newRepositoryWithId("#ar-snapshots"));
-        artifactRepos.add(newRepositoryWithId("#ar-staging"));
+        artifactRepos.add( newRepositoryWithId( "#ar-central" ) );
+        artifactRepos.add( newRepositoryWithId( "#ar-snapshots" ) );
+        artifactRepos.add( newRepositoryWithId( "#ar-staging" ) );
 
-        when(session.getProjectBuildingRequest()).thenReturn(buildingRequest);
+        when( session.getProjectBuildingRequest() ).thenReturn( buildingRequest );
     }
 
-    private static ArtifactRepository newRepositoryWithId(String id)
+    private static ArtifactRepository newRepositoryWithId( String id )
     {
-        ArtifactRepository repo = mock(ArtifactRepository.class);
-        when(repo.getId()).thenReturn(id);
+        ArtifactRepository repo = mock( ArtifactRepository.class );
+        when( repo.getId() ).thenReturn( id );
         return repo;
     }
 
-    public void testNewResolveArtifactProjectBuildingRequestRemoteRepositoriesSize() throws NoSuchFieldException, IllegalAccessException {
-        AbstractDependencyMojo mojo = createConcreteDependencyMojoWithArtifactRepositories(session, artifactRepos);
+    public void testNewResolveArtifactProjectBuildingRequestRemoteRepositoriesSize()
+            throws NoSuchFieldException, IllegalAccessException
+    {
+        AbstractDependencyMojo mojo = createConcreteDependencyMojoWithArtifactRepositories( session, artifactRepos );
 
         ProjectBuildingRequest pbr = mojo.newResolveArtifactProjectBuildingRequest();
         List<ArtifactRepository> rrepos = pbr.getRemoteRepositories();
 
-        assertEquals(3, rrepos.size());
+        assertEquals( 3, rrepos.size() );
     }
 
-    public void testNewResolveArtifactProjectBuildingRequestRemoteRepositoriesContents() throws NoSuchFieldException, IllegalAccessException {
-        AbstractDependencyMojo mojo = createConcreteDependencyMojoWithArtifactRepositories(session, artifactRepos);
+    public void testNewResolveArtifactProjectBuildingRequestRemoteRepositoriesContents()
+            throws NoSuchFieldException, IllegalAccessException
+    {
+        AbstractDependencyMojo mojo = createConcreteDependencyMojoWithArtifactRepositories( session, artifactRepos );
 
         ProjectBuildingRequest pbr = mojo.newResolveArtifactProjectBuildingRequest();
         List<ArtifactRepository> rrepos = pbr.getRemoteRepositories();
 
-        assertEquals("#ar-central", rrepos.get(0).getId());
-        assertEquals("#ar-snapshots", rrepos.get(1).getId());
-        assertEquals("#ar-staging", rrepos.get(2).getId());
+        assertEquals( "#ar-central", rrepos.get( 0 ).getId() );
+        assertEquals( "#ar-snapshots", rrepos.get( 1 ).getId() );
+        assertEquals( "#ar-staging", rrepos.get( 2 ).getId() );
     }
 
-    public void testNewResolvePluginProjectBuildingRequestRemoteRepositoriesSize() throws NoSuchFieldException, IllegalAccessException {
-        AbstractDependencyMojo mojo = createConcreteDependencyMojoWithPluginRepositories(session, pluginRepos);
+    public void testNewResolvePluginProjectBuildingRequestRemoteRepositoriesSize()
+            throws NoSuchFieldException, IllegalAccessException
+    {
+        AbstractDependencyMojo mojo = createConcreteDependencyMojoWithPluginRepositories( session, pluginRepos );
 
         ProjectBuildingRequest pbr = mojo.newResolvePluginProjectBuildingRequest();
         List<ArtifactRepository> rrepos = pbr.getRemoteRepositories();
 
-        assertEquals(2, rrepos.size());
+        assertEquals( 2, rrepos.size() );
     }
 
-    public void testNewResolvePluginProjectBuildingRequestRemoteRepositoriesContents() throws NoSuchFieldException, IllegalAccessException {
-        AbstractDependencyMojo mojo = createConcreteDependencyMojoWithPluginRepositories(session, pluginRepos);
+    public void testNewResolvePluginProjectBuildingRequestRemoteRepositoriesContents()
+            throws NoSuchFieldException, IllegalAccessException
+    {
+        AbstractDependencyMojo mojo = createConcreteDependencyMojoWithPluginRepositories( session, pluginRepos );
 
         ProjectBuildingRequest pbr = mojo.newResolvePluginProjectBuildingRequest();
         List<ArtifactRepository> rrepos = pbr.getRemoteRepositories();
 
-        assertEquals("#pr-central", rrepos.get(0).getId());
-        assertEquals("#pr-plugins", rrepos.get(1).getId());
+        assertEquals( "#pr-central", rrepos.get( 0 ).getId() );
+        assertEquals( "#pr-plugins", rrepos.get( 1 ).getId() );
     }
 }
