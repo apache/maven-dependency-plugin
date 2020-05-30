@@ -38,8 +38,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static java.lang.String.format;
-
 /**
  * Goal that resolves all project dependencies, including plugins and reports and their dependencies.
  *
@@ -122,10 +120,10 @@ public class GoOfflineMojo
 
         final Set<Artifact> results = new HashSet<>();
 
-        this.getLog().debug( String.format( "Resolving %s with following repositories:", type ) );
+        this.getLog().debug( "Resolving " + type + " with following repositories:" );
         for ( ArtifactRepository repo : buildingRequest.getRemoteRepositories() )
         {
-            getLog().debug( format( "#%s (%s)", repo.getId(), repo.getUrl() ) );
+            getLog().debug( "#" + repo.getId() + " (" + repo.getUrl() + ")" );
         }
 
         for ( DependableCoordinate dependableCoordinate : dependableCoordinates )
