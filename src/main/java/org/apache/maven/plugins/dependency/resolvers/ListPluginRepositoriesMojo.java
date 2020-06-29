@@ -38,12 +38,14 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.settings.Mirror;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
 import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 
 /**
  * Goal that resolves all project plugin dependencies and then lists the repositories used by the build
@@ -92,7 +94,7 @@ public class ListPluginRepositoriesMojo
     /**
      * Displays a list of the plugin repositories used by this build.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      */
     @Override
     protected void doExecute()
@@ -106,7 +108,7 @@ public class ListPluginRepositoriesMojo
         {
             if ( isVerbose() )
             {
-                Set<String> locations = new HashSet<String>();
+                Set<String> locations = new HashSet<>();
                 for ( Mirror mirror : settings.getMirrors() )
                 {
                     if ( mirror.getId().equals( repo.getId() )
@@ -149,16 +151,16 @@ public class ListPluginRepositoriesMojo
      * Parses the given String into GAV artifact coordinate information, adding the given type.
      *
      * @param artifactString should respect the format <code>groupId:artifactId[:version]</code>
-     * @param type The extension for the artifact, must not be <code>null</code>.
-     * @return the <code>Artifact</code> object for the <code>artifactString</code> parameter.
-     * @throws MojoExecutionException if the <code>artifactString</code> doesn't respect the format.
+     * @param type the extension for the artifact, must not be <code>null</code>
+     * @return the <code>Artifact</code> object for the <code>artifactString</code> parameter
+     * @throws MojoExecutionException if the <code>artifactString</code> doesn't respect the format
      */
     private ArtifactCoordinate getArtifactCoordinate( String artifactString, String type )
         throws MojoExecutionException
     {
         if ( org.codehaus.plexus.util.StringUtils.isEmpty( artifactString ) )
         {
-            throw new IllegalArgumentException( "artifact parameter could not be empty" );
+            throw new IllegalArgumentException( "artifact parameter is empty" );
         }
 
         String groupId; // required
@@ -200,9 +202,9 @@ public class ListPluginRepositoriesMojo
      * <code>groupId:artifactId[:version]</code>. This resolves the POM artifact at those coordinates and then builds
      * the Maven project from it.
      *
-     * @param artifactString Coordinates of the Maven project to get.
-     * @return New Maven project.
-     * @throws MojoExecutionException If there was an error while getting the Maven project.
+     * @param artifactString coordinates of the Maven project to get
+     * @return new Maven project
+     * @throws MojoExecutionException if there was an error while getting the Maven project
      */
     private MavenProject getMavenProject( String artifactString )
         throws MojoExecutionException
@@ -218,7 +220,7 @@ public class ListPluginRepositoriesMojo
             Artifact artifact = artifactResolver.resolveArtifact( pbr, coordinate ).getArtifact();
             return projectBuilder.build( artifact.getFile(), pbr ).getProject();
         }
-        catch ( Exception e )
+        catch ( ArtifactResolverException | ProjectBuildingException | IllegalArgumentException e )
         {
             throw new MojoExecutionException( "Unable to get the POM for the artifact '" + artifactString
                 + "'. Verify the artifact parameter.", e );
@@ -248,7 +250,6 @@ public class ListPluginRepositoriesMojo
         {
             throw new MojoExecutionException( "No POM for the artifact '" + artifact + "'" );
         }
-        return;
     }
 
     private void traverseParentPom( ArtifactRepository artifactRepository,
@@ -278,7 +279,6 @@ public class ListPluginRepositoriesMojo
             }
             traverseParentPom( artifactRepository, parent, locations );
         }
-        return;
     }
 
     private String repositoryAsString( Repository repository )

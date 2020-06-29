@@ -684,13 +684,13 @@ mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 
 * <<<dependency:list-repositories>>>
 
-  This goal is used to list all the repositories that this build depends upon. It will show repositories defined in your settings, 
+  This goal lists all the repositories that this build depends upon. It shows repositories defined in your settings,
   poms and declared in transitive dependency poms.
 
 
-* <<<dependency:list-repositories>>>
+* <<<dependency:list-plugin-repositories>>>
 
-  This goal is used to list all the plugin repositories that this build depends upon. It will show plugin repositories defined in your settings,
+  This goal lists all the plugin repositories that this build depends upon. It shows plugin repositories defined in your settings,
   poms and declared in transitive dependency poms.
 
   This goal can be executed from the command line:
@@ -699,7 +699,7 @@ mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 mvn dependency:list-plugin-repositories
 +-----+
 
-  Optionally, in verbose or debug mode it will display the location of the listed plugin repository:
+  Optionally, in verbose or debug mode it displays the location of the listed plugin repository:
 
 +-----+
 mvn dependency:list-plugin-repositories -Dverbose
