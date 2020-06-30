@@ -45,7 +45,6 @@ import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
@@ -332,13 +331,9 @@ public class BuildClasspathMojo
         // make sure the parent path exists.
         out.getParentFile().mkdirs();
 
-        Writer w = null;
-        try
+        try ( Writer w = new BufferedWriter( new FileWriter( out ) ) )
         {
-            w = new BufferedWriter( new FileWriter( out ) );
             w.write( cpString );
-            w.close();
-            w = null;
             getLog().info( "Wrote classpath file '" + out + "'." );
         }
         catch ( IOException ex )
@@ -346,18 +341,14 @@ public class BuildClasspathMojo
             throw new MojoExecutionException( "Error while writing to classpath file '" + out + "': " + ex.toString(),
                                               ex );
         }
-        finally
-        {
-            IOUtil.close( w );
-        }
     }
 
     /**
      * Reads into a string the file specified by the mojo param 'outputFile'. Assumes, the instance variable
      * 'outputFile' is not null.
      * 
-     * @return the string contained in the classpathFile, if exists, or null otherwise.
-     * @throws IOException in case of an error.
+     * @return the string contained in the classpathFile, if it exists, or null otherwise
+     * @throws IOException in case of an error
      */
     protected String readClasspathFile()
         throws IOException
@@ -373,25 +364,14 @@ public class BuildClasspathMojo
             return null;
         }
         StringBuilder sb = new StringBuilder();
-        BufferedReader r = null;
-
-        try
+        try ( BufferedReader r = new BufferedReader( new FileReader( outputFile ) ) )
         {
-            r = new BufferedReader( new FileReader( outputFile ) );
-
             for ( String line = r.readLine(); line != null; line = r.readLine() )
             {
                 sb.append( line );
             }
 
-            r.close();
-            r = null;
-
             return sb.toString();
-        }
-        finally
-        {
-            IOUtil.close( r );
         }
     }
 

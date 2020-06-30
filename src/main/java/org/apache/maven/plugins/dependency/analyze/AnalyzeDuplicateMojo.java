@@ -1,5 +1,7 @@
 package org.apache.maven.plugins.dependency.analyze;
 
+import java.io.IOException;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -37,8 +39,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 /**
  * Analyzes the <code>&lt;dependencies/&gt;</code> and <code>&lt;dependencyManagement/&gt;</code> tags in the
@@ -85,21 +87,13 @@ public class AnalyzeDuplicateMojo
 
         MavenXpp3Reader pomReader = new MavenXpp3Reader();
         Model model = null;
-        Reader reader = null;
-        try
+        try ( Reader reader = ReaderFactory.newXmlReader( project.getFile() ) )
         {
-            reader = ReaderFactory.newXmlReader( project.getFile() );
             model = pomReader.read( reader );
-            reader.close();
-            reader = null;
         }
-        catch ( Exception e )
+        catch ( IOException | XmlPullParserException e )
         {
-            throw new MojoExecutionException( "IOException: " + e.getMessage(), e );
-        }
-        finally
-        {
-            IOUtil.close( reader );
+            throw new MojoExecutionException( "Exception: " + e.getMessage(), e );
         }
 
         Set<String> duplicateDependencies = Collections.emptySet();
