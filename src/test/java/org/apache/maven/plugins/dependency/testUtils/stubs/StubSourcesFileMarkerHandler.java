@@ -31,7 +31,6 @@ public class StubSourcesFileMarkerHandler
     public StubSourcesFileMarkerHandler( Artifact artifact, File markerFilesDirectory, boolean resolved )
     {
         super( artifact, markerFilesDirectory, resolved );
-        // TODO Auto-generated constructor stub
     }
 
     protected File getMarkerFile( boolean res )

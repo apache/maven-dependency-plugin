@@ -35,11 +35,6 @@ public abstract class AbstractDependencyMojoTestCase
 
     protected DependencyArtifactStubFactory stubFactory;
 
-    public AbstractDependencyMojoTestCase()
-    {
-        super();
-    }
-
     protected void setUp( String testDirStr, boolean createFiles )
         throws Exception
     {
@@ -69,16 +64,11 @@ public abstract class AbstractDependencyMojoTestCase
             }
             catch ( IOException e )
             {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
                 fail( "Trying to remove directory:" + testDir + System.lineSeparator() + e.toString() );
             }
             assertFalse( testDir.exists() );
-
-            testDir = null;
         }
-
-        stubFactory = null;
     }
 
     protected void copyFile( AbstractDependencyMojo mojo, File artifact, File destFile )
