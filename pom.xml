@@ -311,7 +311,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-http-lightweight</artifactId>
-      <version>3.3.4</version>
+      <version>3.4.0</version>
       <scope>provided</scope>
     </dependency>
 
