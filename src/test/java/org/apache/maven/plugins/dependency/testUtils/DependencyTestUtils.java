@@ -19,22 +19,13 @@ package org.apache.maven.plugins.dependency.testUtils;
  * under the License.    
  */
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.HashMap;
 
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.factory.DefaultArtifactFactory;
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.artifact.handler.manager.DefaultArtifactHandlerManager;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.shared.model.fileset.FileSet;
 import org.apache.maven.shared.model.fileset.util.FileSetManager;
-import org.codehaus.plexus.util.ReflectionUtils;
 
 public class DependencyTestUtils
 {
@@ -44,7 +35,9 @@ public class DependencyTestUtils
      *
      * @param dir {@link File} The base directory of the included and excluded files.
      * @throws IOException in case of an error. When a directory failed to get deleted.
+     * @deprecated use Apache Commons FileUtils.deleteDirectory
      */
+    @Deprecated
     public static void removeDirectory( File dir )
         throws IOException
     {
@@ -59,52 +52,6 @@ public class DependencyTestUtils
             fileSetManager.delete( fs );
 
         }
-    }
-
-    public static ArtifactFactory getArtifactFactory()
-        throws IllegalAccessException
-    {
-        ArtifactFactory artifactFactory;
-        ArtifactHandlerManager manager = new DefaultArtifactHandlerManager();
-        setVariableValueToObject( manager, "artifactHandlers", new HashMap<>() );
-
-        artifactFactory = new DefaultArtifactFactory();
-        setVariableValueToObject( artifactFactory, "artifactHandlerManager", manager );
-
-        return artifactFactory;
-    }
-
-    /**
-     * convenience method to set values to variables in objects that don't have setters
-     *
-     * @param object {@link Object}
-     * @param variable the field name.
-     * @param value The value to be set.
-     * @throws IllegalAccessException in case of an error.
-     */
-    public static void setVariableValueToObject( Object object, String variable, Object value )
-        throws IllegalAccessException
-    {
-        Field field = ReflectionUtils.getFieldByNameIncludingSuperclasses( variable, object.getClass() );
-
-        field.setAccessible( true );
-
-        field.set( object, value );
-    }
-
-    public static void setFileModifiedTime( File file )
-        throws InterruptedException
-    {
-        Thread.sleep( 100 );
-        // round down to the last second
-        long time = System.currentTimeMillis();
-        time = time - ( time % 1000 );
-        assertTrue( "Updating last modification time of marker file " + file.getAbsolutePath()
-            + " failed unexpectedly.", file.setLastModified( time ) );
-
-        // wait at least a second for filesystems that only record to the
-        // nearest second.
-        Thread.sleep( 1000 );
     }
 
 }
