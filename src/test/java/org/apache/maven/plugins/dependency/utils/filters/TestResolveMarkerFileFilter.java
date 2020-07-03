@@ -29,10 +29,10 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
-import org.apache.maven.plugins.dependency.testUtils.DependencyTestUtils;
 import org.apache.maven.plugins.dependency.utils.markers.SourcesFileMarkerHandler;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.SilentLog;
@@ -58,7 +58,7 @@ public class TestResolveMarkerFileFilter
         super.setUp();
 
         outputFolder = new File( "target/markers/" );
-        DependencyTestUtils.removeDirectory( outputFolder );
+        FileUtils.deleteDirectory( outputFolder );
         assertFalse( outputFolder.exists() );
 
         this.fact = new DependencyArtifactStubFactory( outputFolder, false );
@@ -68,7 +68,7 @@ public class TestResolveMarkerFileFilter
     protected void tearDown()
         throws IOException
     {
-        DependencyTestUtils.removeDirectory( outputFolder );
+        FileUtils.deleteDirectory( outputFolder );
     }
 
     public void testResolveFile()

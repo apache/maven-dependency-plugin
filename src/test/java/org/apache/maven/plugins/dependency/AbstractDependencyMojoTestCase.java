@@ -22,9 +22,9 @@ package org.apache.maven.plugins.dependency;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
-import org.apache.maven.plugins.dependency.testUtils.DependencyTestUtils;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 
 public abstract class AbstractDependencyMojoTestCase
@@ -48,7 +48,7 @@ public abstract class AbstractDependencyMojoTestCase
         super.setUp();
         testDir = new File( getBasedir(), "target" + File.separatorChar + "unit-tests" + File.separatorChar + testDirStr
             + File.separatorChar );
-        DependencyTestUtils.removeDirectory( testDir );
+        FileUtils.deleteDirectory( testDir );
         assertFalse( testDir.exists() );
 
         stubFactory = new DependencyArtifactStubFactory( this.testDir, createFiles, flattenedPath );
@@ -60,7 +60,7 @@ public abstract class AbstractDependencyMojoTestCase
         {
             try
             {
-                DependencyTestUtils.removeDirectory( testDir );
+                FileUtils.deleteDirectory( testDir );
             }
             catch ( IOException e )
             {
