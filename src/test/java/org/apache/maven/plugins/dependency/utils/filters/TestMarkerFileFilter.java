@@ -26,10 +26,10 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
-import org.apache.maven.plugins.dependency.testUtils.DependencyTestUtils;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.SilentLog;
@@ -55,7 +55,7 @@ public class TestMarkerFileFilter
         super.setUp();
 
         outputFolder = new File( "target/markers/" );
-        DependencyTestUtils.removeDirectory( outputFolder );
+        FileUtils.deleteDirectory( outputFolder );
         assertFalse( outputFolder.exists() );
 
         this.fact = new DependencyArtifactStubFactory( outputFolder, false );
@@ -65,7 +65,7 @@ public class TestMarkerFileFilter
     protected void tearDown()
         throws IOException
     {
-        DependencyTestUtils.removeDirectory( outputFolder );
+        FileUtils.deleteDirectory( outputFolder );
     }
 
     public void testMarkerFile()
@@ -99,7 +99,7 @@ public class TestMarkerFileFilter
         result = filter.filter( artifacts );
         assertEquals( 2, result.size() );
         assertTrue( handler.clearMarker() );
-        DependencyTestUtils.removeDirectory( outputFolder );
+        FileUtils.deleteDirectory( outputFolder );
         assertFalse( outputFolder.exists() );
     }
 
@@ -119,7 +119,7 @@ public class TestMarkerFileFilter
         assertEquals( 2, result.size() );
 
         assertTrue( handler.clearMarker() );
-        DependencyTestUtils.removeDirectory( outputFolder );
+        FileUtils.deleteDirectory( outputFolder );
         assertFalse( outputFolder.exists() );
     }
 
@@ -157,7 +157,7 @@ public class TestMarkerFileFilter
         assertFalse( handler.isMarkerSet() );
         snap.getFile().delete();
         release.getFile().delete();
-        DependencyTestUtils.removeDirectory( outputFolder );
+        FileUtils.deleteDirectory( outputFolder );
         assertFalse( outputFolder.exists() );
     }
 

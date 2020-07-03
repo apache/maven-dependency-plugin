@@ -26,13 +26,13 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.dependency.testUtils.DependencyTestUtils;
 import org.apache.maven.plugins.dependency.testUtils.stubs.StubDefaultFileMarkerHandler;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.SilentLog;
@@ -66,14 +66,14 @@ public class TestDefaultMarkerFileHandler
         artifacts.add( artifact );
 
         outputFolder = new File( "target/markers/" );
-        DependencyTestUtils.removeDirectory( this.outputFolder );
+        FileUtils.deleteDirectory( this.outputFolder );
         assertFalse( outputFolder.exists() );
     }
 
     protected void tearDown()
         throws IOException
     {
-        DependencyTestUtils.removeDirectory( this.outputFolder );
+        FileUtils.deleteDirectory( this.outputFolder );
     }
 
     public void testSetMarker()
