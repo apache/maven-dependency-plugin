@@ -33,6 +33,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
@@ -41,8 +43,6 @@ import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.security.Constraint;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 public class TestGetMojo
     extends AbstractDependencyMojoTestCase
@@ -56,7 +56,6 @@ public class TestGetMojo
         super.setUp( "markers", false );
 
         File testPom = new File( getBasedir(), "target/test-classes/unit/get-test/plugin-config.xml" );
-        assert testPom.exists();
         mojo = (GetMojo) lookupMojo( "get", testPom );
 
         assertNotNull( mojo );
@@ -72,7 +71,8 @@ public class TestGetMojo
         legacySupport.setSession( session );
         DefaultRepositorySystemSession repoSession =
             (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
-        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( testDir.getAbsolutePath() ) );
+        LocalRepositoryManager simpleLocalRepositoryManager = lookup( LocalRepositoryManager.class, testDir.getAbsolutePath() );
+        repoSession.setLocalRepositoryManager( simpleLocalRepositoryManager );
 
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }

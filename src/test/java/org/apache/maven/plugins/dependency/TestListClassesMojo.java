@@ -21,28 +21,26 @@ package org.apache.maven.plugins.dependency;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.LegacySupport;
+import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
-import org.junit.Assert;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.repository.LocalRepositoryManager;
 
 import java.io.File;
 
-public class TestGetClassesMojo
-        extends AbstractDependencyMojoTestCase
+public class TestListClassesMojo
+        extends AbstractMojoTestCase
 {
     private ListClassesMojo mojo;
 
     protected void setUp()
             throws Exception
     {
-        // required for mojo lookups to work
-        super.setUp( "markers", false );
-
         File testPom = new File( getBasedir(), "target/test-classes/unit/get-test/plugin-config.xml" );
-        assertTrue(testPom.exists());
+
+        assertTrue( testPom.exists() );
         mojo = (ListClassesMojo) lookupMojo( "list-classes", testPom );
 
         assertNotNull( mojo );
@@ -58,7 +56,12 @@ public class TestGetClassesMojo
         legacySupport.setSession( session );
         DefaultRepositorySystemSession repoSession =
                 (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
-        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( testDir.getAbsolutePath() ) );
+
+        File testDir = new File( getBasedir(), "target" + File.separatorChar + "unit-tests" + File.separatorChar + "markers"
+                            + File.separatorChar );
+        
+        LocalRepositoryManager localRepositoryManager = lookup( LocalRepositoryManager.class, testDir.getAbsolutePath() );
+        repoSession.setLocalRepositoryManager( localRepositoryManager );
 
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }
