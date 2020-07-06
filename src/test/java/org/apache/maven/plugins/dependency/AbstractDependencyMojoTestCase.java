@@ -85,7 +85,7 @@ public abstract class AbstractDependencyMojoTestCase
     
 
     protected void installLocalRepository( LegacySupport legacySupport )
-        throws ComponentLookupException, IOException
+        throws ComponentLookupException
     {
         DefaultRepositorySystemSession repoSession =
             (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
