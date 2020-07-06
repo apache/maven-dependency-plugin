@@ -33,8 +33,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.repository.LocalRepositoryManager;
 
 public class TestCopyMojo
     extends AbstractDependencyMojoTestCase
@@ -66,7 +66,8 @@ public class TestCopyMojo
 
         DefaultRepositorySystemSession repoSession = (DefaultRepositorySystemSession) session.getRepositorySession();
 
-        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( stubFactory.getWorkingDir() ) );
+        LocalRepositoryManager localRepositoryManager = lookup( LocalRepositoryManager.class, testDir.getAbsolutePath() );
+        repoSession.setLocalRepositoryManager( localRepositoryManager );
     }
 
     public ArtifactItem getSingleArtifactItem( boolean removeVersion, boolean useBaseVersion )

@@ -38,8 +38,8 @@ import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
+import org.eclipse.aether.repository.LocalRepositoryManager;
+import org.eclipse.aether.DefaultRepositorySystemSession;
 
 public class TestUnpackDependenciesMojo
     extends AbstractDependencyMojoTestCase
@@ -77,7 +77,8 @@ public class TestUnpackDependenciesMojo
         setVariableValueToObject( mojo, "session", session );
 
         DefaultRepositorySystemSession repoSession = (DefaultRepositorySystemSession) session.getRepositorySession();
-        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( stubFactory.getWorkingDir() ) );
+        LocalRepositoryManager localRepositoryManager = lookup( LocalRepositoryManager.class, testDir.getAbsolutePath() );
+        repoSession.setLocalRepositoryManager( localRepositoryManager );
 
         Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
         Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
