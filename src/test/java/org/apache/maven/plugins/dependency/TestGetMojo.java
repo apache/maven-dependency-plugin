@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency;
  */
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -45,8 +46,6 @@ import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.security.Constraint;
-
-import com.google.common.io.Files;
 
 public class TestGetMojo
     extends AbstractDependencyMojoTestCase
@@ -78,7 +77,8 @@ public class TestGetMojo
         DefaultRepositorySystemSession repoSession =
             (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
         RepositorySystem system = lookup( RepositorySystem.class );
-        LocalRepository localRepository = new LocalRepository( Files.createTempDir() );
+        String directory = Files.createTempDirectory( "foo" ).toString();
+        LocalRepository localRepository = new LocalRepository( directory  );
         LocalRepositoryManager manager = system.newLocalRepositoryManager( repoSession, localRepository );
         repoSession.setLocalRepositoryManager( manager );
         
