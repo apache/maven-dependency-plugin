@@ -21,7 +21,9 @@ package org.apache.maven.plugins.dependency;
 
 import java.io.File;
 
-
+/**
+ * A minimal test case to debug Mojo lookups in 3.1.0.
+ */
 public class TestLookupMojo
     extends AbstractDependencyMojoTestCase
 {
@@ -37,14 +39,8 @@ public class TestLookupMojo
         mojo = (GetMojo) lookupMojo( "get", testPom );
 
         assertNotNull( mojo );
-
     }
 
-    /**
-     * Test transitive parameter
-     * 
-     * @throws Exception in case of errors
-     */
     public void testSomething()
         throws Exception
     {
