@@ -34,6 +34,8 @@ import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
@@ -44,10 +46,12 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.security.Constraint;
 
+import com.google.common.io.Files;
+
 public class TestGetMojo
     extends AbstractDependencyMojoTestCase
 {
-    GetMojo mojo;
+    private GetMojo mojo;
 
     protected void setUp()
         throws Exception
@@ -61,19 +65,23 @@ public class TestGetMojo
         assertNotNull( mojo );
 
         LegacySupport legacySupport = lookup( LegacySupport.class );
-        MavenSession session = newMavenSession( new MavenProjectStub() );
-        Settings settings = session.getSettings();
+        MavenSession mavenSession = newMavenSession( new MavenProjectStub() );
+        Settings settings = mavenSession.getSettings();
         Server server = new Server();
         server.setId( "myserver" );
         server.setUsername( "foo" );
         server.setPassword( "bar" );
         settings.addServer( server );
-        legacySupport.setSession( session );
+        legacySupport.setSession( mavenSession );
+        
+        // todo push this to superclass as setUpLocalRepository
         DefaultRepositorySystemSession repoSession =
             (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
-        LocalRepositoryManager simpleLocalRepositoryManager = lookup( LocalRepositoryManager.class, testDir.getAbsolutePath() );
-        repoSession.setLocalRepositoryManager( simpleLocalRepositoryManager );
-
+        RepositorySystem system = lookup( RepositorySystem.class );
+        LocalRepository localRepository = new LocalRepository( Files.createTempDir() );
+        LocalRepositoryManager manager = system.newLocalRepositoryManager( repoSession, localRepository );
+        repoSession.setLocalRepositoryManager( manager );
+        
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }
 
@@ -150,9 +158,8 @@ public class TestGetMojo
     public void testParseRepository()
         throws Exception
     {
-        ArtifactRepository repo;
         ArtifactRepositoryPolicy policy = null;
-        repo = mojo.parseRepository( "central::default::https://repo.maven.apache.org/maven2", policy );
+        ArtifactRepository repo = mojo.parseRepository( "central::default::https://repo.maven.apache.org/maven2", policy );
         assertEquals( "central", repo.getId() );
         assertEquals( DefaultRepositoryLayout.class, repo.getLayout().getClass() );
         assertEquals( "https://repo.maven.apache.org/maven2", repo.getUrl() );
