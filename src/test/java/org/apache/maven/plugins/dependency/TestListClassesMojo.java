@@ -24,8 +24,6 @@ import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
-import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.repository.LocalRepositoryManager;
 
 import java.io.File;
 
