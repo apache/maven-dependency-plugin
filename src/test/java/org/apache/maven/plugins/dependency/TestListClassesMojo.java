@@ -21,7 +21,6 @@ package org.apache.maven.plugins.dependency;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.LegacySupport;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
@@ -31,7 +30,7 @@ import org.eclipse.aether.repository.LocalRepositoryManager;
 import java.io.File;
 
 public class TestListClassesMojo
-        extends AbstractMojoTestCase
+        extends AbstractDependencyMojoTestCase
 {
     private ListClassesMojo mojo;
 
@@ -68,7 +67,7 @@ public class TestListClassesMojo
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }
 
-    public void testGetClassesNotTransitive()
+    public void testListClassesNotTransitive()
             throws Exception
     {
         setVariableValueToObject( mojo, "remoteRepositories", "central::default::https://repo.maven.apache.org/maven2,"
@@ -79,7 +78,7 @@ public class TestListClassesMojo
         mojo.execute();
     }
 
-    public void testGetClassesTransitive()
+    public void testListClassesTransitive()
             throws Exception
     {
         setVariableValueToObject( mojo, "remoteRepositories", "central::default::https://repo.maven.apache.org/maven2,"
