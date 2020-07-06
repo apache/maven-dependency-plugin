@@ -28,8 +28,6 @@ import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.settings.Server;
-import org.apache.maven.settings.Settings;
 
 public class TestBuildClasspathMojo
     extends AbstractDependencyMojoTestCase
@@ -67,7 +65,6 @@ public class TestBuildClasspathMojo
         project.setDependencyArtifacts( directArtifacts );
 
         mojo.execute();
-        String file;
         try
         {
             mojo.readClasspathFile();
@@ -82,7 +79,7 @@ public class TestBuildClasspathMojo
         mojo.setOutputFile( new File( testDir, "buildClasspath.txt" ) );
         mojo.execute();
 
-        file = mojo.readClasspathFile();
+        String file = mojo.readClasspathFile();
         assertNotNull( file );
         assertTrue( file.length() > 0 );
 
@@ -121,14 +118,7 @@ public class TestBuildClasspathMojo
         setVariableValueToObject( mojo, "session", session );
      
         LegacySupport legacySupport = lookup( LegacySupport.class );
-        Settings settings = session.getSettings();
-        Server server = new Server();
-        server.setId( "myserver" );
-        server.setUsername( "foo" );
-        server.setPassword( "bar" );
-        settings.addServer( server );
-        legacySupport.setSession( session );
-                
+        legacySupport.setSession( session );    
         installLocalRepository( legacySupport );
         
         Artifact artifact = stubFactory.getReleaseArtifact();
