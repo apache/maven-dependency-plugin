@@ -243,7 +243,7 @@ public class ResolveDependenciesMojo
                     }
                 }
             }
-            artifactStringList.add( messageBuilder.toString() + System.lineSeparator() );
+            artifactStringList.add( messageBuilder.toString().trim() + System.lineSeparator() );
         }
         if ( theSort )
         {
