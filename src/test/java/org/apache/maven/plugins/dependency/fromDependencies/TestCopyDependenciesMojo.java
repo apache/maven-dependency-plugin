@@ -79,18 +79,10 @@ public class TestCopyDependenciesMojo
         setVariableValueToObject( mojo, "artifactHandlerManager", manager );
     }
 
-    public void assertNoMarkerFile( Artifact artifact )
+    public void assertNoMarkerFile( Artifact artifact ) throws MojoExecutionException
     {
         DefaultFileMarkerHandler handle = new DefaultFileMarkerHandler( artifact, mojo.markersDirectory );
-        try
-        {
-            assertFalse( handle.isMarkerSet() );
-        }
-        catch ( MojoExecutionException e )
-        {
-            fail( e.getLongMessage() );
-        }
-
+        assertFalse( handle.isMarkerSet() );
     }
 
     public void testCopyFile()
