@@ -303,9 +303,9 @@ under the License.
     </dependency>
 
     <dependency>
-      <groupId>org.sonatype.aether</groupId>
+      <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-connector-wagon</artifactId>
-      <version>1.7</version>
+      <version>0.9.0.M2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
