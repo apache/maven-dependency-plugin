@@ -45,8 +45,8 @@ import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.repository.LocalRepositoryManager;
 
 public class TestCopyDependenciesMojo2
     extends AbstractDependencyMojoTestCase
@@ -83,8 +83,9 @@ public class TestCopyDependenciesMojo2
 
         legacySupport.setSession( session );
         DefaultRepositorySystemSession repoSession =
-            (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
-        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( testDir.getAbsolutePath() ) );
+                        (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
+        LocalRepositoryManager localRepositoryManager = lookup( LocalRepositoryManager.class, testDir.getAbsolutePath() );
+        repoSession.setLocalRepositoryManager( localRepositoryManager );
     }
 
     public void assertNoMarkerFile( Artifact artifact )

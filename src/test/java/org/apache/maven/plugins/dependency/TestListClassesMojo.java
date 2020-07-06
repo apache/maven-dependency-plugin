@@ -38,6 +38,8 @@ public class TestListClassesMojo
     protected void setUp()
             throws Exception
     {
+        
+        super.setUp();
         File testPom = new File( getBasedir(), "target/test-classes/unit/get-test/plugin-config.xml" );
 
         assertTrue( testPom.exists() );
@@ -54,12 +56,12 @@ public class TestListClassesMojo
         server.setPassword( "bar" );
         settings.addServer( server );
         legacySupport.setSession( session );
-        DefaultRepositorySystemSession repoSession =
-                (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
-
+ 
         File testDir = new File( getBasedir(), "target" + File.separatorChar + "unit-tests" + File.separatorChar + "markers"
                             + File.separatorChar );
         
+        DefaultRepositorySystemSession repoSession =
+                        (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
         LocalRepositoryManager localRepositoryManager = lookup( LocalRepositoryManager.class, testDir.getAbsolutePath() );
         repoSession.setLocalRepositoryManager( localRepositoryManager );
 
