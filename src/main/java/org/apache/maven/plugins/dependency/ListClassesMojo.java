@@ -189,11 +189,11 @@ public class ListClassesMojo
         // open jar file in try-with-resources statement to guarantee the file closes after use regardless of errors
         try ( JarFile jarFile = new JarFile( result.getArtifact().getFile() ) )
         {
-            Enumeration entries = jarFile.entries();
+            Enumeration<JarEntry> entries = jarFile.entries();
 
             while ( entries.hasMoreElements() )
             {
-                JarEntry entry = (JarEntry) entries.nextElement();
+                JarEntry entry = entries.nextElement();
                 String entryName = entry.getName();
 
                 // filter out files that do not end in .class

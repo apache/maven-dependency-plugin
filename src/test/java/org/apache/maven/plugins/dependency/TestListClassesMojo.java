@@ -24,13 +24,12 @@ import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
-import org.junit.Assert;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 import java.io.File;
 
-public class TestGetClassesMojo
+public class TestListClassesMojo
         extends AbstractDependencyMojoTestCase
 {
     private ListClassesMojo mojo;
@@ -42,7 +41,6 @@ public class TestGetClassesMojo
         super.setUp( "markers", false );
 
         File testPom = new File( getBasedir(), "target/test-classes/unit/get-test/plugin-config.xml" );
-        assertTrue(testPom.exists());
         mojo = (ListClassesMojo) lookupMojo( "list-classes", testPom );
 
         assertNotNull( mojo );
@@ -63,7 +61,7 @@ public class TestGetClassesMojo
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }
 
-    public void testGetClassesNotTransitive()
+    public void testListClassesNotTransitive()
             throws Exception
     {
         setVariableValueToObject( mojo, "remoteRepositories", "central::default::https://repo.maven.apache.org/maven2,"
@@ -74,7 +72,7 @@ public class TestGetClassesMojo
         mojo.execute();
     }
 
-    public void testGetClassesTransitive()
+    public void testListClassesTransitive()
             throws Exception
     {
         setVariableValueToObject( mojo, "remoteRepositories", "central::default::https://repo.maven.apache.org/maven2,"
