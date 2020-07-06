@@ -21,7 +21,6 @@ package org.apache.maven.plugins.dependency;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.LegacySupport;
@@ -91,7 +90,7 @@ public abstract class AbstractDependencyMojoTestCase
         DefaultRepositorySystemSession repoSession =
             (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
         RepositorySystem system = lookup( RepositorySystem.class );
-        String directory = Files.createTempDirectory( "foo" ).toString();
+        String directory = stubFactory.getWorkingDir().toString();
         LocalRepository localRepository = new LocalRepository( directory  );
         LocalRepositoryManager manager = system.newLocalRepositoryManager( repoSession, localRepository );
         repoSession.setLocalRepositoryManager( manager );

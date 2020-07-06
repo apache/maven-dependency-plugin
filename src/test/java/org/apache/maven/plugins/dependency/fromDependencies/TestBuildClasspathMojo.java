@@ -128,7 +128,7 @@ public class TestBuildClasspathMojo
         server.setPassword( "bar" );
         settings.addServer( server );
         legacySupport.setSession( session );
-        
+                
         installLocalRepository( legacySupport );
         
         Artifact artifact = stubFactory.getReleaseArtifact();
