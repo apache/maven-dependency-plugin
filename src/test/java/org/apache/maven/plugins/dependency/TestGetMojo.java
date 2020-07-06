@@ -20,7 +20,6 @@ package org.apache.maven.plugins.dependency;
  */
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -34,10 +33,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
-import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.repository.LocalRepository;
-import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
@@ -73,14 +68,7 @@ public class TestGetMojo
         settings.addServer( server );
         legacySupport.setSession( mavenSession );
         
-        // todo push this to superclass as setUpLocalRepository
-        DefaultRepositorySystemSession repoSession =
-            (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
-        RepositorySystem system = lookup( RepositorySystem.class );
-        String directory = Files.createTempDirectory( "foo" ).toString();
-        LocalRepository localRepository = new LocalRepository( directory  );
-        LocalRepositoryManager manager = system.newLocalRepositoryManager( repoSession, localRepository );
-        repoSession.setLocalRepositoryManager( manager );
+        installLocalRepository( legacySupport );
         
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }

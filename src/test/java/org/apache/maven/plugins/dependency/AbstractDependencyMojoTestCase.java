@@ -21,10 +21,17 @@ package org.apache.maven.plugins.dependency;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 
 public abstract class AbstractDependencyMojoTestCase
@@ -75,5 +82,18 @@ public abstract class AbstractDependencyMojoTestCase
         throws MojoExecutionException
     {
         mojo.copyFile( artifact, destFile );
+    }
+    
+
+    protected void installLocalRepository( LegacySupport legacySupport )
+        throws ComponentLookupException, IOException
+    {
+        DefaultRepositorySystemSession repoSession =
+            (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
+        RepositorySystem system = lookup( RepositorySystem.class );
+        String directory = Files.createTempDirectory( "foo" ).toString();
+        LocalRepository localRepository = new LocalRepository( directory  );
+        LocalRepositoryManager manager = system.newLocalRepositoryManager( repoSession, localRepository );
+        repoSession.setLocalRepositoryManager( manager );
     }
 }
