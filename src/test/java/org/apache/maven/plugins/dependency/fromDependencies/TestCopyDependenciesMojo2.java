@@ -52,7 +52,7 @@ public class TestCopyDependenciesMojo2
     extends AbstractDependencyMojoTestCase
 {
 
-    CopyDependenciesMojo mojo;
+    private CopyDependenciesMojo mojo;
 
     protected void setUp()
         throws Exception
@@ -276,13 +276,12 @@ public class TestCopyDependenciesMojo2
                                          new ArtifactRepositoryPolicy() );
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        File file = Paths.get( targetRepository.getBasedir() ).toFile();
-        assertTrue( file.exists() );
-
+        File baseDirectory = Paths.get( targetRepository.getBasedir() ).toFile();
+        assertTrue( baseDirectory.isDirectory() );
+        
         for ( Artifact artifact : artifacts )
         {
-            // TODO fix this
-            // assertArtifactExists( artifact, targetRepository );
+            assertArtifactExists( artifact, targetRepository );
 
             if ( !artifact.getBaseVersion().equals( artifact.getVersion() ) )
             {
@@ -316,12 +315,18 @@ public class TestCopyDependenciesMojo2
 
     private void assertArtifactExists( Artifact artifact, ArtifactRepository targetRepository )
     {
+        
         ArtifactRepositoryLayout layout = targetRepository.getLayout();
         String pathOf = layout.pathOf( artifact );
+        
+        // possible change/bug in DefaultArtifactRepositoryLayout.pathOf method between Maven 3 and Maven 3.1 
+        pathOf = pathOf.replace( "20130710.122148-1", "SNAPSHOT" );
+        
         File file = new File( targetRepository.getBasedir(), pathOf );
         
         Path targetPath = Paths.get( file.getParent() );
-        assertTrue( "Target path doesn't exist: " + targetPath, Files.exists( targetPath ) );
+        assertTrue( "Target path doesn't exist: " + targetPath, Files.isDirectory( targetPath ) );
+    
         assertTrue( "File doesn't exist: " + file.getAbsolutePath(), file.exists() );
 
         Collection<ArtifactMetadata> metas = artifact.getMetadataList();
