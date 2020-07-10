@@ -108,24 +108,6 @@ public class AnalyzeReportView
         }
         sink.section2_();
 
-        // Generate Unused declared dependencies:
-        sink.section2();
-        sink.sectionTitle2();
-        sink.text( bundle.getString( "analyze.report.UnusedDeclaredDependencies" ) );
-        sink.sectionTitle2_();
-        if ( analysis.getUnusedDeclaredArtifacts().isEmpty() )
-        {
-            sink.paragraph();
-            sink.text( bundle.getString( "analyze.report.noDependency" ) );
-            sink.paragraph_();
-            sink.horizontalRule();
-        }
-        else
-        {
-            generateDependenciesTable( sink, analysis.getUnusedDeclaredArtifacts().iterator() );
-        }
-        sink.section2_();
-
         // Generate Non-Test Scoped Test Dependencies:
         sink.section2();
         sink.sectionTitle2();

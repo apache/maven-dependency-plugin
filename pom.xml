@@ -222,6 +222,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-analyzer</artifactId>
+      <!-- NEED TO WAIT FOR RELEASE -->
       <version>1.11.2-SNAPSHOT</version>
       <exclusions>
         <exclusion>
@@ -427,7 +428,7 @@ under the License.
                 <pomExclude>tree-verbose/pom.xml</pomExclude>
               </pomExcludes>
               <pomIncludes>
-                <pomInclude>analyze-testDependencyWithNonTestScope/pom.xml</pomInclude>
+                <pomInclude>*/pom.xml</pomInclude>
                 <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
               <!-- for mrm -->

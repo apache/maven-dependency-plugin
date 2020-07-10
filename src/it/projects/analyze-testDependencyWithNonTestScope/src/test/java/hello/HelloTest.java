@@ -25,8 +25,8 @@ import static org.junit.Assert.*;
 public class HelloTest {
 
   @Test
-  public void add() {
-    Assert.assertEquals(1 + 1, is(2));
+  public void testAdd() {
+    assertEquals(1 + 1, 2);
   }
 
 }
