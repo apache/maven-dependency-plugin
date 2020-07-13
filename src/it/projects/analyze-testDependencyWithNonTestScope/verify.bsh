@@ -18,6 +18,11 @@
  */
 
 import java.io.*;
+import org.jsoup.Jsoup;
+import org.jsoup.helper.Validate;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 File htmlFile = new File( basedir, "target/dependency-analysis.html" );
 
@@ -29,5 +34,30 @@ if ( htmlFile.length() == 0 )
 {
     throw new Exception( "Dependency analysis file empty " + htmlFile );
 }
+/*
+if ( htmlFile.length() != 98 )
+{
+    throw new Exception( "Dependency analysis file " + htmlFile.length() + " lines instead of 98 " + htmlFile );
+}
+*/
 
+Document doc = Jsoup.parse( htmlFile, "UTF-8");
+/*
+Elements entry = doc.select( "#contentBox > section > section:nth-child(5) > table > tbody > tr.b" );
+
+if( entry.isEmpty() )
+{
+    throw new Exception ( "Can't find table entry under nonTestScopedTestDependencies header " + htmlFile);
+}
+
+Elements groupIdElement = doc.select(
+"#contentBox > section > section:nth-child(5) > table > tbody > tr.b > td:nth-child(1)" ).first();
+
+String groupId = groupIdElement.text();
+
+if ( !groupId.Equals( "junit" ) )
+{
+    throw new Exception ( "Table entry under nonTestScopedTestDependencies header groupId is not junit " + htmlFile);
+}
+*/
 return true;
