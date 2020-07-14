@@ -41,13 +41,11 @@ import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.security.Constraint;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 public class TestGetMojo
     extends AbstractDependencyMojoTestCase
 {
-    GetMojo mojo;
+    private GetMojo mojo;
 
     protected void setUp()
         throws Exception
@@ -56,24 +54,22 @@ public class TestGetMojo
         super.setUp( "markers", false );
 
         File testPom = new File( getBasedir(), "target/test-classes/unit/get-test/plugin-config.xml" );
-        assert testPom.exists();
         mojo = (GetMojo) lookupMojo( "get", testPom );
 
         assertNotNull( mojo );
 
         LegacySupport legacySupport = lookup( LegacySupport.class );
-        MavenSession session = newMavenSession( new MavenProjectStub() );
-        Settings settings = session.getSettings();
+        MavenSession mavenSession = newMavenSession( new MavenProjectStub() );
+        Settings settings = mavenSession.getSettings();
         Server server = new Server();
         server.setId( "myserver" );
         server.setUsername( "foo" );
         server.setPassword( "bar" );
         settings.addServer( server );
-        legacySupport.setSession( session );
-        DefaultRepositorySystemSession repoSession =
-            (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
-        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( testDir.getAbsolutePath() ) );
-
+        legacySupport.setSession( mavenSession );
+        
+        installLocalRepository( legacySupport );
+        
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }
 
@@ -150,9 +146,8 @@ public class TestGetMojo
     public void testParseRepository()
         throws Exception
     {
-        ArtifactRepository repo;
         ArtifactRepositoryPolicy policy = null;
-        repo = mojo.parseRepository( "central::default::https://repo.maven.apache.org/maven2", policy );
+        ArtifactRepository repo = mojo.parseRepository( "central::default::https://repo.maven.apache.org/maven2", policy );
         assertEquals( "central", repo.getId() );
         assertEquals( DefaultRepositoryLayout.class, repo.getLayout().getClass() );
         assertEquals( "https://repo.maven.apache.org/maven2", repo.getUrl() );

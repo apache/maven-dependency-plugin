@@ -31,7 +31,6 @@ public class StubDefaultFileMarkerHandler
     public StubDefaultFileMarkerHandler( Artifact artifact, File markerFilesDirectory )
     {
         super( artifact, markerFilesDirectory );
-        // TODO Auto-generated constructor stub
     }
 
     protected File getMarkerFile()

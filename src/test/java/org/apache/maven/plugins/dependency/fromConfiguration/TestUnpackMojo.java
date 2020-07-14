@@ -23,13 +23,12 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,11 +43,6 @@ public class TestUnpackMojo
 {
 
     UnpackMojo mojo;
-
-    public TestUnpackMojo()
-    {
-        super();
-    }
 
     protected void setUp()
         throws Exception
@@ -77,9 +71,10 @@ public class TestUnpackMojo
         MavenSession session = newMavenSession( mojo.getProject() );
         setVariableValueToObject( mojo, "session", session );
 
-        DefaultRepositorySystemSession repoSession = (DefaultRepositorySystemSession) session.getRepositorySession();
+        LegacySupport legacySupport = lookup( LegacySupport.class );
 
-        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( stubFactory.getWorkingDir() ) );
+        legacySupport.setSession( session );
+        installLocalRepository( legacySupport );
     }
 
     public ArtifactItem getSingleArtifactItem( boolean removeVersion )
