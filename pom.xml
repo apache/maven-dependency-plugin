@@ -428,7 +428,9 @@ under the License.
                 <pomExclude>tree-verbose/pom.xml</pomExclude>
               </pomExcludes>
               <pomIncludes>
-                <!--<pomInclude>*/pom.xml</pomInclude>-->
+<!--
+                <pomInclude>*/pom.xml</pomInclude>
+-->
                 <pomInclude>analyze-testDependencyWithNonTestScope/pom.xml</pomInclude>
                 <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
@@ -437,6 +439,7 @@ under the License.
               <filterProperties>
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
+              <addTestClassPath>true</addTestClassPath>
             </configuration>
           </plugin>
           <plugin>
