@@ -100,11 +100,11 @@ under the License.
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
+      <!--<dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
         <version>8.0.1</version>
-      </dependency>
+      </dependency>-->
     </dependencies>
   </dependencyManagement>
 
@@ -405,6 +405,29 @@ under the License.
           </systemPropertyVariables>
         </configuration>
       </plugin>
+      <!-- Shading required due to asm diamond dependency when upgrading to Maven 3.1 -->
+      <!--<plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.2.4</version>
+        <configuration>
+          &lt;!&ndash; put your configurations here &ndash;&gt;
+          <relocations>
+            <relocation>
+              <pattern>org.ow2.asm</pattern>
+              <shadedPattern>org.shaded.ow2.asm</shadedPattern>
+            </relocation>
+          </relocations>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>-->
     </plugins>
   </build>
 
@@ -428,9 +451,8 @@ under the License.
                 <pomExclude>tree-verbose/pom.xml</pomExclude>
               </pomExcludes>
               <pomIncludes>
-<!--
-                <pomInclude>*/pom.xml</pomInclude>
--->
+                <!--<pomInclude>*/pom.xml</pomInclude>-->
+                <pomInclude>analyze*/pom.xml</pomInclude>
                 <pomInclude>analyze-testDependencyWithNonTestScope/pom.xml</pomInclude>
                 <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
@@ -439,7 +461,9 @@ under the License.
               <filterProperties>
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
+
               <addTestClassPath>true</addTestClassPath>
+
             </configuration>
           </plugin>
           <plugin>
