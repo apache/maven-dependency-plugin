@@ -49,7 +49,7 @@ import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 
 /**
  * Analyzes the dependencies of this project and determines which are: used and declared; used and undeclared; unused
- * and declared; non-test scoped test-only dependencies.
+ * and declared; compile scoped but only used in tests.
  *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @since 2.0-alpha-5
