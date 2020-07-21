@@ -428,10 +428,7 @@ under the License.
                 <pomExclude>tree-verbose/pom.xml</pomExclude>
               </pomExcludes>
               <pomIncludes>
-<!--
                 <pomInclude>*/pom.xml</pomInclude>
--->
-                <pomInclude>analyze-testDependencyWithNonTestScope/pom.xml</pomInclude>
                 <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
               <!-- for mrm -->
