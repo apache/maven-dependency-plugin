@@ -41,17 +41,22 @@ Elements entry = doc.select( "#contentBox > section > section:nth-child(5) > tab
 
 if( entry.isEmpty() )
 {
-    throw new Exception ( "Can't find table entry under nonTestScopedTestDependencies header " + htmlFile);
+    throw new Exception ( "Can't find table entry under CompileScopedTestDependencies header " + htmlFile);
+}
+else if ( entry.size() != 1 )
+{
+    throw new Exception ( "Table entry under CompileScopedTestDependencies header has " + entry.size() +
+        "rows but only 1 was expected " + htmlFile );
 }
 
 Element groupIdElement = doc.select(
-"#contentBox > section > section:nth-child(5) > table > tbody > tr.a > td:nth-child(1)" ).first();
+"#contentBox > section > section:nth-child(5) > table > tbody > tr.b > td:nth-child(1)" ).first();
 
 String groupId = groupIdElement.text();
 
 if ( !groupId.equals( "junit" ) )
 {
-    throw new Exception ( "Table entry under nonTestScopedTestDependencies header groupId is not junit. Value is "  +
+    throw new Exception ( "Table entry under CompileScopedTestDependencies header groupId is not junit. Value is "  +
     groupId + " in " + htmlFile);
 }
 

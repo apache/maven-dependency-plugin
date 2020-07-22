@@ -223,7 +223,7 @@ under the License.
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-analyzer</artifactId>
       <!-- NEED TO WAIT FOR RELEASE -->
-      <version>1.11.2-SNAPSHOT</version>
+      <version>1.11.3-SNAPSHOT</version>
       <exclusions>
         <exclusion>
           <artifactId>maven-project</artifactId>

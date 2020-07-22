@@ -22,11 +22,14 @@ package hello;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class HelloTest {
 
   @Test
   public void testAdd() {
-    assertEquals(1 + 1, 2);
+    assertEquals( 1 + 1, 2 );
+    assertThat( "aaa" ).contains( "a" );
   }
 
 }
