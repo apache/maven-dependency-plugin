@@ -95,6 +95,10 @@ under the License.
       <implementation>org.codehaus.plexus.archiver.zip.ZipUnArchiver</implementation>
       <instantiation-strategy>per-lookup</instantiation-strategy>
     </component>
+    <component>
+      <role>org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer</role>
+      <implementation>org.apache.maven.shared.dependency.analyzer.DefaultProjectDependencyAnalyzer</implementation>
+    </component>
 
   </components>
 </component-set>

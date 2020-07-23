@@ -118,10 +118,12 @@
           </execution>
         </executions>
         <configuration>
+          <shadedArtifactAttached>false</shadedArtifactAttached>
+          <createDependencyReducedPom>true</createDependencyReducedPom>
           <relocations>
             <relocation>
-              <pattern>org.ow2.asm</pattern>
-              <shadedPattern>org.shaded.ow2.asm</shadedPattern>
+              <pattern>org.objectweb.asm</pattern>
+              <shadedPattern>plugin.org.objectweb.asm</shadedPattern>
             </relocation>
           </relocations>
         </configuration>
@@ -156,6 +158,7 @@
                   </pomExcludes>
                   <pomIncludes>
                     <pomInclude>*/pom.xml</pomInclude>
+                    <pomInclude>analyze*/pom.xml</pomInclude>
                     <pomInclude>analyze-testDependencyWithNonTestScope/pom.xml</pomInclude>
                     <pomInclude>purge-local-repository-without-pom</pomInclude>
                   </pomIncludes>
@@ -193,6 +196,7 @@
               </pomExcludes>
               <pomIncludes>
                 <pomInclude>*/pom.xml</pomInclude>
+                <pomInclude>analyze*/pom.xml</pomInclude>
                 <pomInclude>analyze-testDependencyWithNonTestScope/pom.xml</pomInclude>
                 <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
@@ -403,16 +407,7 @@
       </exclusions>
     </dependency>
   </dependencies>
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm</artifactId>
-        <version>8.0.1</version>
-        <scope>provided</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+  <dependencyManagement />
   <distributionManagement>
     <site>
       <id>apache.website</id>
