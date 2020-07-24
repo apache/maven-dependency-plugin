@@ -90,6 +90,7 @@ under the License.
 
   <properties>
     <mavenVersion>3.1.1</mavenVersion>
+    <mavenResolverVersion>1.4.2</mavenResolverVersion>
     <doxiaVersion>1.9.1</doxiaVersion>
     <doxiaSiteVersion>1.9.2</doxiaSiteVersion>
     <jettyVersion>9.2.28.v20190418</jettyVersion>
@@ -342,20 +343,29 @@ under the License.
     </dependency>
 
 
-    <dependency>
-      <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-impl</artifactId>
-      <version>1.4.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-api</artifactId>
-      <version>1.4.2</version>
-    </dependency>
+    <!-- Needed for BuildingRequest Mojo -->
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
       <artifactId>maven-resolver-util</artifactId>
-      <version>1.4.2</version>
+      <version>${mavenResolverVersion}</version>
+    </dependency>
+    <!-- Serializing DependencyGraph -->
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-api</artifactId>
+      <version>${mavenResolverVersion}</version>
+    </dependency>
+
+    <!-- Graph Builder -->
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-transport-file</artifactId>
+      <version>${mavenResolverVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-transport-http</artifactId>
+      <version>${mavenResolverVersion}</version>
     </dependency>
 
 
