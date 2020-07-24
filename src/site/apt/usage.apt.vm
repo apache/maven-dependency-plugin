@@ -425,10 +425,8 @@ mvn dependency:unpack
   <<<mvn dependency:sources -Dsilent=true>>>
 
   This is the same as the resolve goal except it includes the source
-  attachments if they exist.  This is useful when you want the source
-  attachments downloaded to your local repository and
-  you don't want to use the eclipse plugin to do this since the eclipse plugin
-  creates/overwrites the eclipse files. 
+  attachments if they exist.  This is useful when you want to download source
+  attachments to your local repository. 
   
   You can also define the <<<markersDirectory>>> either in the pom or settings
   to be a common location for all projects. This allows the system to resolve sources faster for dependencies that don't
