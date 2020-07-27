@@ -24,8 +24,6 @@ import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 import java.io.File;
 
@@ -37,10 +35,10 @@ public class TestListClassesMojo
     protected void setUp()
             throws Exception
     {
-        // required for mojo lookups to work
         super.setUp( "markers", false );
-
         File testPom = new File( getBasedir(), "target/test-classes/unit/get-test/plugin-config.xml" );
+
+        assertTrue( testPom.exists() );
         mojo = (ListClassesMojo) lookupMojo( "list-classes", testPom );
 
         assertNotNull( mojo );
@@ -54,9 +52,8 @@ public class TestListClassesMojo
         server.setPassword( "bar" );
         settings.addServer( server );
         legacySupport.setSession( session );
-        DefaultRepositorySystemSession repoSession =
-                (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
-        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( testDir.getAbsolutePath() ) );
+
+        installLocalRepository( legacySupport );
 
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }

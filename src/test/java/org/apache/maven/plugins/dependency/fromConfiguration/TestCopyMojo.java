@@ -29,22 +29,16 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 public class TestCopyMojo
     extends AbstractDependencyMojoTestCase
 {
-    CopyMojo mojo;
-
-    public TestCopyMojo()
-    {
-        super();
-    }
+    private CopyMojo mojo;
 
     protected void setUp()
         throws Exception
@@ -58,18 +52,16 @@ public class TestCopyMojo
 
         assertNotNull( mojo );
         assertNotNull( mojo.getProject() );
-        // MavenProject project = mojo.getProject();
-        // init classifier things
 
         MavenSession session = newMavenSession( mojo.getProject() );
         setVariableValueToObject( mojo, "session", session );
 
-        DefaultRepositorySystemSession repoSession = (DefaultRepositorySystemSession) session.getRepositorySession();
-
-        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( stubFactory.getWorkingDir() ) );
+        LegacySupport legacySupport = lookup( LegacySupport.class );
+        legacySupport.setSession( session );
+        installLocalRepository( legacySupport );
     }
 
-    public ArtifactItem getSingleArtifactItem( boolean removeVersion, boolean useBaseVersion )
+    private ArtifactItem getSingleArtifactItem( boolean removeVersion, boolean useBaseVersion )
         throws MojoExecutionException
     {
         List<ArtifactItem> list =

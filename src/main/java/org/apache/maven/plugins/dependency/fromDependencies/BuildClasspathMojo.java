@@ -43,6 +43,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.codehaus.plexus.util.StringUtils;
@@ -280,7 +281,8 @@ public class BuildClasspathMojo
             // substitute the property for the local repo path to make the classpath file portable.
             if ( StringUtils.isNotEmpty( localRepoProperty ) )
             {
-                File localBasedir = repositoryManager.getLocalRepositoryBasedir( session.getProjectBuildingRequest() );
+                ProjectBuildingRequest projectBuildingRequest = session.getProjectBuildingRequest();
+                File localBasedir = repositoryManager.getLocalRepositoryBasedir( projectBuildingRequest );
 
                 file = StringUtils.replace( file, localBasedir.getAbsolutePath(), localRepoProperty );
             }
