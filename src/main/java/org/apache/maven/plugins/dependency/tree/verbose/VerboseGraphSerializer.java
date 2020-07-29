@@ -252,21 +252,21 @@ public final class VerboseGraphSerializer
 
             if ( isDuplicateDependencyCoordinate( node, coordinateStrings ) )
             {
-                nodeErrors.put( node, " - omitted for duplicate)" );
+                nodeErrors.put( node, "omitted for duplicate" );
             }
             else if ( scopeConflict( node, coordinateStrings ) != null )
             {
-                nodeErrors.put( node, " - omitted for conflict with "
-                        + scopeConflict( node, coordinateStrings ) + ")" );
+                nodeErrors.put( node, "omitted for conflict with "
+                        + scopeConflict( node, coordinateStrings ) );
             }
             else if ( versionConflict( node, coordinateVersionMap ) != null )
             {
-                nodeErrors.put( node, " - omitted for conflict with "
-                        + versionConflict( node, coordinateVersionMap ) + ")" );
+                nodeErrors.put( node, "omitted for conflict with "
+                        + versionConflict( node, coordinateVersionMap ) );
             }
             else if ( node.getDependency() != null && node.getDependency().isOptional() )
             {
-                nodeErrors.put( node, " - omitted due to optional dependency)" );
+                nodeErrors.put( node, "omitted due to optional dependency" );
             }
             else
             {
@@ -284,7 +284,7 @@ public final class VerboseGraphSerializer
                     if ( visitedNodes.contains( child ) )
                     {
                         ignoreNode = true;
-                        nodeErrors.put( node, " - omitted for introducing a cycle with "
+                        nodeErrors.put( node, "omitted for introducing a cycle with "
                                 + getDependencyCoordinate( child ) );
                         node.setChildren( new ArrayList<DependencyNode>() );
                         break;
@@ -363,6 +363,10 @@ public final class VerboseGraphSerializer
             coordString = node.getArtifact().getGroupId() + ":" + node.getArtifact().getArtifactId() + ":" +
                     node.getArtifact().getExtension() + ":" + version + ":" + scope + coordString;
         }
+        else
+        {
+            coordString = getDependencyCoordinate( node );
+        }
 
         if ( node.getDependency().getScope().equals( "test" ) && !firstLevel )
         {
@@ -374,11 +378,11 @@ public final class VerboseGraphSerializer
             builder.append( "(" );
             if ( messageAdded )
             {
-                builder.append( coordString ).append( ";" ).append( nodeErrors.get( node ) );
+                builder.append( coordString ).append( "; " ).append( nodeErrors.get( node ) );
             }
             else
             {
-                builder.append( coordString ).append( nodeErrors.get( node ) );
+                builder.append( coordString ).append( " - " ).append( nodeErrors.get( node ) );
             }
             builder.append( ")" );
             builder.append( System.lineSeparator() );
