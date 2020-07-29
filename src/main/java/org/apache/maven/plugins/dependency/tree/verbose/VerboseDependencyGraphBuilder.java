@@ -19,6 +19,7 @@ package org.apache.maven.plugins.dependency.tree.verbose;
  * under the License.
  */
 
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Repository;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -36,8 +37,8 @@ import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResult;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -111,7 +112,7 @@ public class VerboseDependencyGraphBuilder
 
         for ( org.apache.maven.model.Dependency dependency : dependencies )
         {
-            rootNode.getChildren().add( buildFullDependencyGraph( Arrays.asList( dependency ), project ) );
+            rootNode.getChildren().add( buildFullDependencyGraph( Collections.singletonList( dependency ), project ) );
         }
 
         // Don't want transitive test dependencies included in analysis
@@ -119,6 +120,63 @@ public class VerboseDependencyGraphBuilder
 
         return prunedRoot;
     }
+
+    private List<org.apache.maven.model.Dependency> getManagedDependencies( MavenProject project )
+    {
+        List<org.apache.maven.model.Dependency> dependencies = project.getDependencies();
+        Map<String, org.apache.maven.model.Dependency> dependencyManagementMap = createDependencyManagementMap(
+                project.getDependencyManagement() );
+
+        for ( org.apache.maven.model.Dependency dependency : dependencies )
+        {
+            if ( dependencyManagementMap.containsKey( getDependencyManagementCoordinate( dependency ) ) )
+            {
+                org.apache.maven.model.Dependency manager = dependencyManagementMap.get(
+                        getDependencyManagementCoordinate( dependency ) );
+
+                dependency.setVersion( manager.getVersion() );
+                dependency.setScope( manager.getScope() );
+            }
+        }
+        return dependencies;
+
+    }
+
+    private static Map<String, org.apache.maven.model.Dependency> createDependencyManagementMap(
+            DependencyManagement dependencyManagement )
+    {
+        Map<String, org.apache.maven.model.Dependency> dependencyManagementMap = new HashMap<>();
+        for ( org.apache.maven.model.Dependency dependency : dependencyManagement.getDependencies() )
+        {
+            dependencyManagementMap.put( getDependencyManagementCoordinate( dependency ), dependency );
+        }
+        return dependencyManagementMap;
+    }
+
+    private static String getDependencyManagementCoordinate( org.apache.maven.model.Dependency dependency )
+    {
+        StringBuilder string = new StringBuilder();
+        string.append( dependency.getGroupId() ).append( ":" ).append( dependency.getArtifactId() )
+                .append( ":" ).append( dependency.getType() );
+        if ( dependency.getClassifier() != null && !dependency.getClassifier().equals( "" ) )
+        {
+            string.append( ":" ).append( dependency.getClassifier() );
+        }
+        return string.toString();
+    }
+
+    private static String getDependencyManagementCoordinate( org.eclipse.aether.artifact.Artifact artifact )
+    {
+        StringBuilder string = new StringBuilder();
+        string.append( artifact.getGroupId() ).append( ":" ).append( artifact.getArtifactId() ).append( ":" )
+                .append( artifact.getExtension() );
+        if ( artifact.getClassifier() != null && !artifact.getClassifier().equals( "" ) )
+        {
+            string.append( ":" ).append( artifact.getClassifier() );
+        }
+        return string.toString();
+    }
+
 
     private Dependency getProjectDependency( MavenProject project )
     {

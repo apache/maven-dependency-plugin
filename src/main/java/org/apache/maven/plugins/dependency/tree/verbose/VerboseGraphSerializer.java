@@ -23,10 +23,7 @@ package org.apache.maven.plugins.dependency.tree.verbose;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.graph.DefaultDependencyNode;
 import org.eclipse.aether.graph.DependencyNode;
-import org.eclipse.aether.util.graph.manager.DependencyManagerUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +49,15 @@ public final class VerboseGraphSerializer
         Map<String, String> coordinateVersionMap = new HashMap<>();
         StringBuilder builder = new StringBuilder();
 
-        Map<String, Dependency> dependencyManagementMap = createVersionDependencyManagementMap( dependencyManagement );
+        Map<String, Dependency> dependencyManagementMap = createDependencyManagementMap( dependencyManagement );
+        // need to process dependencyManagement first
+        for ( DependencyNode node : root.getChildren() )
+        {
+            for ( DependencyNode transitiveDependency : node.getChildren() )
+            {
+                applyDependencyManagement( transitiveDependency, dependencyManagementMap );
+            }
+        }
 
         // Use BFS to mirror how Maven resolves dependencies and use DFS to print the tree easily
         Map<DependencyNode, String> nodeErrors = getNodeConflictMessagesBfs( root, coordinateStrings,
@@ -68,22 +73,59 @@ public final class VerboseGraphSerializer
         {
             if ( i == root.getChildren().size() - 1 )
             {
-                builder = dfsPrint( root.getChildren().get( i ), LINE_START_LAST_CHILD, true, builder,
-                        nodeErrors, dependencyManagementMap );
+                dfsPrint( root.getChildren().get( i ), LINE_START_LAST_CHILD, true, builder, nodeErrors,
+                        dependencyManagementMap );
             }
             else
             {
-                builder = dfsPrint( root.getChildren().get( i ), LINE_START_CHILD, true, builder, nodeErrors,
+                dfsPrint( root.getChildren().get( i ), LINE_START_CHILD, true, builder, nodeErrors,
                         dependencyManagementMap );
             }
         }
         return builder.toString();
     }
 
-    private static Map<String, Dependency> createVersionDependencyManagementMap(
+    private void applyDependencyManagement( DependencyNode node,
+                                                      Map<String, Dependency> dependencyManagementMap )
+    {
+        if ( dependencyManagementMap.containsKey( getDependencyManagementCoordinate( node.getArtifact() ) ) )
+        {
+            Dependency manager = dependencyManagementMap.get( getDependencyManagementCoordinate( node.getArtifact() ) );
+            Map<String, String> artifactProperties = new HashMap<>();
+            // Artifact.getProperties returns an immutable map so must copy over to a mutable map
+            for( Map.Entry<String, String> entry : node.getArtifact().getProperties().entrySet() )
+            {
+                artifactProperties.put( entry.getKey(), entry.getValue() );
+            }
+
+            if ( !node.getArtifact().getVersion().equals( manager.getVersion() ) )
+            {
+                artifactProperties.put( "version", manager.getVersion() );
+            }
+            if ( !node.getDependency().getScope().equals( manager.getScope() ) )
+            {
+                artifactProperties.put( "scope", manager.getScope() );
+            }
+
+            node.getArtifact().setProperties( artifactProperties );
+        }
+
+        for ( DependencyNode child : node.getChildren() )
+        {
+            applyDependencyManagement( child, dependencyManagementMap );
+        }
+    }
+
+    private static Map<String, Dependency> createDependencyManagementMap(
             DependencyManagement dependencyManagement )
     {
         Map<String, Dependency> dependencyManagementMap = new HashMap<>();
+
+        if ( dependencyManagement == null )
+        {
+            return dependencyManagementMap;
+        }
+
         for ( Dependency dependency : dependencyManagement.getDependencies() )
         {
             dependencyManagementMap.put( getDependencyManagementCoordinate( dependency ), dependency );
@@ -125,9 +167,29 @@ public final class VerboseGraphSerializer
             return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getExtension() + ":"
                     + artifact.getVersion();
         }
-        String scope = node.getDependency().getScope();
+
+        String version, scope;
+        // Use the properties field for dependency management version/scope
+        if ( artifact.getProperties().containsKey( "version" ) )
+        {
+            version = artifact.getProperties().get( "version" );
+        }
+        else
+        {
+            version = artifact.getVersion();
+        }
+
+        if ( artifact.getProperties().containsKey( "scope" ) )
+        {
+            scope = artifact.getProperties().get( "scope" );
+        }
+        else
+        {
+            scope = node.getDependency().getScope();
+        }
+
         String coords = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getExtension() + ":"
-                + artifact.getVersion();
+                + version;
 
         if ( scope != null && !scope.isEmpty() )
         {
@@ -164,8 +226,18 @@ public final class VerboseGraphSerializer
 
         for ( String scope : scopes )
         {
+            String version;
+            if ( artifact.getProperties().containsKey( "version" ) )
+            {
+                version = artifact.getProperties().get( "version" );
+            }
+            else
+            {
+                version = artifact.getVersion();
+            }
+
             String coordinate = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getExtension()
-                    + ":" + artifact.getVersion() + ":" + scope;
+                    + ":" + version + ":" + scope;
             if ( coordinateStrings.contains( coordinate ) )
             {
                 return scope;
@@ -191,13 +263,13 @@ public final class VerboseGraphSerializer
 
             if ( i == node.getChildren().size() - 1 )
             {
-                builder = dfsPrint( node.getChildren().get( i ), start.concat( LINE_START_LAST_CHILD ), false,
-                        builder, nodeErrors, dependencyManagementMap );
+                dfsPrint( node.getChildren().get( i ), start.concat( LINE_START_LAST_CHILD ), false, builder,
+                        nodeErrors, dependencyManagementMap );
             }
             else
             {
-                builder = dfsPrint( node.getChildren().get( i ), start.concat( LINE_START_CHILD ), false,
-                        builder, nodeErrors, dependencyManagementMap );
+                dfsPrint( node.getChildren().get( i ), start.concat( LINE_START_CHILD ), false, builder,
+                        nodeErrors, dependencyManagementMap );
             }
         }
         return builder;
@@ -247,8 +319,6 @@ public final class VerboseGraphSerializer
                 nodeErrors.put( node, "Null Artifact Node" );
                 break;
             }
-
-            String coordString = getDependencyCoordinate( node );
 
             if ( isDuplicateDependencyCoordinate( node, coordinateStrings ) )
             {
@@ -313,7 +383,6 @@ public final class VerboseGraphSerializer
                                     Map<DependencyNode, String> nodeErrors,
                                     Map<String, Dependency> dependencyManagementMap )
     {
-        String preManagedVersion = DependencyManagerUtils.getPremanagedVersion( node );
         builder.append( start );
         if ( node.getArtifact() == null )
         {
@@ -360,8 +429,8 @@ public final class VerboseGraphSerializer
                 scope = node.getDependency().getScope();
             }
 
-            coordString = node.getArtifact().getGroupId() + ":" + node.getArtifact().getArtifactId() + ":" +
-                    node.getArtifact().getExtension() + ":" + version + ":" + scope + coordString;
+            coordString = node.getArtifact().getGroupId() + ":" + node.getArtifact().getArtifactId() + ":"
+                    + node.getArtifact().getExtension() + ":" + version + ":" + scope + coordString;
         }
         else
         {
