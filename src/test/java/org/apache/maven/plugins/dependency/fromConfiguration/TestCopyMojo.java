@@ -21,6 +21,8 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -144,6 +146,20 @@ public class TestCopyMojo
         assertEquals( exist, file.exists() );
     }
 
+    public void assertFilesAreLinks( Collection<ArtifactItem> items, boolean areLinks )
+    {
+        for ( ArtifactItem item : items )
+        {
+            assertFileIsLink( item, areLinks );
+        }
+    }
+
+    public void assertFileIsLink( ArtifactItem item, boolean isLink )
+    {
+        Path path = item.getOutputDirectory().toPath().resolve( item.getDestFileName() );
+        assertEquals( isLink, Files.isSymbolicLink( path ) );
+    }
+
     public void testMojoDefaults()
     {
         CopyMojo themojo = new CopyMojo();
@@ -231,6 +247,20 @@ public class TestCopyMojo
         mojo.execute();
 
         assertFilesExist( list, true );
+    }
+
+    public void testLink()
+        throws Exception
+    {
+        List<ArtifactItem> list = stubFactory.getArtifactItems( stubFactory.getClassifiedArtifacts() );
+
+        mojo.setArtifactItems( createArtifactItemArtifacts( list ) );
+        mojo.setLink( true );
+
+        mojo.execute();
+
+        assertFilesExist( list, true );
+        assertFilesAreLinks( list, true );
     }
 
     public void testCopyStripVersionSetInMojo()

@@ -44,6 +44,7 @@ import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
 import org.codehaus.plexus.components.io.fileselectors.IncludeExcludeFileSelector;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.NioFiles;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -193,6 +194,38 @@ public abstract class AbstractDependencyMojo
         catch ( IOException e )
         {
             throw new MojoExecutionException( "Error copying artifact from " + artifact + " to " + destFile, e );
+        }
+    }
+
+    /**
+     * Does the actual link of the file and logging.
+     *
+     * @param artifact represents the file to link to.
+     * @param destFile file name of destination link.
+     * @throws MojoExecutionException with a message if an error occurs.
+     */
+    protected void linkFile( File artifact, File destFile )
+        throws MojoExecutionException
+    {
+        try
+        {
+            getLog().info( "Linking "
+                + destFile + " to "
+                + ( this.outputAbsoluteArtifactFilename ? artifact.getAbsolutePath() : artifact.getName() ) );
+
+            if ( artifact.isDirectory() )
+            {
+                // usual case is a future jar packaging, but there are special cases: classifier and other packaging
+                throw new MojoExecutionException( "Artifact has not been packaged yet. When used on reactor artifact, "
+                    + "copy should be executed after packaging: see MDEP-187." );
+            }
+
+            // TODO Replace with FileUtils.linkFile(artifact, destFile); once https://github.com/codehaus-plexus/plexus-utils/pull/82 is merged
+            NioFiles.createSymbolicLink( destFile, artifact );
+        }
+        catch ( IOException e )
+        {
+            throw new MojoExecutionException( "Error linking " + destFile + " to artifact " + artifact, e );
         }
     }
 
