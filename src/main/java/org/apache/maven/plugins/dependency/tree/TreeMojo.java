@@ -283,7 +283,7 @@ public class TreeMojo
                 dependencyTreeString = serializeDependencyTree( rootNode );
             }
 
-
+            dependencyTreeString = serializeDependencyTree( rootNode );
             if ( outputFile != null )
             {
                 DependencyUtil.write( dependencyTreeString, outputFile, this.appendOutput, getLog() );
@@ -371,8 +371,10 @@ public class TreeMojo
         }
 
         DefaultDependencyNode newChild = new DefaultDependencyNode( parent,
-                convertAetherArtifactToMavenArtifact( child ), DependencyManagerUtils.getPremanagedVersion( child ),
-                DependencyManagerUtils.getPremanagedScope( child ), null, child.getDependency().isOptional() );
+                convertAetherArtifactToMavenArtifact( child ),
+                child.getArtifact().getProperties().get( "preManagedVersion" ),
+                child.getArtifact().getProperties().get( "preManagedScope" ), null,
+                child.getDependency().isOptional() );
 
         newChild.setChildren( new ArrayList<DependencyNode>() );
 

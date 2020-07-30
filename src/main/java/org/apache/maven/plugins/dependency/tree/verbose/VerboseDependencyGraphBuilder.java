@@ -19,6 +19,7 @@ package org.apache.maven.plugins.dependency.tree.verbose;
  * under the License.
  */
 
+import org.apache.commons.chain.web.MapEntry;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Repository;
@@ -117,35 +118,64 @@ public class VerboseDependencyGraphBuilder
 
         // Don't want transitive test dependencies included in analysis
         DependencyNode prunedRoot = pruneTransitiveTestDependencies( rootNode, project );
-
+        applyDependencyManagement( project, prunedRoot );
         return prunedRoot;
     }
 
-    private List<org.apache.maven.model.Dependency> getManagedDependencies( MavenProject project )
+    private void applyDependencyManagement( MavenProject project, DependencyNode root )
     {
-        List<org.apache.maven.model.Dependency> dependencies = project.getDependencies();
         Map<String, org.apache.maven.model.Dependency> dependencyManagementMap = createDependencyManagementMap(
                 project.getDependencyManagement() );
 
-        for ( org.apache.maven.model.Dependency dependency : dependencies )
+        for ( DependencyNode child : root.getChildren() )
         {
-            if ( dependencyManagementMap.containsKey( getDependencyManagementCoordinate( dependency ) ) )
-            {
-                org.apache.maven.model.Dependency manager = dependencyManagementMap.get(
-                        getDependencyManagementCoordinate( dependency ) );
-
-                dependency.setVersion( manager.getVersion() );
-                dependency.setScope( manager.getScope() );
-            }
+            applyDependencyManagementDfs( dependencyManagementMap, child );
         }
-        return dependencies;
-
     }
+
+    private void applyDependencyManagementDfs( Map<String, org.apache.maven.model.Dependency> dependencyManagementMap,
+                                               DependencyNode node )
+    {
+        if ( dependencyManagementMap.containsKey( getDependencyManagementCoordinate( node.getArtifact() ) ) )
+        {
+            org.apache.maven.model.Dependency manager = dependencyManagementMap.get(
+                    getDependencyManagementCoordinate( node.getArtifact() ) );
+            Map<String, String> artifactProperties = new HashMap<>();
+            for ( Map.Entry<String, String> entry : node.getArtifact().getProperties().entrySet() )
+            {
+                artifactProperties.put( entry.getKey(), entry.getValue() );
+            }
+
+            if ( !manager.getVersion().equals( node.getArtifact().getVersion() ) )
+            {
+                artifactProperties.put( "preManagedVersion", node.getArtifact().getVersion() );
+                node.getArtifact().setVersion( manager.getVersion() );
+            }
+
+            if ( !manager.getScope().equals( node.getDependency().getScope() ) )
+            {
+                artifactProperties.put( "preManagedScope", node.getDependency().getScope() );
+                node.getDependency().setScope( manager.getScope() );
+            }
+            node.setArtifact( node.getArtifact().setProperties( artifactProperties ));
+            node.getDependency().getArtifact().setProperties( artifactProperties );
+        }
+        for ( DependencyNode child : node.getChildren() )
+        {
+            applyDependencyManagementDfs( dependencyManagementMap, child );
+        }
+    }
+
+
 
     private static Map<String, org.apache.maven.model.Dependency> createDependencyManagementMap(
             DependencyManagement dependencyManagement )
     {
         Map<String, org.apache.maven.model.Dependency> dependencyManagementMap = new HashMap<>();
+        if(dependencyManagement == null)
+        {
+            return dependencyManagementMap;
+        }
         for ( org.apache.maven.model.Dependency dependency : dependencyManagement.getDependencies() )
         {
             dependencyManagementMap.put( getDependencyManagementCoordinate( dependency ), dependency );
@@ -165,7 +195,7 @@ public class VerboseDependencyGraphBuilder
         return string.toString();
     }
 
-    private static String getDependencyManagementCoordinate( org.eclipse.aether.artifact.Artifact artifact )
+    private static String getDependencyManagementCoordinate( Artifact artifact )
     {
         StringBuilder string = new StringBuilder();
         string.append( artifact.getGroupId() ).append( ":" ).append( artifact.getArtifactId() ).append( ":" )

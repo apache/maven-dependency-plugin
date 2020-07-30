@@ -370,13 +370,39 @@ public final class VerboseGraphSerializer
         String coordString = "";
 
         boolean messageAdded = false;
+        String version, scope;
+        if ( !firstLevel && node.getArtifact().getProperties().containsKey( "version" ) )
+        {
+            version = node.getArtifact().getProperties().get( "version" );
+            coordString = coordString.concat( " - version managed from " + node.getArtifact().getVersion() );
+            messageAdded = true;
+        }
+        else
+        {
+            version = node.getArtifact().getVersion();
+        }
 
- 
+        if ( !firstLevel && node.getArtifact().getProperties().containsKey( "scope" ) )
+        {
+            scope = node.getArtifact().getProperties().get( "scope" );
+            if ( messageAdded )
+            {
+                coordString = coordString.concat( "; scope managed from " + node.getDependency().getScope() );
+            }
+            else
+            {
+                coordString = coordString.concat( " - scope managed from " + node.getDependency().getScope() );
+                messageAdded = true;
+            }
+        }
+        else
+        {
+            scope = node.getDependency().getScope();
+        }
 
-        if ( !firstLevel && dependencyManagementMap.containsKey( getDependencyManagementCoordinate( node.getArtifact() )
+        /*if ( !firstLevel && dependencyManagementMap.containsKey( getDependencyManagementCoordinate( node.getArtifact() )
         ) )
         {
-            String version, scope;
             Dependency manager = dependencyManagementMap.get( getDependencyManagementCoordinate( node.getArtifact() ) );
 
             if ( !manager.getVersion().equals( node.getArtifact().getVersion() ) )
@@ -414,7 +440,10 @@ public final class VerboseGraphSerializer
         else
         {
             coordString = getDependencyCoordinate( node );
-        }
+        }*/
+
+        coordString = node.getArtifact().getGroupId() + ":" + node.getArtifact().getArtifactId() + ":"
+                + node.getArtifact().getExtension() + ":" + version + ":" + scope + coordString;
 
         if ( node.getDependency().getScope().equals( "test" ) && !firstLevel )
         {
