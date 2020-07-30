@@ -101,7 +101,7 @@ public class VerboseDependencyGraphBuilder
         this.repositories = repositoryList;
     }
 
-    public DependencyNode buildVerboseGraph( MavenProject project, RepositorySystem system )
+    public DependencyNode buildVerboseGraphNoManagement( MavenProject project, RepositorySystem system )
             throws MojoExecutionException
     {
         repositorySystem = system;
@@ -237,12 +237,6 @@ public class VerboseDependencyGraphBuilder
             dependencyList.add( dependencyNode.getDependency() );
         }
 
-        /*if ( localRepository != null )
-        {
-            LocalRepository local = new LocalRepository( localRepository.toAbsolutePath().toString() );
-            session.setLocalRepositoryManager( system.newLocalRepositoryManager( session, local ) );
-        }*/
-
         CollectRequest collectRequest = new CollectRequest();
 
         collectRequest.setRoot( dependencyList.get( 0 ) );
@@ -262,7 +256,6 @@ public class VerboseDependencyGraphBuilder
         }
         DependencyRequest dependencyRequest = new DependencyRequest();
         dependencyRequest.setCollectRequest( collectRequest );
-        // dependencyRequest.setRoot(  );
 
         // resolveDependencies equals to calling both collectDependencies (build dependency tree) and
         // resolveArtifacts (download JAR files).
@@ -273,9 +266,7 @@ public class VerboseDependencyGraphBuilder
     private DependencyNode buildFullDependencyGraph( List<org.apache.maven.model.Dependency> dependencies,
                                                      MavenProject project )
     {
-        // Dependency rootDependency = getProjectDependency( project );
         List<DependencyNode> dependencyNodes = new ArrayList<DependencyNode>();
-        // dependencyNodes.add( new DefaultDependencyNode( rootDependency ) );
 
         for ( org.apache.maven.model.Dependency dependency : dependencies )
         {

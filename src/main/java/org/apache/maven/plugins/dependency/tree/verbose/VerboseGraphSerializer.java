@@ -93,7 +93,7 @@ public final class VerboseGraphSerializer
             Dependency manager = dependencyManagementMap.get( getDependencyManagementCoordinate( node.getArtifact() ) );
             Map<String, String> artifactProperties = new HashMap<>();
             // Artifact.getProperties returns an immutable map so must copy over to a mutable map
-            for( Map.Entry<String, String> entry : node.getArtifact().getProperties().entrySet() )
+            for ( Map.Entry<String, String> entry : node.getArtifact().getProperties().entrySet() )
             {
                 artifactProperties.put( entry.getKey(), entry.getValue() );
             }
@@ -275,31 +275,6 @@ public final class VerboseGraphSerializer
         return builder;
     }
 
-    /*private Map<DependencyNode, String> getDependencyManagementMessagesBfs( DependencyNode root )
-    {
-        Map<DependencyNode, String> dependencyManagementMessages = new HashMap<>();
-        Set<DependencyNode> visitedNodes = new HashSet<>( 512 );
-        Queue<DependencyNode> queue = new LinkedList<>();
-        visitedNodes.add( root );
-        queue.add( root );
-
-        while ( !queue.isEmpty() )
-        {
-            DependencyNode node = queue.poll();
-
-            StringBuilder message = new StringBuilder();
-
-            if ( DependencyManagerUtils.getPremanagedVersion( node ) != null &&
-                    !DependencyManagerUtils.getPremanagedVersion( node ).equals( "" ) &&
-                    !DependencyManagerUtils.getPremanagedVersion( node ).equals( node.getVersion().toString() ) )
-            {
-                DependencyManagerUtils.getPremanagedVersion( node );
-                node.getVersion();
-                message.append( "version managed from " + node.getVersion().toString() );
-            }
-        }
-    }
-*/
     private Map<DependencyNode, String> getNodeConflictMessagesBfs( DependencyNode root, Set<String> coordinateStrings
             , Map<String, String> coordinateVersionMap, Map<String, Dependency> dependencyManagementMap )
     {
@@ -342,7 +317,7 @@ public final class VerboseGraphSerializer
             {
                 boolean ignoreNode = false;
                 nodeErrors.put( node, null );
-                coordinateStrings.add( getDependencyCoordinate( node ) );
+
                 if ( node.getArtifact() != null )
                 {
                     coordinateVersionMap.put( getVersionlessScopelessCoordinate( node ),
@@ -375,6 +350,7 @@ public final class VerboseGraphSerializer
                     }
                 }
             }
+            coordinateStrings.add( getDependencyCoordinate( node ) );
         }
         return nodeErrors;
     }
@@ -395,7 +371,10 @@ public final class VerboseGraphSerializer
 
         boolean messageAdded = false;
 
-        if ( dependencyManagementMap.containsKey( getDependencyManagementCoordinate( node.getArtifact() ) ) )
+ 
+
+        if ( !firstLevel && dependencyManagementMap.containsKey( getDependencyManagementCoordinate( node.getArtifact() )
+        ) )
         {
             String version, scope;
             Dependency manager = dependencyManagementMap.get( getDependencyManagementCoordinate( node.getArtifact() ) );
@@ -458,15 +437,9 @@ public final class VerboseGraphSerializer
         }
         else
         {
-            if ( messageAdded )
-            {
-                builder.append( ";" );
-            }
             builder.append( coordString ).append( System.lineSeparator() );
-
             callDfsPrint( node, start, builder, nodeErrors, dependencyManagementMap );
         }
-
         return builder;
     }
 }

@@ -266,11 +266,10 @@ public class TreeMojo
                 // have already been resolved.
                 getLog().info( "Verbose not supported since maven-dependency-plugin 3.0" );
                 VerboseDependencyGraphBuilder builder = new VerboseDependencyGraphBuilder( );
-                org.eclipse.aether.graph.DependencyNode verboseRootNode = builder.buildVerboseGraph( project,
-                        repositorySystem );
+                org.eclipse.aether.graph.DependencyNode verboseRootNode = builder.buildVerboseGraphNoManagement( project
+                        , repositorySystem );
 
                 rootNode = convertToCustomDependencyNode( verboseRootNode );
-
                 VerboseGraphSerializer serializer = new VerboseGraphSerializer();
                 dependencyTreeString = serializer.serialize( verboseRootNode, project.getDependencyManagement() );
             }
