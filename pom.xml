@@ -202,7 +202,7 @@ under the License.
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-analyzer</artifactId>
       <!-- NEED TO WAIT FOR RELEASE -->
-      <version>1.11.3-SNAPSHOT</version>
+      <version>1.11.2</version>
       <exclusions>
         <exclusion>
           <artifactId>maven-project</artifactId>
@@ -312,6 +312,27 @@ under the License.
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- VerboseGraphBuilder & VerboseSerializer -->
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-transport-file</artifactId>
+      <version>${mavenResolverVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-transport-http</artifactId>
+      <version>${mavenResolverVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-api</artifactId>
+      <version>${mavenResolverVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-util</artifactId>
+      <version>${mavenResolverVersion}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -331,35 +352,6 @@ under the License.
       <version>${jettyVersion}</version>
       <scope>test</scope>
     </dependency>
-
-
-    <!-- Needed for BuildingRequest Mojo -->
-    <dependency>
-      <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-util</artifactId>
-      <version>${mavenResolverVersion}</version>
-    </dependency>
-    <!-- Serializing DependencyGraph -->
-    <dependency>
-      <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-api</artifactId>
-      <version>${mavenResolverVersion}</version>
-    </dependency>
-
-
-    <!-- Graph Builder -->
-    <dependency>
-      <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-transport-file</artifactId>
-      <version>${mavenResolverVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-transport-http</artifactId>
-      <version>${mavenResolverVersion}</version>
-    </dependency>
-
-
   </dependencies>
 
   <build>
@@ -381,6 +373,8 @@ under the License.
               <exclude>src/it/projects/tree-multimodule/module-b/expected.txt</exclude>
               <exclude>src/it/projects/tree-verbose/expected*.txt</exclude>
               <exclude>src/it/projects/tree-verbose-small/expected.txt</exclude>
+              <!-- These files contain expected versions for unit tests -->
+              <exclude>src/test/resources/unit/verbose-serializer-test/*</exclude>
               <!--
                 These files contain real repository artifacts.
               -->
@@ -425,31 +419,6 @@ under the License.
           </systemPropertyVariables>
         </configuration>
       </plugin>
-      <!-- Shading required due to asm diamond dependency when upgrading to Maven 3.1 -->
-      <!--<plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.4</version>
-        <configuration>
-          <shadedArtifactAttached>false</shadedArtifactAttached>
-          <createDependencyReducedPom>true</createDependencyReducedPom>
-
-          <relocations>
-            <relocation>
-              <pattern>org.objectweb.asm</pattern>
-              <shadedPattern>plugin.org.objectweb.asm</shadedPattern>
-            </relocation>
-          </relocations>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>-->
     </plugins>
   </build>
 
@@ -474,11 +443,10 @@ under the License.
                 <pomExclude>setup-custom-ear-lifecycle\pom.xml</pomExclude>
               </pomExcludes>
               <pomIncludes>
-                <!--<pomInclude>*/pom.xml</pomInclude>
+                <pomInclude>*/pom.xml</pomInclude>
                 <pomInclude>analyze*/pom.xml</pomInclude>
                 <pomInclude>analyze-testDependencyWithNonTestScope/pom.xml</pomInclude>
-                <pomInclude>purge-local-repository-without-pom</pomInclude>-->
-                <pomInclude>tree-verbose*</pomInclude>
+                <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
               <!-- for mrm -->
               <settingsFile>src/it/mrm/settings.xml</settingsFile>

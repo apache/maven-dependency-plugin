@@ -267,7 +267,7 @@ public class TreeMojo
 
                 rootNode = convertToCustomDependencyNode( verboseRootNode );
                 VerboseGraphSerializer serializer = new VerboseGraphSerializer();
-                dependencyTreeString = serializer.serialize( verboseRootNode, project.getDependencyManagement() );
+                dependencyTreeString = serializer.serialize( verboseRootNode );
             }
             else
             {

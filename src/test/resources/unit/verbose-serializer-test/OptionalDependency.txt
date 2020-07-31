@@ -1,0 +1,3 @@
+com.google:rootArtifact:jar:1.0.0
++- (org.apache:left:xml:0.1-SNAPSHOT:test - omitted due to optional dependency)
+\- org.xyz:right:zip:1:provided

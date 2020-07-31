@@ -1,0 +1,11 @@
+com.google:rootArtifact:jar:1.0.0
++- org.apache:left:xml:0.1-SNAPSHOT:test
+|  +- org.maven:a4:jar:2.2.1:system
+|  \- com.google:a5:zip:0:import
+|     \- com.xyz:a6:xml:1.2.1:provided
+|        \- com.example:a7:jar:2.2.2:provided
+|           +- com.comm:a7:jar:1:compile
+|           |  \- com.example:a8:xml:2.1:compile
+|           \- (com.comm:a7:jar:1:compile - omitted for duplicate)
+\- org.xyz:right:zip:1:provided
+   \- com.xyz:a9:xml:1.2:runtime

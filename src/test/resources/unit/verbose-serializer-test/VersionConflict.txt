@@ -1,0 +1,4 @@
+com.google:rootArtifact:jar:1.0.0
++- org.apache:left:xml:0.1-SNAPSHOT:test
+|  \- (org.apache:left:xml:0.3.1:compile - omitted for conflict with 0.1-SNAPSHOT)
+\- com.google:artifact:jar:2.0.0:test
