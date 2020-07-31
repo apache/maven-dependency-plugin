@@ -22,3 +22,17 @@ updates:
     interval: daily
     time: '04:00'
   open-pull-requests-limit: 10
+  ignore:
+# ignore Java 8+ dependencies
+    - dependency-name: org.mockito:mockito-core
+      versions:
+      - ">= 3.0"
+    - dependency-name: org.apache.commons:commons-lang3
+      versions:
+      - ">= 3.9"
+    - dependency-name: org.apache.commons:commons-collections4
+      versions:
+      - ">= 4.3"
+    - dependency-name: org.eclipse.jetty:*
+      versions:
+      - ">= 9.3"

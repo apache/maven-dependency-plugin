@@ -272,7 +272,7 @@ public class ListClassesMojo
         return buildingRequest;
     }
 
-    protected ArtifactCoordinate toArtifactCoordinate( DependableCoordinate dependableCoordinate )
+    private ArtifactCoordinate toArtifactCoordinate( DependableCoordinate dependableCoordinate )
     {
         ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler( dependableCoordinate.getType() );
         DefaultArtifactCoordinate artifactCoordinate = new DefaultArtifactCoordinate();
