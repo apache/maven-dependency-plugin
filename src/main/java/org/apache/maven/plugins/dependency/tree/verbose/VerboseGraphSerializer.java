@@ -1,26 +1,22 @@
 package org.apache.maven.plugins.dependency.tree.verbose;
 
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ *  Copyright 2020 Google LLC.
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
  */
 
-
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.graph.DependencyNode;
@@ -49,19 +45,9 @@ public final class VerboseGraphSerializer
         Map<String, String> coordinateVersionMap = new HashMap<>();
         StringBuilder builder = new StringBuilder();
 
-        Map<String, Dependency> dependencyManagementMap = createDependencyManagementMap( dependencyManagement );
-        // need to process dependencyManagement first
-        for ( DependencyNode node : root.getChildren() )
-        {
-            for ( DependencyNode transitiveDependency : node.getChildren() )
-            {
-                applyDependencyManagement( transitiveDependency, dependencyManagementMap );
-            }
-        }
-
         // Use BFS to mirror how Maven resolves dependencies and use DFS to print the tree easily
         Map<DependencyNode, String> nodeErrors = getNodeConflictMessagesBfs( root, coordinateStrings,
-                coordinateVersionMap, dependencyManagementMap );
+                coordinateVersionMap );
 
         // deal with root first
         Artifact rootArtifact = root.getArtifact();
@@ -73,88 +59,14 @@ public final class VerboseGraphSerializer
         {
             if ( i == root.getChildren().size() - 1 )
             {
-                dfsPrint( root.getChildren().get( i ), LINE_START_LAST_CHILD, true, builder, nodeErrors,
-                        dependencyManagementMap );
+                dfsPrint( root.getChildren().get( i ), LINE_START_LAST_CHILD, false, builder, nodeErrors );
             }
             else
             {
-                dfsPrint( root.getChildren().get( i ), LINE_START_CHILD, true, builder, nodeErrors,
-                        dependencyManagementMap );
+                dfsPrint( root.getChildren().get( i ), LINE_START_CHILD, false, builder, nodeErrors );
             }
         }
         return builder.toString();
-    }
-
-    private void applyDependencyManagement( DependencyNode node,
-                                                      Map<String, Dependency> dependencyManagementMap )
-    {
-        if ( dependencyManagementMap.containsKey( getDependencyManagementCoordinate( node.getArtifact() ) ) )
-        {
-            Dependency manager = dependencyManagementMap.get( getDependencyManagementCoordinate( node.getArtifact() ) );
-            Map<String, String> artifactProperties = new HashMap<>();
-            // Artifact.getProperties returns an immutable map so must copy over to a mutable map
-            for ( Map.Entry<String, String> entry : node.getArtifact().getProperties().entrySet() )
-            {
-                artifactProperties.put( entry.getKey(), entry.getValue() );
-            }
-
-            if ( !node.getArtifact().getVersion().equals( manager.getVersion() ) )
-            {
-                artifactProperties.put( "version", manager.getVersion() );
-            }
-            if ( !node.getDependency().getScope().equals( manager.getScope() ) )
-            {
-                artifactProperties.put( "scope", manager.getScope() );
-            }
-
-            node.getArtifact().setProperties( artifactProperties );
-        }
-
-        for ( DependencyNode child : node.getChildren() )
-        {
-            applyDependencyManagement( child, dependencyManagementMap );
-        }
-    }
-
-    private static Map<String, Dependency> createDependencyManagementMap(
-            DependencyManagement dependencyManagement )
-    {
-        Map<String, Dependency> dependencyManagementMap = new HashMap<>();
-
-        if ( dependencyManagement == null )
-        {
-            return dependencyManagementMap;
-        }
-
-        for ( Dependency dependency : dependencyManagement.getDependencies() )
-        {
-            dependencyManagementMap.put( getDependencyManagementCoordinate( dependency ), dependency );
-        }
-        return dependencyManagementMap;
-    }
-
-    private static String getDependencyManagementCoordinate( org.eclipse.aether.artifact.Artifact artifact )
-    {
-        StringBuilder string = new StringBuilder();
-        string.append( artifact.getGroupId() ).append( ":" ).append( artifact.getArtifactId() ).append( ":" )
-                .append( artifact.getExtension() );
-        if ( artifact.getClassifier() != null && !artifact.getClassifier().equals( "" ) )
-        {
-            string.append( ":" ).append( artifact.getClassifier() );
-        }
-        return string.toString();
-    }
-
-    private static String getDependencyManagementCoordinate( Dependency dependency )
-    {
-        StringBuilder string = new StringBuilder();
-        string.append( dependency.getGroupId() ).append( ":" ).append( dependency.getArtifactId() )
-                .append( ":" ).append( dependency.getType() );
-        if ( dependency.getClassifier() != null && !dependency.getClassifier().equals( "" ) )
-        {
-            string.append( ":" ).append( dependency.getClassifier() );
-        }
-        return string.toString();
     }
 
     private static String getDependencyCoordinate( DependencyNode node )
@@ -236,37 +148,8 @@ public final class VerboseGraphSerializer
         return null;
     }
 
-    private StringBuilder callDfsPrint( DependencyNode node, String start, StringBuilder builder,
-                                        Map<DependencyNode, String> nodeErrors,
-                                        Map<String, Dependency> dependencyManagementMap )
-    {
-        for ( int i = 0; i < node.getChildren().size(); i++ )
-        {
-            if ( start.endsWith( LINE_START_CHILD ) )
-            {
-                start = start.replace( LINE_START_CHILD, "|  " );
-            }
-            else if ( start.endsWith( LINE_START_LAST_CHILD ) )
-            {
-                start = start.replace( LINE_START_LAST_CHILD, "   " );
-            }
-
-            if ( i == node.getChildren().size() - 1 )
-            {
-                dfsPrint( node.getChildren().get( i ), start.concat( LINE_START_LAST_CHILD ), false, builder,
-                        nodeErrors, dependencyManagementMap );
-            }
-            else
-            {
-                dfsPrint( node.getChildren().get( i ), start.concat( LINE_START_CHILD ), false, builder,
-                        nodeErrors, dependencyManagementMap );
-            }
-        }
-        return builder;
-    }
-
     private Map<DependencyNode, String> getNodeConflictMessagesBfs( DependencyNode root, Set<String> coordinateStrings
-            , Map<String, String> coordinateVersionMap, Map<String, Dependency> dependencyManagementMap )
+            , Map<String, String> coordinateVersionMap )
     {
         Map<DependencyNode, String> nodeErrors = new HashMap<>();
         Set<DependencyNode> visitedNodes = new HashSet<>( 512 );
@@ -345,29 +228,28 @@ public final class VerboseGraphSerializer
         return nodeErrors;
     }
 
-    private StringBuilder dfsPrint( DependencyNode node, String start, boolean firstLevel, StringBuilder builder,
-                                    Map<DependencyNode, String> nodeErrors,
-                                    Map<String, Dependency> dependencyManagementMap )
+    private StringBuilder dfsPrint( DependencyNode node, String start, boolean transitive, StringBuilder builder,
+                                    Map<DependencyNode, String> nodeErrors )
     {
         builder.append( start );
         if ( node.getArtifact() == null )
         {
             // Should never reach hit this condition with a proper graph sent in
             builder.append( "Null Artifact Node" ).append( System.lineSeparator() );
-            callDfsPrint( node, start, builder, nodeErrors, dependencyManagementMap );
+            callDfsPrint( node, start, builder, nodeErrors );
         }
 
         String coordString = "";
-
         boolean messageAdded = false;
-        if ( !firstLevel && node.getArtifact().getProperties().containsKey( "preManagedVersion" ) )
+
+        if ( transitive && node.getArtifact().getProperties().containsKey( "preManagedVersion" ) )
         {
             coordString = coordString.concat( " - version managed from "
                     + node.getArtifact().getProperties().get( "preManagedVersion" ) );
             messageAdded = true;
         }
 
-        if ( !firstLevel && node.getArtifact().getProperties().containsKey( "preManagedScope" ) )
+        if ( transitive && node.getArtifact().getProperties().containsKey( "preManagedScope" ) )
         {
             if ( messageAdded )
             {
@@ -384,9 +266,8 @@ public final class VerboseGraphSerializer
 
         coordString = getDependencyCoordinate( node ) + coordString;
 
-        if ( node.getDependency().getScope().equals( "test" ) && !firstLevel )
+        if ( node.getDependency().getScope().equals( "test" ) && transitive )
         {
-            // don't want transitive test dependencies included
             return builder;
         }
         else if ( nodeErrors.get( node ) != null )
@@ -406,7 +287,35 @@ public final class VerboseGraphSerializer
         else
         {
             builder.append( coordString ).append( System.lineSeparator() );
-            callDfsPrint( node, start, builder, nodeErrors, dependencyManagementMap );
+            callDfsPrint( node, start, builder, nodeErrors );
+        }
+        return builder;
+    }
+
+    private StringBuilder callDfsPrint( DependencyNode node, String start, StringBuilder builder,
+                                        Map<DependencyNode, String> nodeErrors )
+    {
+        for ( int i = 0; i < node.getChildren().size(); i++ )
+        {
+            if ( start.endsWith( LINE_START_CHILD ) )
+            {
+                start = start.replace( LINE_START_CHILD, "|  " );
+            }
+            else if ( start.endsWith( LINE_START_LAST_CHILD ) )
+            {
+                start = start.replace( LINE_START_LAST_CHILD, "   " );
+            }
+
+            if ( i == node.getChildren().size() - 1 )
+            {
+                dfsPrint( node.getChildren().get( i ), start.concat( LINE_START_LAST_CHILD ), true, builder,
+                        nodeErrors );
+            }
+            else
+            {
+                dfsPrint( node.getChildren().get( i ), start.concat( LINE_START_CHILD ), true, builder,
+                        nodeErrors );
+            }
         }
         return builder;
     }

@@ -261,9 +261,6 @@ public class TreeMojo
 
             if ( verbose )
             {
-                // To fix we probably need a different DependencyCollector in Aether, which doesn't remove nodes which
-                // have already been resolved.
-                getLog().info( "Verbose not supported since maven-dependency-plugin 3.0" );
                 VerboseDependencyGraphBuilder builder = new VerboseDependencyGraphBuilder( );
                 org.eclipse.aether.graph.DependencyNode verboseRootNode = builder.buildVerboseGraphNoManagement( project
                         , repositorySystem );
