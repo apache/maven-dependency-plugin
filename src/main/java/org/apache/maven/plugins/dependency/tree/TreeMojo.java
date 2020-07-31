@@ -60,7 +60,6 @@ import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyN
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.util.graph.manager.DependencyManagerUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -283,7 +282,6 @@ public class TreeMojo
                 dependencyTreeString = serializeDependencyTree( rootNode );
             }
 
-            dependencyTreeString = serializeDependencyTree( rootNode );
             if ( outputFile != null )
             {
                 DependencyUtil.write( dependencyTreeString, outputFile, this.appendOutput, getLog() );

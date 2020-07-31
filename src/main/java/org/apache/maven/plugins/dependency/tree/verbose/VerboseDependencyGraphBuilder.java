@@ -19,7 +19,6 @@ package org.apache.maven.plugins.dependency.tree.verbose;
  * under the License.
  */
 
-import org.apache.commons.chain.web.MapEntry;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Repository;
@@ -129,7 +128,10 @@ public class VerboseDependencyGraphBuilder
 
         for ( DependencyNode child : root.getChildren() )
         {
-            applyDependencyManagementDfs( dependencyManagementMap, child );
+            for ( DependencyNode nonTransitiveDependencyNode : child.getChildren() )
+            {
+                applyDependencyManagementDfs( dependencyManagementMap, nonTransitiveDependencyNode );
+            }
         }
     }
 
@@ -149,16 +151,17 @@ public class VerboseDependencyGraphBuilder
             if ( !manager.getVersion().equals( node.getArtifact().getVersion() ) )
             {
                 artifactProperties.put( "preManagedVersion", node.getArtifact().getVersion() );
-                node.getArtifact().setVersion( manager.getVersion() );
+                node.setArtifact( node.getArtifact().setVersion( manager.getVersion() ) );
             }
 
             if ( !manager.getScope().equals( node.getDependency().getScope() ) )
             {
                 artifactProperties.put( "preManagedScope", node.getDependency().getScope() );
-                node.getDependency().setScope( manager.getScope() );
+                // be aware this does not actually change the node's scope, it may need to be fixed in the future
+                artifactProperties.put( "managedScope", manager.getScope() );
             }
-            node.setArtifact( node.getArtifact().setProperties( artifactProperties ));
-            node.getDependency().getArtifact().setProperties( artifactProperties );
+            node.setArtifact( node.getArtifact().setProperties( artifactProperties ) );
+            node.getDependency().setArtifact( node.getDependency().getArtifact().setProperties( artifactProperties ) );
         }
         for ( DependencyNode child : node.getChildren() )
         {
@@ -168,11 +171,13 @@ public class VerboseDependencyGraphBuilder
 
 
 
+
+
     private static Map<String, org.apache.maven.model.Dependency> createDependencyManagementMap(
             DependencyManagement dependencyManagement )
     {
         Map<String, org.apache.maven.model.Dependency> dependencyManagementMap = new HashMap<>();
-        if(dependencyManagement == null)
+        if ( dependencyManagement == null )
         {
             return dependencyManagementMap;
         }

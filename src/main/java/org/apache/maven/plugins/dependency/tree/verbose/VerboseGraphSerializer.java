@@ -168,20 +168,10 @@ public final class VerboseGraphSerializer
                     + artifact.getVersion();
         }
 
-        String version, scope;
-        // Use the properties field for dependency management version/scope
-        if ( artifact.getProperties().containsKey( "version" ) )
+        String scope;
+        if ( artifact.getProperties().containsKey( "managedScope" ) )
         {
-            version = artifact.getProperties().get( "version" );
-        }
-        else
-        {
-            version = artifact.getVersion();
-        }
-
-        if ( artifact.getProperties().containsKey( "scope" ) )
-        {
-            scope = artifact.getProperties().get( "scope" );
+            scope = artifact.getProperties().get( "managedScope" );
         }
         else
         {
@@ -189,7 +179,7 @@ public final class VerboseGraphSerializer
         }
 
         String coords = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getExtension() + ":"
-                + version;
+                + artifact.getVersion();
 
         if ( scope != null && !scope.isEmpty() )
         {
@@ -370,80 +360,29 @@ public final class VerboseGraphSerializer
         String coordString = "";
 
         boolean messageAdded = false;
-        String version, scope;
-        if ( !firstLevel && node.getArtifact().getProperties().containsKey( "version" ) )
+        if ( !firstLevel && node.getArtifact().getProperties().containsKey( "preManagedVersion" ) )
         {
-            version = node.getArtifact().getProperties().get( "version" );
-            coordString = coordString.concat( " - version managed from " + node.getArtifact().getVersion() );
+            coordString = coordString.concat( " - version managed from "
+                    + node.getArtifact().getProperties().get( "preManagedVersion" ) );
             messageAdded = true;
         }
-        else
-        {
-            version = node.getArtifact().getVersion();
-        }
 
-        if ( !firstLevel && node.getArtifact().getProperties().containsKey( "scope" ) )
+        if ( !firstLevel && node.getArtifact().getProperties().containsKey( "preManagedScope" ) )
         {
-            scope = node.getArtifact().getProperties().get( "scope" );
             if ( messageAdded )
             {
-                coordString = coordString.concat( "; scope managed from " + node.getDependency().getScope() );
+                coordString = coordString.concat( "; " );
             }
             else
             {
-                coordString = coordString.concat( " - scope managed from " + node.getDependency().getScope() );
+                coordString = coordString.concat( " - " );
                 messageAdded = true;
             }
-        }
-        else
-        {
-            scope = node.getDependency().getScope();
+            coordString = coordString.concat( "scope managed from "
+                    + node.getArtifact().getProperties().get( "preManagedScope" ) );
         }
 
-        /*if ( !firstLevel && dependencyManagementMap.containsKey( getDependencyManagementCoordinate( node.getArtifact() )
-        ) )
-        {
-            Dependency manager = dependencyManagementMap.get( getDependencyManagementCoordinate( node.getArtifact() ) );
-
-            if ( !manager.getVersion().equals( node.getArtifact().getVersion() ) )
-            {
-                version = manager.getVersion();
-                coordString = coordString.concat( " - version managed from " + node.getArtifact().getVersion() );
-                messageAdded = true;
-            }
-            else
-            {
-                version = node.getArtifact().getVersion();
-            }
-
-            if ( !manager.getScope().equals( node.getDependency().getScope() ) )
-            {
-                scope = manager.getScope();
-                if ( messageAdded )
-                {
-                    coordString = coordString.concat( "; scope managed from " + node.getDependency().getScope() );
-                }
-                else
-                {
-                    coordString = coordString.concat( " - scope managed from " + node.getDependency().getScope() );
-                    messageAdded = true;
-                }
-            }
-            else
-            {
-                scope = node.getDependency().getScope();
-            }
-
-            coordString = node.getArtifact().getGroupId() + ":" + node.getArtifact().getArtifactId() + ":"
-                    + node.getArtifact().getExtension() + ":" + version + ":" + scope + coordString;
-        }
-        else
-        {
-            coordString = getDependencyCoordinate( node );
-        }*/
-
-        coordString = node.getArtifact().getGroupId() + ":" + node.getArtifact().getArtifactId() + ":"
-                + node.getArtifact().getExtension() + ":" + version + ":" + scope + coordString;
+        coordString = getDependencyCoordinate( node ) + coordString;
 
         if ( node.getDependency().getScope().equals( "test" ) && !firstLevel )
         {
