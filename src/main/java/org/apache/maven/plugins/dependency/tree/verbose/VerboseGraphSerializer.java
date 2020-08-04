@@ -39,7 +39,7 @@ public final class VerboseGraphSerializer
 {
     private static final String LINE_START_LAST_CHILD = "\\- ", LINE_START_CHILD = "+- ";
     private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",
-            MANAGED_SCOPE="managedScope";
+            MANAGED_SCOPE = "managedScope";
 
     public String serialize( DependencyNode root )
     {
@@ -258,27 +258,27 @@ public final class VerboseGraphSerializer
 
         coordString = getDependencyCoordinate( node ) + coordString;
 
-        if ( node.getDependency().getScope().equals( "test" ) && transitive )
+        if ( !( node.getDependency().getScope().equals( "test" ) && transitive ) )
         {
-        }
-        else if ( nodeErrors.get( node ) != null )
-        {
-            builder.append( "(" );
-            if ( messageAdded )
+            if ( nodeErrors.get( node ) != null )
             {
-                builder.append( coordString ).append( "; " ).append( nodeErrors.get( node ) );
+                builder.append( "(" );
+                if ( messageAdded )
+                {
+                    builder.append( coordString ).append( "; " ).append( nodeErrors.get( node ) );
+                }
+                else
+                {
+                    builder.append( coordString ).append( " - " ).append( nodeErrors.get( node ) );
+                }
+                builder.append( ")" );
+                builder.append( System.lineSeparator() );
             }
             else
             {
-                builder.append( coordString ).append( " - " ).append( nodeErrors.get( node ) );
+                builder.append( coordString ).append( System.lineSeparator() );
+                callDfsPrint( node, start, builder, nodeErrors );
             }
-            builder.append( ")" );
-            builder.append( System.lineSeparator() );
-        }
-        else
-        {
-            builder.append( coordString ).append( System.lineSeparator() );
-            callDfsPrint( node, start, builder, nodeErrors );
         }
     }
 

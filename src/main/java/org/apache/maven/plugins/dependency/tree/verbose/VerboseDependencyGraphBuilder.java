@@ -60,7 +60,7 @@ public class VerboseDependencyGraphBuilder
     private final List<RemoteRepository> repositories;
 
     private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",
-        MANAGED_SCOPE="managedScope";
+        MANAGED_SCOPE = "managedScope";
 
 
     public static final RemoteRepository CENTRAL = new RemoteRepository.Builder( "central", "default",

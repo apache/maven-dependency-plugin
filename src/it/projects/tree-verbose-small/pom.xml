@@ -29,7 +29,7 @@
 
   <name>VerboseTest2</name>
   <description>
-    Test2 verbose dependency:tree with actual Maven version.
+    Test verbose dependency:tree with current dependency-plugin Maven version.
   </description>
 
   <properties>
