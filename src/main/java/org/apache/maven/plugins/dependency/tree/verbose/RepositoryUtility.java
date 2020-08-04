@@ -181,28 +181,23 @@ public final class RepositoryUtility
     private static VersionRangeResult findVersionRange( RepositorySystem repositorySystem,
                                                         RepositorySystemSession session,
                                                         String groupId, String artifactId )
-            throws MavenRepositoryException
+            throws VersionRangeResolutionException
     {
 
         Artifact artifactWithVersionRange = new DefaultArtifact( groupId, artifactId, null, "(0,]" );
         VersionRangeRequest request = new VersionRangeRequest( artifactWithVersionRange,
                 Arrays.asList( RepositoryUtility.CENTRAL ), null );
 
-        try
-        {
-            return repositorySystem.resolveVersionRange( session, request );
-        }
-        catch ( VersionRangeResolutionException ex )
-        {
-            throw new MavenRepositoryException( ex );
-        }
+
+        return repositorySystem.resolveVersionRange( session, request );
+
     }
 
     /**
      * Returns the highest version for {@code groupId:artifactId} in {@code repositorySystem}.
      */
     static Version findHighestVersion( RepositorySystem repositorySystem, RepositorySystemSession session,
-                                       String groupId, String artifactId ) throws MavenRepositoryException
+                                       String groupId, String artifactId ) throws VersionRangeResolutionException
     {
         return findVersionRange( repositorySystem, session, groupId, artifactId ).getHighestVersion();
     }
@@ -211,7 +206,7 @@ public final class RepositoryUtility
      * Returns the latest Maven coordinates for {@code groupId:artifactId} in {@code repositorySystem}.
      */
     public static String findLatestCoordinates( RepositorySystem repositorySystem, String groupId, String artifactId )
-            throws MavenRepositoryException
+            throws VersionRangeResolutionException
     {
         RepositorySystemSession session = RepositoryUtility.newSession( repositorySystem );
         String highestVersion = findHighestVersion( repositorySystem, session, groupId, artifactId ).toString();
