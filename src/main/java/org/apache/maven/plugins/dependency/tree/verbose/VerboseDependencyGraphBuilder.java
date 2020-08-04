@@ -50,7 +50,6 @@ import static org.apache.maven.plugins.dependency.tree.verbose.RepositoryUtility
 /**
  * Builds the VerboseDependencyGraph
  */
-
 public class VerboseDependencyGraphBuilder
 {
     private RepositorySystem repositorySystem;
