@@ -226,7 +226,7 @@ public final class VerboseGraphSerializer
         builder.append( start );
         if ( node.getArtifact() == null )
         {
-            // Should never reach hit this condition with a proper graph sent in
+            // Should never hit this condition with a proper graph sent in
             builder.append( "Null Artifact Node" ).append( System.lineSeparator() );
             callDfsPrint( node, start, builder, nodeErrors );
         }
