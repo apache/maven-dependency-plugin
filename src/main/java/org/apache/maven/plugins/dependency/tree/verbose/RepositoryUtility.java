@@ -52,7 +52,7 @@ import java.util.Set;
 
 
 /**
- * Aether initialization. This is based on Apache Maven Resolver 1.4.2 or later. There are many other versions of Aether
+ * Aether initialization. This uses Maven Resolver 1.4.2 or later. There are many other versions of Aether
  * from Sonatype and the Eclipse Project, but this is the current one.
  */
 public final class RepositoryUtility

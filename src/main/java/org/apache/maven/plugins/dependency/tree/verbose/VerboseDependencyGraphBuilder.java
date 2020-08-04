@@ -59,6 +59,10 @@ public class VerboseDependencyGraphBuilder
      */
     private final List<RemoteRepository> repositories;
 
+    private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",
+        MANAGED_SCOPE="managedScope";
+
+
     public static final RemoteRepository CENTRAL = new RemoteRepository.Builder( "central", "default",
             "https://repo1.maven.org/maven2/" ).build();
 
@@ -149,15 +153,15 @@ public class VerboseDependencyGraphBuilder
 
             if ( !manager.getVersion().equals( node.getArtifact().getVersion() ) )
             {
-                artifactProperties.put( "preManagedVersion", node.getArtifact().getVersion() );
+                artifactProperties.put( PRE_MANAGED_VERSION, node.getArtifact().getVersion() );
                 node.setArtifact( node.getArtifact().setVersion( manager.getVersion() ) );
             }
 
             if ( !manager.getScope().equals( node.getDependency().getScope() ) )
             {
-                artifactProperties.put( "preManagedScope", node.getDependency().getScope() );
+                artifactProperties.put( PRE_MANAGED_SCOPE, node.getDependency().getScope() );
                 // be aware this does not actually change the node's scope, it may need to be fixed in the future
-                artifactProperties.put( "managedScope", manager.getScope() );
+                artifactProperties.put( MANAGED_SCOPE, manager.getScope() );
             }
             node.setArtifact( node.getArtifact().setProperties( artifactProperties ) );
             node.getDependency().setArtifact( node.getDependency().getArtifact().setProperties( artifactProperties ) );

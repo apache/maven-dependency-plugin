@@ -37,8 +37,9 @@ import java.util.Set;
  */
 public final class VerboseGraphSerializer
 {
-    private static final String LINE_START_LAST_CHILD = "\\- ";
-    private static final String LINE_START_CHILD = "+- ";
+    private static final String LINE_START_LAST_CHILD = "\\- ", LINE_START_CHILD = "+- ";
+    private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",
+            MANAGED_SCOPE="managedScope";
 
     public String serialize( DependencyNode root )
     {
@@ -82,9 +83,9 @@ public final class VerboseGraphSerializer
         }
 
         String scope;
-        if ( artifact.getProperties().containsKey( "managedScope" ) )
+        if ( artifact.getProperties().containsKey( MANAGED_SCOPE ) )
         {
-            scope = artifact.getProperties().get( "managedScope" );
+            scope = artifact.getProperties().get( MANAGED_SCOPE );
         }
         else
         {
@@ -129,18 +130,8 @@ public final class VerboseGraphSerializer
 
         for ( String scope : scopes )
         {
-            String version;
-            if ( artifact.getProperties().containsKey( "version" ) )
-            {
-                version = artifact.getProperties().get( "version" );
-            }
-            else
-            {
-                version = artifact.getVersion();
-            }
-
             String coordinate = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getExtension()
-                    + ":" + version + ":" + scope;
+                    + ":" + artifact.getVersion() + ":" + scope;
             if ( coordinateStrings.contains( coordinate ) )
             {
                 return scope;
@@ -229,8 +220,8 @@ public final class VerboseGraphSerializer
         return nodeErrors;
     }
 
-    private StringBuilder dfsPrint( DependencyNode node, String start, boolean transitive, StringBuilder builder,
-                                    Map<DependencyNode, String> nodeErrors )
+    private void dfsPrint( DependencyNode node, String start, boolean transitive, StringBuilder builder,
+                           Map<DependencyNode, String> nodeErrors )
     {
         builder.append( start );
         if ( node.getArtifact() == null )
@@ -243,14 +234,14 @@ public final class VerboseGraphSerializer
         String coordString = "";
         boolean messageAdded = false;
 
-        if ( transitive && node.getArtifact().getProperties().containsKey( "preManagedVersion" ) )
+        if ( transitive && node.getArtifact().getProperties().containsKey( PRE_MANAGED_VERSION ) )
         {
             coordString = coordString.concat( " - version managed from "
-                    + node.getArtifact().getProperties().get( "preManagedVersion" ) );
+                    + node.getArtifact().getProperties().get( PRE_MANAGED_VERSION ) );
             messageAdded = true;
         }
 
-        if ( transitive && node.getArtifact().getProperties().containsKey( "preManagedScope" ) )
+        if ( transitive && node.getArtifact().getProperties().containsKey( PRE_MANAGED_SCOPE ) )
         {
             if ( messageAdded )
             {
@@ -262,14 +253,13 @@ public final class VerboseGraphSerializer
                 messageAdded = true;
             }
             coordString = coordString.concat( "scope managed from "
-                    + node.getArtifact().getProperties().get( "preManagedScope" ) );
+                    + node.getArtifact().getProperties().get( PRE_MANAGED_SCOPE ) );
         }
 
         coordString = getDependencyCoordinate( node ) + coordString;
 
         if ( node.getDependency().getScope().equals( "test" ) && transitive )
         {
-            return builder;
         }
         else if ( nodeErrors.get( node ) != null )
         {
@@ -290,11 +280,10 @@ public final class VerboseGraphSerializer
             builder.append( coordString ).append( System.lineSeparator() );
             callDfsPrint( node, start, builder, nodeErrors );
         }
-        return builder;
     }
 
-    private StringBuilder callDfsPrint( DependencyNode node, String start, StringBuilder builder,
-                                        Map<DependencyNode, String> nodeErrors )
+    private void callDfsPrint( DependencyNode node, String start, StringBuilder builder,
+                               Map<DependencyNode, String> nodeErrors )
     {
         for ( int i = 0; i < node.getChildren().size(); i++ )
         {
@@ -318,6 +307,5 @@ public final class VerboseGraphSerializer
                         nodeErrors );
             }
         }
-        return builder;
     }
 }
