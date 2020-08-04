@@ -437,8 +437,6 @@ under the License.
               <projectsDirectory>src/it/projects</projectsDirectory>
               <pomExcludes>
                 <pomExclude>purge-local-repository-bad-pom/pom.xml</pomExclude>
-                <!-- verbose was using Maven2 code, removed with MDEP-494, requires MSHARED-339 to be fixed first -->
-                <!--<pomExclude>tree-verbose/pom.xml</pomExclude>-->
                 <pomExclude>setup-custom-ear-lifecycle\pom.xml</pomExclude>
               </pomExcludes>
               <pomIncludes>
@@ -452,10 +450,8 @@ under the License.
               <filterProperties>
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
-
+              
               <addTestClassPath>true</addTestClassPath>
-              <!--<mavenExecutable>${maven.home}/bin/mvnDebug</mavenExecutable>-->
-
             </configuration>
           </plugin>
           <plugin>
