@@ -450,7 +450,7 @@ under the License.
               <filterProperties>
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
-              
+
               <addTestClassPath>true</addTestClassPath>
             </configuration>
           </plugin>
