@@ -261,9 +261,9 @@ public class TreeMojo
 
             if ( verbose )
             {
-                VerboseDependencyGraphBuilder builder = new VerboseDependencyGraphBuilder( projectRepos );
+                VerboseDependencyGraphBuilder builder = new VerboseDependencyGraphBuilder(  );
                 org.eclipse.aether.graph.DependencyNode verboseRootNode = builder.buildVerboseGraphNoManagement( project
-                        , repositorySystem, repoSession );
+                        , repositorySystem );
 
                 rootNode = convertToCustomDependencyNode( verboseRootNode );
                 VerboseGraphSerializer serializer = new VerboseGraphSerializer();
