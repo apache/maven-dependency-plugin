@@ -90,6 +90,7 @@ under the License.
 
   <properties>
     <mavenVersion>3.1.1</mavenVersion>
+    <mavenResolverVersion>1.4.2</mavenResolverVersion> 
     <doxiaVersion>1.9.1</doxiaVersion>
     <doxiaSiteVersion>1.9.2</doxiaSiteVersion>
     <jettyVersion>9.2.28.v20190418</jettyVersion>
@@ -110,7 +111,6 @@ under the License.
 
   <dependencies>
     <!-- maven -->
-    <!-- Remove once deprecated code has been replaced/removed  -->
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-artifact</artifactId>
@@ -135,6 +135,26 @@ under the License.
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-repository-metadata</artifactId>
       <version>${mavenVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-transport-file</artifactId>
+      <version>${mavenResolverVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-transport-http</artifactId>
+      <version>${mavenResolverVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-api</artifactId>
+      <version>${mavenResolverVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-util</artifactId>
+      <version>${mavenResolverVersion}</version>
     </dependency>
 
     <!-- reporting -->
