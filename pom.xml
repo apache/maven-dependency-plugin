@@ -210,7 +210,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-analyzer</artifactId>
-      <version>1.11.2</version>
+      <version>1.11.3-SNAPSHOT</version>
       <exclusions>
         <exclusion>
           <artifactId>maven-project</artifactId>
@@ -435,6 +435,7 @@ under the License.
               <filterProperties>
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
+              <addTestClassPath>true</addTestClassPath>
             </configuration>
           </plugin>
           <plugin>

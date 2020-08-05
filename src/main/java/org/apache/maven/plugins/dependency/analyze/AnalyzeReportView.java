@@ -108,6 +108,24 @@ public class AnalyzeReportView
         }
         sink.section2_();
 
+        // Generate Non-Test Scoped Test Dependencies:
+        sink.section2();
+        sink.sectionTitle2();
+        sink.text( "Compile Scoped Test Dependencies" );
+        sink.sectionTitle2_();
+        if ( analysis.getTestArtifactsWithNonTestScope().isEmpty() )
+        {
+            sink.paragraph();
+            sink.text( "None" );
+            sink.paragraph_();
+            sink.horizontalRule();
+        }
+        else
+        {
+            generateDependenciesTable( sink, analysis.getTestArtifactsWithNonTestScope().iterator() );
+        }
+        sink.section2_();
+
         sink.section1_();
 
         // Closing the report

@@ -49,7 +49,7 @@ import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 
 /**
  * Analyzes the dependencies of this project and determines which are: used and declared; used and undeclared; unused
- * and declared.
+ * and declared; compile scoped but only used in tests.
  *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @since 2.0-alpha-5
@@ -318,6 +318,8 @@ public abstract class AbstractAnalyzeMojo
         Set<Artifact> usedDeclared = new LinkedHashSet<>( analysis.getUsedDeclaredArtifacts() );
         Set<Artifact> usedUndeclared = new LinkedHashSet<>( analysis.getUsedUndeclaredArtifacts() );
         Set<Artifact> unusedDeclared = new LinkedHashSet<>( analysis.getUnusedDeclaredArtifacts() );
+        Set<Artifact> testArtifactsWithNonTestScope = new LinkedHashSet<>(
+                analysis.getTestArtifactsWithNonTestScope() );
 
         Set<Artifact> ignoredUsedUndeclared = new LinkedHashSet<>();
         Set<Artifact> ignoredUnusedDeclared = new LinkedHashSet<>();
@@ -353,6 +355,15 @@ public abstract class AbstractAnalyzeMojo
             getLog().warn( "Unused declared dependencies found:" );
 
             logArtifacts( unusedDeclared, true );
+            reported = true;
+            warning = true;
+        }
+
+        if ( !testArtifactsWithNonTestScope.isEmpty() )
+        {
+            getLog().warn( "Non-test scoped test only dependencies found:" );
+
+            logArtifacts( testArtifactsWithNonTestScope, true );
             reported = true;
             warning = true;
         }
