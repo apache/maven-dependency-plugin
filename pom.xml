@@ -440,7 +440,8 @@ under the License.
                 <pomExclude>setup-custom-ear-lifecycle\pom.xml</pomExclude>
               </pomExcludes>
               <pomIncludes>
-                <pomInclude>*/pom.xml</pomInclude>
+                <!--<pomInclude>*/pom.xml</pomInclude>-->
+                <pomInclude>tree-verbose*/pom.xml</pomInclude>
                 <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
               <!-- for mrm -->
@@ -448,6 +449,8 @@ under the License.
               <filterProperties>
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
+
+              <mavenExecutable>/mvnDebug</mavenExecutable>
 
               <addTestClassPath>true</addTestClassPath>
             </configuration>

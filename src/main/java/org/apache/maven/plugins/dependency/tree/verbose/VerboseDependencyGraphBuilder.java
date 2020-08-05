@@ -60,7 +60,7 @@ public class VerboseDependencyGraphBuilder
     private final List<RemoteRepository> repositories;
 
     private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",
-        MANAGED_SCOPE = "managedScope";
+            MANAGED_SCOPE = "managedScope";
 
 
     public static final RemoteRepository CENTRAL = new RemoteRepository.Builder( "central", "default",
@@ -216,7 +216,7 @@ public class VerboseDependencyGraphBuilder
         Model model = project.getModel();
 
         return new Dependency( new DefaultArtifact( model.getGroupId(), model.getArtifactId(), model.getPackaging(),
-                        model.getVersion() ), "" );
+                model.getVersion() ), "" );
     }
 
     private DependencyNode pruneTransitiveTestDependencies( DependencyNode rootNode, MavenProject project )
