@@ -24,36 +24,36 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 public class TestBuildClasspathMojo
     extends AbstractDependencyMojoTestCase
 {
+    
+    private BuildClasspathMojo mojo;
 
     protected void setUp()
         throws Exception
     {
         // required for mojo lookups to work
         super.setUp( "build-classpath", true );
+        
+        File testPom = new File( getBasedir(), "target/test-classes/unit/build-classpath-test/plugin-config.xml" );
+        mojo = (BuildClasspathMojo) lookupMojo( "build-classpath", testPom );
+
+        assertNotNull( mojo );
+        assertNotNull( mojo.getProject() );
     }
 
     /**
-     * tests the proper discovery and configuration of the mojo
-     *
-     * @throws Exception in case of an error.
+     * Tests the proper discovery and configuration of the mojo.
      */
     public void testEnvironment()
         throws Exception
     {
-        File testPom = new File( getBasedir(), "target/test-classes/unit/build-classpath-test/plugin-config.xml" );
-        BuildClasspathMojo mojo = (BuildClasspathMojo) lookupMojo( "build-classpath", testPom );
-
-        assertNotNull( mojo );
-        assertNotNull( mojo.getProject() );
         MavenProject project = mojo.getProject();
 
         // mojo.silent = true;
@@ -65,7 +65,6 @@ public class TestBuildClasspathMojo
         project.setDependencyArtifacts( directArtifacts );
 
         mojo.execute();
-        String file;
         try
         {
             mojo.readClasspathFile();
@@ -80,7 +79,7 @@ public class TestBuildClasspathMojo
         mojo.setOutputFile( new File( testDir, "buildClasspath.txt" ) );
         mojo.execute();
 
-        file = mojo.readClasspathFile();
+        String file = mojo.readClasspathFile();
         assertNotNull( file );
         assertTrue( file.length() > 0 );
 
@@ -115,18 +114,13 @@ public class TestBuildClasspathMojo
     public void testPath()
         throws Exception
     {
-        File testPom = new File( getBasedir(), "target/test-classes/unit/build-classpath-test/plugin-config.xml" );
-        BuildClasspathMojo mojo = (BuildClasspathMojo) lookupMojo( "build-classpath", testPom );
-
-        assertNotNull( mojo );
-        assertNotNull( mojo.getProject() );
-
         MavenSession session = newMavenSession( mojo.getProject() );
         setVariableValueToObject( mojo, "session", session );
-
-        DefaultRepositorySystemSession repoSession = (DefaultRepositorySystemSession) session.getRepositorySession();
-        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( stubFactory.getWorkingDir() ) );
-
+     
+        LegacySupport legacySupport = lookup( LegacySupport.class );
+        legacySupport.setSession( session );    
+        installLocalRepository( legacySupport );
+        
         Artifact artifact = stubFactory.getReleaseArtifact();
 
         StringBuilder sb = new StringBuilder();
@@ -136,17 +130,17 @@ public class TestBuildClasspathMojo
         assertEquals( artifact.getFile().getPath(), sb.toString() );
 
         mojo.setLocalRepoProperty( "$M2_REPO" );
-        sb.setLength( 0 );
+        sb = new StringBuilder();
         mojo.appendArtifactPath( artifact, sb );
         assertEquals( "$M2_REPO" + File.separator + artifact.getFile().getName(), sb.toString() );
 
         mojo.setLocalRepoProperty( "%M2_REPO%" );
-        sb.setLength( 0 );
+        sb = new StringBuilder();
         mojo.appendArtifactPath( artifact, sb );
         assertEquals( "%M2_REPO%" + File.separator + artifact.getFile().getName(), sb.toString() );
 
         mojo.setLocalRepoProperty( "%M2_REPO%" );
-        sb.setLength( 0 );
+        sb = new StringBuilder();
         mojo.setPrependGroupId( true );
         mojo.appendArtifactPath( artifact, sb );
         assertEquals( "If prefix is null, prependGroupId has no impact ",
@@ -155,7 +149,7 @@ public class TestBuildClasspathMojo
 
         mojo.setLocalRepoProperty( "" );
         mojo.setPrefix( "prefix" );
-        sb.setLength( 0 );
+        sb = new StringBuilder();
         mojo.setPrependGroupId( true );
         mojo.appendArtifactPath( artifact, sb );
         assertEquals( "prefix" + File.separator + DependencyUtil.getFormattedFileName( artifact, false, true ),
@@ -164,13 +158,13 @@ public class TestBuildClasspathMojo
 
         mojo.setLocalRepoProperty( "" );
         mojo.setPrefix( "prefix" );
-        sb.setLength( 0 );
+        sb = new StringBuilder();
         mojo.appendArtifactPath( artifact, sb );
         assertEquals( "prefix" + File.separator + artifact.getFile().getName(), sb.toString() );
 
         mojo.setPrefix( "prefix" );
         mojo.setStripVersion( true );
-        sb.setLength( 0 );
+        sb = new StringBuilder();
         mojo.appendArtifactPath( artifact, sb );
         assertEquals( "prefix" + File.separator + DependencyUtil.getFormattedFileName( artifact, true ),
                       sb.toString() );

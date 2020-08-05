@@ -22,9 +22,15 @@ package org.apache.maven.plugins.dependency;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
-import org.apache.maven.plugins.dependency.testUtils.DependencyTestUtils;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 
 public abstract class AbstractDependencyMojoTestCase
@@ -34,11 +40,6 @@ public abstract class AbstractDependencyMojoTestCase
     protected File testDir;
 
     protected DependencyArtifactStubFactory stubFactory;
-
-    public AbstractDependencyMojoTestCase()
-    {
-        super();
-    }
 
     protected void setUp( String testDirStr, boolean createFiles )
         throws Exception
@@ -53,7 +54,7 @@ public abstract class AbstractDependencyMojoTestCase
         super.setUp();
         testDir = new File( getBasedir(), "target" + File.separatorChar + "unit-tests" + File.separatorChar + testDirStr
             + File.separatorChar );
-        DependencyTestUtils.removeDirectory( testDir );
+        FileUtils.deleteDirectory( testDir );
         assertFalse( testDir.exists() );
 
         stubFactory = new DependencyArtifactStubFactory( this.testDir, createFiles, flattenedPath );
@@ -65,25 +66,33 @@ public abstract class AbstractDependencyMojoTestCase
         {
             try
             {
-                DependencyTestUtils.removeDirectory( testDir );
+                FileUtils.deleteDirectory( testDir );
             }
             catch ( IOException e )
             {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
                 fail( "Trying to remove directory:" + testDir + System.lineSeparator() + e.toString() );
             }
             assertFalse( testDir.exists() );
-
-            testDir = null;
         }
-
-        stubFactory = null;
     }
 
     protected void copyFile( AbstractDependencyMojo mojo, File artifact, File destFile )
         throws MojoExecutionException
     {
         mojo.copyFile( artifact, destFile );
+    }
+    
+
+    protected void installLocalRepository( LegacySupport legacySupport )
+        throws ComponentLookupException
+    {
+        DefaultRepositorySystemSession repoSession =
+            (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
+        RepositorySystem system = lookup( RepositorySystem.class );
+        String directory = stubFactory.getWorkingDir().toString();
+        LocalRepository localRepository = new LocalRepository( directory  );
+        LocalRepositoryManager manager = system.newLocalRepositoryManager( repoSession, localRepository );
+        repoSession.setLocalRepositoryManager( manager );
     }
 }

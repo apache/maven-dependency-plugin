@@ -24,11 +24,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
-import org.apache.maven.plugins.dependency.testUtils.DependencyTestUtils;
 import org.apache.maven.plugins.dependency.testUtils.stubs.StubUnpackFileMarkerHandler;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
@@ -54,7 +54,7 @@ public class TestUnpackMarkerFileHandler
 
         testDir = new File( getBasedir(), "target" + File.separatorChar + "unit-tests" + File.separatorChar
             + "unpack-markers" + File.separatorChar );
-        DependencyTestUtils.removeDirectory( testDir );
+        FileUtils.deleteDirectory( testDir );
         assertFalse( testDir.exists() );
 
         stubFactory = new DependencyArtifactStubFactory( this.testDir, false );
@@ -77,14 +77,14 @@ public class TestUnpackMarkerFileHandler
         artifactItems.add( artifactItem );
 
         outputFolder = new File( "target/markers/" );
-        DependencyTestUtils.removeDirectory( this.outputFolder );
+        FileUtils.deleteDirectory( this.outputFolder );
         assertFalse( outputFolder.exists() );
     }
 
     protected void tearDown()
         throws IOException
     {
-        DependencyTestUtils.removeDirectory( this.outputFolder );
+        FileUtils.deleteDirectory( this.outputFolder );
     }
 
     /**

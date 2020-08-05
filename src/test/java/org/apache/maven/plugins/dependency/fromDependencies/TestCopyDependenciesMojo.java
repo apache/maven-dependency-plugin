@@ -28,6 +28,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
@@ -35,8 +36,6 @@ import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 public class TestCopyDependenciesMojo
     extends AbstractDependencyMojoTestCase
@@ -63,9 +62,9 @@ public class TestCopyDependenciesMojo
         MavenSession session = newMavenSession( project );
         setVariableValueToObject( mojo, "session", session );
 
-        DefaultRepositorySystemSession repoSession = (DefaultRepositorySystemSession) session.getRepositorySession();
-
-        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( stubFactory.getWorkingDir() ) );
+        LegacySupport legacySupport = lookup( LegacySupport.class );
+        legacySupport.setSession( session );
+        installLocalRepository( legacySupport );
 
         Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
         Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
@@ -79,18 +78,10 @@ public class TestCopyDependenciesMojo
         setVariableValueToObject( mojo, "artifactHandlerManager", manager );
     }
 
-    public void assertNoMarkerFile( Artifact artifact )
+    public void assertNoMarkerFile( Artifact artifact ) throws MojoExecutionException
     {
         DefaultFileMarkerHandler handle = new DefaultFileMarkerHandler( artifact, mojo.markersDirectory );
-        try
-        {
-            assertFalse( handle.isMarkerSet() );
-        }
-        catch ( MojoExecutionException e )
-        {
-            fail( e.getLongMessage() );
-        }
-
+        assertFalse( handle.isMarkerSet() );
     }
 
     public void testCopyFile()

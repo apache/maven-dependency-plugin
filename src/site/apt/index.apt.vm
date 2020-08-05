@@ -72,6 +72,8 @@ ${project.name}
 
   *{{{./list-mojo.html}dependency:list}} alias for resolve that lists the dependencies for this project.
 
+  *{{{./list-classes-mojo.html}dependency:list-classes}} displays the fully package-qualified names of all classes found in a specified artifact.
+
   *{{{./list-repositories-mojo.html}dependency:list-repositories}} displays all project dependencies and then lists the repositories used.
 
   *{{{./properties-mojo.html}dependency:properties}} set a property for each project dependency containing the

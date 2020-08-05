@@ -20,11 +20,13 @@ package org.apache.maven.plugins.dependency.testUtils.stubs;
  */
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 /**
  * very simple stub of maven project, going to take a lot of work to make it useful as a stub though
@@ -36,25 +38,25 @@ public class DuplicateDependenciesProjectStub
     {
         File pom = new File( getBasedir(), "plugin-config.xml" );
         MavenXpp3Reader pomReader = new MavenXpp3Reader();
-        Model model;
 
-        try
+        try ( FileInputStream in = new FileInputStream( pom ) )
         {
-            model = pomReader.read( new FileReader( pom ) );
+            Model model = pomReader.read( in );
             setModel( model );
+
+            setGroupId( model.getGroupId() );
+            setArtifactId( model.getArtifactId() );
+            setVersion( model.getVersion() );
+            setName( model.getName() );
+            setUrl( model.getUrl() );
+            setPackaging( model.getPackaging() );
+            setFile( pom );
         }
-        catch ( Exception e )
+        catch ( IOException | XmlPullParserException e )
         {
             throw new RuntimeException( e );
         }
 
-        setGroupId( model.getGroupId() );
-        setArtifactId( model.getArtifactId() );
-        setVersion( model.getVersion() );
-        setName( model.getName() );
-        setUrl( model.getUrl() );
-        setPackaging( model.getPackaging() );
-        setFile( pom );
     }
 
     /**

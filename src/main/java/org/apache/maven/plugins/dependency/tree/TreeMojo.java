@@ -465,7 +465,9 @@ public class TreeMojo
      * @param allowedRange range of allowed versions.
      * @param theVersion the version to be checked.
      * @return true if the version is contained by the range.
+     * @deprecated This method is unused in this project and will be removed in the future.
      */
+    @Deprecated
     public static boolean containsVersion( VersionRange allowedRange, ArtifactVersion theVersion )
     {
         ArtifactVersion recommendedVersion = allowedRange.getRecommendedVersion();

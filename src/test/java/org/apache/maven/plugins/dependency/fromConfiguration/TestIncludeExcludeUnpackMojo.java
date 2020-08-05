@@ -26,12 +26,11 @@ import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 public class TestIncludeExcludeUnpackMojo
     extends AbstractDependencyMojoTestCase
@@ -44,7 +43,7 @@ public class TestIncludeExcludeUnpackMojo
 
     private final String PACKED_FILE_PATH = "target/test-classes/unit/unpack-dependencies-test/" + PACKED_FILE;
 
-    UnpackMojo mojo;
+    private UnpackMojo mojo;
 
     protected void setUp()
         throws Exception
@@ -77,9 +76,9 @@ public class TestIncludeExcludeUnpackMojo
         MavenSession session = newMavenSession( mojo.getProject() );
         setVariableValueToObject( mojo, "session", session );
 
-        DefaultRepositorySystemSession repoSession = (DefaultRepositorySystemSession) session.getRepositorySession();
-
-        repoSession.setLocalRepositoryManager( new SimpleLocalRepositoryManager( stubFactory.getWorkingDir() ) );
+        LegacySupport legacySupport = lookup( LegacySupport.class );
+        legacySupport.setSession( session );
+        installLocalRepository( legacySupport );
     }
 
     protected void tearDown()

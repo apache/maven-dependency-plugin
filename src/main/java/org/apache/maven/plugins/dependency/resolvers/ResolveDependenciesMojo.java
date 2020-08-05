@@ -219,7 +219,7 @@ public class ResolveDependenciesMojo
 
             if ( theOutputScope && artifact.isOptional() )
             {
-                messageBuilder.a( " (optional) " );
+                messageBuilder.a( " (optional)" );
             }
 
             // dependencies:collect won't download jars
