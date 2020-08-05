@@ -19,14 +19,6 @@ package hello;
  * under the License.
  */
 
-import org.junit.Test;
-import static org.junit.Assert.*;
-
-public class HelloTest {
-
-  @Test
-  public void testAdd() {
-    assertEquals( 1 + 1, 2 );
-  }
-
+public class Hello
+{
 }

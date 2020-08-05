@@ -53,6 +53,13 @@
       <artifactId>junit</artifactId>
       <version>4.12</version>
     </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <!-- use 2.9.1 for Java 7 projects -->
+      <version>2.9.1</version>
+      <scope>runtime</scope>
+    </dependency>
     <!-- Integration test for scope analysis -->
     <dependency>
       <groupId>org.jsoup</groupId>

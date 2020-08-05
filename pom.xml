@@ -201,7 +201,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-analyzer</artifactId>
-      <version>1.11.2</version>
+      <version>1.11.3-SNAPSHOT</version>
       <exclusions>
         <exclusion>
           <artifactId>maven-project</artifactId>
@@ -227,7 +227,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-shared-utils</artifactId>
-      <version>3.2.1</version>
+      <version>3.3.3</version>
     </dependency>
 
     <dependency>

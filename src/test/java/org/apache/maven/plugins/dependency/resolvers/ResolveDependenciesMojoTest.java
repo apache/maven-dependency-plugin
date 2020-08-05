@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 
@@ -55,6 +56,19 @@ public class ResolveDependenciesMojoTest
     public void testDependencyStatusEmptySet()
     {
         doTestDependencyStatusLog( new HashSet<Artifact>() );
+    }
+    public void testOptionalDependencyFormatting() throws IOException
+    {
+        Set<Artifact> set = new HashSet<>();
+        Artifact artifact = stubFactory.createArtifact("g", "a", VersionRange.createFromVersion( "1.0"),
+                "test", "jar", null, true);
+        set.add(artifact);
+        doTestDependencyStatusLog( set );
+        ResolveDependenciesMojo mojo = newMojo( new DependencyStatusSets() );
+        mojo.results.setResolvedDependencies( set );
+        String output = mojo.getOutput( false, true, false );
+        assertTrue( output.contains( "g:a:jar:1.0:test (optional)" + System.lineSeparator() ) );
+
     }
 
     public void doTestDependencyStatusLog( Set<Artifact> artifacts )

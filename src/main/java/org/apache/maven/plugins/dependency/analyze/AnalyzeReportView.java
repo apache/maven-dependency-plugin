@@ -111,7 +111,7 @@ public class AnalyzeReportView
         // Generate Non-Test Scoped Test Dependencies:
         sink.section2();
         sink.sectionTitle2();
-        sink.text( "Non-Test Scoped Test Dependencies" );
+        sink.text( "Compile Scoped Test Dependencies" );
         sink.sectionTitle2_();
         if ( analysis.getTestArtifactsWithNonTestScope().isEmpty() )
         {
