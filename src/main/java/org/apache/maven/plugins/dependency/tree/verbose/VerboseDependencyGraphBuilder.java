@@ -26,6 +26,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
@@ -94,17 +95,13 @@ public class VerboseDependencyGraphBuilder
         this.repositories = repositoryList;
     }
 
-    public VerboseDependencyGraphBuilder(  List<Repository> repositories )
+    public VerboseDependencyGraphBuilder(  List<RemoteRepository> remoteRepositories )
     {
-        List<RemoteRepository> repositoryList = new ArrayList<RemoteRepository>();
-        for ( Repository repo : repositories )
-        {
-            repositoryList.add( mavenRepositoryFromUrl( repo.getUrl() ) );
-        }
-        this.repositories = repositoryList;
+        this.repositories = remoteRepositories;
     }
 
-    public DependencyNode buildVerboseGraphNoManagement( MavenProject project, RepositorySystem system )
+    public DependencyNode buildVerboseGraphNoManagement( MavenProject project, RepositorySystem system,
+                                                         RepositorySystemSession repositorySystemSession )
             throws MojoExecutionException
     {
         repositorySystem = system;
@@ -115,7 +112,8 @@ public class VerboseDependencyGraphBuilder
 
         for ( org.apache.maven.model.Dependency dependency : dependencies )
         {
-            rootNode.getChildren().add( buildFullDependencyGraph( Collections.singletonList( dependency ), project ) );
+            rootNode.getChildren().add( buildFullDependencyGraph( Collections.singletonList( dependency ), project,
+                    repositorySystemSession ) );
         }
 
         // Don't want transitive test dependencies included in analysis
@@ -260,7 +258,7 @@ public class VerboseDependencyGraphBuilder
     }
 
     private DependencyNode resolveCompileTimeDependencies( List<DependencyNode> dependencyNodes,
-                                                           DefaultRepositorySystemSession session )
+                                                           RepositorySystemSession session )
             throws org.eclipse.aether.resolution.DependencyResolutionException
     {
         List<Dependency> dependencyList = new ArrayList<Dependency>();
@@ -297,7 +295,8 @@ public class VerboseDependencyGraphBuilder
     }
 
     private DependencyNode buildFullDependencyGraph( List<org.apache.maven.model.Dependency> dependencies,
-                                                     MavenProject project )
+                                                     MavenProject project,
+                                                     RepositorySystemSession repositorySystemSession )
     {
         List<DependencyNode> dependencyNodes = new ArrayList<DependencyNode>();
 
@@ -313,15 +312,15 @@ public class VerboseDependencyGraphBuilder
         }
 
         DefaultRepositorySystemSession session = RepositoryUtility.newSessionForFullDependency( repositorySystem );
-        return buildDependencyGraph( dependencyNodes, session );
+        return buildDependencyGraph( dependencyNodes, repositorySystemSession );
     }
 
     private DependencyNode buildDependencyGraph( List<DependencyNode> dependencyNodes,
-                                                 DefaultRepositorySystemSession session )
+                                                 RepositorySystemSession repositorySystemSession )
     {
         try
         {
-            return resolveCompileTimeDependencies( dependencyNodes, session );
+            return resolveCompileTimeDependencies( dependencyNodes, repositorySystemSession );
         }
         catch ( org.eclipse.aether.resolution.DependencyResolutionException ex )
         {
