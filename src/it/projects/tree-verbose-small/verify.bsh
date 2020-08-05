@@ -18,10 +18,7 @@
  */
 
 import java.io.*;
-
 import org.codehaus.plexus.util.*;
-
-System.out.println( "Basedir is " + basedir );
 
 String actual = FileUtils.fileRead( new File( basedir, "target/tree.txt" ) );
 String expected = FileUtils.fileRead( new File( basedir, "expected.txt" ) );
@@ -29,11 +26,10 @@ String expected = FileUtils.fileRead( new File( basedir, "expected.txt" ) );
 actual = actual.replaceAll( "[\n\r]+", "\n" );
 expected = expected.replaceAll( "[\n\r]+", "\n" );
 
-System.out.println( "Checking dependency tree..." );
-
 if ( !actual.equals( expected ) )
 {
-    throw new Exception( "Unexpected dependency tree" );
+    throw new Exception( "Unexpected dependency tree." + System.lineSeperator() + "Expected:" + System.lineSeperator()
+        + expected + System.lineSeperator() + "Actual:" + System.lineSeperator() + actual );
 }
 
 return true;
