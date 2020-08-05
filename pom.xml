@@ -437,8 +437,6 @@ under the License.
               <projectsDirectory>src/it/projects</projectsDirectory>
               <pomExcludes>
                 <pomExclude>purge-local-repository-bad-pom/pom.xml</pomExclude>
-                <pomExclude>setup-custom-ear-lifecycle/pom.xml</pomExclude>
-                <!--<pomInclude>tree-verbose-small/pom.xml</pomInclude>-->
               </pomExcludes>
               <pomIncludes>
                 <pomInclude>*/pom.xml</pomInclude>
