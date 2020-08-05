@@ -57,6 +57,10 @@
           <groupId>@project.groupId@</groupId>
           <artifactId>@project.artifactId@</artifactId>
           <version>@project.version@</version>
+          <configuration>
+            <outputFile>target/tree.txt</outputFile>
+            <verbose>true</verbose>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
