@@ -47,30 +47,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 
 /**
  * Aether initialization. This uses Maven Resolver 1.4.2 or later. There are many other versions of Aether
  * from Sonatype and the Eclipse Project, but this is the current one.
  */
-public final class RepositoryUtility
+final class RepositoryUtility
 {
 
     public static final RemoteRepository CENTRAL = new RemoteRepository.Builder( "central", "default",
             "https://repo1.maven.org/maven2/" ).build();
 
-    // DefaultTransporterProvider.newTransporter checks these transporters
-    private static final Set<String> ALLOWED_REPOSITORY_URL_SCHEMES = new HashSet<String>(
-            Arrays.asList( "file", "http", "https" ) );
-
     private RepositoryUtility()
     {
     }
 
-    //@VisibleForTesting
-    static DefaultRepositorySystemSession createDefaultRepositorySystemSession( RepositorySystem system )
+    private static DefaultRepositorySystemSession createDefaultRepositorySystemSession( RepositorySystem system )
     {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
         LocalRepository localRepository = new LocalRepository( findLocalRepository() );
@@ -82,7 +74,7 @@ public final class RepositoryUtility
      * Opens a new Maven repository session that looks for the local repository in the customary ~/.m2 directory. If not
      * found, it creates an initially empty repository in a temporary location.
      */
-    public static DefaultRepositorySystemSession newSession( RepositorySystem system )
+    private static DefaultRepositorySystemSession newSession( RepositorySystem system )
     {
         DefaultRepositorySystemSession session = createDefaultRepositorySystemSession( system );
         return session;
@@ -161,7 +153,7 @@ public final class RepositoryUtility
      *
      * @throws IllegalArgumentException if the URL is malformed for a Maven repository
      */
-    public static RemoteRepository mavenRepositoryFromUrl( String mavenRepositoryUrl )
+    static RemoteRepository mavenRepositoryFromUrl( String mavenRepositoryUrl )
     {
         try
         {
@@ -178,7 +170,7 @@ public final class RepositoryUtility
         return repository;
     }
 
-    private static VersionRangeResult findVersionRange( RepositorySystem repositorySystem,
+    static VersionRangeResult findVersionRange( RepositorySystem repositorySystem,
                                                         RepositorySystemSession session,
                                                         String groupId, String artifactId )
             throws VersionRangeResolutionException
@@ -196,7 +188,7 @@ public final class RepositoryUtility
     /**
      * Returns the highest version for {@code groupId:artifactId} in {@code repositorySystem}.
      */
-    static Version findHighestVersion( RepositorySystem repositorySystem, RepositorySystemSession session,
+    private static Version findHighestVersion( RepositorySystem repositorySystem, RepositorySystemSession session,
                                        String groupId, String artifactId ) throws VersionRangeResolutionException
     {
         return findVersionRange( repositorySystem, session, groupId, artifactId ).getHighestVersion();
@@ -205,7 +197,7 @@ public final class RepositoryUtility
     /**
      * Returns the latest Maven coordinates for {@code groupId:artifactId} in {@code repositorySystem}.
      */
-    public static String findLatestCoordinates( RepositorySystem repositorySystem, String groupId, String artifactId )
+    private static String findLatestCoordinates( RepositorySystem repositorySystem, String groupId, String artifactId )
             throws VersionRangeResolutionException
     {
         RepositorySystemSession session = RepositoryUtility.newSession( repositorySystem );
