@@ -19,7 +19,6 @@ package org.apache.maven.plugins.dependency.tree.verbose;
  * under the License.
  */
 
-
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;

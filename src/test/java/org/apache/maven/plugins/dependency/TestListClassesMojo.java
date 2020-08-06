@@ -58,12 +58,7 @@ public class TestListClassesMojo
 
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }
-
-    public void test()
-    {
-        Assert.assertEquals( 2, 2 );
-    }
-
+    
     public void testListClassesNotTransitive()
             throws Exception
     {

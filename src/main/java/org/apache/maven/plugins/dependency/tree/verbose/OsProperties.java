@@ -19,8 +19,6 @@ package org.apache.maven.plugins.dependency.tree.verbose;
  * under the License.
  */
 
-
-
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -30,7 +28,7 @@ import java.util.Map;
  * system-specific dependencies through the
  * <a href='https://github.com/trustin/os-maven-plugin'>os-maven-plugin</a>.
  */
-public class OsProperties
+final class OsProperties
 {
 
     public static Map<String, String> detectOsProperties()
