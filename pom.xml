@@ -90,7 +90,6 @@ under the License.
 
   <properties>
     <mavenVersion>3.1.1</mavenVersion>
-    <mavenResolverVersion>1.4.2</mavenResolverVersion>
     <doxiaVersion>1.9.1</doxiaVersion>
     <doxiaSiteVersion>1.9.2</doxiaSiteVersion>
     <jettyVersion>9.2.28.v20190418</jettyVersion>
@@ -311,27 +310,6 @@ under the License.
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- VerboseGraphBuilder & VerboseSerializer -->
-    <dependency>
-      <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-transport-file</artifactId>
-      <version>${mavenResolverVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-transport-http</artifactId>
-      <version>${mavenResolverVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-api</artifactId>
-      <version>${mavenResolverVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-util</artifactId>
-      <version>${mavenResolverVersion}</version>
-    </dependency>
 
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -440,7 +418,7 @@ under the License.
               </pomExcludes>
               <pomIncludes>
                 <pomInclude>*/pom.xml</pomInclude>
-                <pomInclude>purge-local-repository-without-pom</pomInclude>
+                <!--<pomInclude>purge-local-repository-without-pom</pomInclude>-->
               </pomIncludes>
               <!-- for mrm -->
               <settingsFile>src/it/mrm/settings.xml</settingsFile>
