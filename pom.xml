@@ -125,6 +125,12 @@ under the License.
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
       <version>${mavenVersion}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.aether</groupId>
+          <artifactId>aether-spi</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
