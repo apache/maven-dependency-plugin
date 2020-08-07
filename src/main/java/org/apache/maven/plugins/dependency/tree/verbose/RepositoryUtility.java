@@ -48,8 +48,9 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 
 /**
- * Aether initialization. This uses Maven Resolver 1.4.2 or later. There are many other versions of Aether
- * from Sonatype and the Eclipse Project, but this is the current one.
+ * Aether initialization. This uses org.eclipse.aether:aether-api:0.9.0.M2. There are many other versions of Aether
+ * from Sonatype and the Eclipse Project, eventually you may want to change it over to
+ * org.apache.maven.resolver:maven-resolver-api.
  */
 final class RepositoryUtility
 {
