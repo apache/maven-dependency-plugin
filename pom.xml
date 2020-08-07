@@ -417,15 +417,14 @@ under the License.
                 <pomExclude>purge-local-repository-bad-pom/pom.xml</pomExclude>
               </pomExcludes>
               <pomIncludes>
-                <pomInclude>tree-verbose*/pom.xml</pomInclude>
-                <!--<pomInclude>purge-local-repository-without-pom</pomInclude>-->
+                <pomInclude>*/pom.xml</pomInclude>
+                <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
               <!-- for mrm -->
               <settingsFile>src/it/mrm/settings.xml</settingsFile>
               <filterProperties>
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
-              <!--<mavenExecutable>mvnDebug</mavenExecutable>-->
               <addTestClassPath>true</addTestClassPath>
             </configuration>
           </plugin>
