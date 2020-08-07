@@ -38,9 +38,14 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.tree.verbose.VerboseDependencyGraphBuilder;
 import org.apache.maven.plugins.dependency.tree.verbose.VerboseGraphSerializer;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.project.DefaultDependencyResolutionRequest;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.DependencyResolutionException;
+import org.apache.maven.project.DependencyResolutionRequest;
+import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.artifact.filter.StrictPatternIncludesArtifactFilter;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
@@ -101,6 +106,9 @@ public class TreeMojo
 
     @Component
     private RepositorySystem repositorySystem;
+
+    @Parameter ( defaultValue = "${repositorySystem}" )
+    RepositorySystem repositorySystemParam;
 
     /**
      * The current repository/network configuration of Maven.
@@ -231,7 +239,6 @@ public class TreeMojo
      */
     @Parameter( property = "skip", defaultValue = "false" )
     private boolean skip;
-
     // Mojo methods -----------------------------------------------------------
 
     /*
@@ -261,6 +268,13 @@ public class TreeMojo
 
             if ( verbose )
             {
+                // verboseGraphBuilder needs MavenProject project, RepositorySystemSession session,
+                // ProjectDependenciesResolver resolver
+                DependencyResolutionRequest request = new DefaultDependencyResolutionRequest();
+                request.setMavenProject( project );
+                request.setRepositorySession( repoSession );
+                request.setResolutionFilter( null );
+                DependencyResolutionResult result = resolver.resolve( request );
                 VerboseDependencyGraphBuilder builder = new VerboseDependencyGraphBuilder(  );
                 org.eclipse.aether.graph.DependencyNode verboseRootNode = builder.buildVerboseGraphNoManagement( project
                         , repositorySystem );
@@ -297,6 +311,10 @@ public class TreeMojo
         catch ( IOException exception )
         {
             throw new MojoExecutionException( "Cannot serialise project dependency graph", exception );
+        }
+        catch ( DependencyResolutionException e )
+        {
+            e.printStackTrace();
         }
     }
 

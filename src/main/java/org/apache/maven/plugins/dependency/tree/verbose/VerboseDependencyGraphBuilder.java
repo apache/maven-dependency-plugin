@@ -290,6 +290,7 @@ public class VerboseDependencyGraphBuilder
         DependencyRequest dependencyRequest = new DependencyRequest();
         dependencyRequest.setCollectRequest( collectRequest );
 
+
         // resolveDependencies equals to calling both collectDependencies (build dependency tree) and
         // resolveArtifacts (download JAR files).
         DependencyResult dependencyResult = repositorySystem.resolveDependencies( session, dependencyRequest );
