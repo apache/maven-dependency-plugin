@@ -28,8 +28,8 @@ expected = expected.replaceAll( "[\n\r]+", "\n" );
 
 if ( !actual.equals( expected ) )
 {
-    throw new Exception( "Unexpected dependency tree." + System.lineSeperator() + "Expected:" + System.lineSeperator()
-        + expected + System.lineSeperator() + "Actual:" + System.lineSeperator() + actual );
+    throw new Exception( "Unexpected dependency tree." + System.lineSeparator() + "Expected:" + System.lineSeparator()
+        + expected + System.lineSeparator() + "Actual:" + System.lineSeparator() + actual );
 }
 
 return true;

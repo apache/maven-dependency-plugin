@@ -425,7 +425,7 @@ under the License.
               <filterProperties>
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
-              <mavenExecutable>mvnDebug</mavenExecutable>
+              <!--<mavenExecutable>mvnDebug</mavenExecutable>-->
               <addTestClassPath>true</addTestClassPath>
             </configuration>
           </plugin>

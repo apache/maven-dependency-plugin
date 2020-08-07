@@ -256,11 +256,26 @@ public final class VerboseGraphSerializer
                     + node.getArtifact().getProperties().get( PRE_MANAGED_SCOPE ) );
         }
 
+
+
         coordString = getDependencyCoordinate( node ) + coordString;
 
         if ( !( node.getDependency().getScope().equals( "test" ) && transitive ) )
         {
-            if ( nodeErrors.get( node ) != null )
+            if ( node.getArtifact().getProperties().containsKey( "Cycle" ) )
+            {
+                if ( messageAdded )
+                {
+                    coordString = coordString.concat( "; " );
+                }
+                else
+                {
+                    coordString = coordString.concat( " - " );
+                }
+                coordString = coordString.concat( "omitted for cycle" );
+                builder.append( "(" ).append( coordString ).append( ")" ).append( System.lineSeparator() );
+            }
+            else if ( nodeErrors.get( node ) != null )
             {
                 builder.append( "(" );
                 if ( messageAdded )

@@ -28,9 +28,11 @@ import org.eclipse.aether.graph.DependencyNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -39,7 +41,7 @@ import java.util.Set;
  * <p>A cycle in a dependency graph is a situation where a path to a node from the root contains the
  * same node. For example, jaxen 1.1-beta-6 is known to have cycle with dom4j 1.6.1.
  */
-final class CycleBreakerGraphTransformer implements DependencyGraphTransformer
+public final class CycleBreakerGraphTransformer implements DependencyGraphTransformer
 {
 
     private final Set<DependencyNode> visitedNodes = Collections.newSetFromMap(
@@ -90,10 +92,14 @@ final class CycleBreakerGraphTransformer implements DependencyGraphTransformer
 
         for ( DependencyNode node : parent.getChildren() )
         {
-            if ( node != child )
+            if ( node == child )
             {
-                filteredChildren.add( node );
+                node.setChildren( new ArrayList<DependencyNode>() );
+                Map<String, String> newProperties = new HashMap<>( node.getArtifact().getProperties() );
+                newProperties.put( "Cycle", "True" );
+                node.setArtifact( node.getArtifact().setProperties( newProperties ) );
             }
+            filteredChildren.add( node );
         }
 
         parent.setChildren( filteredChildren );
