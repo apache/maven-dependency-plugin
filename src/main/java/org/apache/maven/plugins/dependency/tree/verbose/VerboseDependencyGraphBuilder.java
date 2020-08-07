@@ -21,27 +21,30 @@ package org.apache.maven.plugins.dependency.tree.verbose;
 
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
-import org.apache.maven.model.Repository;
-import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.DefaultDependencyResolutionRequest;
+import org.apache.maven.project.DependencyResolutionException;
+import org.apache.maven.project.DependencyResolutionRequest;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectDependenciesResolver;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.collection.DependencySelector;
 import org.eclipse.aether.graph.DefaultDependencyNode;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
-import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.resolution.DependencyRequest;
-import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.util.graph.selector.AndDependencySelector;
+import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
+import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
+import org.eclipse.aether.util.graph.transformer.ChainedDependencyGraphTransformer;
+import org.eclipse.aether.util.graph.transformer.JavaDependencyContextRefiner;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,51 +53,41 @@ import java.util.Set;
  */
 public class VerboseDependencyGraphBuilder
 {
-    private RepositorySystem repositorySystem;
-
-    /**
-     * Maven repositories to use when resolving dependencies.
-     */
-
     private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",
             MANAGED_SCOPE = "managedScope";
 
-
-    public VerboseDependencyGraphBuilder()
+    public DependencyNode buildVerboseGraph( MavenProject project, ProjectDependenciesResolver resolver,
+                                                         RepositorySystemSession repositorySystemSession )
+            throws DependencyResolutionException
     {
+        DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+        session.setLocalRepositoryManager( repositorySystemSession.getLocalRepositoryManager() );
 
-    }
+        DependencySelector dependencySelector = new AndDependencySelector(
+                // ScopeDependencySelector takes exclusions. 'Provided' scope is not here to avoid
+                // false positive in LinkageChecker.
+                new ScopeDependencySelector(),
+                new ExclusionDependencySelector() );
 
-    static
-    {
-        for ( Map.Entry<String, String> entry : OsProperties.detectOsProperties().entrySet() )
-        {
-            System.setProperty( entry.getKey(), entry.getValue() );
-        }
-    }
+        session.setDependencySelector( dependencySelector );
+        session.setDependencyGraphTransformer( new ChainedDependencyGraphTransformer(
+                new CycleBreakerGraphTransformer(), // Avoids StackOverflowError
+                new JavaDependencyContextRefiner() ) );
+        session.setDependencyManager( null );
 
+        DependencyResolutionRequest request = new DefaultDependencyResolutionRequest();
+        request.setMavenProject( project );
+        request.setRepositorySession( session );
+        request.setResolutionFilter( null );
 
-    public DependencyNode buildVerboseGraphNoManagement( MavenProject project, RepositorySystem system )
-            throws MojoExecutionException
-    {
-        repositorySystem = system;
-        List<org.apache.maven.model.Dependency> dependencies = project.getDependencies();
-
-        DependencyNode rootNode = new DefaultDependencyNode( getProjectDependency( project ) );
-
-
-        for ( org.apache.maven.model.Dependency dependency : dependencies )
-        {
-            rootNode.getChildren().add( buildFullDependencyGraph( Collections.singletonList( dependency ), project ) );
-        }
-
+        DependencyNode rootNode = resolver.resolve( request ).getDependencyGraph();
         // Don't want transitive test dependencies included in analysis
         DependencyNode prunedRoot = pruneTransitiveTestDependencies( rootNode, project );
         applyDependencyManagement( project, prunedRoot );
         return prunedRoot;
     }
 
-    private void applyDependencyManagement( MavenProject project, DependencyNode root )
+    public void applyDependencyManagement( MavenProject project, DependencyNode root )
     {
         Map<String, org.apache.maven.model.Dependency> dependencyManagementMap = createDependencyManagementMap(
                 project.getDependencyManagement() );
@@ -200,13 +193,13 @@ public class VerboseDependencyGraphBuilder
             DependencyNode childNode = rootNode.getChildren().get( i );
             newRoot.getChildren().add( childNode );
 
-            dfs( childNode, visitedNodes );
+            pruneTransitiveTestDependenciesDfs( childNode, visitedNodes );
         }
 
         return newRoot;
     }
 
-    private void dfs( DependencyNode node , Set<DependencyNode> visitedNodes )
+    private void pruneTransitiveTestDependenciesDfs( DependencyNode node , Set<DependencyNode> visitedNodes )
     {
         if ( !visitedNodes.contains( node ) )
         {
@@ -219,84 +212,12 @@ public class VerboseDependencyGraphBuilder
                 if ( child.getDependency().getScope().equals( "test" ) )
                 {
                     iterator.remove();
-                    // node.getChildren().remove( child );
                 }
                 else
                 {
-                    dfs( child, visitedNodes );
+                    pruneTransitiveTestDependenciesDfs( child, visitedNodes );
                 }
             }
-        }
-    }
-
-    private DependencyNode resolveCompileTimeDependencies( List<DependencyNode> dependencyNodes,
-                                                           DefaultRepositorySystemSession session )
-            throws org.eclipse.aether.resolution.DependencyResolutionException
-    {
-        List<Dependency> dependencyList = new ArrayList<Dependency>();
-
-        for ( DependencyNode dependencyNode : dependencyNodes )
-        {
-            dependencyList.add( dependencyNode.getDependency() );
-        }
-
-        CollectRequest collectRequest = new CollectRequest();
-
-        collectRequest.setRoot( dependencyList.get( 0 ) );
-        if ( dependencyList.size() != 1 )
-        {
-            // With setRoot, the result includes dependencies with `optional:true` or `provided`
-            collectRequest.setRoot( dependencyList.get( 0 ) );
-            collectRequest.setDependencies( dependencyList );
-        }
-        else
-        {
-            collectRequest.setDependencies( dependencyList );
-        }
-        for ( RemoteRepository repository : repositories )
-        {
-            collectRequest.addRepository( repository );
-        }
-        DependencyRequest dependencyRequest = new DependencyRequest();
-        dependencyRequest.setCollectRequest( collectRequest );
-
-        // resolveDependencies equals to calling both collectDependencies (build dependency tree) and
-        // resolveArtifacts (download JAR files).
-        DependencyResult dependencyResult = repositorySystem.resolveDependencies( session, dependencyRequest );
-        return dependencyResult.getRoot();
-    }
-
-    private DependencyNode buildFullDependencyGraph( List<org.apache.maven.model.Dependency> dependencies,
-                                                     MavenProject project )
-    {
-        List<DependencyNode> dependencyNodes = new ArrayList<DependencyNode>();
-
-        for ( org.apache.maven.model.Dependency dependency : dependencies )
-        {
-            Artifact aetherArtifact = new DefaultArtifact( dependency.getGroupId(), dependency.getArtifactId(),
-                    dependency.getClassifier(), dependency.getType(), dependency.getVersion() );
-
-            Dependency aetherDependency = new Dependency( aetherArtifact , dependency.getScope() );
-            DependencyNode node = new DefaultDependencyNode( aetherDependency );
-            node.setOptional( dependency.isOptional() );
-            dependencyNodes.add( node );
-        }
-
-        DefaultRepositorySystemSession session = RepositoryUtility.newSessionForFullDependency( repositorySystem );
-        return buildDependencyGraph( dependencyNodes, session );
-    }
-
-    private DependencyNode buildDependencyGraph( List<DependencyNode> dependencyNodes,
-                                                 DefaultRepositorySystemSession session )
-    {
-        try
-        {
-            return resolveCompileTimeDependencies( dependencyNodes, session );
-        }
-        catch ( org.eclipse.aether.resolution.DependencyResolutionException ex )
-        {
-            DependencyResult result = ex.getResult();
-            return result.getRoot();
         }
     }
 }

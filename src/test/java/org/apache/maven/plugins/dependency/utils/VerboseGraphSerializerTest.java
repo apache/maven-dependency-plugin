@@ -31,7 +31,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class VerboseGraphSerializerTest extends AbstractMojoTestCase
 {
@@ -110,29 +112,6 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
 
         String actual = serializer.serialize( root );
         File file = new File(getBasedir(), "/target/test-classes/unit/verbose-serializer-test/LargeTree.txt");
-        String expected = FileUtils.readFileToString(file);
-
-        Assert.assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testSmallGraphWithCycle() throws IOException
-    {
-        DependencyNode root = new DefaultDependencyNode(
-                new Dependency( new DefaultArtifact( "com.google", "rootArtifact", "jar", "1.0.0" ), "")
-        );
-        DependencyNode left = new DefaultDependencyNode(
-                new Dependency( new DefaultArtifact( "org.apache", "left", "xml", "0.1-SNAPSHOT" ), "test" )
-        );
-        DependencyNode right = new DefaultDependencyNode(
-                new Dependency( new DefaultArtifact( "org.xyz", "right", "zip", "1" ), "provided" )
-        );
-
-        root.setChildren( Arrays.asList( left, right ) );
-        left.setChildren( Arrays.asList( root ) );
-
-        String actual = serializer.serialize( root );
-        File file = new File(getBasedir(), "/target/test-classes/unit/verbose-serializer-test/BasicCycle.txt");
         String expected = FileUtils.readFileToString(file);
 
         Assert.assertEquals(expected, actual);
