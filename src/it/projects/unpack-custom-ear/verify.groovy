@@ -17,11 +17,6 @@
  * under the License.
  */
 def buildLog = new File( basedir, 'build.log' )
-String fileContents = buildLog.text
 assert buildLog.exists()
 assert buildLog.length() != 0
-
-println "BuildLog Length:"
-println buildLog.length()
-
-assert fileContents.contains( "[DEBUG] Found unArchiver by type: " )
+assert buildLog.text.contains( "[DEBUG] Found unArchiver by type: " )

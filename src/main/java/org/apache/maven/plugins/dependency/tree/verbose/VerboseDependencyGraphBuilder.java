@@ -87,7 +87,7 @@ public class VerboseDependencyGraphBuilder
         return prunedRoot;
     }
 
-    public void applyDependencyManagement( MavenProject project, DependencyNode root )
+    private void applyDependencyManagement( MavenProject project, DependencyNode root )
     {
         Map<String, org.apache.maven.model.Dependency> dependencyManagementMap = createDependencyManagementMap(
                 project.getDependencyManagement() );
