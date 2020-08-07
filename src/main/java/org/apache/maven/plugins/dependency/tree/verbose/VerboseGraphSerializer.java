@@ -256,8 +256,6 @@ public final class VerboseGraphSerializer
                     + node.getArtifact().getProperties().get( PRE_MANAGED_SCOPE ) );
         }
 
-
-
         coordString = getDependencyCoordinate( node ) + coordString;
 
         if ( !( node.getDependency().getScope().equals( "test" ) && transitive ) )

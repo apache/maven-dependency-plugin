@@ -56,16 +56,6 @@ public class VerboseDependencyGraphBuilder
     private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",
             MANAGED_SCOPE = "managedScope";
 
-    // test with this removed
-    static
-    {
-        for ( Map.Entry<String, String> entry : OsProperties.detectOsProperties().entrySet() )
-        {
-            System.setProperty( entry.getKey(), entry.getValue() );
-        }
-    }
-
-
     public DependencyNode buildVerboseGraph( MavenProject project, ProjectDependenciesResolver resolver,
                                                          RepositorySystemSession repositorySystemSession )
             throws DependencyResolutionException

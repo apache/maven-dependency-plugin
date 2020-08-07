@@ -20,7 +20,6 @@ package org.apache.maven.plugins.dependency.tree.verbose;
  */
 
 
-import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.collection.DependencyGraphTransformationContext;
 import org.eclipse.aether.collection.DependencyGraphTransformer;
@@ -31,7 +30,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,21 +47,22 @@ public final class CycleBreakerGraphTransformer implements DependencyGraphTransf
 
     @Override
     public DependencyNode transformGraph( DependencyNode dependencyNode, DependencyGraphTransformationContext context )
-            throws RepositoryException
     {
 
-        removeCycle( null, dependencyNode, new HashSet<Artifact>() );
+        flagCycle( dependencyNode, new HashSet<Artifact>() );
         return dependencyNode;
     }
 
-    private void removeCycle( DependencyNode parent, DependencyNode node, Set<Artifact> ancestors )
+    private void flagCycle( DependencyNode node, Set<Artifact> ancestors )
     {
         Artifact artifact = node.getArtifact();
 
         if ( ancestors.contains( artifact ) )
-        {   // Set (rather than List) gives O(1) lookup here
-            // parent is not null when ancestors is not empty
-            removeChildFromParent( node, parent );
+        {
+            node.setChildren( new ArrayList<DependencyNode>() );
+            Map<String, String> newProperties = new HashMap<>( node.getArtifact().getProperties() );
+            newProperties.put( "Cycle", "True" );
+            node.setArtifact( node.getArtifact().setProperties( newProperties ) );
             return;
         }
 
@@ -72,7 +71,7 @@ public final class CycleBreakerGraphTransformer implements DependencyGraphTransf
             ancestors.add( artifact );
             for ( DependencyNode child : node.getChildren() )
             {
-                removeCycle( node, child, ancestors );
+                flagCycle( child, ancestors );
             }
             ancestors.remove( artifact );
         }
@@ -86,22 +85,4 @@ public final class CycleBreakerGraphTransformer implements DependencyGraphTransf
         return visitedNodes.add( node );
     }
 
-    private static void removeChildFromParent( DependencyNode child, DependencyNode parent )
-    {
-        List<DependencyNode> filteredChildren = new ArrayList<DependencyNode>();
-
-        for ( DependencyNode node : parent.getChildren() )
-        {
-            if ( node == child )
-            {
-                node.setChildren( new ArrayList<DependencyNode>() );
-                Map<String, String> newProperties = new HashMap<>( node.getArtifact().getProperties() );
-                newProperties.put( "Cycle", "True" );
-                node.setArtifact( node.getArtifact().setProperties( newProperties ) );
-            }
-            filteredChildren.add( node );
-        }
-
-        parent.setChildren( filteredChildren );
-    }
 }
