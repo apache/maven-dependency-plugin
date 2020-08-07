@@ -45,8 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.maven.plugins.dependency.tree.verbose.RepositoryUtility.mavenRepositoryFromUrl;
-
 /**
  * Builds the VerboseDependencyGraph
  */
@@ -57,18 +55,14 @@ public class VerboseDependencyGraphBuilder
     /**
      * Maven repositories to use when resolving dependencies.
      */
-    private final List<RemoteRepository> repositories;
 
     private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",
             MANAGED_SCOPE = "managedScope";
 
 
-    public static final RemoteRepository CENTRAL = new RemoteRepository.Builder( "central", "default",
-            "https://repo1.maven.org/maven2/" ).build();
-
     public VerboseDependencyGraphBuilder()
     {
-        this( Collections.singletonList( CENTRAL.getUrl() ) );
+
     }
 
     static
@@ -79,30 +73,6 @@ public class VerboseDependencyGraphBuilder
         }
     }
 
-    /**
-     * @param mavenRepositoryUrls remote Maven repositories to search for dependencies
-     * @throws IllegalArgumentException if a URL is malformed or does not have an allowed scheme
-     */
-    public VerboseDependencyGraphBuilder( Iterable<String> mavenRepositoryUrls )
-    {
-        List<RemoteRepository> repositoryList = new ArrayList<RemoteRepository>();
-        for ( String mavenRepositoryUrl : mavenRepositoryUrls )
-        {
-            RemoteRepository repository = mavenRepositoryFromUrl( mavenRepositoryUrl );
-            repositoryList.add( repository );
-        }
-        this.repositories = repositoryList;
-    }
-
-    public VerboseDependencyGraphBuilder(  List<Repository> repositories )
-    {
-        List<RemoteRepository> repositoryList = new ArrayList<RemoteRepository>();
-        for ( Repository repo : repositories )
-        {
-            repositoryList.add( mavenRepositoryFromUrl( repo.getUrl() ) );
-        }
-        this.repositories = repositoryList;
-    }
 
     public DependencyNode buildVerboseGraphNoManagement( MavenProject project, RepositorySystem system )
             throws MojoExecutionException
