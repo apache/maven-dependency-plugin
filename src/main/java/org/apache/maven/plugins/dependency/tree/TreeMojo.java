@@ -304,9 +304,9 @@ public class TreeMojo
         {
             throw new MojoExecutionException( "Cannot serialise project dependency graph", exception );
         }
-        catch ( DependencyResolutionException e )
+        catch ( DependencyResolutionException exception )
         {
-            e.printStackTrace();
+            throw new MojoExecutionException( "Cannot resolve dependencies", exception );
         }
     }
 

@@ -35,7 +35,7 @@ import java.util.Set;
 /**
  * Parses dependency graph and outputs in text format for end user to review.
  */
-public final class VerboseGraphSerializer
+final class VerboseGraphSerializer
 {
     private static final String LINE_START_LAST_CHILD = "\\- ", LINE_START_CHILD = "+- ";
     private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",

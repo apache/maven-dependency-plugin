@@ -1,5 +1,4 @@
-package org.apache.maven.plugins.dependency.utils;
-
+package org.apache.maven.plugins.dependency.tree;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
