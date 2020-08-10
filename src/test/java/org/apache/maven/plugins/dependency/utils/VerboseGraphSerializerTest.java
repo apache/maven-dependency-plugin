@@ -21,7 +21,7 @@ package org.apache.maven.plugins.dependency.utils;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.apache.maven.plugins.dependency.tree.verbose.VerboseGraphSerializer;
+import org.apache.maven.plugins.dependency.tree.VerboseGraphSerializer;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.DefaultDependencyNode;
 import org.eclipse.aether.graph.Dependency;
@@ -31,9 +31,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 public class VerboseGraphSerializerTest extends AbstractMojoTestCase
 {

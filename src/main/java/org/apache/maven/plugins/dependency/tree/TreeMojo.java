@@ -35,8 +35,6 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.plugins.dependency.tree.verbose.VerboseDependencyGraphBuilder;
-import org.apache.maven.plugins.dependency.tree.verbose.VerboseGraphSerializer;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.DependencyResolutionException;
@@ -362,13 +360,13 @@ public class TreeMojo
 
         for ( org.eclipse.aether.graph.DependencyNode child : node.getChildren() )
         {
-            rootNode.getChildren().add( buildTreeDfs( rootNode, child ) );
+            rootNode.getChildren().add( buildTree( rootNode, child ) );
         }
 
         return rootNode;
     }
 
-    private DependencyNode buildTreeDfs( DependencyNode parent, org.eclipse.aether.graph.DependencyNode child )
+    private DependencyNode buildTree( DependencyNode parent, org.eclipse.aether.graph.DependencyNode child )
     {
         List<org.apache.maven.model.Exclusion> exclusions = new ArrayList<>();
 
@@ -387,7 +385,7 @@ public class TreeMojo
 
         for ( org.eclipse.aether.graph.DependencyNode grandChild : child.getChildren() )
         {
-            newChild.getChildren().add( buildTreeDfs( newChild, grandChild ) );
+            newChild.getChildren().add( buildTree( newChild, grandChild ) );
         }
 
         return newChild;

@@ -1,4 +1,4 @@
-package org.apache.maven.plugins.dependency.tree.verbose;
+package org.apache.maven.plugins.dependency.tree;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -26,10 +26,8 @@ import org.eclipse.aether.collection.DependencyGraphTransformer;
 import org.eclipse.aether.graph.DependencyNode;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,21 +37,17 @@ import java.util.Set;
  * <p>A cycle in a dependency graph is a situation where a path to a node from the root contains the
  * same node. For example, jaxen 1.1-beta-6 is known to have cycle with dom4j 1.6.1.
  */
-public final class CycleBreakerGraphTransformer implements DependencyGraphTransformer
+final class CycleBreakerGraphTransformer implements DependencyGraphTransformer
 {
-
-    private final Set<DependencyNode> visitedNodes = Collections.newSetFromMap(
-            new IdentityHashMap<DependencyNode, Boolean>() );
-
     @Override
     public DependencyNode transformGraph( DependencyNode dependencyNode, DependencyGraphTransformationContext context )
     {
 
-        flagCycle( dependencyNode, new HashSet<Artifact>() );
+        flagCycle( dependencyNode, new HashSet<Artifact>(), new HashSet<DependencyNode>() );
         return dependencyNode;
     }
 
-    private void flagCycle( DependencyNode node, Set<Artifact> ancestors )
+    private void flagCycle( DependencyNode node, Set<Artifact> ancestors, Set<DependencyNode> visitedNodes )
     {
         Artifact artifact = node.getArtifact();
 
@@ -66,23 +60,14 @@ public final class CycleBreakerGraphTransformer implements DependencyGraphTransf
             return;
         }
 
-        if ( shouldVisitChildren( node ) )
+        if ( visitedNodes.add( node ) )
         {
             ancestors.add( artifact );
             for ( DependencyNode child : node.getChildren() )
             {
-                flagCycle( child, ancestors );
+                flagCycle( child, ancestors, visitedNodes );
             }
             ancestors.remove( artifact );
         }
     }
-
-    /**
-     * Returns true if {@code node} is not visited yet and marks the node as visited.
-     */
-    boolean shouldVisitChildren( DependencyNode node )
-    {
-        return visitedNodes.add( node );
-    }
-
 }

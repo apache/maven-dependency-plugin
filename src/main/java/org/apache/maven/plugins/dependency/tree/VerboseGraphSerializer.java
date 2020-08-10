@@ -1,4 +1,4 @@
-package org.apache.maven.plugins.dependency.tree.verbose;
+package org.apache.maven.plugins.dependency.tree;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
