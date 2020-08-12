@@ -43,19 +43,225 @@ final class VerboseGraphSerializer
 
     public String serialize( DependencyNode root )
     {
+        return serialize( root, "" );
+    }
+
+    public String serialize( DependencyNode root, String outputType )
+    {
         Set<String> coordinateStrings = new HashSet<>();
         Map<String, String> coordinateVersionMap = new HashMap<>();
-        StringBuilder builder = new StringBuilder();
-
         // Use BFS to mirror how Maven resolves dependencies and use DFS to print the tree easily
         Map<DependencyNode, String> nodeErrors = getNodeConflictMessagesBfs( root, coordinateStrings,
                 coordinateVersionMap );
+
+        if ( "graphml".equals( outputType ) )
+        {
+            return serializeGraphml( root, nodeErrors );
+        }
+        else if ( "tgf".equals( outputType ) )
+        {
+            return serializeTgf( root, nodeErrors );
+        }
+        else if ( "dot".equals( outputType ) )
+        {
+            return serializeDot(root, nodeErrors);
+        }
+        else
+        {
+            return serializeText( root, nodeErrors );
+        }
+    }
+
+    private String serializeGraphml( DependencyNode root, Map<DependencyNode, String> nodeErrors )
+    {
+        Set<DependencyNode> visitedNodes = new HashSet<>();
+        Queue<DependencyNode> queue = new LinkedList<>();
+        queue.add( root );
+
+        StringBuilder result = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
+                "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" " +
+                "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+                "xmlns:y=\"http://www.yworks.com/xml/graphml\" " +
+                "xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns " +
+                "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">" + System.lineSeparator()
+                + "  <key for=\"node\" id=\"d0\" yfiles.type=\"nodegraphics\"/>" + System.lineSeparator()
+                + "  <key for=\"edge\" id=\"d1\" yfiles.type=\"edgegraphics\"/>" + System.lineSeparator()
+                + "<graph id=\"dependencies\" edgedefault=\"directed\">" + System.lineSeparator() );
+
+        StringBuilder nodes = new StringBuilder();
+        StringBuilder edges = new StringBuilder();
+        nodes.append(  )
+        while ( !queue.isEmpty() )
+        {
+            DependencyNode node = queue.poll();
+            for( DependencyNode child : node.getChildren() )
+            {
+
+            }
+        }
+
+        result.append( "</graph></graphml>" );
+        return "";
+    }
+
+    private String getGraphmlNodeLine( DependencyNode node )
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append( "<node id=\"" ).append( node.hashCode() ).append( "\"><data key=\"d0\"><y:ShapeNode>" +
+                "<y:NodeLabel>" );
+        builder.append( getDependencyCoordinate( node ) );
+
+        builder.append( "</y:NodeLabel></y:ShapeNode></data></node>" );
+    }
+
+    private String serializeDot( DependencyNode root, Map<DependencyNode, String> nodeErrors )
+    {
+        Set<DependencyNode> visitedNodes = new HashSet<>();
+        Queue<DependencyNode> queue = new LinkedList<>();
+        queue.add( root );
+        Artifact rootArtifact = root.getArtifact();
+
+        StringBuilder result = new StringBuilder( "digraph" );
+        result.append( " \"" ).append( rootArtifact.getGroupId() )
+                .append( ":" ).append( rootArtifact.getArtifactId() ).append( ":" ).append( rootArtifact.getExtension()
+        ).append( ":" ).append( rootArtifact.getVersion() ).append( "\" {" ).append( System.lineSeparator() );
+
+        while ( !queue.isEmpty() )
+        {
+            DependencyNode node = queue.poll();
+            for( DependencyNode child : node.getChildren() )
+            {
+                result.append( " \"" ).append( getDependencyCoordinate( node ) ).append( "\"" ).append( " ->  \"" )
+                        .append( getDependencyCoordinate( child ) ).append( "\" ;" );
+
+                if ( child.getArtifact().getProperties().containsKey( "Cycle" ) )
+                {
+                    result.append( " omitted due to cycle" );
+                }
+                else if ( nodeErrors.containsKey( child ) )
+                {
+                    result.append( nodeErrors.get( child ) );
+                }
+
+                if( !visitedNodes.contains( child ) )
+                {
+                    visitedNodes.add( child );
+                    queue.add( child );
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    private String serializeTgf( DependencyNode root, Map<DependencyNode, String> nodeErrors )
+    {
+        StringBuilder nodes = new StringBuilder();
+        StringBuilder edges = new StringBuilder( "#" );
+
+        // deal with root first
+        Artifact rootArtifact = root.getArtifact();
+        nodes.append( root.hashCode() ).append( " " ).append( rootArtifact.getGroupId() ).append( ":" )
+                .append( rootArtifact.getArtifactId() ).append( ":" ).append( rootArtifact.getExtension() )
+                .append( ":" ).append( rootArtifact.getVersion() ).append( System.lineSeparator() );
+
+        for ( DependencyNode child : root.getChildren() )
+        {
+            edges.append( root.hashCode() ).append( " " ).append( child.hashCode() ).append( " " ).append(
+                    child.getDependency().getScope() ).append( System.lineSeparator() );
+            serializeTgfDfs( child, nodeErrors, nodes, edges, false );
+        }
+
+        return nodes.append( edges ).toString();
+    }
+
+    private void serializeTgfDfs( DependencyNode node, Map<DependencyNode, String> nodeErrors, StringBuilder nodes,
+                                    StringBuilder edges, boolean transitive )
+    {
+        nodes.append( node.hashCode() ).append( " " );
+        String coordString = "";
+        boolean messageAdded = false;
+
+        if ( transitive && node.getArtifact().getProperties().containsKey( PRE_MANAGED_VERSION ) )
+        {
+            coordString = coordString.concat( " - version managed from "
+                    + node.getArtifact().getProperties().get( PRE_MANAGED_VERSION ) );
+            messageAdded = true;
+        }
+        if ( transitive && node.getArtifact().getProperties().containsKey( PRE_MANAGED_SCOPE ) )
+        {
+            if ( messageAdded )
+            {
+                coordString = coordString.concat( "; " );
+            }
+            else
+            {
+                coordString = coordString.concat( " - " );
+                messageAdded = true;
+            }
+            coordString = coordString.concat( "scope managed from "
+                    + node.getArtifact().getProperties().get( PRE_MANAGED_SCOPE ) );
+        }
+        coordString = getDependencyCoordinate( node ) + coordString;
+
+        if ( !( node.getDependency().getScope().equals( "test" ) && transitive ) )
+        {
+            if ( node.getArtifact().getProperties().containsKey( "Cycle" ) )
+            {
+                if ( messageAdded )
+                {
+                    coordString = coordString.concat( "; " );
+                }
+                else
+                {
+                    coordString = coordString.concat( " - " );
+                }
+                coordString = coordString.concat( "omitted for cycle" );
+                nodes.append( "(" ).append( coordString ).append( ")" ).append( System.lineSeparator() );
+            }
+            else if ( nodeErrors.get( node ) != null )
+            {
+                nodes.append( "(" );
+                if ( messageAdded )
+                {
+                    nodes.append( coordString ).append( "; " ).append( nodeErrors.get( node ) );
+                }
+                else
+                {
+                    nodes.append( coordString ).append( " - " ).append( nodeErrors.get( node ) );
+                }
+                nodes.append( ")" ).append( System.lineSeparator() );
+            }
+            else
+            {
+                nodes.append( coordString ).append( System.lineSeparator() );
+            }
+        }
+
+        for ( DependencyNode child : node.getChildren() )
+        {
+            edges.append( node.hashCode() ).append( " " ).append( child.hashCode() ).append( " " ).append(
+                    child.getDependency().getScope() );
+            if ( child.getArtifact().getProperties().containsKey( "Cycle" ) )
+            {
+                edges.append( " omitted for cycle" ).append( System.lineSeparator() );
+            }
+            else if ( nodeErrors.get( child ) != null )
+            {
+                edges.append( nodeErrors.get( child ) ).append( System.lineSeparator() );
+            }
+            serializeTgfDfs( child, nodeErrors, nodes, edges, true );
+        }
+    }
+
+    private String serializeText( DependencyNode root, Map<DependencyNode, String> nodeErrors )
+    {
+        StringBuilder builder = new StringBuilder();
 
         // deal with root first
         Artifact rootArtifact = root.getArtifact();
         builder.append( rootArtifact.getGroupId() ).append( ":" ).append( rootArtifact.getArtifactId() ).append( ":" )
                 .append( rootArtifact.getExtension() ).append( ":" ).append( rootArtifact.getVersion() ).append(
-                        System.lineSeparator() );
+                System.lineSeparator() );
 
         for ( int i = 0; i < root.getChildren().size(); i++ )
         {

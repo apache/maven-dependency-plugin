@@ -272,7 +272,7 @@ public class TreeMojo
 
                 org.eclipse.aether.graph.DependencyNode verboseRootNode = builder.buildVerboseGraph(
                         project, resolver, repoSession );
-                dependencyTreeString = serializer.serialize( verboseRootNode );
+                dependencyTreeString = serializer.serialize( verboseRootNode, outputType );
                 rootNode = convertToCustomDependencyNode( verboseRootNode );
             }
             else
