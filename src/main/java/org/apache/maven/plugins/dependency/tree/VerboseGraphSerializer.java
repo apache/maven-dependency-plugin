@@ -343,8 +343,17 @@ final class VerboseGraphSerializer
             nodes.append( coordString ).append( System.lineSeparator() );
             for ( DependencyNode child : node.getChildren() )
             {
-                edges.append( node.hashCode() ).append( " " ).append( child.hashCode() ).append( " " ).append(
-                        child.getDependency().getScope() );
+                edges.append( node.hashCode() ).append( " " ).append( child.hashCode() ).append( " " );
+                if ( child.getArtifact().getProperties().get( MANAGED_SCOPE ) != null )
+                {
+                    edges.append( child.getArtifact().getProperties().get( MANAGED_SCOPE ) ).append( " managed from " )
+                            .append( child.getArtifact().getProperties().get( PRE_MANAGED_SCOPE ) );
+                }
+                else
+                {
+                    edges.append( child.getDependency().getScope() );
+                }
+
                 if ( child.getArtifact().getProperties().containsKey( "Cycle" ) )
                 {
                     edges.append( " omitted for cycle" );

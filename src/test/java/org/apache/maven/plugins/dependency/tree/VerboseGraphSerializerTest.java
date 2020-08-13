@@ -403,8 +403,11 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         DependencyNode l1right = new DefaultDependencyNode(
                 new Dependency( new DefaultArtifact( "org.apache", "maven-dependency", "jar", "1.0-SNAPSHOT" ), "test" )
         );
-        DependencyNode l2right = new DefaultDependencyNode(
+        DependencyNode l5right = new DefaultDependencyNode(
                 new Dependency( new DefaultArtifact( "org.apache", "maven-dependency", "jar", "2.1" ), "test" )
+        );
+        DependencyNode l6right = new DefaultDependencyNode(
+                new Dependency( new DefaultArtifact( "org.abc", "shouldn't show", "xml", "1" ), "compile" )
         );
 
         Artifact scopeManaged = new DefaultArtifact( "org.scopeManaged", "scope-managed", "zip", "2.1" );
@@ -412,7 +415,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         artifactProperties.put( PRE_MANAGED_SCOPE, "runtime" );
         artifactProperties.put( MANAGED_SCOPE, "compile" );
         scopeManaged = scopeManaged.setProperties( artifactProperties );
-        DependencyNode l3right = new DefaultDependencyNode(
+        DependencyNode l2right = new DefaultDependencyNode(
                 new Dependency( scopeManaged, "scope" )
         );
 
@@ -420,7 +423,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         artifactProperties = new HashMap<>( versionManaged.getProperties() );
         artifactProperties.put( PRE_MANAGED_VERSION, "1.1.0" );
         versionManaged = versionManaged.setProperties( artifactProperties );
-        DependencyNode l4right = new DefaultDependencyNode(
+        DependencyNode l3right = new DefaultDependencyNode(
                 new Dependency( versionManaged, "provided" )
         );
 
@@ -432,7 +435,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         artifactProperties.put( PRE_MANAGED_VERSION, "3.1" );
         scopeVersionManaged = scopeVersionManaged.setProperties( artifactProperties );
 
-        DependencyNode l5right = new DefaultDependencyNode(
+        DependencyNode l4right = new DefaultDependencyNode(
                 new Dependency( scopeVersionManaged, "runtime" )
         );
 
@@ -444,23 +447,49 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
 
         root.setChildren( Arrays.asList( l1left, l1middle, l1right, l1Optional ) );
         l1left.setChildren( Arrays.asList( l2left, l2middleLeft ) );
+        l2left.setChildren( Collections.singletonList( l6right ) ); // l6right shouldn't show due to omitted parent node
+        l2middleLeft.setChildren( Collections.singletonList( l6right ) );
+        l1Optional.setChildren( Collections.singletonList( l6right ) );
         l1middle.setChildren( Collections.singletonList( l2middleRight ) );
         l1right.setChildren( Collections.singletonList( l2right ) );
         l2right.setChildren( Collections.singletonList( l3right ) );
         l3right.setChildren( Collections.singletonList( l4right ) );
         l4right.setChildren( Collections.singletonList( l5right ) );
+        l5right.setChildren( Collections.singletonList( l6right ) );
 
         String actual = serializer.serialize( root, "tgf" );
         String expected = root.hashCode() + " org.example:root:jar:3.1.1" + System.lineSeparator()
-                + l1left.hashCode() + "  org.duplicate:duplicate:xml:2:compile" + System.lineSeparator()
+                + l1left.hashCode() + " org.duplicate:duplicate:xml:2:compile" + System.lineSeparator()
                 + l2left.hashCode() + " (org.duplicate:duplicate:xml:2:compile - omitted for duplicate)"
                 + System.lineSeparator() + l2middleLeft.hashCode()
                 + " (org.cycle:cycle:zip:3:compile - omitted for cycle)" + System.lineSeparator()
                 + l1middle.hashCode() + " org.apache:maven:jar:1.0-SNAPSHOT:test" + System.lineSeparator()
                 + l2middleRight.hashCode()
                 + " (org.apache:maven-dependency:jar:1.0-SNAPSHOT:compile - omitted for conflict with test)"
-                + System.lineSeparator() + l1right.hashCode() + "  org.apache:maven-dependency:jar:1.0-SNAPSHOT:test"
-                + System.lineSeparator() + "" ;
+                + System.lineSeparator() + l1right.hashCode() + " org.apache:maven-dependency:jar:1.0-SNAPSHOT:test"
+                + System.lineSeparator() + l2right.hashCode()
+                + " org.scopeManaged:scope-managed:zip:2.1:compile - scope managed from runtime"
+                + System.lineSeparator() + l3right.hashCode()
+                + " org.versionManaged:version-manged:pom:3.3.3:provided - version managed from 1.1.0"
+                + System.lineSeparator() + l4right.hashCode()
+                + " org.scopeVersionManaged:scope-version-managed:xml:2:compile - version managed from 3.1; "
+                + "scope managed from runtime" + System.lineSeparator() + l5right.hashCode()
+                + " (org.apache:maven-dependency:jar:2.1:test - omitted for conflict with 1.0-SNAPSHOT)"
+                + System.lineSeparator() + l1Optional.hashCode()
+                + " (org.apache:optional:jar:1.1:test - omitted due to optional dependency)"
+                + System.lineSeparator() + "#" + System.lineSeparator() + root.hashCode() + " " + l1left.hashCode()
+                + " compile" + System.lineSeparator()
+                + l1left.hashCode() + " " + l2left.hashCode() + " compile omitted for duplicate"
+                + System.lineSeparator() + l1left.hashCode() + " " + l2middleLeft.hashCode()
+                + " compile omitted for cycle" + System.lineSeparator() + root.hashCode() + " " + l1middle.hashCode()
+                + " test" + System.lineSeparator() + l1middle.hashCode() + " " + l2middleRight.hashCode()
+                + " compile omitted for conflict with test" + System.lineSeparator() + root.hashCode() + " "
+                + l1right.hashCode() + " test" + System.lineSeparator() + l1right.hashCode() + " " + l2right.hashCode()
+                + " compile managed from runtime" + System.lineSeparator() + l2right.hashCode() + " "
+                + l3right.hashCode() + " provided" + System.lineSeparator() + l3right.hashCode() + " "
+                + l4right.hashCode() + " compile managed from runtime" + System.lineSeparator() + l4right.hashCode()
+                + " " + l5right.hashCode() + " test omitted for conflict with 1.0-SNAPSHOT" + System.lineSeparator() +
+                root.hashCode() + " " + l1Optional.hashCode() + " test" + System.lineSeparator();
         Assert.assertEquals(expected, actual);
     }
 
