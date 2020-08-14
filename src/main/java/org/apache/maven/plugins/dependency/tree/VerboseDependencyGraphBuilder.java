@@ -151,26 +151,26 @@ class VerboseDependencyGraphBuilder
 
     private static String getDependencyManagementCoordinate( org.apache.maven.model.Dependency dependency )
     {
-        StringBuilder string = new StringBuilder();
-        string.append( dependency.getGroupId() ).append( ":" ).append( dependency.getArtifactId() ).append( ":" )
+        StringBuilder builder = new StringBuilder();
+        builder.append( dependency.getGroupId() ).append( ":" ).append( dependency.getArtifactId() ).append( ":" )
                 .append( dependency.getType() );
         if ( dependency.getClassifier() != null && !dependency.getClassifier().equals( "" ) )
         {
-            string.append( ":" ).append( dependency.getClassifier() );
+            builder.append( ":" ).append( dependency.getClassifier() );
         }
-        return string.toString();
+        return builder.toString();
     }
 
     private static String getDependencyManagementCoordinate( Artifact artifact )
     {
-        StringBuilder string = new StringBuilder();
-        string.append( artifact.getGroupId() ).append( ":" ).append( artifact.getArtifactId() ).append( ":" ).append(
+        StringBuilder builder = new StringBuilder();
+        builder.append( artifact.getGroupId() ).append( ":" ).append( artifact.getArtifactId() ).append( ":" ).append(
                 artifact.getExtension() );
         if ( artifact.getClassifier() != null && !artifact.getClassifier().equals( "" ) )
         {
-            string.append( ":" ).append( artifact.getClassifier() );
+            builder.append( ":" ).append( artifact.getClassifier() );
         }
-        return string.toString();
+        return builder.toString();
     }
 
     private Dependency getProjectDependency( MavenProject project )
