@@ -19,31 +19,28 @@ package org.apache.maven.plugins.dependency.tree;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.Restriction;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.artifact.filter.StrictPatternIncludesArtifactFilter;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
@@ -53,12 +50,24 @@ import org.apache.maven.shared.dependency.graph.filter.AncestorOrSelfDependencyN
 import org.apache.maven.shared.dependency.graph.filter.AndDependencyNodeFilter;
 import org.apache.maven.shared.dependency.graph.filter.ArtifactDependencyNodeFilter;
 import org.apache.maven.shared.dependency.graph.filter.DependencyNodeFilter;
+import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.BuildingDependencyNodeVisitor;
 import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 import org.apache.maven.shared.dependency.graph.traversal.FilteringDependencyNodeVisitor;
 import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor;
 import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor.GraphTokens;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Displays the dependency tree for this project. Multiple formats are supported: text (by default), but also
@@ -89,6 +98,24 @@ public class TreeMojo
      */
     @Parameter( defaultValue = "${reactorProjects}", readonly = true, required = true )
     private List<MavenProject> reactorProjects;
+
+    @Component
+    private RepositorySystem repositorySystem;
+
+    @Parameter ( defaultValue = "${repositorySystem}" )
+    RepositorySystem repositorySystemParam;
+
+    /**
+     * The current repository/network configuration of Maven.
+     */
+    @Parameter( defaultValue = "${repositorySystemSession}" )
+    private RepositorySystemSession repoSession;
+
+    /**
+     * The project's remote repositories to use for the resolution of project dependencies.
+     */
+    @Parameter( defaultValue = "${project.remoteProjectRepositories}" )
+    private List<RemoteRepository> projectRepos;
 
     /**
      * The dependency tree builder to use.
@@ -207,9 +234,10 @@ public class TreeMojo
      */
     @Parameter( property = "skip", defaultValue = "false" )
     private boolean skip;
-
     // Mojo methods -----------------------------------------------------------
 
+    @Component
+    ProjectDependenciesResolver resolver;
     /*
      * @see org.apache.maven.plugin.Mojo#execute()
      */
@@ -230,23 +258,32 @@ public class TreeMojo
             // TODO: note that filter does not get applied due to MSHARED-4
             ArtifactFilter artifactFilter = createResolvingArtifactFilter();
 
-            if ( verbose )
-            {
-                // To fix we probably need a different DependencyCollector in Aether, which doesn't remove nodes which
-                // have already been resolved.
-                getLog().info( "Verbose not supported since maven-dependency-plugin 3.0" );
-            }
-
             ProjectBuildingRequest buildingRequest =
-                new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
+                    new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
 
             buildingRequest.setProject( project );
 
-            // non-verbose mode use dependency graph component, which gives consistent results with Maven version
-            // running
-            rootNode = dependencyGraphBuilder.buildDependencyGraph( buildingRequest, artifactFilter, reactorProjects );
+            if ( verbose )
+            {
+                // verboseGraphBuilder needs MavenProject project, RepositorySystemSession session,
+                // ProjectDependenciesResolver resolver
+                VerboseDependencyGraphBuilder builder = new VerboseDependencyGraphBuilder();
+                VerboseGraphSerializer serializer = new VerboseGraphSerializer();
 
-            dependencyTreeString = serializeDependencyTree( rootNode );
+                org.eclipse.aether.graph.DependencyNode verboseRootNode = builder.buildVerboseGraph(
+                        project, resolver, repoSession );
+                dependencyTreeString = serializer.serialize( verboseRootNode );
+                rootNode = convertToCustomDependencyNode( verboseRootNode );
+            }
+            else
+            {
+                // non-verbose mode use dependency graph component, which gives consistent results with Maven version
+                // running
+                rootNode = dependencyGraphBuilder.buildDependencyGraph( buildingRequest, artifactFilter,
+                        reactorProjects );
+
+                dependencyTreeString = serializeDependencyTree( rootNode );
+            }
 
             if ( outputFile != null )
             {
@@ -266,6 +303,10 @@ public class TreeMojo
         catch ( IOException exception )
         {
             throw new MojoExecutionException( "Cannot serialise project dependency graph", exception );
+        }
+        catch ( DependencyResolutionException exception )
+        {
+            throw new MojoExecutionException( "Cannot resolve dependencies", exception );
         }
     }
 
@@ -308,6 +349,64 @@ public class TreeMojo
     }
 
     // private methods --------------------------------------------------------
+
+
+    private DependencyNode convertToCustomDependencyNode( org.eclipse.aether.graph.DependencyNode node )
+    {
+        DefaultDependencyNode rootNode = new DefaultDependencyNode( null,
+                convertAetherArtifactToMavenArtifact( node ), null, null, null );
+
+        rootNode.setChildren( new ArrayList<DependencyNode>() );
+
+        for ( org.eclipse.aether.graph.DependencyNode child : node.getChildren() )
+        {
+            rootNode.getChildren().add( buildTree( rootNode, child ) );
+        }
+
+        return rootNode;
+    }
+
+    private DependencyNode buildTree( DependencyNode parent, org.eclipse.aether.graph.DependencyNode child )
+    {
+        List<org.apache.maven.model.Exclusion> exclusions = new ArrayList<>();
+
+        for ( org.eclipse.aether.graph.Exclusion exclusion : child.getDependency().getExclusions() )
+        {
+            exclusions.add( convertAetherExclusionToMavenExclusion( exclusion ) );
+        }
+
+        DefaultDependencyNode newChild = new DefaultDependencyNode( parent,
+                convertAetherArtifactToMavenArtifact( child ),
+                child.getArtifact().getProperties().get( "preManagedVersion" ),
+                child.getArtifact().getProperties().get( "preManagedScope" ), null,
+                child.getDependency().isOptional() );
+
+        newChild.setChildren( new ArrayList<DependencyNode>() );
+
+        for ( org.eclipse.aether.graph.DependencyNode grandChild : child.getChildren() )
+        {
+            newChild.getChildren().add( buildTree( newChild, grandChild ) );
+        }
+
+        return newChild;
+    }
+
+    private static Artifact convertAetherArtifactToMavenArtifact( org.eclipse.aether.graph.DependencyNode node )
+    {
+        org.eclipse.aether.artifact.Artifact artifact = node.getArtifact();
+        return new DefaultArtifact( artifact.getGroupId(), artifact.getArtifactId(),
+                artifact.getVersion(), node.getDependency().getScope(), artifact.getExtension(),
+                artifact.getClassifier(), null );
+    }
+
+    private static Exclusion convertAetherExclusionToMavenExclusion ( org.eclipse.aether.graph.Exclusion exclusion )
+    {
+        Exclusion mavenExclusion = new Exclusion();
+        mavenExclusion.setArtifactId( exclusion.getArtifactId() );
+        mavenExclusion.setGroupId( exclusion.getGroupId() );
+        // don't do anything with locations yet
+        return  mavenExclusion;
+    }
 
     /**
      * Gets the artifact filter to use when resolving the dependency tree.

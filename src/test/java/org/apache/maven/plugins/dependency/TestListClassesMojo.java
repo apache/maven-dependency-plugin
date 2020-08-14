@@ -57,7 +57,7 @@ public class TestListClassesMojo
 
         setVariableValueToObject( mojo, "session", legacySupport.getSession() );
     }
-
+    
     public void testListClassesNotTransitive()
             throws Exception
     {

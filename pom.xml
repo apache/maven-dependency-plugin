@@ -98,16 +98,6 @@ under the License.
     <project.build.outputTimestamp>2020-03-07T11:40:47Z</project.build.outputTimestamp>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm</artifactId>
-        <version>8.0.1</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <!-- maven -->
     <!-- Remove once deprecated code has been replaced/removed  -->
@@ -339,7 +329,6 @@ under the License.
       <version>${jettyVersion}</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 
   <build>
@@ -359,7 +348,10 @@ under the License.
               <exclude>src/it/projects/tree-multimodule/expected.txt</exclude>
               <exclude>src/it/projects/tree-multimodule/module-a/expected.txt</exclude>
               <exclude>src/it/projects/tree-multimodule/module-b/expected.txt</exclude>
-              <exclude>src/it/projects/tree-verbose/expected.txt</exclude>
+              <exclude>src/it/projects/tree-verbose/expected*.txt</exclude>
+              <exclude>src/it/projects/tree-verbose-small/expected.txt</exclude>
+              <!-- These files contain expected versions for unit tests -->
+              <exclude>src/test/resources/unit/verbose-serializer-test/*</exclude>
               <!--
                 These files contain real repository artifacts.
               -->
@@ -423,8 +415,6 @@ under the License.
               <projectsDirectory>src/it/projects</projectsDirectory>
               <pomExcludes>
                 <pomExclude>purge-local-repository-bad-pom/pom.xml</pomExclude>
-                <!-- verbose was using Maven2 code, removed with MDEP-494, requires MSHARED-339 to be fixed first -->
-                <pomExclude>tree-verbose/pom.xml</pomExclude>
               </pomExcludes>
               <pomIncludes>
                 <pomInclude>*/pom.xml</pomInclude>
@@ -456,7 +446,7 @@ under the License.
                 <mockRepo>
                   <source>src/it/mrm/repository</source>
                 </mockRepo>
-                <!-- 
+                <!--
                 <mockRepo>
                   <source>src/test/resources/m2repo</source>
                 </mockRepo>

@@ -31,7 +31,7 @@
   </properties>
 
   <build>
-    <!-- 
+    <!--
     <extensions>
       <extension>
         <groupId>org.apache.maven.plugins.dependency.its</groupId>

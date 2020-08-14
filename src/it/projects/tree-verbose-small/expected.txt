@@ -1,0 +1,8 @@
+org.apache.maven.its.dependency:tree-verbose2:jar:1.0-SNAPSHOT
++- commons-logging:commons-logging:jar:1.2:compile
+|  +- (log4j:log4j:jar:1.2.17:compile - omitted due to optional dependency)
+|  +- (logkit:logkit:jar:1.0.1:compile - omitted due to optional dependency)
+|  +- (avalon-framework:avalon-framework:jar:4.1.5:compile - omitted due to optional dependency)
+|  \- (javax.servlet:servlet-api:jar:2.3:provided - omitted due to optional dependency)
+\- junit:junit:jar:4.13:test
+   \- org.hamcrest:hamcrest-core:jar:1.3:compile

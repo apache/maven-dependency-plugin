@@ -27,11 +27,10 @@ String expected = FileUtils.fileRead( new File( basedir, "expected.txt" ) );
 actual = actual.replaceAll( "[\n\r]+", "\n" );
 expected = expected.replaceAll( "[\n\r]+", "\n" );
 
-System.out.println( "Checking dependency tree..." );
-
 if ( !actual.equals( expected ) )
 {
-    throw new Exception( "Unexpected dependency tree" );
+    throw new Exception( "Unexpected dependency tree." + System.lineSeparator() + "Expected:" + System.lineSeparator()
+    + expected + System.lineSeparator() + "Actual:" + System.lineSeparator() + actual );
 }
 
 return true;
