@@ -38,7 +38,8 @@ import java.util.Set;
 final class VerboseGraphSerializer
 {
     private static final String LINE_START_LAST_CHILD = "\\- ", LINE_START_CHILD = "+- ";
-    private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion", MANAGED_SCOPE = "managedScope";
+    private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",
+            MANAGED_SCOPE = "managedScope";
 
     public String serialize( DependencyNode root )
     {
@@ -416,7 +417,8 @@ final class VerboseGraphSerializer
         if ( node.getDependency() == null )
         {
             // should only get here if node is root
-            return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getExtension() + ":" + artifact.getVersion();
+            return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getExtension() + ":"
+                    + artifact.getVersion();
         }
 
         String scope;
@@ -429,7 +431,8 @@ final class VerboseGraphSerializer
             scope = node.getDependency().getScope();
         }
 
-        String coords = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getExtension() + ":" + artifact.getVersion();
+        String coords = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getExtension() + ":"
+                + artifact.getVersion();
 
         if ( scope != null && !scope.isEmpty() )
         {
@@ -466,7 +469,8 @@ final class VerboseGraphSerializer
 
         for ( String scope : scopes )
         {
-            String coordinate = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getExtension() + ":" + artifact.getVersion() + ":" + scope;
+            String coordinate = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getExtension()
+                    + ":" + artifact.getVersion() + ":" + scope;
             if ( coordinateStrings.contains( coordinate ) )
             {
                 return scope;
@@ -475,7 +479,8 @@ final class VerboseGraphSerializer
         return null;
     }
 
-    private Map<DependencyNode, String> getNodeConflictMessagesBfs( DependencyNode root, Set<String> coordinateStrings, Map<String, String> coordinateVersionMap )
+    private Map<DependencyNode, String> getNodeConflictMessagesBfs( DependencyNode root, Set<String> coordinateStrings,
+                                                                    Map<String, String> coordinateVersionMap )
     {
         Map<DependencyNode, String> nodeErrors = new HashMap<>();
         Set<DependencyNode> visitedNodes = new HashSet<>( 512 );
@@ -552,7 +557,8 @@ final class VerboseGraphSerializer
         return nodeErrors;
     }
 
-    private void dfsPrint( DependencyNode node, String start, StringBuilder builder, Map<DependencyNode, String> nodeErrors )
+    private void dfsPrint( DependencyNode node, String start, StringBuilder builder,
+                           Map<DependencyNode, String> nodeErrors )
     {
         builder.append( start );
         if ( node.getArtifact() == null )
@@ -624,7 +630,8 @@ final class VerboseGraphSerializer
 
     }
 
-    private void callDfsPrint( DependencyNode node, String start, StringBuilder builder, Map<DependencyNode, String> nodeErrors )
+    private void callDfsPrint( DependencyNode node, String start, StringBuilder builder,
+                               Map<DependencyNode, String> nodeErrors )
     {
         for ( int i = 0; i < node.getChildren().size(); i++ )
         {
