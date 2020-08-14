@@ -38,6 +38,7 @@ import java.util.Map;
 public class VerboseGraphSerializerTest extends AbstractMojoTestCase
 {
     private final VerboseGraphSerializer serializer = new VerboseGraphSerializer();
+
     private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",
             MANAGED_SCOPE = "managedScope";
 

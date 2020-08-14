@@ -50,6 +50,7 @@ final class VerboseGraphSerializer
     {
         Set<String> coordinateStrings = new HashSet<>();
         Map<String, String> coordinateVersionMap = new HashMap<>();
+
         // Use BFS to mirror how Maven resolves dependencies and use DFS to print the tree easily
         Map<DependencyNode, String> nodeErrors = getNodeConflictMessagesBfs( root, coordinateStrings,
                 coordinateVersionMap );
@@ -511,6 +512,11 @@ final class VerboseGraphSerializer
             {
                 nodeErrors.put( node, "omitted for conflict with " + versionConflict( node, coordinateVersionMap ) );
             }
+            else if ( versionConflict( node, coordinateVersionMap ) != null )
+            {
+                nodeErrors.put( node, "omitted for conflict with "
+                        + versionConflict( node, coordinateVersionMap ) );
+            }
             else if ( node.getDependency() != null && node.getDependency().isOptional() )
             {
                 nodeErrors.put( node, "omitted due to optional dependency" );
@@ -531,8 +537,8 @@ final class VerboseGraphSerializer
                     if ( visitedNodes.contains( child ) )
                     {
                         ignoreNode = true;
-                        nodeErrors.put( node,
-                                "omitted for introducing a cycle with " + getDependencyCoordinate( child ) );
+                        nodeErrors.put( node, "omitted for introducing a cycle with "
+                                + getDependencyCoordinate( child ) );
                         node.setChildren( new ArrayList<DependencyNode>() );
                         break;
                     }
@@ -571,13 +577,13 @@ final class VerboseGraphSerializer
         String coordString = "";
         boolean messageAdded = false;
 
+
         if ( node.getArtifact().getProperties().containsKey( PRE_MANAGED_VERSION ) )
         {
-            coordString = coordString.concat(
-                    " - version managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_VERSION ) );
+            coordString = coordString.concat( " - version managed from "
+                    + node.getArtifact().getProperties().get( PRE_MANAGED_VERSION ) );
             messageAdded = true;
         }
-
         if ( node.getArtifact().getProperties().containsKey( PRE_MANAGED_SCOPE ) )
         {
             if ( messageAdded )
@@ -627,7 +633,6 @@ final class VerboseGraphSerializer
             builder.append( coordString ).append( System.lineSeparator() );
             callDfsPrint( node, start, builder, nodeErrors );
         }
-
     }
 
     private void callDfsPrint( DependencyNode node, String start, StringBuilder builder,
