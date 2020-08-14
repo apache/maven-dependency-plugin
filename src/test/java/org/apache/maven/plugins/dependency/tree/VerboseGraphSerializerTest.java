@@ -20,7 +20,6 @@ package org.apache.maven.plugins.dependency.tree;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.apache.maven.plugins.dependency.tree.VerboseGraphSerializer;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.DefaultDependencyNode;
@@ -31,12 +30,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 public class VerboseGraphSerializerTest extends AbstractMojoTestCase
@@ -496,6 +492,153 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
     @Test
     public void testGraphmlOutput()
     {
+        DependencyNode root = new DefaultDependencyNode(
+                new Dependency( new DefaultArtifact( "org.example", "root", "jar", "3.1.1" ), "" )
+        );
 
+        DependencyNode l1left = new DefaultDependencyNode(
+                new Dependency( new DefaultArtifact( "org.duplicate", "duplicate", "xml", "2" ), "compile" )
+        );
+        DependencyNode l2left = new DefaultDependencyNode(
+                new Dependency( new DefaultArtifact( "org.duplicate", "duplicate", "xml", "2" ), "compile" )
+        );
+        Artifact cycleArtifact = new DefaultArtifact( "org.cycle", "cycle", "zip", "3" );
+        cycleArtifact = cycleArtifact.setProperties( Collections.singletonMap( "Cycle", "true" ) );
+        DependencyNode l2middleLeft = new DefaultDependencyNode(
+                new Dependency( cycleArtifact, "compile" )
+        );
+
+        DependencyNode l1middle = new DefaultDependencyNode(
+                new Dependency( new DefaultArtifact( "org.apache", "maven", "jar", "1.0-SNAPSHOT" ), "test" )
+        );
+        // should have scope conflict with l1middle, check to make sure its not version
+        DependencyNode l2middleRight = new DefaultDependencyNode(
+                new Dependency( new DefaultArtifact( "org.apache", "maven-dependency", "jar", "1.0-SNAPSHOT" ), "compile" )
+        );
+
+        DependencyNode l1right = new DefaultDependencyNode(
+                new Dependency( new DefaultArtifact( "org.apache", "maven-dependency", "jar", "1.0-SNAPSHOT" ), "test" )
+        );
+        DependencyNode l5right = new DefaultDependencyNode(
+                new Dependency( new DefaultArtifact( "org.apache", "maven-dependency", "jar", "2.1" ), "test" )
+        );
+        DependencyNode l6right = new DefaultDependencyNode(
+                new Dependency( new DefaultArtifact( "org.abc", "shouldn't show", "xml", "1" ), "compile" )
+        );
+
+        Artifact scopeManaged = new DefaultArtifact( "org.scopeManaged", "scope-managed", "zip", "2.1" );
+        Map<String, String> artifactProperties = new HashMap<>( scopeManaged.getProperties() );
+        artifactProperties.put( PRE_MANAGED_SCOPE, "runtime" );
+        artifactProperties.put( MANAGED_SCOPE, "compile" );
+        scopeManaged = scopeManaged.setProperties( artifactProperties );
+        DependencyNode l2right = new DefaultDependencyNode(
+                new Dependency( scopeManaged, "scope" )
+        );
+
+        Artifact versionManaged = new DefaultArtifact( "org.versionManaged", "version-manged", "pom", "3.3.3" );
+        artifactProperties = new HashMap<>( versionManaged.getProperties() );
+        artifactProperties.put( PRE_MANAGED_VERSION, "1.1.0" );
+        versionManaged = versionManaged.setProperties( artifactProperties );
+        DependencyNode l3right = new DefaultDependencyNode(
+                new Dependency( versionManaged, "provided" )
+        );
+
+        Artifact scopeVersionManaged = new DefaultArtifact( "org.scopeVersionManaged", "scope-version-managed",
+                "xml", "2" );
+        artifactProperties = new HashMap<>( scopeVersionManaged.getProperties() );
+        artifactProperties.put( PRE_MANAGED_SCOPE, "runtime" );
+        artifactProperties.put( MANAGED_SCOPE, "compile" );
+        artifactProperties.put( PRE_MANAGED_VERSION, "3.1" );
+        scopeVersionManaged = scopeVersionManaged.setProperties( artifactProperties );
+
+        DependencyNode l4right = new DefaultDependencyNode(
+                new Dependency( scopeVersionManaged, "runtime" )
+        );
+
+        Dependency optionalDependency = new Dependency(
+                new DefaultArtifact( "org.apache", "optional", "jar", "1.1" ), "test" );
+        optionalDependency = optionalDependency.setOptional( true );
+        DependencyNode l1Optional = new DefaultDependencyNode( optionalDependency );
+
+        root.setChildren( Arrays.asList( l1left, l1middle, l1right, l1Optional ) );
+        l1left.setChildren( Arrays.asList( l2left, l2middleLeft ) );
+        l2left.setChildren( Collections.singletonList( l6right ) ); // l6right shouldn't show due to omitted parent node
+        l2middleLeft.setChildren( Collections.singletonList( l6right ) );
+        l1Optional.setChildren( Collections.singletonList( l6right ) );
+        l1middle.setChildren( Collections.singletonList( l2middleRight ) );
+        l1right.setChildren( Collections.singletonList( l2right ) );
+        l2right.setChildren( Collections.singletonList( l3right ) );
+        l3right.setChildren( Collections.singletonList( l4right ) );
+        l4right.setChildren( Collections.singletonList( l5right ) );
+        l5right.setChildren( Collections.singletonList( l6right ) );
+
+        String actual = serializer.serialize( root, "graphml" );
+        String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <graphml xmlns=\"http://graphml.graph"
+                + "drawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:y=\"http://www.ywo"
+                + "rks.com/xml/graphml\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml."
+                + "graphdrawing.org/xmlns/1.0/graphml.xsd\">" + System.lineSeparator() + "  <key for=\"node\" id=\"d0\" "
+                + "yfiles.type=\"nodegraphics\"/>" + System.lineSeparator() + "  <key for=\"edge\" id=\"d1\" yfiles"
+                + ".type=\"edgegraphics\"/>" + System.lineSeparator()
+                + "<graph id=\"dependencies\" edgedefault=\"directed\">"
+                + System.lineSeparator() + "<node id=\"" + root.hashCode() + "\"><data key=\"d0\"><y:ShapeNode>"
+                + "<y:NodeLabel>" + "org.example:root:jar:3.1.1</y:NodeLabel></y:ShapeNode></data></node>"
+                + System.lineSeparator() + "<node id=\"" + l1left.hashCode() + "\"><data key=\"d0\"><y:ShapeNode>"
+                + "<y:NodeLabel>org.duplicate:duplicate:xml:" + "2:compile</y:NodeLabel></y:ShapeNode></data></node>"
+                + System.lineSeparator()
+                + "<node id=\"" + l1middle.hashCode() + "\"><data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.apache:"
+                + "maven:jar:1.0-SNAPSHOT:test</y:NodeLabel></y:ShapeNode></data></node>" + System.lineSeparator()
+                + "<node id=\"" + l1right.hashCode() + "\"><data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.apache:maven"
+                + "-dependency:jar:1.0-SNAPSHOT:test</y:NodeLabel></y:ShapeNode></data></node>" + System.lineSeparator()
+                + "<node id=\"" + l1Optional.hashCode() + "\"><data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.apache:"
+                + "optional:jar:1.1:test - omitted due to optional dependency</y:NodeLabel></y:ShapeNode></data></node>"
+                + System.lineSeparator() + "<node id=\"" + l2left.hashCode() + "\"><data key=\"d0\"><y:ShapeNode>"
+                + "<y:NodeLabel>org.duplicate:duplicate:xml:2:compile - omitted for duplicate</y:NodeLabel>"
+                + "</y:ShapeNode></data></node>" + System.lineSeparator() + "<node id=\"" + l2middleLeft.hashCode()
+                + "\"><data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.cycle:cycle:zip:3:compile - omitted due to cycle"
+                + "</y:NodeLabel></y:ShapeNode></data></node>" + System.lineSeparator()
+                + "<node id=\"" + l2middleRight.hashCode() + "\">"
+                + "<data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.apache:maven-dependency:jar:1.0-SNAPSHOT:compile "
+                + "- omitted for conflict with test</y:NodeLabel></y:ShapeNode></data></node>" + System.lineSeparator()
+                + "<node id=\"" + l2right.hashCode() + "\"><data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.scopeManaged"
+                + ":scope-managed:zip:2.1:compile - scope managed from runtime</y:NodeLabel></y:ShapeNode></data>"
+                + "</node>" + System.lineSeparator() + "<node id=\"" + l3right.hashCode() + "\"><data key=\"d0\">"
+                + "<y:ShapeNode><y:NodeLabel>org.versionManaged:version-manged:pom:3.3.3:provided - version managed "
+                + "from 1.1.0</y:NodeLabel></y:ShapeNode></data></node>" + System.lineSeparator()
+                + "<node id=\"" + l4right.hashCode()
+                + "\"><data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.scopeVersionManaged:scope-version-managed:xml:"
+                + "2:compile - version managed from 3.1; scope managed from runtime</y:NodeLabel></y:ShapeNode>"
+                + "</data></node>" + System.lineSeparator() + "<node id=\"" + l5right.hashCode() + "\"><data key="
+                + "\"d0\"><y:ShapeNode><y:NodeLabel>org.apache:maven-dependency:jar:2.1:test - omitted for"
+                + " conflict with 1.0-SNAPSHOT</y:NodeLabel></y:ShapeNode></data></node>" + System.lineSeparator()
+                + "<edge source=\"" + root.hashCode() + "\" target=\"" + l1left.hashCode()
+                + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>compile</y:EdgeLabel></y:PolyLineEdge></data>"
+                + "</edge>" + System.lineSeparator() + "<edge source=\"" + root.hashCode() + "\" target=\""
+                + l1middle.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>test</y:EdgeLabel>"
+                + "</y:PolyLineEdge></data></edge>" + System.lineSeparator() + "<edge source=\"" + root.hashCode()
+                + "\" target=\"" + l1right.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>test"
+                + "</y:EdgeLabel></y:PolyLineEdge></data></edge>" + System.lineSeparator() + "<edge source=\""
+                + root.hashCode() + "\" target=\"" + l1Optional.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge>"
+                + "<y:EdgeLabel>test omitted due to optional dependency</y:EdgeLabel></y:PolyLineEdge></data></edge>"
+                + System.lineSeparator() + "<edge source=\"" + l1left.hashCode() + "\" target=\""
+                + l2left.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>compile omitted "
+                + "for duplicate</y:EdgeLabel></y:PolyLineEdge></data></edge>" + System.lineSeparator()
+                + "<edge source=\"" + l1left.hashCode() + "\" target=\"" + l2middleLeft.hashCode()
+                + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>compile omitted due to cycle</y:EdgeLabel>"
+                + "</y:PolyLineEdge></data></edge>" + System.lineSeparator() + "<edge source=\"" + l1middle.hashCode()
+                + "\" target=\""
+                + l2middleRight.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>compile omitted"
+                + " for conflict with test</y:EdgeLabel></y:PolyLineEdge></data></edge>" + System.lineSeparator()
+                + "<edge source=\"" + l1right.hashCode() + "\" target=\"" + l2right.hashCode() + "\"><data key=\"d1\">"
+                + "<y:PolyLineEdge><y:EdgeLabel>compile, scope managed from runtime</y:EdgeLabel></y:PolyLineEdge>"
+                + "</data></edge>" + System.lineSeparator() + "<edge source=\"" + l2right.hashCode() + "\" target="
+                + "\"" + l3right.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>provided"
+                + "</y:EdgeLabel></y:PolyLineEdge></data></edge>" + System.lineSeparator() + "<edge source=\""
+                + l3right.hashCode() + "\" target=\"" + l4right.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge>"
+                + "<y:EdgeLabel>compile, scope managed from runtime</y:EdgeLabel></y:PolyLineEdge></data>"
+                + "</edge>" + System.lineSeparator() + "<edge source=\"" + l4right.hashCode() + "\" target=\""
+                + l5right.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>test omitted "
+                + "for conflict with 1.0-SNAPSHOT</y:EdgeLabel></y:PolyLineEdge></data></edge>" + System.lineSeparator()
+                + "</graph></graphml>";
+        Assert.assertEquals(expected, actual);
     }
 }

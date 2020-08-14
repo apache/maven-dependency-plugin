@@ -76,8 +76,18 @@ final class VerboseGraphSerializer
         Set<DependencyNode> visitedNodes = new HashSet<>();
         Queue<DependencyNode> queue = new LinkedList<>();
         queue.add( root );
-        StringBuilder result = new StringBuilder(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " + "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" " + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " + "xmlns:y=\"http://www.yworks.com/xml/graphml\" " + "xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns " + "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">" + System.lineSeparator() + "  <key for=\"node\" id=\"d0\" yfiles.type=\"nodegraphics\"/>" + System.lineSeparator() + "  <key for=\"edge\" id=\"d1\" yfiles.type=\"edgegraphics\"/>" + System.lineSeparator() + "<graph id=\"dependencies\" edgedefault=\"directed\">" + System.lineSeparator() );
+        StringBuilder result = new StringBuilder( "<?xml version=\"1.0\" encoding=\"UTF-8\"?> "
+                        + "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
+                + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+                + "xmlns:y=\"http://www.yworks.com/xml/graphml\" "
+                + "xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns "
+                + "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">"
+                + System.lineSeparator()
+                + "  <key for=\"node\" id=\"d0\" yfiles.type=\"nodegraphics\"/>"
+                + System.lineSeparator()
+                + "  <key for=\"edge\" id=\"d1\" yfiles.type=\"edgegraphics\"/>"
+                + System.lineSeparator()
+                + "<graph id=\"dependencies\" edgedefault=\"directed\">" + System.lineSeparator() );
 
         StringBuilder nodes = new StringBuilder();
         StringBuilder edges = new StringBuilder();
@@ -103,26 +113,32 @@ final class VerboseGraphSerializer
         return result.toString();
     }
 
-    private String getGraphmlEdgeLine( DependencyNode parent, DependencyNode child, Map<DependencyNode, String> nodeErrors )
+    private String getGraphmlEdgeLine( DependencyNode parent, DependencyNode child,
+                                       Map<DependencyNode, String> nodeErrors )
     {
         StringBuilder builder = new StringBuilder();
         builder.append( "<edge source=\"" ).append( parent.hashCode() ).append( "\" target=\"" ).append(
-                child.hashCode() ).append( "><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>" );
+                child.hashCode() ).append( "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>" );
 
-        builder.append( child.getDependency().getScope() );
+
         boolean messageAdded = false;
 
         if ( child.getArtifact().getProperties().containsKey( PRE_MANAGED_SCOPE ) )
         {
             messageAdded = true;
-            builder.append( " version managed from " ).append(
+            builder.append( child.getArtifact().getProperties().get( MANAGED_SCOPE ) );
+            builder.append( ", scope managed from " ).append(
                     child.getArtifact().getProperties().get( PRE_MANAGED_SCOPE ) );
+        }
+        else
+        {
+            builder.append( child.getDependency().getScope() );
         }
         if ( child.getArtifact().getProperties().containsKey( "Cycle" ) )
         {
             if ( messageAdded )
             {
-                builder.append( ", " );
+                builder.append( "," );
             }
             builder.append( " omitted due to cycle" );
         }
@@ -130,9 +146,9 @@ final class VerboseGraphSerializer
         {
             if ( messageAdded )
             {
-                builder.append( ", " );
+                builder.append( "," );
             }
-            builder.append( nodeErrors.get( child ) );
+            builder.append( " " ).append( nodeErrors.get( child ) );
         }
         builder.append( "</y:EdgeLabel></y:PolyLineEdge></data></edge>" ).append( System.lineSeparator() );
         return builder.toString();
@@ -167,7 +183,7 @@ final class VerboseGraphSerializer
             coordString = coordString.concat(
                     "scope managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_SCOPE ) );
         }
-        builder.append( getDependencyCoordinate( node ) + coordString );
+        builder.append( getDependencyCoordinate( node ) ).append( coordString );
         if ( node.getArtifact().getProperties().containsKey( "Cycle" ) )
         {
             if ( !messageAdded )
@@ -283,7 +299,8 @@ final class VerboseGraphSerializer
         return nodes.append( edges ).toString();
     }
 
-    private void serializeTgfDfs( DependencyNode node, Map<DependencyNode, String> nodeErrors, StringBuilder nodes, StringBuilder edges )
+    private void serializeTgfDfs( DependencyNode node, Map<DependencyNode, String> nodeErrors, StringBuilder nodes,
+                                  StringBuilder edges )
     {
         nodes.append( node.hashCode() ).append( " " );
         String coordString = "";
