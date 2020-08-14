@@ -18,7 +18,6 @@ package org.apache.maven.plugins.dependency.tree;
  * under the License.
  */
 
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -28,7 +27,6 @@ import org.eclipse.aether.graph.DependencyNode;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,8 +56,8 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         root.setChildren( Arrays.asList( left, right ) );
 
         String actual = serializer.serialize( root );
-        File file = new File(getBasedir(), "/target/test-classes/unit/verbose-serializer-test/BasicTree.txt");
-        String expected = FileUtils.readFileToString( file );
+        String expected = "com.google:rootArtifact:jar:1.0.0\n" + "+- org.apache:left:xml:0.1-SNAPSHOT:test\n"
+                + "\\- org.xyz:right:zip:1:provided\n";
 
         Assert.assertEquals(expected, actual);
     }
@@ -114,8 +112,12 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         root.setChildren( Arrays.asList( l1left, l1right ) );
 
         String actual = serializer.serialize( root );
-        File file = new File(getBasedir(), "/target/test-classes/unit/verbose-serializer-test/LargeTree.txt");
-        String expected = FileUtils.readFileToString(file);
+        String expected = "com.google:rootArtifact:jar:1.0.0\n" + "+- org.apache:left:xml:0.1-SNAPSHOT:test\n"
+                + "|  +- org.maven:a4:jar:2.2.1:system\n" + "|  \\- com.google:a5:zip:0:import\n"
+                + "|     \\- com.xyz:a6:xml:1.2.1:provided\n" + "|        \\- com.example:a7:jar:2.2.2:provided\n"
+                + "|           +- com.comm:a7:jar:1:compile\n" + "|           |  \\- com.example:a8:xml:2.1:compile\n"
+                + "|           \\- (com.comm:a7:jar:1:compile - omitted for duplicate)\n"
+                + "\\- org.xyz:right:zip:1:provided\n" + "   \\- com.xyz:a9:xml:1.2:runtime\n";
 
         Assert.assertEquals(expected, actual);
     }
@@ -173,9 +175,12 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         l5left.setChildren( Arrays.asList( l2left, l1right, l3 ) );
 
         String actual = serializer.serialize( root );
-        File file = new File(getBasedir(),
-                "/target/test-classes/unit/verbose-serializer-test/LargeGraphWithCycles.txt");
-        String expected = FileUtils.readFileToString(file);
+        String expected = "com.google:rootArtifact:jar:1.0.0\n" + "+- org.apache:left:xml:0.1-SNAPSHOT:test\n"
+                + "|  +- org.maven:a4:jar:2.2.1:system\n" + "|  \\- com.google:a5:zip:0:import\n"
+                + "|     \\- com.xyz:a6:xml:1.2.1:compile\n" + "|        \\- com.example:a7:jar:2.2.2:provided\n"
+                + "|           +- (com.comm:a7:jar:1:compile - omitted for introducing a cycle with org.maven:a4:"
+                + "jar:2.2.1:system)\n" + "|           \\- (com.comm:a7:jar:1:compile - omitted for duplicate)\n"
+                + "\\- org.xyz:right:zip:1:provided\n" + "   \\- com.xyz:a9:xml:1.2:runtime\n";
 
         Assert.assertEquals(expected, actual);
     }
@@ -196,9 +201,9 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         root.setChildren( Arrays.asList( left, right ) );
 
         String actual = serializer.serialize( root );
-        File file = new File(getBasedir(),
-                "/target/test-classes/unit/verbose-serializer-test/OptionalDependency.txt");
-        String expected = FileUtils.readFileToString(file);
+        String expected = "com.google:rootArtifact:jar:1.0.0\n"
+                + "+- (org.apache:left:xml:0.1-SNAPSHOT:test - omitted due to optional dependency)\n"
+                + "\\- org.xyz:right:zip:1:provided\n";
 
         Assert.assertEquals(expected, actual);
     }
@@ -223,8 +228,9 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         root.setChildren( Arrays.asList( left, right ) );
 
         String actual = serializer.serialize( root );
-        File file = new File(getBasedir(), "/target/test-classes/unit/verbose-serializer-test/ScopeConflict.txt");
-        String expected = FileUtils.readFileToString(file);
+        String expected = "com.google:rootArtifact:jar:1.0.0\n" + "+- org.apache:left:xml:0.1-SNAPSHOT:test\n"
+                + "|  \\- (com.google:conflictArtifact:jar:1.0.0:compile - omitted for conflict with test)\n"
+                + "\\- com.google:conflictArtifact:jar:1.0.0:test\n";
 
         Assert.assertEquals(expected, actual);
     }
@@ -250,9 +256,9 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         root.setChildren( Arrays.asList( left, right ) );
 
         String actual = serializer.serialize( root );
-        File file = new File(getBasedir(),
-                "/target/test-classes/unit/verbose-serializer-test/VersionConflict.txt");
-        String expected = FileUtils.readFileToString(file);
+        String expected = "com.google:rootArtifact:jar:1.0.0\n" + "+- org.apache:left:xml:0.1-SNAPSHOT:test\n"
+                + "|  \\- (org.apache:left:xml:0.3.1:compile - omitted for conflict with 0.1-SNAPSHOT)\n"
+                + "\\- com.google:artifact:jar:2.0.0:test\n";
 
         Assert.assertEquals(expected, actual);
     }
@@ -343,30 +349,30 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
 
         String actual = serializer.serialize( root, "dot" );
         String expected = "digraph \"org.example:root:jar:3.1.1\" {"
-                + System.lineSeparator()
+                + "\n"
                 + " \"org.example:root:jar:3.1.1\" -> \"org.duplicate:duplicate:xml:2:compile\" ;"
-                + System.lineSeparator()
+                + "\n"
                 + " \"org.example:root:jar:3.1.1\" -> \"org.apache:maven:jar:1.0-SNAPSHOT:test\" ;"
-                + System.lineSeparator()
+                + "\n"
                 + " \"org.example:root:jar:3.1.1\" -> \"org.apache:maven-dependency:jar:1.0-SNAPSHOT:test\" ;"
-                + System.lineSeparator()
+                + "\n"
                 + " \"org.example:root:jar:3.1.1\" -> \"org.apache:optional:jar:1.1:test - omitted due to optional "
-                + "dependency\" ;" + System.lineSeparator()
+                + "dependency\" ;" + "\n"
                 + " \"org.duplicate:duplicate:xml:2:compile\" -> \"org.duplicate:duplicate"
-                + ":xml:2:compile - omitted for duplicate\" ;" + System.lineSeparator()
+                + ":xml:2:compile - omitted for duplicate\" ;" + "\n"
                 + " \"org.duplicate:duplicate:xml:2:compile\" -> \"org.cycle:cycle:zip:3:compile - omitted due "
-                + "to cycle\" ;" + System.lineSeparator()
+                + "to cycle\" ;" + "\n"
                 + " \"org.apache:maven:jar:1.0-SNAPSHOT:test\" -> \"org.apache:maven-dependency"
-                + ":jar:1.0-SNAPSHOT:compile - omitted for conflict with test\" ;" + System.lineSeparator()
+                + ":jar:1.0-SNAPSHOT:compile - omitted for conflict with test\" ;" + "\n"
                 + " \"org.apache:maven-dependency:jar:1.0-SNAPSHOT:test\" -> \"org.scopeManaged:scope-managed:zip"
-                + ":2.1:compile - scope managed from runtime\" ;" + System.lineSeparator()
+                + ":2.1:compile - scope managed from runtime\" ;" + "\n"
                 + " \"org.scopeManaged:scope-managed:zip:2.1:compile\" -> \"org.versionManaged:version-manged:"
-                + "pom:3.3.3:provided - version managed from 1.1.0\" ;" + System.lineSeparator()
+                + "pom:3.3.3:provided - version managed from 1.1.0\" ;" + "\n"
                 + " \"org.versionManaged:version-manged:pom:3.3.3:provided\" -> \"org.scopeVersionManaged:"
                 + "scope-version-managed:xml:2:compile - version managed from 3.1; scope managed from runtime\" ;"
-                + System.lineSeparator() + " \"org.scopeVersionManaged:scope-version-managed:xml:2:compile\" -> "
+                + "\n" + " \"org.scopeVersionManaged:scope-version-managed:xml:2:compile\" -> "
                 + "\"org.apache:maven-dependency:jar:2.1:test - omitted for conflict with 1.0-SNAPSHOT\" ;"
-                + System.lineSeparator() + "}";
+                + "\n" + "}";
         Assert.assertEquals(expected, actual);
     }
 
@@ -455,38 +461,38 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         l5right.setChildren( Collections.singletonList( l6right ) );
 
         String actual = serializer.serialize( root, "tgf" );
-        String expected = root.hashCode() + " org.example:root:jar:3.1.1" + System.lineSeparator()
-                + l1left.hashCode() + " org.duplicate:duplicate:xml:2:compile" + System.lineSeparator()
+        String expected = root.hashCode() + " org.example:root:jar:3.1.1" + "\n"
+                + l1left.hashCode() + " org.duplicate:duplicate:xml:2:compile" + "\n"
                 + l2left.hashCode() + " (org.duplicate:duplicate:xml:2:compile - omitted for duplicate)"
-                + System.lineSeparator() + l2middleLeft.hashCode()
-                + " (org.cycle:cycle:zip:3:compile - omitted for cycle)" + System.lineSeparator()
-                + l1middle.hashCode() + " org.apache:maven:jar:1.0-SNAPSHOT:test" + System.lineSeparator()
+                + "\n" + l2middleLeft.hashCode()
+                + " (org.cycle:cycle:zip:3:compile - omitted for cycle)" + "\n"
+                + l1middle.hashCode() + " org.apache:maven:jar:1.0-SNAPSHOT:test" + "\n"
                 + l2middleRight.hashCode()
                 + " (org.apache:maven-dependency:jar:1.0-SNAPSHOT:compile - omitted for conflict with test)"
-                + System.lineSeparator() + l1right.hashCode() + " org.apache:maven-dependency:jar:1.0-SNAPSHOT:test"
-                + System.lineSeparator() + l2right.hashCode()
+                + "\n" + l1right.hashCode() + " org.apache:maven-dependency:jar:1.0-SNAPSHOT:test"
+                + "\n" + l2right.hashCode()
                 + " org.scopeManaged:scope-managed:zip:2.1:compile - scope managed from runtime"
-                + System.lineSeparator() + l3right.hashCode()
+                + "\n" + l3right.hashCode()
                 + " org.versionManaged:version-manged:pom:3.3.3:provided - version managed from 1.1.0"
-                + System.lineSeparator() + l4right.hashCode()
+                + "\n" + l4right.hashCode()
                 + " org.scopeVersionManaged:scope-version-managed:xml:2:compile - version managed from 3.1; "
-                + "scope managed from runtime" + System.lineSeparator() + l5right.hashCode()
+                + "scope managed from runtime" + "\n" + l5right.hashCode()
                 + " (org.apache:maven-dependency:jar:2.1:test - omitted for conflict with 1.0-SNAPSHOT)"
-                + System.lineSeparator() + l1Optional.hashCode()
+                + "\n" + l1Optional.hashCode()
                 + " (org.apache:optional:jar:1.1:test - omitted due to optional dependency)"
-                + System.lineSeparator() + "#" + System.lineSeparator() + root.hashCode() + " " + l1left.hashCode()
-                + " compile" + System.lineSeparator()
+                + "\n" + "#" + "\n" + root.hashCode() + " " + l1left.hashCode()
+                + " compile" + "\n"
                 + l1left.hashCode() + " " + l2left.hashCode() + " compile omitted for duplicate"
-                + System.lineSeparator() + l1left.hashCode() + " " + l2middleLeft.hashCode()
-                + " compile omitted for cycle" + System.lineSeparator() + root.hashCode() + " " + l1middle.hashCode()
-                + " test" + System.lineSeparator() + l1middle.hashCode() + " " + l2middleRight.hashCode()
-                + " compile omitted for conflict with test" + System.lineSeparator() + root.hashCode() + " "
-                + l1right.hashCode() + " test" + System.lineSeparator() + l1right.hashCode() + " " + l2right.hashCode()
-                + " compile managed from runtime" + System.lineSeparator() + l2right.hashCode() + " "
-                + l3right.hashCode() + " provided" + System.lineSeparator() + l3right.hashCode() + " "
-                + l4right.hashCode() + " compile managed from runtime" + System.lineSeparator() + l4right.hashCode()
-                + " " + l5right.hashCode() + " test omitted for conflict with 1.0-SNAPSHOT" + System.lineSeparator() +
-                root.hashCode() + " " + l1Optional.hashCode() + " test" + System.lineSeparator();
+                + "\n" + l1left.hashCode() + " " + l2middleLeft.hashCode()
+                + " compile omitted for cycle" + "\n" + root.hashCode() + " " + l1middle.hashCode()
+                + " test" + "\n" + l1middle.hashCode() + " " + l2middleRight.hashCode()
+                + " compile omitted for conflict with test" + "\n" + root.hashCode() + " "
+                + l1right.hashCode() + " test" + "\n" + l1right.hashCode() + " " + l2right.hashCode()
+                + " compile managed from runtime" + "\n" + l2right.hashCode() + " "
+                + l3right.hashCode() + " provided" + "\n" + l3right.hashCode() + " "
+                + l4right.hashCode() + " compile managed from runtime" + "\n" + l4right.hashCode()
+                + " " + l5right.hashCode() + " test omitted for conflict with 1.0-SNAPSHOT" + "\n" +
+                root.hashCode() + " " + l1Optional.hashCode() + " test" + "\n";
         Assert.assertEquals(expected, actual);
     }
 
@@ -577,68 +583,68 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <graphml xmlns=\"http://graphml.graph"
                 + "drawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:y=\"http://www.ywo"
                 + "rks.com/xml/graphml\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml."
-                + "graphdrawing.org/xmlns/1.0/graphml.xsd\">" + System.lineSeparator() + "  <key for=\"node\" id=\"d0\" "
-                + "yfiles.type=\"nodegraphics\"/>" + System.lineSeparator() + "  <key for=\"edge\" id=\"d1\" yfiles"
-                + ".type=\"edgegraphics\"/>" + System.lineSeparator()
+                + "graphdrawing.org/xmlns/1.0/graphml.xsd\">" + "\n" + "  <key for=\"node\" id=\"d0\" "
+                + "yfiles.type=\"nodegraphics\"/>" + "\n" + "  <key for=\"edge\" id=\"d1\" yfiles"
+                + ".type=\"edgegraphics\"/>" + "\n"
                 + "<graph id=\"dependencies\" edgedefault=\"directed\">"
-                + System.lineSeparator() + "<node id=\"" + root.hashCode() + "\"><data key=\"d0\"><y:ShapeNode>"
+                + "\n" + "<node id=\"" + root.hashCode() + "\"><data key=\"d0\"><y:ShapeNode>"
                 + "<y:NodeLabel>" + "org.example:root:jar:3.1.1</y:NodeLabel></y:ShapeNode></data></node>"
-                + System.lineSeparator() + "<node id=\"" + l1left.hashCode() + "\"><data key=\"d0\"><y:ShapeNode>"
+                + "\n" + "<node id=\"" + l1left.hashCode() + "\"><data key=\"d0\"><y:ShapeNode>"
                 + "<y:NodeLabel>org.duplicate:duplicate:xml:" + "2:compile</y:NodeLabel></y:ShapeNode></data></node>"
-                + System.lineSeparator()
+                + "\n"
                 + "<node id=\"" + l1middle.hashCode() + "\"><data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.apache:"
-                + "maven:jar:1.0-SNAPSHOT:test</y:NodeLabel></y:ShapeNode></data></node>" + System.lineSeparator()
+                + "maven:jar:1.0-SNAPSHOT:test</y:NodeLabel></y:ShapeNode></data></node>" + "\n"
                 + "<node id=\"" + l1right.hashCode() + "\"><data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.apache:maven"
-                + "-dependency:jar:1.0-SNAPSHOT:test</y:NodeLabel></y:ShapeNode></data></node>" + System.lineSeparator()
+                + "-dependency:jar:1.0-SNAPSHOT:test</y:NodeLabel></y:ShapeNode></data></node>" + "\n"
                 + "<node id=\"" + l1Optional.hashCode() + "\"><data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.apache:"
                 + "optional:jar:1.1:test - omitted due to optional dependency</y:NodeLabel></y:ShapeNode></data></node>"
-                + System.lineSeparator() + "<node id=\"" + l2left.hashCode() + "\"><data key=\"d0\"><y:ShapeNode>"
+                + "\n" + "<node id=\"" + l2left.hashCode() + "\"><data key=\"d0\"><y:ShapeNode>"
                 + "<y:NodeLabel>org.duplicate:duplicate:xml:2:compile - omitted for duplicate</y:NodeLabel>"
-                + "</y:ShapeNode></data></node>" + System.lineSeparator() + "<node id=\"" + l2middleLeft.hashCode()
+                + "</y:ShapeNode></data></node>" + "\n" + "<node id=\"" + l2middleLeft.hashCode()
                 + "\"><data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.cycle:cycle:zip:3:compile - omitted due to cycle"
-                + "</y:NodeLabel></y:ShapeNode></data></node>" + System.lineSeparator()
+                + "</y:NodeLabel></y:ShapeNode></data></node>" + "\n"
                 + "<node id=\"" + l2middleRight.hashCode() + "\">"
                 + "<data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.apache:maven-dependency:jar:1.0-SNAPSHOT:compile "
-                + "- omitted for conflict with test</y:NodeLabel></y:ShapeNode></data></node>" + System.lineSeparator()
+                + "- omitted for conflict with test</y:NodeLabel></y:ShapeNode></data></node>" + "\n"
                 + "<node id=\"" + l2right.hashCode() + "\"><data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.scopeManaged"
                 + ":scope-managed:zip:2.1:compile - scope managed from runtime</y:NodeLabel></y:ShapeNode></data>"
-                + "</node>" + System.lineSeparator() + "<node id=\"" + l3right.hashCode() + "\"><data key=\"d0\">"
+                + "</node>" + "\n" + "<node id=\"" + l3right.hashCode() + "\"><data key=\"d0\">"
                 + "<y:ShapeNode><y:NodeLabel>org.versionManaged:version-manged:pom:3.3.3:provided - version managed "
-                + "from 1.1.0</y:NodeLabel></y:ShapeNode></data></node>" + System.lineSeparator()
+                + "from 1.1.0</y:NodeLabel></y:ShapeNode></data></node>" + "\n"
                 + "<node id=\"" + l4right.hashCode()
                 + "\"><data key=\"d0\"><y:ShapeNode><y:NodeLabel>org.scopeVersionManaged:scope-version-managed:xml:"
                 + "2:compile - version managed from 3.1; scope managed from runtime</y:NodeLabel></y:ShapeNode>"
-                + "</data></node>" + System.lineSeparator() + "<node id=\"" + l5right.hashCode() + "\"><data key="
+                + "</data></node>" + "\n" + "<node id=\"" + l5right.hashCode() + "\"><data key="
                 + "\"d0\"><y:ShapeNode><y:NodeLabel>org.apache:maven-dependency:jar:2.1:test - omitted for"
-                + " conflict with 1.0-SNAPSHOT</y:NodeLabel></y:ShapeNode></data></node>" + System.lineSeparator()
+                + " conflict with 1.0-SNAPSHOT</y:NodeLabel></y:ShapeNode></data></node>" + "\n"
                 + "<edge source=\"" + root.hashCode() + "\" target=\"" + l1left.hashCode()
                 + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>compile</y:EdgeLabel></y:PolyLineEdge></data>"
-                + "</edge>" + System.lineSeparator() + "<edge source=\"" + root.hashCode() + "\" target=\""
+                + "</edge>" + "\n" + "<edge source=\"" + root.hashCode() + "\" target=\""
                 + l1middle.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>test</y:EdgeLabel>"
-                + "</y:PolyLineEdge></data></edge>" + System.lineSeparator() + "<edge source=\"" + root.hashCode()
+                + "</y:PolyLineEdge></data></edge>" + "\n" + "<edge source=\"" + root.hashCode()
                 + "\" target=\"" + l1right.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>test"
-                + "</y:EdgeLabel></y:PolyLineEdge></data></edge>" + System.lineSeparator() + "<edge source=\""
+                + "</y:EdgeLabel></y:PolyLineEdge></data></edge>" + "\n" + "<edge source=\""
                 + root.hashCode() + "\" target=\"" + l1Optional.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge>"
                 + "<y:EdgeLabel>test omitted due to optional dependency</y:EdgeLabel></y:PolyLineEdge></data></edge>"
-                + System.lineSeparator() + "<edge source=\"" + l1left.hashCode() + "\" target=\""
+                + "\n" + "<edge source=\"" + l1left.hashCode() + "\" target=\""
                 + l2left.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>compile omitted "
-                + "for duplicate</y:EdgeLabel></y:PolyLineEdge></data></edge>" + System.lineSeparator()
+                + "for duplicate</y:EdgeLabel></y:PolyLineEdge></data></edge>" + "\n"
                 + "<edge source=\"" + l1left.hashCode() + "\" target=\"" + l2middleLeft.hashCode()
                 + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>compile omitted due to cycle</y:EdgeLabel>"
-                + "</y:PolyLineEdge></data></edge>" + System.lineSeparator() + "<edge source=\"" + l1middle.hashCode()
+                + "</y:PolyLineEdge></data></edge>" + "\n" + "<edge source=\"" + l1middle.hashCode()
                 + "\" target=\""
                 + l2middleRight.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>compile omitted"
-                + " for conflict with test</y:EdgeLabel></y:PolyLineEdge></data></edge>" + System.lineSeparator()
+                + " for conflict with test</y:EdgeLabel></y:PolyLineEdge></data></edge>" + "\n"
                 + "<edge source=\"" + l1right.hashCode() + "\" target=\"" + l2right.hashCode() + "\"><data key=\"d1\">"
                 + "<y:PolyLineEdge><y:EdgeLabel>compile, scope managed from runtime</y:EdgeLabel></y:PolyLineEdge>"
-                + "</data></edge>" + System.lineSeparator() + "<edge source=\"" + l2right.hashCode() + "\" target="
+                + "</data></edge>" + "\n" + "<edge source=\"" + l2right.hashCode() + "\" target="
                 + "\"" + l3right.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>provided"
-                + "</y:EdgeLabel></y:PolyLineEdge></data></edge>" + System.lineSeparator() + "<edge source=\""
+                + "</y:EdgeLabel></y:PolyLineEdge></data></edge>" + "\n" + "<edge source=\""
                 + l3right.hashCode() + "\" target=\"" + l4right.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge>"
                 + "<y:EdgeLabel>compile, scope managed from runtime</y:EdgeLabel></y:PolyLineEdge></data>"
-                + "</edge>" + System.lineSeparator() + "<edge source=\"" + l4right.hashCode() + "\" target=\""
+                + "</edge>" + "\n" + "<edge source=\"" + l4right.hashCode() + "\" target=\""
                 + l5right.hashCode() + "\"><data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>test omitted "
-                + "for conflict with 1.0-SNAPSHOT</y:EdgeLabel></y:PolyLineEdge></data></edge>" + System.lineSeparator()
+                + "for conflict with 1.0-SNAPSHOT</y:EdgeLabel></y:PolyLineEdge></data></edge>" + "\n"
                 + "</graph></graphml>";
         Assert.assertEquals(expected, actual);
     }

@@ -84,12 +84,12 @@ final class VerboseGraphSerializer
                 + "xmlns:y=\"http://www.yworks.com/xml/graphml\" "
                 + "xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns "
                 + "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">"
-                + System.lineSeparator()
+                + "\n"
                 + "  <key for=\"node\" id=\"d0\" yfiles.type=\"nodegraphics\"/>"
-                + System.lineSeparator()
+                + "\n"
                 + "  <key for=\"edge\" id=\"d1\" yfiles.type=\"edgegraphics\"/>"
-                + System.lineSeparator()
-                + "<graph id=\"dependencies\" edgedefault=\"directed\">" + System.lineSeparator() );
+                + "\n"
+                + "<graph id=\"dependencies\" edgedefault=\"directed\">" + "\n" );
 
         StringBuilder nodes = new StringBuilder();
         StringBuilder edges = new StringBuilder();
@@ -152,7 +152,7 @@ final class VerboseGraphSerializer
             }
             builder.append( " " ).append( nodeErrors.get( child ) );
         }
-        builder.append( "</y:EdgeLabel></y:PolyLineEdge></data></edge>" ).append( System.lineSeparator() );
+        builder.append( "</y:EdgeLabel></y:PolyLineEdge></data></edge>" ).append( "\n" );
         return builder.toString();
     }
 
@@ -167,23 +167,23 @@ final class VerboseGraphSerializer
 
         if ( node.getArtifact().getProperties().containsKey( PRE_MANAGED_VERSION ) )
         {
-            coordString = coordString.concat(
-                    " - version managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_VERSION ) );
+            coordString +=
+                    " - version managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_VERSION );
             messageAdded = true;
         }
         if ( node.getArtifact().getProperties().containsKey( PRE_MANAGED_SCOPE ) )
         {
             if ( messageAdded )
             {
-                coordString = coordString.concat( "; " );
+                coordString += "; ";
             }
             else
             {
-                coordString = coordString.concat( " - " );
+                coordString += " - ";
                 messageAdded = true;
             }
-            coordString = coordString.concat(
-                    "scope managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_SCOPE ) );
+            coordString +=
+                    "scope managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_SCOPE );
         }
         builder.append( getDependencyCoordinate( node ) ).append( coordString );
         if ( node.getArtifact().getProperties().containsKey( "Cycle" ) )
@@ -202,7 +202,7 @@ final class VerboseGraphSerializer
             }
             builder.append( nodeErrors.get( node ) );
         }
-        builder.append( "</y:NodeLabel></y:ShapeNode></data></node>" ).append( System.lineSeparator() );
+        builder.append( "</y:NodeLabel></y:ShapeNode></data></node>" ).append( "\n" );
         return builder.toString();
     }
 
@@ -216,7 +216,7 @@ final class VerboseGraphSerializer
         StringBuilder result = new StringBuilder( "digraph" );
         result.append( " \"" ).append( rootArtifact.getGroupId() ).append( ":" ).append(
                 rootArtifact.getArtifactId() ).append( ":" ).append( rootArtifact.getExtension() ).append( ":" ).append(
-                rootArtifact.getVersion() ).append( "\" {" ).append( System.lineSeparator() );
+                rootArtifact.getVersion() ).append( "\" {" ).append( "\n" );
 
         while ( !queue.isEmpty() )
         {
@@ -229,24 +229,24 @@ final class VerboseGraphSerializer
 
                 if ( child.getArtifact().getProperties().containsKey( PRE_MANAGED_VERSION ) )
                 {
-                    coordString = coordString.concat(
+                    coordString +=
                             " - version managed from " + child.getArtifact().getProperties().get(
-                                    PRE_MANAGED_VERSION ) );
+                                    PRE_MANAGED_VERSION );
                     messageAdded = true;
                 }
                 if ( child.getArtifact().getProperties().containsKey( PRE_MANAGED_SCOPE ) )
                 {
                     if ( messageAdded )
                     {
-                        coordString = coordString.concat( "; " );
+                        coordString += "; ";
                     }
                     else
                     {
-                        coordString = coordString.concat( " - " );
+                        coordString += " - ";
                         messageAdded = true;
                     }
-                    coordString = coordString.concat(
-                            "scope managed from " + child.getArtifact().getProperties().get( PRE_MANAGED_SCOPE ) );
+                    coordString +=
+                            "scope managed from " + child.getArtifact().getProperties().get( PRE_MANAGED_SCOPE );
                 }
                 coordString = getDependencyCoordinate( child ) + coordString;
                 result.append( getDependencyCoordinate( node ) ).append( "\"" ).append( " -> \"" ).append(
@@ -272,7 +272,7 @@ final class VerboseGraphSerializer
                     visitedNodes.add( child );
                     queue.add( child );
                 }
-                result.append( "\" ;" ).append( System.lineSeparator() );
+                result.append( "\" ;" ).append( "\n" );
             }
         }
         result.append( "}" );
@@ -283,18 +283,18 @@ final class VerboseGraphSerializer
     {
         StringBuilder nodes = new StringBuilder();
         StringBuilder edges = new StringBuilder( "#" );
-        edges.append( System.lineSeparator() );
+        edges.append( "\n" );
 
         // deal with root first
         Artifact rootArtifact = root.getArtifact();
         nodes.append( root.hashCode() ).append( " " ).append( rootArtifact.getGroupId() ).append( ":" ).append(
                 rootArtifact.getArtifactId() ).append( ":" ).append( rootArtifact.getExtension() ).append( ":" ).append(
-                rootArtifact.getVersion() ).append( System.lineSeparator() );
+                rootArtifact.getVersion() ).append( "\n" );
 
         for ( DependencyNode child : root.getChildren() )
         {
             edges.append( root.hashCode() ).append( " " ).append( child.hashCode() ).append( " " ).append(
-                    child.getDependency().getScope() ).append( System.lineSeparator() );
+                    child.getDependency().getScope() ).append( "\n" );
             serializeTgfDfs( child, nodeErrors, nodes, edges );
         }
 
@@ -310,23 +310,22 @@ final class VerboseGraphSerializer
 
         if ( node.getArtifact().getProperties().containsKey( PRE_MANAGED_VERSION ) )
         {
-            coordString = coordString.concat(
-                    " - version managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_VERSION ) );
+            coordString += " - version managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_VERSION );
             messageAdded = true;
         }
         if ( node.getArtifact().getProperties().containsKey( PRE_MANAGED_SCOPE ) )
         {
             if ( messageAdded )
             {
-                coordString = coordString.concat( "; " );
+                coordString += "; ";
             }
             else
             {
-                coordString = coordString.concat( " - " );
+                coordString += " - ";
                 messageAdded = true;
             }
-            coordString = coordString.concat(
-                    "scope managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_SCOPE ) );
+            coordString +=
+                    "scope managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_SCOPE );
         }
         coordString = getDependencyCoordinate( node ) + coordString;
 
@@ -335,14 +334,14 @@ final class VerboseGraphSerializer
         {
             if ( messageAdded )
             {
-                coordString = coordString.concat( "; " );
+                coordString += "; ";
             }
             else
             {
-                coordString = coordString.concat( " - " );
+                coordString += " - ";
             }
-            coordString = coordString.concat( "omitted for cycle" );
-            nodes.append( "(" ).append( coordString ).append( ")" ).append( System.lineSeparator() );
+            coordString += "omitted for cycle";
+            nodes.append( "(" ).append( coordString ).append( ")" ).append( "\n" );
         }
         else if ( nodeErrors.get( node ) != null )
         {
@@ -355,11 +354,11 @@ final class VerboseGraphSerializer
             {
                 nodes.append( coordString ).append( " - " ).append( nodeErrors.get( node ) );
             }
-            nodes.append( ")" ).append( System.lineSeparator() );
+            nodes.append( ")" ).append( "\n" );
         }
         else
         {
-            nodes.append( coordString ).append( System.lineSeparator() );
+            nodes.append( coordString ).append( "\n" );
             for ( DependencyNode child : node.getChildren() )
             {
                 edges.append( node.hashCode() ).append( " " ).append( child.hashCode() ).append( " " );
@@ -381,7 +380,7 @@ final class VerboseGraphSerializer
                 {
                     edges.append( " " ).append( nodeErrors.get( child ) );
                 }
-                edges.append( System.lineSeparator() );
+                edges.append( "\n" );
                 serializeTgfDfs( child, nodeErrors, nodes, edges );
             }
         }
@@ -395,7 +394,7 @@ final class VerboseGraphSerializer
         Artifact rootArtifact = root.getArtifact();
         builder.append( rootArtifact.getGroupId() ).append( ":" ).append( rootArtifact.getArtifactId() ).append(
                 ":" ).append( rootArtifact.getExtension() ).append( ":" ).append( rootArtifact.getVersion() ).append(
-                System.lineSeparator() );
+                "\n" );
 
         for ( int i = 0; i < root.getChildren().size(); i++ )
         {
@@ -570,33 +569,32 @@ final class VerboseGraphSerializer
         if ( node.getArtifact() == null )
         {
             // Should never hit this condition with a proper graph sent in
-            builder.append( "Null Artifact Node" ).append( System.lineSeparator() );
+            builder.append( "Null Artifact Node" ).append( "\n" );
             callDfsPrint( node, start, builder, nodeErrors );
         }
 
         String coordString = "";
         boolean messageAdded = false;
 
-
         if ( node.getArtifact().getProperties().containsKey( PRE_MANAGED_VERSION ) )
         {
-            coordString = coordString.concat( " - version managed from "
-                    + node.getArtifact().getProperties().get( PRE_MANAGED_VERSION ) );
+            coordString += " - version managed from "
+                    + node.getArtifact().getProperties().get( PRE_MANAGED_VERSION );
             messageAdded = true;
         }
         if ( node.getArtifact().getProperties().containsKey( PRE_MANAGED_SCOPE ) )
         {
             if ( messageAdded )
             {
-                coordString = coordString.concat( "; " );
+                coordString += "; ";
             }
             else
             {
-                coordString = coordString.concat( " - " );
+                coordString += " - ";
                 messageAdded = true;
             }
-            coordString = coordString.concat(
-                    "scope managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_SCOPE ) );
+            coordString +=
+                    "scope managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_SCOPE );
         }
 
         coordString = getDependencyCoordinate( node ) + coordString;
@@ -605,14 +603,14 @@ final class VerboseGraphSerializer
         {
             if ( messageAdded )
             {
-                coordString = coordString.concat( "; " );
+                coordString += "; ";
             }
             else
             {
-                coordString = coordString.concat( " - " );
+                coordString += " - ";
             }
-            coordString = coordString.concat( "omitted for cycle" );
-            builder.append( "(" ).append( coordString ).append( ")" ).append( System.lineSeparator() );
+            coordString += "omitted for cycle";
+            builder.append( "(" ).append( coordString ).append( ")" ).append( "\n" );
         }
         else if ( nodeErrors.get( node ) != null )
         {
@@ -626,11 +624,11 @@ final class VerboseGraphSerializer
                 builder.append( coordString ).append( " - " ).append( nodeErrors.get( node ) );
             }
             builder.append( ")" );
-            builder.append( System.lineSeparator() );
+            builder.append( "\n" );
         }
         else
         {
-            builder.append( coordString ).append( System.lineSeparator() );
+            builder.append( coordString ).append( "\n" );
             callDfsPrint( node, start, builder, nodeErrors );
         }
     }
