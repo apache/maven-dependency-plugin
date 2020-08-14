@@ -35,7 +35,7 @@ import java.util.Map;
 
 public class VerboseGraphSerializerTest extends AbstractMojoTestCase
 {
-    private final VerboseGraphSerializer serializer = new VerboseGraphSerializer();
+    private AbstractVerboseGraphSerializer serializer;
 
     private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",
             MANAGED_SCOPE = "managedScope";
@@ -43,6 +43,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
     @Test
     public void testBasicTree() throws IOException
     {
+        serializer = new VerboseGraphTextSerializer();
         DependencyNode root = new DefaultDependencyNode(
                 new Dependency( new DefaultArtifact( "com.google", "rootArtifact", "jar", "1.0.0" ), null)
         );
@@ -65,6 +66,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
     @Test
     public void testLargeTree() throws IOException
     {
+        serializer = new VerboseGraphTextSerializer();
         // Construct nodes for tree l1 = level 1 with the root being l0
         DependencyNode root = new DefaultDependencyNode(
                 new Dependency( new DefaultArtifact( "com.google", "rootArtifact", "jar", "1.0.0" ), null )
@@ -125,6 +127,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
     @Test
     public void testLargeGraphWithCycles() throws IOException
     {
+        serializer = new VerboseGraphTextSerializer();
         // Construct nodes for tree l1 = level 1 with the root being l0
         DependencyNode root = new DefaultDependencyNode(
                 new Dependency( new DefaultArtifact( "com.google", "rootArtifact", "jar", "1.0.0" ), null )
@@ -188,6 +191,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
     @Test
     public void testTreeWithOptional() throws IOException
     {
+        serializer = new VerboseGraphTextSerializer();
         DependencyNode root = new DefaultDependencyNode(
                 new Dependency( new DefaultArtifact( "com.google", "rootArtifact", "jar", "1.0.0" ), "")
         );
@@ -211,6 +215,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
     @Test
     public void testTreeWithScopeConflict() throws IOException
     {
+        serializer = new VerboseGraphTextSerializer();
         DependencyNode root = new DefaultDependencyNode(
                 new Dependency( new DefaultArtifact( "com.google", "rootArtifact", "jar", "1.0.0" ), null )
         );
@@ -238,6 +243,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
     @Test
     public void testTreeWithVersionConflict() throws IOException
     {
+        serializer = new VerboseGraphTextSerializer();
         DependencyNode root = new DefaultDependencyNode(
                 new Dependency( new DefaultArtifact( "com.google", "rootArtifact", "jar", "1.0.0" ), "rootScope" )
         );
@@ -266,6 +272,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
     @Test
     public void testDotOutput()
     {
+        serializer = new VerboseGraphDotSerializer();
         DependencyNode root = new DefaultDependencyNode(
                 new Dependency( new DefaultArtifact( "org.example", "root", "jar", "3.1.1" ), "" )
         );
@@ -347,7 +354,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         l4right.setChildren( Collections.singletonList( l5right ) );
         l5right.setChildren( Collections.singletonList( l6right ) );
 
-        String actual = serializer.serialize( root, "dot" );
+        String actual = serializer.serialize( root );
         String expected = "digraph \"org.example:root:jar:3.1.1\" {"
                 + "\n"
                 + " \"org.example:root:jar:3.1.1\" -> \"org.duplicate:duplicate:xml:2:compile\" ;"
@@ -379,6 +386,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
     @Test
     public void testTgfOutput()
     {
+        serializer = new VerboseGraphTgfSerializer();
         DependencyNode root = new DefaultDependencyNode(
                 new Dependency( new DefaultArtifact( "org.example", "root", "jar", "3.1.1" ), "" )
         );
@@ -460,7 +468,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         l4right.setChildren( Collections.singletonList( l5right ) );
         l5right.setChildren( Collections.singletonList( l6right ) );
 
-        String actual = serializer.serialize( root, "tgf" );
+        String actual = serializer.serialize( root );
         String expected = root.hashCode() + " org.example:root:jar:3.1.1" + "\n"
                 + l1left.hashCode() + " org.duplicate:duplicate:xml:2:compile" + "\n"
                 + l2left.hashCode() + " (org.duplicate:duplicate:xml:2:compile - omitted for duplicate)"
@@ -499,6 +507,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
     @Test
     public void testGraphmlOutput()
     {
+        serializer = new VerboseGraphGraphmlSerializer();
         DependencyNode root = new DefaultDependencyNode(
                 new Dependency( new DefaultArtifact( "org.example", "root", "jar", "3.1.1" ), "" )
         );
@@ -579,7 +588,7 @@ public class VerboseGraphSerializerTest extends AbstractMojoTestCase
         l4right.setChildren( Collections.singletonList( l5right ) );
         l5right.setChildren( Collections.singletonList( l6right ) );
 
-        String actual = serializer.serialize( root, "graphml" );
+        String actual = serializer.serialize( root );
         String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <graphml xmlns=\"http://graphml.graph"
                 + "drawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:y=\"http://www.ywo"
                 + "rks.com/xml/graphml\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml."
