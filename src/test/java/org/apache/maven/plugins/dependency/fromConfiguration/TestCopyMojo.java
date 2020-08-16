@@ -19,9 +19,12 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  * under the License.    
  */
 
+import static org.junit.Assume.assumeTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.FileSystemException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -155,6 +158,27 @@ public class TestCopyMojo
         assertEquals( exist, file.exists() );
     }
 
+    private static final boolean supportsSymbolicLinks = supportsSymbolicLinks();
+
+    private static boolean supportsSymbolicLinks( )
+    {
+        try {
+            Path target = Files.createTempFile( null, null );
+            Path link = Files.createTempFile( null, null );
+            Files.delete( link );
+            try {
+                Files.createSymbolicLink( link, target );
+            } catch ( FileSystemException e ) {
+                return false;
+            }
+            Files.delete( link );
+            Files.delete( target );
+            return true;
+        } catch ( IOException e ) {
+            throw new RuntimeException( e );
+        }
+    }
+
     public void assertFilesAreLinks( Collection<ArtifactItem> items, boolean areLinks )
     {
         for ( ArtifactItem item : items )
@@ -268,6 +292,8 @@ public class TestCopyMojo
     public void testLink()
         throws Exception
     {
+        assumeTrue("supports symbolic links", supportsSymbolicLinks);
+
         List<ArtifactItem> list = stubFactory.getArtifactItems( stubFactory.getClassifiedArtifacts() );
 
         mojo.setArtifactItems( createArtifactItemArtifacts( list ) );
