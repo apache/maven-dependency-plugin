@@ -37,7 +37,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
-import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
@@ -271,7 +270,7 @@ public class TreeMojo
                 AbstractVerboseGraphSerializer serializer = getSerializer();
 
                 org.eclipse.aether.graph.DependencyNode verboseRootNode = builder.buildVerboseGraph(
-                        project, resolver, repoSession );
+                        project, resolver, repoSession, reactorProjects );
                 dependencyTreeString = serializer.serialize( verboseRootNode );
                 rootNode = convertToCustomDependencyNode( verboseRootNode );
             }
@@ -303,10 +302,6 @@ public class TreeMojo
         catch ( IOException exception )
         {
             throw new MojoExecutionException( "Cannot serialise project dependency graph", exception );
-        }
-        catch ( DependencyResolutionException exception )
-        {
-            throw new MojoExecutionException( "Cannot resolve dependencies", exception );
         }
     }
 
@@ -413,9 +408,19 @@ public class TreeMojo
     private static Artifact convertAetherArtifactToMavenArtifact( org.eclipse.aether.graph.DependencyNode node )
     {
         org.eclipse.aether.artifact.Artifact artifact = node.getArtifact();
-        return new DefaultArtifact( artifact.getGroupId(), artifact.getArtifactId(),
-                artifact.getVersion(), node.getDependency().getScope(), artifact.getExtension(),
-                artifact.getClassifier(), null );
+
+        if ( node.getDependency() != null )
+        {
+            return new DefaultArtifact( artifact.getGroupId(), artifact.getArtifactId(),
+                    artifact.getVersion(), node.getDependency().getScope(), artifact.getExtension(),
+                    artifact.getClassifier(), null );
+        }
+        else
+        {
+            return new DefaultArtifact( artifact.getGroupId(), artifact.getArtifactId(),
+                    artifact.getVersion(), null, artifact.getExtension(),
+                    artifact.getClassifier(), null );
+        }
     }
 
     private static Exclusion convertAetherExclusionToMavenExclusion ( org.eclipse.aether.graph.Exclusion exclusion )

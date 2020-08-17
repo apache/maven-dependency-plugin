@@ -344,6 +344,7 @@ under the License.
                 otherwise the IT's will fail.
               -->
               <exclude>src/it/projects/tree/expected.txt</exclude>
+              <exclude>src/it/projects/reactor/expected-tree.txt</exclude>
               <exclude>src/it/projects/tree-includes/expected.txt</exclude>
               <exclude>src/it/projects/tree-multimodule/expected.txt</exclude>
               <exclude>src/it/projects/tree-multimodule/module-a/expected.txt</exclude>
