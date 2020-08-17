@@ -268,7 +268,7 @@ public class TreeMojo
                 // verboseGraphBuilder needs MavenProject project, RepositorySystemSession session,
                 // ProjectDependenciesResolver resolver
                 VerboseDependencyGraphBuilder builder = new VerboseDependencyGraphBuilder();
-                VerboseGraphSerializer serializer = new VerboseGraphSerializer();
+                AbstractVerboseGraphSerializer serializer = getSerializer();
 
                 org.eclipse.aether.graph.DependencyNode verboseRootNode = builder.buildVerboseGraph(
                         project, resolver, repoSession );
@@ -350,6 +350,25 @@ public class TreeMojo
 
     // private methods --------------------------------------------------------
 
+    private AbstractVerboseGraphSerializer getSerializer( )
+    {
+        if ( "graphml".equals( outputType ) )
+        {
+            return new VerboseGraphGraphmlSerializer();
+        }
+        else if ( "tgf".equals( outputType ) )
+        {
+            return new VerboseGraphTgfSerializer();
+        }
+        else if ( "dot".equals( outputType ) )
+        {
+            return new VerboseGraphDotSerializer();
+        }
+        else
+        {
+            return new VerboseGraphTextSerializer();
+        }
+    }
 
     private DependencyNode convertToCustomDependencyNode( org.eclipse.aether.graph.DependencyNode node )
     {

@@ -57,7 +57,7 @@ class VerboseDependencyGraphBuilder
             MANAGED_SCOPE = "managedScope";
 
     public DependencyNode buildVerboseGraph( MavenProject project, ProjectDependenciesResolver resolver,
-                                                         RepositorySystemSession repositorySystemSession )
+                                             RepositorySystemSession repositorySystemSession )
             throws DependencyResolutionException
     {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
@@ -66,13 +66,12 @@ class VerboseDependencyGraphBuilder
         DependencySelector dependencySelector = new AndDependencySelector(
                 // ScopeDependencySelector takes exclusions. 'Provided' scope is not here to avoid
                 // false positive in LinkageChecker.
-                new ScopeDependencySelector(),
-                new ExclusionDependencySelector() );
+                new ScopeDependencySelector(), new ExclusionDependencySelector() );
 
         session.setDependencySelector( dependencySelector );
-        session.setDependencyGraphTransformer( new ChainedDependencyGraphTransformer(
-                new CycleBreakerGraphTransformer(), // Avoids StackOverflowError
-                new JavaDependencyContextRefiner() ) );
+        session.setDependencyGraphTransformer(
+                new ChainedDependencyGraphTransformer( new CycleBreakerGraphTransformer(), // Avoids StackOverflowError
+                        new JavaDependencyContextRefiner() ) );
         session.setDependencyManager( null );
 
         DependencyResolutionRequest request = new DefaultDependencyResolutionRequest();
@@ -152,26 +151,26 @@ class VerboseDependencyGraphBuilder
 
     private static String getDependencyManagementCoordinate( org.apache.maven.model.Dependency dependency )
     {
-        StringBuilder string = new StringBuilder();
-        string.append( dependency.getGroupId() ).append( ":" ).append( dependency.getArtifactId() )
-                .append( ":" ).append( dependency.getType() );
+        StringBuilder builder = new StringBuilder();
+        builder.append( dependency.getGroupId() ).append( ":" ).append( dependency.getArtifactId() ).append( ":" )
+                .append( dependency.getType() );
         if ( dependency.getClassifier() != null && !dependency.getClassifier().equals( "" ) )
         {
-            string.append( ":" ).append( dependency.getClassifier() );
+            builder.append( ":" ).append( dependency.getClassifier() );
         }
-        return string.toString();
+        return builder.toString();
     }
 
     private static String getDependencyManagementCoordinate( Artifact artifact )
     {
-        StringBuilder string = new StringBuilder();
-        string.append( artifact.getGroupId() ).append( ":" ).append( artifact.getArtifactId() ).append( ":" )
-                .append( artifact.getExtension() );
+        StringBuilder builder = new StringBuilder();
+        builder.append( artifact.getGroupId() ).append( ":" ).append( artifact.getArtifactId() ).append( ":" ).append(
+                artifact.getExtension() );
         if ( artifact.getClassifier() != null && !artifact.getClassifier().equals( "" ) )
         {
-            string.append( ":" ).append( artifact.getClassifier() );
+            builder.append( ":" ).append( artifact.getClassifier() );
         }
-        return string.toString();
+        return builder.toString();
     }
 
     private Dependency getProjectDependency( MavenProject project )
@@ -199,7 +198,7 @@ class VerboseDependencyGraphBuilder
         return newRoot;
     }
 
-    private void pruneTransitiveTestDependenciesDfs( DependencyNode node , Set<DependencyNode> visitedNodes )
+    private void pruneTransitiveTestDependenciesDfs( DependencyNode node, Set<DependencyNode> visitedNodes )
     {
         if ( !visitedNodes.contains( node ) )
         {
