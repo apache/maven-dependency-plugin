@@ -34,13 +34,20 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
+@RunWith(BlockJUnit4ClassRunner.class)
 public class TestCopyMojo
     extends AbstractDependencyMojoTestCase
 {
     private CopyMojo mojo;
 
-    protected void setUp()
+    @Before
+    public void setUp()
         throws Exception
     {
         super.setUp( "copy", false, false );
@@ -82,6 +89,7 @@ public class TestCopyMojo
         assertNull( item.getClassifier() );
     }
 
+    @Test
     public void testSetArtifactWithoutClassifier()
         throws Exception
     {
@@ -805,5 +813,10 @@ public class TestCopyMojo
         stubFactory.createArtifact( item.getGroupId(), item.getArtifactId(), version, null, item.getType(),
                                     classifier );
         return item;
+    }
+
+    @Test
+    public void testAssumption() {
+        Assume.assumeFalse(true);
     }
 }
