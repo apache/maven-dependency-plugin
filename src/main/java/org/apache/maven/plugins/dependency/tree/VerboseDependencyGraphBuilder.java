@@ -26,9 +26,11 @@ import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.DependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -60,9 +62,13 @@ class VerboseDependencyGraphBuilder
     private static final String PRE_MANAGED_SCOPE = "preManagedScope", PRE_MANAGED_VERSION = "preManagedVersion",
             MANAGED_SCOPE = "managedScope";
 
+    @Requirement
+    private ProjectDependenciesResolver resolver;
+
     public DependencyNode buildVerboseGraph( MavenProject project, ProjectDependenciesResolver resolver,
                                              RepositorySystemSession repositorySystemSession,
-                                             Collection<MavenProject> reactorProjects )
+                                             Collection<MavenProject> reactorProjects,
+                                             ProjectBuildingRequest buildingRequest )
             throws DependencyGraphBuilderException
     {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
@@ -80,24 +86,36 @@ class VerboseDependencyGraphBuilder
         session.setDependencyManager( null );
 
         DependencyResolutionRequest request = new DefaultDependencyResolutionRequest();
-        request.setMavenProject( project );
-        request.setRepositorySession( session );
-        request.setResolutionFilter( null );
+        request.setMavenProject( buildingRequest.getProject() );
+        request.setRepositorySession( session ) ;
         DependencyNode rootNode;
+
         try
         {
             rootNode = resolver.resolve( request ).getDependencyGraph();
         }
         catch ( DependencyResolutionException e )
         {
-            if ( reactorProjects == null )
+            // cannot properly resolve reactor dependencies with verbose RepositorySystemSession
+            // this should be fixed in the future
+            DependencyResolutionRequest reactorRequest = new DefaultDependencyResolutionRequest();
+            reactorRequest.setMavenProject( buildingRequest.getProject() );
+            reactorRequest.setRepositorySession( buildingRequest.getRepositorySession() ) ;
+            try
             {
-                throw new DependencyGraphBuilderException( "Could not resolve following dependencies: "
-                        + e.getResult().getUnresolvedDependencies(), e );
+                rootNode = resolver.resolve( reactorRequest ).getDependencyGraph();
             }
+            catch ( DependencyResolutionException exception )
+            {
+                if ( reactorProjects == null )
+                {
+                    throw new DependencyGraphBuilderException( "Could not resolve following dependencies: "
+                            + exception.getResult().getUnresolvedDependencies(), exception );
+                }
 
-            // try collecting from reactor
-            rootNode = collectDependenciesFromReactor( e, reactorProjects ).getDependencyGraph();
+                // try collecting from reactor
+                rootNode = collectDependenciesFromReactor( exception, reactorProjects ).getDependencyGraph();
+            }
         }
 
         // Don't want transitive test dependencies included in analysis

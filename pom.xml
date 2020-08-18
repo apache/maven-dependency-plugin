@@ -351,6 +351,9 @@ under the License.
               <exclude>src/it/projects/tree-multimodule/module-b/expected.txt</exclude>
               <exclude>src/it/projects/tree-verbose/expected*.txt</exclude>
               <exclude>src/it/projects/tree-verbose-small/expected.txt</exclude>
+              <exclude>src/it/projects/tree-verbose-multimodule/expected.txt</exclude>
+              <exclude>src/it/projects/tree-verbose-multimodule/module-a/expected.txt</exclude>
+              <exclude>src/it/projects/tree-verbose-multimodule/module-b/expected.txt</exclude>
               <!-- These files contain expected versions for unit tests -->
               <exclude>src/test/resources/unit/verbose-serializer-test/*</exclude>
               <!--
@@ -413,6 +416,9 @@ under the License.
                 <goal>clean</goal>
                 <goal>process-sources</goal>
               </goals>
+              <setupIncludes>
+                <setupInclude>reactor/resolve-extension/pom.xml</setupInclude>
+              </setupIncludes>
               <projectsDirectory>src/it/projects</projectsDirectory>
               <pomExcludes>
                 <pomExclude>purge-local-repository-bad-pom/pom.xml</pomExclude>
@@ -427,6 +433,7 @@ under the License.
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
               <addTestClassPath>true</addTestClassPath>
+              <!--<mavenExecutable>mvnDebug</mavenExecutable>-->
             </configuration>
           </plugin>
           <plugin>
