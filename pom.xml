@@ -416,9 +416,6 @@ under the License.
                 <goal>clean</goal>
                 <goal>process-sources</goal>
               </goals>
-              <setupIncludes>
-                <setupInclude>reactor/resolve-extension/pom.xml</setupInclude>
-              </setupIncludes>
               <projectsDirectory>src/it/projects</projectsDirectory>
               <pomExcludes>
                 <pomExclude>purge-local-repository-bad-pom/pom.xml</pomExclude>
@@ -433,7 +430,6 @@ under the License.
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
               <addTestClassPath>true</addTestClassPath>
-              <!--<mavenExecutable>mvnDebug</mavenExecutable>-->
             </configuration>
           </plugin>
           <plugin>

@@ -89,6 +89,7 @@ class VerboseDependencyGraphBuilder
         request.setMavenProject( buildingRequest.getProject() );
         request.setRepositorySession( session ) ;
         DependencyNode rootNode;
+        boolean reactor = false;
 
         try
         {
@@ -112,15 +113,21 @@ class VerboseDependencyGraphBuilder
                     throw new DependencyGraphBuilderException( "Could not resolve following dependencies: "
                             + exception.getResult().getUnresolvedDependencies(), exception );
                 }
-
+                reactor = true;
                 // try collecting from reactor
                 rootNode = collectDependenciesFromReactor( exception, reactorProjects ).getDependencyGraph();
+                rootNode.setData( "ContainsModule", "True" );
+                // rootNode.setArtifact( rootArtifact.setProperties( artifactProperties ) );
             }
         }
 
         // Don't want transitive test dependencies included in analysis
         DependencyNode prunedRoot = pruneTransitiveTestDependencies( rootNode, project );
         applyDependencyManagement( project, prunedRoot );
+        if ( reactor )
+        {
+            prunedRoot.setData( "ContainsModule", "True" );
+        }
         return prunedRoot;
     }
 
