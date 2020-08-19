@@ -154,7 +154,7 @@ public class VerboseGraphGraphmlSerializer extends AbstractVerboseGraphSerialize
         builder.append( getDependencyCoordinate( node ) ).append( coordString );
         if ( node.getData().containsKey( "ContainsModule" ) )
         {
-            builder.append( " WARNING: this tree contains a submodule and once it reaches the submodule will print "
+            builder.append( " WARNING: this tree contains a submodule. Once it reaches the submodule will print "
                     + "in nonVerbose fashion, to see the actual submodule "
                     + "verbose output refer to the rest of the output" );
         }

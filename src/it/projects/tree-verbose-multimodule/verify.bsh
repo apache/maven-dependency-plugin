@@ -27,8 +27,6 @@ String expected = FileUtils.fileRead( new File( basedir, "expected.txt" ) );
 actual = actual.replaceAll( "[\n\r]+", "\n" );
 expected = expected.replaceAll( "[\n\r]+", "\n" );
 
-System.out.println( "Checking root dependency tree..." );
-
 if ( !actual.equals( expected ) )
 {
     throw new Exception( "Unexpected root dependency tree" );
@@ -40,8 +38,6 @@ expected = FileUtils.fileRead( new File( basedir, "module-a/expected.txt" ) );
 actual = actual.replaceAll( "[\n\r]+", "\n" );
 expected = expected.replaceAll( "[\n\r]+", "\n" );
 
-System.out.println( "Checking module-a dependency tree..." );
-
 if ( !actual.equals( expected ) )
 {
     throw new Exception( "Unexpected module-a dependency tree" );
@@ -52,8 +48,6 @@ expected = FileUtils.fileRead( new File( basedir, "module-b/expected.txt" ) );
 
 actual = actual.replaceAll( "[\n\r]+", "\n" );
 expected = expected.replaceAll( "[\n\r]+", "\n" );
-
-System.out.println( "Checking module-b dependency tree..." );
 
 if ( !actual.equals( expected ) )
 {
