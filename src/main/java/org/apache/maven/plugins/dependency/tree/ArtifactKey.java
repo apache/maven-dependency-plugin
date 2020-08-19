@@ -63,10 +63,10 @@ final class ArtifactKey
     @Override
     public int hashCode()
     {
-        final int HASH_PRIME = 31;
+        final int hashPrime = 31;
         int result = groupId.hashCode();
-        result = HASH_PRIME * result + artifactId.hashCode();
-        result = HASH_PRIME * result + version.hashCode();
+        result = hashPrime * result + artifactId.hashCode();
+        result = hashPrime * result + version.hashCode();
         return result;
     }
 }
