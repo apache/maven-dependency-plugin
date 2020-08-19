@@ -37,7 +37,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
-import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
@@ -271,7 +270,7 @@ public class TreeMojo
                 AbstractVerboseGraphSerializer serializer = getSerializer();
 
                 org.eclipse.aether.graph.DependencyNode verboseRootNode = builder.buildVerboseGraph(
-                        project, resolver, repoSession );
+                        project, resolver, repoSession, reactorProjects, buildingRequest );
                 dependencyTreeString = serializer.serialize( verboseRootNode );
                 rootNode = convertToCustomDependencyNode( verboseRootNode );
             }
@@ -303,10 +302,6 @@ public class TreeMojo
         catch ( IOException exception )
         {
             throw new MojoExecutionException( "Cannot serialise project dependency graph", exception );
-        }
-        catch ( DependencyResolutionException exception )
-        {
-            throw new MojoExecutionException( "Cannot resolve dependencies", exception );
         }
     }
 
