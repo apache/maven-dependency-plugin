@@ -24,9 +24,12 @@ import org.apache.maven.model.Model;
 import org.apache.maven.project.DefaultDependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.DependencyResolutionRequest;
+import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -42,9 +45,11 @@ import org.eclipse.aether.util.graph.transformer.ChainedDependencyGraphTransform
 import org.eclipse.aether.util.graph.transformer.JavaDependencyContextRefiner;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,8 +62,10 @@ class VerboseDependencyGraphBuilder
             MANAGED_SCOPE = "managedScope";
 
     public DependencyNode buildVerboseGraph( MavenProject project, ProjectDependenciesResolver resolver,
-                                             RepositorySystemSession repositorySystemSession )
-            throws DependencyResolutionException
+                                             RepositorySystemSession repositorySystemSession,
+                                             Collection<MavenProject> reactorProjects,
+                                             ProjectBuildingRequest buildingRequest )
+            throws DependencyGraphBuilderException
     {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
         session.setLocalRepositoryManager( repositorySystemSession.getLocalRepositoryManager() );
@@ -75,14 +82,48 @@ class VerboseDependencyGraphBuilder
         session.setDependencyManager( null );
 
         DependencyResolutionRequest request = new DefaultDependencyResolutionRequest();
-        request.setMavenProject( project );
-        request.setRepositorySession( session );
-        request.setResolutionFilter( null );
+        request.setMavenProject( buildingRequest.getProject() );
+        request.setRepositorySession( session ) ;
+        DependencyNode rootNode;
+        boolean reactor = false;
 
-        DependencyNode rootNode = resolver.resolve( request ).getDependencyGraph();
+        try
+        {
+            rootNode = resolver.resolve( request ).getDependencyGraph();
+        }
+        catch ( DependencyResolutionException e )
+        {
+            // cannot properly resolve reactor dependencies with verbose RepositorySystemSession
+            // this should be fixed in the future
+            DependencyResolutionRequest reactorRequest = new DefaultDependencyResolutionRequest();
+            reactorRequest.setMavenProject( buildingRequest.getProject() );
+            reactorRequest.setRepositorySession( buildingRequest.getRepositorySession() ) ;
+            try
+            {
+                rootNode = resolver.resolve( reactorRequest ).getDependencyGraph();
+            }
+            catch ( DependencyResolutionException exception )
+            {
+                if ( reactorProjects == null )
+                {
+                    throw new DependencyGraphBuilderException( "Could not resolve following dependencies: "
+                            + exception.getResult().getUnresolvedDependencies(), exception );
+                }
+                reactor = true;
+                // try collecting from reactor
+                rootNode = collectDependenciesFromReactor( exception, reactorProjects ).getDependencyGraph();
+                rootNode.setData( "ContainsModule", "True" );
+                // rootNode.setArtifact( rootArtifact.setProperties( artifactProperties ) );
+            }
+        }
+
         // Don't want transitive test dependencies included in analysis
         DependencyNode prunedRoot = pruneTransitiveTestDependencies( rootNode, project );
         applyDependencyManagement( project, prunedRoot );
+        if ( reactor )
+        {
+            prunedRoot.setData( "ContainsModule", "True" );
+        }
         return prunedRoot;
     }
 
@@ -218,5 +259,50 @@ class VerboseDependencyGraphBuilder
                 }
             }
         }
+    }
+
+    private DependencyResolutionResult collectDependenciesFromReactor( DependencyResolutionException e,
+                                                                       Collection<MavenProject> reactorProjects )
+            throws DependencyGraphBuilderException
+    {
+        DependencyResolutionResult result = e.getResult();
+
+        List<Dependency> reactorDeps = getReactorDependencies( reactorProjects, result.getUnresolvedDependencies() );
+        result.getUnresolvedDependencies().removeAll( reactorDeps );
+        result.getResolvedDependencies().addAll( reactorDeps );
+
+        if ( !result.getUnresolvedDependencies().isEmpty() )
+        {
+            throw new DependencyGraphBuilderException( "Could not resolve nor collect following dependencies: "
+                    + result.getUnresolvedDependencies(), e );
+        }
+
+        return result;
+    }
+
+    private List<Dependency> getReactorDependencies( Collection<MavenProject> reactorProjects, List<?> dependencies )
+    {
+        Set<ArtifactKey> reactorProjectsIds = new HashSet<ArtifactKey>();
+        for ( MavenProject project : reactorProjects )
+        {
+            reactorProjectsIds.add( new ArtifactKey( project ) );
+        }
+
+        List<Dependency> reactorDeps = new ArrayList<Dependency>();
+        for ( Object untypedDependency : dependencies )
+        {
+            Dependency dependency = (Dependency) untypedDependency;
+            org.eclipse.aether.artifact.Artifact depArtifact = dependency.getArtifact();
+
+            ArtifactKey key =
+                    new ArtifactKey( depArtifact.getGroupId(), depArtifact.getArtifactId(), depArtifact.getVersion() );
+
+            if ( reactorProjectsIds.contains( key ) )
+            {
+                reactorDeps.add( dependency );
+            }
+        }
+
+        return reactorDeps;
     }
 }

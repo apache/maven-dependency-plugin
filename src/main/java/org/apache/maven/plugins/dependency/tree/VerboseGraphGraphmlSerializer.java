@@ -152,6 +152,12 @@ public class VerboseGraphGraphmlSerializer extends AbstractVerboseGraphSerialize
                     "scope managed from " + node.getArtifact().getProperties().get( PRE_MANAGED_SCOPE );
         }
         builder.append( getDependencyCoordinate( node ) ).append( coordString );
+        if ( node.getData().containsKey( "ContainsModule" ) )
+        {
+            builder.append( " WARNING: this tree contains a submodule. Once it reaches the submodule will print "
+                    + "in nonVerbose fashion, to see the actual submodule "
+                    + "verbose output refer to the rest of the output" );
+        }
         if ( node.getArtifact().getProperties().containsKey( "Cycle" ) )
         {
             if ( !messageAdded )

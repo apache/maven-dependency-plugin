@@ -49,7 +49,16 @@ class VerboseGraphDotSerializer extends AbstractVerboseGraphSerializer
         StringBuilder result = new StringBuilder( "digraph" );
         result.append( " \"" ).append( rootArtifact.getGroupId() ).append( ":" ).append(
                 rootArtifact.getArtifactId() ).append( ":" ).append( rootArtifact.getExtension() ).append( ":" ).append(
-                rootArtifact.getVersion() ).append( "\" {" ).append( "\n" );
+                rootArtifact.getVersion() );
+
+        if ( root.getData().containsKey( "ContainsModule" ) )
+        {
+            result.append( " WARNING: this tree contains a submodule. Once it reaches the submodule will print "
+                    + "in nonVerbose fashion, to see the actual submodule verbose output refer to the "
+                    + "rest of the output" );
+        }
+
+        result.append( "\" {" ).append( "\n" );
 
         while ( !queue.isEmpty() )
         {

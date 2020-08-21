@@ -49,7 +49,16 @@ class VerboseGraphTgfSerializer extends AbstractVerboseGraphSerializer
         Artifact rootArtifact = root.getArtifact();
         nodes.append( root.hashCode() ).append( " " ).append( rootArtifact.getGroupId() ).append( ":" ).append(
                 rootArtifact.getArtifactId() ).append( ":" ).append( rootArtifact.getExtension() ).append( ":" ).append(
-                rootArtifact.getVersion() ).append( "\n" );
+                rootArtifact.getVersion() );
+
+        if ( root.getData().containsKey( "ContainsModule" ) )
+        {
+            nodes.append( " WARNING: this tree contains a submodule. Once it reaches the submodule will print "
+                    + "in nonVerbose fashion, to see the actual submodule "
+                    + "verbose output refer to the rest of the output" );
+        }
+
+        nodes.append( "\n" );
 
         for ( DependencyNode child : root.getChildren() )
         {
