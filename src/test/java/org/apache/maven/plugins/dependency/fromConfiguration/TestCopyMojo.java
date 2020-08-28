@@ -36,13 +36,19 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
+@RunWith(BlockJUnit4ClassRunner.class)
 public class TestCopyMojo
     extends AbstractDependencyMojoTestCase
 {
     private CopyMojo mojo;
 
-    protected void setUp()
+    @Before
+    public void setUp()
         throws Exception
     {
         super.setUp( "copy", false, false );
@@ -84,6 +90,7 @@ public class TestCopyMojo
         assertNull( item.getClassifier() );
     }
 
+    @Test
     public void testSetArtifactWithoutClassifier()
         throws Exception
     {
@@ -96,6 +103,7 @@ public class TestCopyMojo
         assertNull( item.getClassifier() );
     }
 
+    @Test
     public void testSetArtifact()
         throws Exception
     {
@@ -108,6 +116,7 @@ public class TestCopyMojo
         assertEquals( "e", item.getClassifier() );
     }
 
+    @Test
     public void testGetArtifactItems()
         throws Exception
     {
@@ -160,6 +169,7 @@ public class TestCopyMojo
         assertEquals( isLink, Files.isSymbolicLink( path ) );
     }
 
+    @Test
     public void testMojoDefaults()
     {
         CopyMojo themojo = new CopyMojo();
@@ -169,6 +179,7 @@ public class TestCopyMojo
         assertFalse( themojo.isStripClassifier() );
     }
 
+    @Test
     public void testCopyFile()
         throws Exception
     {
@@ -181,6 +192,7 @@ public class TestCopyMojo
         assertFilesExist( list, true );
     }
 
+    @Test
     public void testCopyFileWithBaseVersion()
         throws Exception
     {
@@ -200,6 +212,7 @@ public class TestCopyMojo
         assertFilesExist( list, true );
     }
 
+    @Test
     public void testSkip()
         throws Exception
     {
@@ -218,6 +231,7 @@ public class TestCopyMojo
 
     }
 
+    @Test
     public void testCopyFileNoOverwrite()
         throws Exception
     {
@@ -235,6 +249,7 @@ public class TestCopyMojo
         assertFilesExist( list, true );
     }
 
+    @Test
     public void testCopyToLocation()
         throws Exception
     {
@@ -249,6 +264,7 @@ public class TestCopyMojo
         assertFilesExist( list, true );
     }
 
+    @Test
     public void testLink()
         throws Exception
     {
@@ -263,6 +279,7 @@ public class TestCopyMojo
         assertFilesAreLinks( list, true );
     }
 
+    @Test
     public void testCopyStripVersionSetInMojo()
         throws Exception
     {
@@ -280,6 +297,7 @@ public class TestCopyMojo
         assertFilesExist( list, true );
     }
 
+    @Test
     public void testCopyStripClassifierSetInMojo()
         throws Exception
     {
@@ -298,6 +316,7 @@ public class TestCopyMojo
         assertFilesExist( list, true );
     }
 
+    @Test
     public void testNonClassifierStrip()
         throws Exception
     {
@@ -310,6 +329,7 @@ public class TestCopyMojo
         assertFilesExist( list, true );
     }
 
+    @Test
     public void testNonClassifierNoStrip()
         throws Exception
     {
@@ -322,6 +342,7 @@ public class TestCopyMojo
         assertFilesExist( list, true );
     }
 
+    @Test
     public void testMissingVersionNotFound()
         throws Exception
     {
@@ -370,6 +391,7 @@ public class TestCopyMojo
         return list;
     }
 
+    @Test
     public void testMissingVersionFromDependencies()
         throws Exception
     {
@@ -392,6 +414,7 @@ public class TestCopyMojo
         assertEquals( "2.0-SNAPSHOT", item.getVersion() );
     }
 
+    @Test
     public void testMissingVersionFromDependenciesLooseMatch()
         throws Exception
     {
@@ -423,6 +446,7 @@ public class TestCopyMojo
         assertEquals( "2.1", item.getVersion() );
     }
 
+    @Test
     public void testMissingVersionFromDependenciesWithClassifier()
         throws Exception
     {
@@ -468,6 +492,7 @@ public class TestCopyMojo
         return list;
     }
 
+    @Test
     public void testMissingVersionFromDependencyMgt()
         throws Exception
     {
@@ -501,6 +526,7 @@ public class TestCopyMojo
         assertEquals( "3.0-SNAPSHOT", item.getVersion() );
     }
 
+    @Test
     public void testMissingVersionFromDependencyMgtLooseMatch()
         throws Exception
     {
@@ -541,6 +567,7 @@ public class TestCopyMojo
         assertEquals( "3.1", item.getVersion() );
     }
 
+    @Test
     public void testMissingVersionFromDependencyMgtWithClassifier()
         throws Exception
     {
@@ -574,12 +601,14 @@ public class TestCopyMojo
         assertEquals( "3.1", item.getVersion() );
     }
 
+    @Test
     public void testArtifactNotFound()
         throws Exception
     {
         dotestArtifactExceptions( false, true );
     }
 
+    @Test
     public void testArtifactResolutionException()
         throws Exception
     {
@@ -612,6 +641,7 @@ public class TestCopyMojo
         }
     }
 
+    @Test
     public void testNoArtifactItems()
     {
         try
@@ -626,6 +656,7 @@ public class TestCopyMojo
 
     }
 
+    @Test
     public void testCopyDontOverWriteReleases()
         throws Exception
     {
@@ -657,6 +688,7 @@ public class TestCopyMojo
         assertEquals( time, copiedFile.lastModified() );
     }
 
+    @Test
     public void testCopyDontOverWriteSnapshots()
         throws Exception
     {
@@ -688,6 +720,7 @@ public class TestCopyMojo
         assertEquals( time, copiedFile.lastModified() );
     }
 
+    @Test
     public void testCopyOverWriteReleases()
         throws Exception
     {
@@ -717,6 +750,7 @@ public class TestCopyMojo
         assertEquals( 1000L, timeCopyNow );
     }
 
+    @Test
     public void testCopyOverWriteSnapshot()
         throws Exception
     {
@@ -747,6 +781,7 @@ public class TestCopyMojo
         assertEquals( 1000L, timeCopyNow );
     }
 
+    @Test
     public void testCopyOverWriteIfNewer()
         throws Exception
     {
@@ -776,6 +811,7 @@ public class TestCopyMojo
         assertTrue( time < copiedFile.lastModified() );
     }
 
+    @Test
     public void testCopyFileWithOverideLocalRepo()
         throws Exception
     {
