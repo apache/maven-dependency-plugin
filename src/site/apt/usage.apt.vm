@@ -600,7 +600,7 @@ mvn dependency:tree
   Optionally, the <<<output>>> parameter can be specified to divert the output to a file:
 
 +-----+
-mvn dependency:tree -Doutput=/path/to/file
+mvn dependency:tree -DoutputFile=/path/to/file
 +-----+
 
   Also, the <<<outputType>>> parameter can be used to generate different formats of output.  The
@@ -617,7 +617,7 @@ mvn dependency:tree -Doutput=/path/to/file
    []
 
 +-----+
-mvn dependency:tree -Doutput=/path/to/file.graphml -DoutputType=graphml
+mvn dependency:tree -DoutputFile=/path/to/file.graphml -DoutputType=graphml
 +-----+
 
 
