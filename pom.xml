@@ -95,7 +95,7 @@ under the License.
     <jettyVersion>9.2.28.v20190418</jettyVersion>
     <pluginTestingVersion>3.1.0</pluginTestingVersion>
     <javaVersion>7</javaVersion>
-    <project.build.outputTimestamp>2020-03-07T11:40:47Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2020-10-05T15:18:15Z</project.build.outputTimestamp>
   </properties>
 
   <dependencies>
