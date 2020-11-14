@@ -24,7 +24,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
-import org.apache.maven.plugins.dependency.fromDependencies.UnpackDependenciesMojo;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
@@ -42,7 +41,7 @@ public class TestUnpackDependenciesMojo2
 
     private final String UNPACKABLE_FILE_PATH = "target/test-classes/unit/unpack-dependencies-test/" + UNPACKABLE_FILE;
 
-    UnpackDependenciesMojo mojo;
+    private UnpackDependenciesMojo mojo;
 
     protected void setUp()
         throws Exception
