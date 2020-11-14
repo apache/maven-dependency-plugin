@@ -160,14 +160,18 @@ class VerboseDependencyGraphBuilder
                 node.setArtifact( node.getArtifact().setVersion( manager.getVersion() ) );
             }
 
-            if ( !manager.getScope().equals( node.getDependency().getScope() ) )
+            // split these out one dereference per statement to narrow down a null pointer exception
+            String managerScope = manager.getScope();
+            Dependency dependency = node.getDependency();
+            String dependencyScope = dependency.getScope();
+            if ( !managerScope.equals( dependencyScope ) )
             {
-                artifactProperties.put( PRE_MANAGED_SCOPE, node.getDependency().getScope() );
+                artifactProperties.put( PRE_MANAGED_SCOPE, dependencyScope );
                 // be aware this does not actually change the node's scope, it may need to be fixed in the future
-                artifactProperties.put( MANAGED_SCOPE, manager.getScope() );
+                artifactProperties.put( MANAGED_SCOPE, managerScope );
             }
             node.setArtifact( node.getArtifact().setProperties( artifactProperties ) );
-            node.getDependency().setArtifact( node.getDependency().getArtifact().setProperties( artifactProperties ) );
+            dependency.setArtifact( dependency.getArtifact().setProperties( artifactProperties ) );
         }
         for ( DependencyNode child : node.getChildren() )
         {
