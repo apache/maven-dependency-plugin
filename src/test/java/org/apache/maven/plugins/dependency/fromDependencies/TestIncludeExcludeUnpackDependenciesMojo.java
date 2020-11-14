@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
-import org.apache.maven.plugins.dependency.fromDependencies.UnpackDependenciesMojo;
 import org.apache.maven.project.MavenProject;
 
 public class TestIncludeExcludeUnpackDependenciesMojo
@@ -38,7 +37,7 @@ public class TestIncludeExcludeUnpackDependenciesMojo
 
     private final String PACKED_FILE_PATH = "target/test-classes/unit/unpack-dependencies-test/" + PACKED_FILE;
 
-    UnpackDependenciesMojo mojo;
+    private UnpackDependenciesMojo mojo;
 
     protected void setUp()
         throws Exception

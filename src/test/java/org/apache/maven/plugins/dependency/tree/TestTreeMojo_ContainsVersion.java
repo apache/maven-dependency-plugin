@@ -44,6 +44,7 @@ public class TestTreeMojo_ContainsVersion extends TestCase
         when( range.getRecommendedVersion() ).thenReturn( null );
         when( range.getRestrictions() ).thenReturn( Collections.<Restriction>emptyList() );
 
+        @SuppressWarnings( "deprecation" )
         boolean doesItContain = containsVersion( range, version );
 
         assertFalse( doesItContain );
