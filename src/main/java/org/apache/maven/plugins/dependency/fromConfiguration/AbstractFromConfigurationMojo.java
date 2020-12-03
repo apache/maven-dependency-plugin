@@ -20,14 +20,20 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  */
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
+import javax.inject.Inject;
+
+import org.apache.maven.ProjectDependenciesResolver;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.model.Dependency;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -35,7 +41,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
@@ -270,33 +275,31 @@ public abstract class AbstractFromConfigurationMojo
     private void fillMissingArtifactVersion( ArtifactItem artifact )
         throws MojoExecutionException
     {
-        MavenProject project = getProject();
-        List<Dependency> deps = project.getDependencies();
-        List<Dependency> depMngt = project.getDependencyManagement() == null ? Collections.<Dependency>emptyList()
-                        : project.getDependencyManagement().getDependencies();
-
-        if ( !findDependencyVersion( artifact, deps, false )
-            && ( project.getDependencyManagement() == null || !findDependencyVersion( artifact, depMngt, false ) )
-            && !findDependencyVersion( artifact, deps, true )
-            && ( project.getDependencyManagement() == null || !findDependencyVersion( artifact, depMngt, true ) ) )
+        try
         {
-            throw new MojoExecutionException( "Unable to find artifact version of " + artifact.getGroupId() + ":"
-                + artifact.getArtifactId() + " in either dependency list or in project's dependency management." );
+            if ( !this.findDependencyVersion( artifact, false ) && !this.findDependencyVersion( artifact, true ) )
+            {
+                throw new MojoExecutionException( "Unable to find artifact version of " + artifact.getGroupId() + ":"
+                    + artifact.getArtifactId() + " in transitively resolved dependencies." );
+            }
+        }
+        catch ( final ArtifactResolutionException | ArtifactNotFoundException e )
+        {
+            throw new MojoExecutionException( "Failed to transitively resolve project dependencies.", e );
         }
     }
 
-    /**
-     * Tries to find missing version from a list of dependencies. If found, the artifact is updated with the correct
-     * version.
-     *
-     * @param artifact representing configured file.
-     * @param dependencies list of dependencies to search.
-     * @param looseMatch only look at artifactId and groupId
-     * @return the found dependency
-     */
-    private boolean findDependencyVersion( ArtifactItem artifact, List<Dependency> dependencies, boolean looseMatch )
+    @Inject
+    private ProjectDependenciesResolver resolver;
+
+    private boolean findDependencyVersion( final ArtifactItem artifact, boolean looseMatch )
+        throws ArtifactResolutionException, ArtifactNotFoundException
     {
-        for ( Dependency dependency : dependencies )
+        final Set<Artifact> resolvedArtifacts =
+            this.resolver.resolve( this.getProject(),
+                                   Arrays.asList( "compile", "provided", "runtime", "test", "system", "import" ),
+                                   this.session );
+        for ( final Artifact dependency : resolvedArtifacts )
         {
             if ( Objects.equals( dependency.getArtifactId(), artifact.getArtifactId() )
                 && Objects.equals( dependency.getGroupId(), artifact.getGroupId() )
