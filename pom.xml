@@ -89,6 +89,7 @@ under the License.
   </contributors>
 
   <properties>
+    <enforcer.skip>true</enforcer.skip>
     <mavenVersion>3.1.1</mavenVersion>
     <doxiaVersion>1.9.1</doxiaVersion>
     <doxiaSiteVersion>1.9.2</doxiaSiteVersion>
@@ -96,10 +97,40 @@ under the License.
     <pluginTestingVersion>3.1.0</pluginTestingVersion>
     <javaVersion>7</javaVersion>
     <project.build.outputTimestamp>2020-03-07T11:40:47Z</project.build.outputTimestamp>
+    <java.version>1.8</java.version>
+    <junit.platform.version>1.3.1</junit.platform.version>
+    <junitPlatformArtifactName>org.junit.platform:junit-platform-engine</junitPlatformArtifactName>
+    <!-- rat.excludesFile>-d /surefire</rat.excludesFile -->
   </properties>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+       <groupId>org.apache.maven.surefire</groupId>
+       <artifactId>surefire-api</artifactId>
+       <!-- version>2.20</version -->
+       <version>2.9</version>
+      </dependency>
+      <dependency>
+       <groupId>org.apache.maven.surefire</groupId>
+       <artifactId>maven-surefire-common</artifactId>
+       <version>2.22.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-booter</artifactId>
+        <version>2.22.1</version>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.maven.shared</groupId>
+         <artifactId>maven-common-artifact-filters</artifactId>
+         <version>3.0.1</version>
+       </dependency>
+      <dependency>
+         <groupId>org.eclipse.aether</groupId>
+          <artifactId>aether-api</artifactId>
+          <version>1.1.0</version>
+      </dependency>
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
@@ -109,7 +140,33 @@ under the License.
   </dependencyManagement>
 
   <dependencies>
-    <!-- maven -->
+       <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-api</artifactId>
+        <!-- version>2.20</version -->
+        <version>2.9</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-booter</artifactId>
+        <version>2.22.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>maven-surefire-common</artifactId>
+        <version>2.22.1</version>
+      </dependency>
+    <dependency>
+         <groupId>org.apache.maven.shared</groupId>
+         <artifactId>maven-common-artifact-filters</artifactId>
+         <version>3.0.1</version>
+    </dependency>
+    <!-- aether -->
+    <dependency>
+	   <groupId>org.eclipse.aether</groupId>
+	    <artifactId>aether-api</artifactId>
+	    <version>1.1.0</version>
+    </dependency>
     <!-- Remove once deprecated code has been replaced/removed  -->
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -226,7 +283,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-common-artifact-filters</artifactId>
-      <version>3.1.0</version>
+      <version>3.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -354,6 +411,7 @@ under the License.
                 These files contain results for integration tests which can't contain license header
                 otherwise the IT's will fail.
               -->
+              <exclude>surefire/*</exclude>
               <exclude>src/it/projects/tree/expected.txt</exclude>
               <exclude>src/it/projects/tree-includes/expected.txt</exclude>
               <exclude>src/it/projects/tree-multimodule/expected.txt</exclude>
@@ -371,6 +429,27 @@ under the License.
       </plugins>
     </pluginManagement>
     <plugins>
+      <plugin> <!-- start maven-plugin-plugin -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <!-- version>2.9</version --> <!-- NoSuchMethod org.apache.maven.tools.plugin.PluginToolsRequest.getDependencies()Ljava/util/Set; -->
+        <!-- version>3.0</ version--> <!-- 'Goal: help already exists in the plugin descriptor for prefix: dependency -->
+        <!-- version>3.2</version --> <!-- Execution generate-helpmojo of goal org.apache.maven.plugins:maven-plugin-plugin:3.2:helpmojo failed. -->
+        <!-- version>3.3</version --> <!-- Execution generate-helpmojo of goal org.apache.maven.plugins:maven-plugin-plugin:3.3:helpmojo failed. -->
+        <!-- version>3.4</version --> <!-- Execution generate-helpmojo of goal org.apache.maven.plugins:maven-plugin-plugin:3.4:helpmojo failed. -->
+        <!-- version>3.5</version --> <!-- Execution 'Goal: help already exists in the plugin descriptor for prefix: dependency -->
+        <configuration>
+          <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+        </configuration>
+        <executions>
+          <execution>
+            <id>mojo-descriptor</id>
+            <goals>
+              <goal>descriptor</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin> <!-- end maven-plugin-plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId> 
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -396,8 +475,43 @@ under the License.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.1</version>
+        <dependencies>
+              <dependency>
+	       <groupId>org.apache.maven.surefire</groupId>
+	       <artifactId>surefire-api</artifactId>
+	       <!-- version>2.20</version -->
+               <version>2.9</version>
+              </dependency>
+	       <dependency>
+		 <groupId>org.apache.maven.surefire</groupId>
+		 <artifactId>surefire-booter</artifactId>
+		 <version>2.22.1</version>
+	      </dependency>
+	      <dependency>
+	        <groupId>org.apache.maven.surefire</groupId>
+	        <artifactId>maven-surefire-common</artifactId>
+	        <version>2.22.1</version>
+            </dependency>
+	  <dependency>
+		  <groupId>org.apache.maven.shared</groupId>
+		  <artifactId>maven-common-artifact-filters</artifactId>
+		  <version>3.0.1</version>
+	  </dependency>
+         <dependency>
+          <groupId>org.apache.maven.shared</groupId>
+          <artifactId>maven-shared-utils</artifactId>
+          <version>3.2.1</version>
+         </dependency>
+                 <dependency>
+                     <groupId>org.junit.jupiter</groupId>
+                     <artifactId>junit-jupiter-engine</artifactId>
+                     <version>5.3.2</version>
+                 </dependency>
+        </dependencies>
         <configuration>
           <!-- Need more heap space in order to run the unit tests !-->
+          <junitPlatformArtifactName default-value="org.junit.platform:junit-platform-engine">org.junit.platform:junit-platform-engine</junitPlatformArtifactName>
           <argLine>-Xmx384m</argLine>
           <systemPropertyVariables>
             <maven.home>${maven.home}</maven.home>
@@ -412,6 +526,7 @@ under the License.
       <id>run-its</id>
       <build>
         <plugins>
+         <!--
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-invoker-plugin</artifactId>
@@ -423,20 +538,20 @@ under the License.
               <projectsDirectory>src/it/projects</projectsDirectory>
               <pomExcludes>
                 <pomExclude>purge-local-repository-bad-pom/pom.xml</pomExclude>
-                <!-- verbose was using Maven2 code, removed with MDEP-494, requires MSHARED-339 to be fixed first -->
                 <pomExclude>tree-verbose/pom.xml</pomExclude>
               </pomExcludes>
               <pomIncludes>
                 <pomInclude>*/pom.xml</pomInclude>
                 <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
-              <!-- for mrm -->
               <settingsFile>src/it/mrm/settings.xml</settingsFile>
               <filterProperties>
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
             </configuration>
           </plugin>
+          -->
+          <!--
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>mrm-maven-plugin</artifactId>
@@ -455,15 +570,16 @@ under the License.
                 <mockRepo>
                   <source>src/it/mrm/repository</source>
                 </mockRepo>
-                <!-- 
+              
                 <mockRepo>
                   <source>src/test/resources/m2repo</source>
                 </mockRepo>
-                 -->
+               
                 <proxyRepo />
               </repositories>
             </configuration>
           </plugin>
+          -->
         </plugins>
       </build>
     </profile>
@@ -471,6 +587,7 @@ under the License.
       <id>reporting</id>
       <reporting>
         <plugins>
+         <!--
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>l10n-maven-plugin</artifactId>
@@ -483,6 +600,7 @@ under the License.
               </locales>
             </configuration>
           </plugin>
+          -->
         </plugins>
       </reporting>
     </profile>
