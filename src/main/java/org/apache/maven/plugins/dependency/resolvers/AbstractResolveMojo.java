@@ -45,23 +45,13 @@ public abstract class AbstractResolveMojo
     extends AbstractDependencyFilterMojo
 {
     /**
-     * If specified, this parameter will cause the dependencies to be written to the path specified, instead of writing
-     * to the console.
+     * If specified, this parameter causes the dependencies to be written to the path specified instead of
+     * the console.
      *
      * @since 2.0
      */
     @Parameter( property = "outputFile" )
     protected File outputFile;
-
-    /**
-     * This method resolves the dependency artifacts from the project.
-     *
-     * @param theProject The POM.
-     * @return resolved set of dependency artifacts.
-     * @throws ArtifactResolutionException
-     * @throws ArtifactNotFoundException
-     * @throws InvalidDependencyVersionException
-     */
 
     /**
      * Whether to append outputs into the output file or overwrite it.

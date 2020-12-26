@@ -22,14 +22,17 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,7 +52,7 @@ import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
- * This goal will output a classpath string of dependencies from the local repository to a file or log.
+ * This goal outputs a classpath string of dependencies from the local repository to a file or log.
  *
  * @author ankostis
  * @since 2.0-alpha-2
@@ -62,6 +65,9 @@ public class BuildClasspathMojo
     implements Comparator<Artifact>
 {
 
+    @Parameter( property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}" )
+    private String outputEncoding;
+    
     /**
      * Strip artifact version during copy (only works if prefix is set)
      */
@@ -239,7 +245,7 @@ public class BuildClasspathMojo
         }
         else
         {
-            if ( regenerateFile || !isUpdToDate( cpString ) )
+            if ( regenerateFile || !isUpToDate( cpString ) )
             {
                 storeClasspathFile( cpString, outputFile );
             }
@@ -301,18 +307,17 @@ public class BuildClasspathMojo
     /**
      * Checks that new classpath differs from that found inside the old classpathFile.
      *
-     * @param cpString
-     * @return true if the specified classpath equals to that found inside the file, false otherwise (including when
-     *         file does not exists but new classpath does).
+     * @return true if the specified classpath equals the one found inside the file, false otherwise (including when
+     *         file does not exist but new classpath does).
      */
-    private boolean isUpdToDate( String cpString )
+    private boolean isUpToDate( String cpString )
     {
         try
         {
             String oldCp = readClasspathFile();
             return ( cpString == null ? oldCp == null : cpString.equals( oldCp ) );
         }
-        catch ( Exception ex )
+        catch ( IOException ex )
         {
             this.getLog().warn( "Error while reading old classpath file '" + outputFile + "' for up-to-date check: "
                 + ex );
@@ -322,18 +327,20 @@ public class BuildClasspathMojo
     }
 
     /**
-     * It stores the specified string into that file.
+     * Stores the specified string into that file.
      *
-     * @param cpString the string to be written into the file.
-     * @throws MojoExecutionException
+     * @param cpString the string to write into the file
      */
     private void storeClasspathFile( String cpString, File out )
         throws MojoExecutionException
     {
         // make sure the parent path exists.
         out.getParentFile().mkdirs();
+        
+        String encoding = Objects.toString( outputEncoding, "UTF-8" );
 
-        try ( Writer w = new BufferedWriter( new FileWriter( out ) ) )
+        try ( Writer w =
+            new BufferedWriter( new OutputStreamWriter( new FileOutputStream( out ), encoding ) ) )
         {
             w.write( cpString );
             getLog().info( "Wrote classpath file '" + out + "'." );
@@ -346,7 +353,7 @@ public class BuildClasspathMojo
     }
 
     /**
-     * Reads into a string the file specified by the mojo param 'outputFile'. Assumes, the instance variable
+     * Reads the file specified by the mojo param 'outputFile' into a string. Assumes the field
      * 'outputFile' is not null.
      * 
      * @return the string contained in the classpathFile, if it exists, or null otherwise
@@ -366,7 +373,10 @@ public class BuildClasspathMojo
             return null;
         }
         StringBuilder sb = new StringBuilder();
-        try ( BufferedReader r = new BufferedReader( new FileReader( outputFile ) ) )
+        String encoding = Objects.toString( outputEncoding, "UTF-8" );
+
+        try ( BufferedReader r =
+            new BufferedReader( new InputStreamReader( new FileInputStream( outputFile ), encoding ) ) )
         {
             for ( String line = r.readLine(); line != null; line = r.readLine() )
             {

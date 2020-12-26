@@ -21,9 +21,11 @@ package org.apache.maven.plugins.dependency.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.io.Writer;
 import java.util.Objects;
 
 import org.apache.maven.artifact.Artifact;
@@ -32,7 +34,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
- * Utility class with static helper methods
+ * Utility class with static helper methods.
  * 
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @version $Id$
@@ -71,13 +73,13 @@ public final class DependencyUtil
 
     /**
      * Builds the file name. If removeVersion is set, then the file name must be reconstructed from the groupId (if
-     * <b>prependGroupId</b> is true) artifactId, Classifier (if used) and Type. Otherwise, this method returns the
+     * <b>prependGroupId</b> is true) artifactId, Classifier (if used), and Type. Otherwise, this method returns the
      * artifact file name.
      * 
-     * @param artifact File to be formatted.
-     * @param removeVersion Specifies if the version should be removed from the file name.
-     * @param prependGroupId Specifies if the groupId should be prepended to the file name.
-     * @param useBaseVersion Specifies if the baseVersion of the artifact should be used instead of the version.
+     * @param artifact file to be formatted
+     * @param removeVersion Specifies if the version should be removed from the file name
+     * @param prependGroupId Specifies if the groupId should be prepended to the file name
+     * @param useBaseVersion Specifies if the baseVersion of the artifact should be used instead of the version
      * @return Formatted file name in the format [groupId].artifactId-[version]-[classifier].[type]
      */
     public static String getFormattedFileName( Artifact artifact, boolean removeVersion, boolean prependGroupId,
@@ -219,16 +221,33 @@ public final class DependencyUtil
      * 
      * @param string the string to write
      * @param file the file to write to
-     * @param append append to existing file or not.
-     * @param log where to send the logging output.
+     * @param append append to existing file or not
+     * @param log ignored
+     * @throws IOException if an I/O error occurs
+     * @deprecated specify an encoding instead of a log
+     */
+    @Deprecated
+    public static synchronized void write( String string, File file, boolean append, Log log )
+        throws IOException
+    {
+        write( string, file, append, "UTF-8" );
+    }
+    
+    /**
+     * Writes the specified string to the specified file.
+     * 
+     * @param string the string to write
+     * @param file the file to write to
+     * @param append append to existing file or not
+     * @param encoding character set name
      * @throws IOException if an I/O error occurs
      */
-    public static synchronized void write( String string, File file, boolean append, Log log )
+    public static synchronized void write( String string, File file, boolean append, String encoding )
         throws IOException
     {
         file.getParentFile().mkdirs(); 
 
-        try ( FileWriter writer = new FileWriter( file, append ) )
+        try ( Writer writer = new OutputStreamWriter( new FileOutputStream( file, append ), encoding ) )
         {
             writer.write( string );
         }
@@ -257,9 +276,10 @@ public final class DependencyUtil
     }
 
     /**
-     * mainly used to parse excludes,includes configuration
-     * @param str The string to be split.
-     * @return The result items.
+     * Mainly used to parse excludes, includes configuration.
+     * 
+     * @param str the string to split
+     * @return the result items
      */
     public static String[] tokenizer( String str )
     {

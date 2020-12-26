@@ -286,7 +286,8 @@ public class TreeMojo
 
             if ( outputFile != null )
             {
-                DependencyUtil.write( dependencyTreeString, outputFile, this.appendOutput, getLog() );
+                String encoding = project.getProperties().getProperty( "project.reporting.outputEncoding", "UTF-8" );
+                DependencyUtil.write( dependencyTreeString, outputFile, this.appendOutput, encoding );
 
                 getLog().info( "Wrote dependency tree to: " + outputFile );
             }
@@ -301,7 +302,7 @@ public class TreeMojo
         }
         catch ( IOException exception )
         {
-            throw new MojoExecutionException( "Cannot serialise project dependency graph", exception );
+            throw new MojoExecutionException( "Cannot serialize project dependency graph", exception );
         }
     }
 

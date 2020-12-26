@@ -21,12 +21,14 @@ package org.apache.maven.plugins.dependency.resolvers;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
@@ -46,6 +48,9 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverE
 public class ResolvePluginsMojo
     extends AbstractResolveMojo
 {
+
+    @Parameter( property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}" )
+    private String outputEncoding;
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.
@@ -136,7 +141,8 @@ public class ResolvePluginsMojo
                 }
                 else
                 {
-                    DependencyUtil.write( output, outputFile, appendOutput, getLog() );
+                    String encoding = Objects.toString( outputEncoding, "UTF-8" );
+                    DependencyUtil.write( output, outputFile, appendOutput, encoding );
                 }
             }
         }
@@ -149,9 +155,9 @@ public class ResolvePluginsMojo
     /**
      * This method resolves the plugin artifacts from the project.
      *
-     * @return set of resolved plugin artifacts.
-     * @throws ArtifactFilterException in case of an error.
-     * @throws ArtifactResolverException in case of an error.
+     * @return set of resolved plugin artifacts
+     * @throws ArtifactFilterException in case of an error
+     * @throws ArtifactResolverException in case of an error
      */
     protected Set<Artifact> resolvePluginArtifacts()
         throws ArtifactFilterException, ArtifactResolverException
