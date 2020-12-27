@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -59,6 +60,9 @@ import java.util.jar.Manifest;
 public class ResolveDependenciesMojo
     extends AbstractResolveMojo
 {
+
+    @Parameter( property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}" )
+    private String outputEncoding;
 
     /**
      * If we should display the scope when resolving
@@ -92,7 +96,7 @@ public class ResolveDependenciesMojo
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      */
     @Override
     protected void doExecute()
@@ -109,8 +113,9 @@ public class ResolveDependenciesMojo
                 DependencyUtil.log( output, getLog() );
             }
             else
-            {
-                DependencyUtil.write( output, outputFile, appendOutput, getLog() );
+            {    
+                String encoding = Objects.toString( outputEncoding, "UTF-8" );
+                DependencyUtil.write( output, outputFile, appendOutput, encoding );
             }
         }
         catch ( IOException e )
@@ -120,7 +125,7 @@ public class ResolveDependenciesMojo
     }
 
     /**
-     * @return Returns the results.
+     * @return returns the results
      */
     public DependencyStatusSets getResults()
     {

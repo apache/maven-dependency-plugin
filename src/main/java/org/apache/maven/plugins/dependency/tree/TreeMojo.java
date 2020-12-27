@@ -67,11 +67,12 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Displays the dependency tree for this project. Multiple formats are supported: text (by default), but also
  * <a href="https://en.wikipedia.org/wiki/DOT_language">DOT</a>,
- * <a href="https://en.wikipedia.org/wiki/GraphML">graphml</a> and
+ * <a href="https://en.wikipedia.org/wiki/GraphML">GraphML</a>, and
  * <a href="https://en.wikipedia.org/wiki/Trivial_Graph_Format">TGF</a>.
  *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
@@ -91,6 +92,9 @@ public class TreeMojo
 
     @Parameter( defaultValue = "${session}", readonly = true, required = true )
     private MavenSession session;
+    
+    @Parameter( property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}" )
+    private String outputEncoding;
 
     /**
      * Contains the full list of projects in the reactor.
@@ -286,7 +290,8 @@ public class TreeMojo
 
             if ( outputFile != null )
             {
-                DependencyUtil.write( dependencyTreeString, outputFile, this.appendOutput, getLog() );
+                String encoding = Objects.toString( outputEncoding, "UTF-8" );
+                DependencyUtil.write( dependencyTreeString, outputFile, this.appendOutput, encoding );
 
                 getLog().info( "Wrote dependency tree to: " + outputFile );
             }
@@ -301,7 +306,7 @@ public class TreeMojo
         }
         catch ( IOException exception )
         {
-            throw new MojoExecutionException( "Cannot serialise project dependency graph", exception );
+            throw new MojoExecutionException( "Cannot serialize project dependency graph", exception );
         }
     }
 
