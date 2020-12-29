@@ -24,7 +24,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
-import org.apache.maven.plugins.dependency.analyze.AnalyzeDuplicateMojo;
 import org.apache.maven.plugin.logging.Log;
 
 /**
