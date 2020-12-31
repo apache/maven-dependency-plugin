@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -160,8 +161,7 @@ class VerboseDependencyGraphBuilder
                 node.setArtifact( node.getArtifact().setVersion( manager.getVersion() ) );
             }
 
-            // split these out one dereference per statement to narrow down a null pointer exception
-            String managerScope = manager.getScope();
+            String managerScope = Objects.toString( manager.getScope(), "compile" );
             Dependency dependency = node.getDependency();
             String dependencyScope = dependency.getScope();
             if ( !managerScope.equals( dependencyScope ) )
