@@ -102,6 +102,12 @@ public abstract class AbstractAnalyzeMojo
     private boolean ignoreNonCompile;
 
     /**
+     * Ignore Runtime scope for unused dependency analysis.
+     */
+    @Parameter( property = "ignoreUnusedRuntime", defaultValue = "false" )
+    private boolean ignoreUnusedRuntime;
+
+    /**
      * Output the xml for the missing dependencies (used but not declared).
      *
      * @since 2.0-alpha-5
@@ -324,6 +330,11 @@ public abstract class AbstractAnalyzeMojo
         Set<Artifact> ignoredUsedUndeclared = new LinkedHashSet<>();
         Set<Artifact> ignoredUnusedDeclared = new LinkedHashSet<>();
 
+        if ( ignoreUnusedRuntime )
+        {
+            filterArtifactsByScope( unusedDeclared, Artifact.SCOPE_RUNTIME );
+        }
+
         ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclared, ignoredDependencies ) );
         ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclared, ignoredUsedUndeclaredDependencies ) );
 
@@ -400,6 +411,18 @@ public abstract class AbstractAnalyzeMojo
         }
 
         return warning;
+    }
+
+    private void filterArtifactsByScope( Set<Artifact> artifacts, String scope )
+    {
+        for ( Iterator<Artifact> iterator = artifacts.iterator(); iterator.hasNext(); )
+        {
+            Artifact artifact = iterator.next();
+            if ( artifact.getScope().equals( scope ) )
+            {
+                iterator.remove();
+            }
+        }
     }
 
     private void logArtifacts( Set<Artifact> artifacts, boolean warn )
