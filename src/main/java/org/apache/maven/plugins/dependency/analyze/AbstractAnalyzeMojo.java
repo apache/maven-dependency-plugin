@@ -332,7 +332,7 @@ public abstract class AbstractAnalyzeMojo
         
         if ( ignoreUnusedRuntime )
         {
-            filterUnusedByScope( unusedDeclared, Artifact.SCOPE_RUNTIME );
+            filterArtifactsByScope( unusedDeclared, Artifact.SCOPE_RUNTIME );
         }
 
         ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclared, ignoredDependencies ) );
@@ -413,9 +413,9 @@ public abstract class AbstractAnalyzeMojo
         return warning;
     }
 
-    private void filterUnusedByScope( Set<Artifact> unusedDeclared, String scope )
+    private void filterArtifactsByScope( Set<Artifact> artifacts, String scope )
     {
-        for ( Iterator<Artifact> iterator = unusedDeclared.iterator(); iterator.hasNext(); )
+        for ( Iterator<Artifact> iterator = artifacts.iterator(); iterator.hasNext(); )
         {
             Artifact artifact = iterator.next();
             if ( artifact.getScope().equals( scope ) )
