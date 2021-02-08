@@ -103,7 +103,7 @@ under the License.
       <dependency> <!-- override older version in maven-dependency-analyzer:1.11.3 -->
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.0</version>
+        <version>9.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
