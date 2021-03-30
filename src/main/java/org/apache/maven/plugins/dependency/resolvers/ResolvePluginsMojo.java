@@ -19,12 +19,15 @@ package org.apache.maven.plugins.dependency.resolvers;
  * under the License.
  */
 
-import java.io.IOException;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
-
+import org.apache.commons.collections4.map.UnmodifiableMap;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.ArtifactUtils;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.ReportPlugin;
+import org.apache.maven.model.Reporting;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -37,6 +40,18 @@ import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.codehaus.plexus.component.annotations.Requirement;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.graph.Dependency;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Goal that resolves all project plugins and reports and their dependencies.
@@ -44,13 +59,22 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverE
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 2.0
  */
-@Mojo( name = "resolve-plugins", defaultPhase = LifecyclePhase.GENERATE_SOURCES, threadSafe = true )
+//CHECKSTYLE_OFF: LineLength
+@Mojo( name = "resolve-plugins", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresOnline = true, threadSafe = true )
+//CHECKSTYLE_ON: LineLength
 public class ResolvePluginsMojo
     extends AbstractResolveMojo
 {
+    /**
+     * Maven artifact handler manager
+     */
+    @Requirement
+    private ArtifactHandlerManager artifactHandlerManager;
 
     @Parameter( property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String outputEncoding;
+
+    private ArtifactTypeRegistry typeRegistry;
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.
@@ -63,21 +87,23 @@ public class ResolvePluginsMojo
     {
         try
         {
+            typeRegistry = RepositoryUtils.newArtifactTypeRegistry( artifactHandlerManager );
             // ideally this should either be DependencyCoordinates or DependencyNode
-            final Set<Artifact> plugins = resolvePluginArtifacts();
+            final Map<String, Plugin> plugins = resolvePlugins();
+            final Map<String, Artifact> resolvedArtifacts = fetchArtifacts( plugins.values() );
 
             StringBuilder sb = new StringBuilder();
             sb.append( System.lineSeparator() );
             sb.append( "The following plugins have been resolved:" );
             sb.append( System.lineSeparator() );
-            if ( plugins == null || plugins.isEmpty() )
+            if ( plugins.isEmpty() )
             {
                 sb.append( "   none" );
                 sb.append( System.lineSeparator() );
             }
             else
             {
-                for ( Artifact plugin : plugins )
+                for ( Map.Entry<String, Artifact> plugin : resolvedArtifacts.entrySet() )
                 {
                     String artifactFilename = null;
                     if ( outputAbsoluteArtifactFilename )
@@ -85,7 +111,7 @@ public class ResolvePluginsMojo
                         try
                         {
                             // we want to print the absolute file name here
-                            artifactFilename = plugin.getFile().getAbsoluteFile().getPath();
+                            artifactFilename = plugin.getValue().getFile().getAbsoluteFile().getPath();
                         }
                         catch ( NullPointerException e )
                         {
@@ -94,7 +120,7 @@ public class ResolvePluginsMojo
                         }
                     }
 
-                    String id = plugin.toString();
+                    String id = plugin.getKey();
                     sb.append( "   " )
                             .append( id )
                             .append( outputAbsoluteArtifactFilename ? ":" + artifactFilename : "" )
@@ -103,11 +129,23 @@ public class ResolvePluginsMojo
                     if ( !excludeTransitive )
                     {
                         DefaultDependableCoordinate pluginCoordinate = new DefaultDependableCoordinate();
-                        pluginCoordinate.setGroupId( plugin.getGroupId() );
-                        pluginCoordinate.setArtifactId( plugin.getArtifactId() );
-                        pluginCoordinate.setVersion( plugin.getVersion() );
+                        pluginCoordinate.setGroupId( plugin.getValue().getGroupId() );
+                        pluginCoordinate.setArtifactId( plugin.getValue().getArtifactId() );
+                        pluginCoordinate.setVersion( plugin.getValue().getVersion() );
 
-                        for ( final Artifact artifact : resolveArtifactDependencies( pluginCoordinate ) )
+                        Set<Artifact> artifacts = resolveArtifactDependencies( pluginCoordinate );
+                        for ( org.apache.maven.model.Dependency d : plugins.get( plugin.getKey() ).getDependencies() )
+                        {
+                            Dependency dependency = RepositoryUtils.toDependency( d, typeRegistry );
+                            Artifact artifact = RepositoryUtils.toArtifact( dependency.getArtifact() );
+
+                            ProjectBuildingRequest buildingRequest = newResolvePluginProjectBuildingRequest();
+                            getArtifactResolver().resolveArtifact( buildingRequest, artifact );
+
+                            artifacts.add( artifact );
+                        }
+
+                        for ( final Artifact artifact : artifacts )
                         {
                             artifactFilename = null;
                             if ( outputAbsoluteArtifactFilename )
@@ -155,26 +193,63 @@ public class ResolvePluginsMojo
     /**
      * This method resolves the plugin artifacts from the project.
      *
-     * @return set of resolved plugin artifacts
-     * @throws ArtifactFilterException in case of an error
-     * @throws ArtifactResolverException in case of an error
+     * @return map of resolved plugins
      */
-    protected Set<Artifact> resolvePluginArtifacts()
+    protected Map<String, Plugin> resolvePlugins()
         throws ArtifactFilterException, ArtifactResolverException
     {
-        final Set<Artifact> plugins = getProject().getPluginArtifacts();
-        final Set<Artifact> reports = getProject().getReportArtifacts();
+        Set<Plugin> plugins = new LinkedHashSet<>( getProject().getBuildPlugins() );
 
-        Set<Artifact> artifacts = new LinkedHashSet<>();
-        artifacts.addAll( reports );
-        artifacts.addAll( plugins );
+        Reporting reporting = getProject().getReporting();
+        if ( reporting != null )
+        {
+            List<ReportPlugin> reportPlugins = reporting.getPlugins();
+            for ( ReportPlugin reportPlugin : reportPlugins )
+            {
+                // Conversion borrowed from
+                // org.apache.maven.project.MavenProject#getReportArtifacts
+                Plugin plugin = new Plugin();
+                plugin.setGroupId( reportPlugin.getGroupId() );
+                plugin.setArtifactId( reportPlugin.getArtifactId() );
+                plugin.setVersion( reportPlugin.getVersion() );
+                plugins.add( plugin );
+            }
+        }
+
+        HashMap<String, Plugin> result = new HashMap<>( plugins.size() );
+        for ( Plugin plugin : plugins )
+        {
+            result.put( plugin.getId(), plugin );
+        }
+
+        return UnmodifiableMap.unmodifiableMap( result );
+    }
+
+    private Map<String, Artifact> fetchArtifacts( Collection<Plugin> plugins )
+        throws ArtifactResolverException, ArtifactFilterException
+    {
+        Set<Artifact> artifacts = new LinkedHashSet<>( plugins.size() );
+        for ( Plugin plugin : plugins )
+        {
+            artifacts.add(
+                new DefaultArtifact(
+                    plugin.getGroupId(),
+                    plugin.getArtifactId(),
+                    plugin.getVersion(),
+                    Artifact.SCOPE_RUNTIME,
+                    "maven-plugin",
+                    null,
+                    artifactHandlerManager.getArtifactHandler( "maven-plugin" )
+                )
+            );
+        }
 
         final FilterArtifacts filter = getArtifactsFilter();
         artifacts = filter.filter( artifacts );
 
-        Set<Artifact> resolvedArtifacts = new LinkedHashSet<>( artifacts.size() );
+        Map<String, Artifact> resolvedArtifacts = new HashMap<>( artifacts.size() );
         // final ArtifactFilter filter = getPluginFilter();
-        for ( final Artifact artifact : new LinkedHashSet<>( artifacts ) )
+        for ( final Artifact artifact : artifacts )
         {
             // if ( !filter.include( artifact ) )
             // {
@@ -193,9 +268,10 @@ public class ResolvePluginsMojo
             ProjectBuildingRequest buildingRequest = newResolvePluginProjectBuildingRequest();
 
             // resolve the new artifact
-            resolvedArtifacts.add( getArtifactResolver().resolveArtifact( buildingRequest, artifact ).getArtifact() );
+            Artifact resolved = getArtifactResolver().resolveArtifact( buildingRequest, artifact ).getArtifact();
+            resolvedArtifacts.put( ArtifactUtils.key( resolved ), resolved );
         }
-        return artifacts;
+        return resolvedArtifacts;
     }
 
     @Override
