@@ -187,6 +187,7 @@ public class GoOfflineMojo
         result.setArtifactId( artifact.getArtifactId() );
         result.setVersion( artifact.getVersion() );
         result.setType( artifact.getType() );
+        result.setClassifier( artifact.getClassifier() );
 
         return result;
     }
@@ -198,6 +199,7 @@ public class GoOfflineMojo
         result.setArtifactId( dependency.getArtifactId() );
         result.setVersion( dependency.getVersion() );
         result.setType( dependency.getType() );
+        result.setClassifier( dependency.getClassifier() );
 
         return result;
     }
