@@ -91,7 +91,7 @@ under the License.
   <properties>
     <mavenVersion>3.1.1</mavenVersion>
     <doxiaVersion>1.9.1</doxiaVersion>
-    <doxiaSiteVersion>1.9.2</doxiaSiteVersion>
+    <doxiaSitetoolsVersion>1.9.2</doxiaSitetoolsVersion>
     <jettyVersion>9.2.28.v20190418</jettyVersion>
     <pluginTestingVersion>3.1.0</pluginTestingVersion>
     <javaVersion>7</javaVersion>
@@ -195,7 +195,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>
       <artifactId>doxia-site-renderer</artifactId>
-      <version>${doxiaSiteVersion}</version>
+      <version>${doxiaSitetoolsVersion}</version>
     </dependency>
 
     <!-- plexus -->
