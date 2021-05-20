@@ -138,7 +138,16 @@ public abstract class AbstractDependencyFilterMojo
     protected String includeScope;
 
     /**
-     * Scope to exclude. An Empty string indicates no scopes (default).
+     * Scope to exclude. An Empty string indicates no scopes (default). The scopes being interpreted are the scopes as
+     * Maven sees them, not as specified in the pom. In summary:
+     * <ul>
+     * <li><code>runtime</code> scope excludes runtime and compile dependencies,</li>
+     * <li><code>compile</code> scope excludes compile, provided, and system dependencies,</li>
+     * <li><code>test</code> scope excludes all dependencies, then not really a legitimate option: it will fail,
+     * you probably meant to configure includeScope = compile or runtime</li>
+     * <li><code>provided</code> scope just excludes provided dependencies,</li>
+     * <li><code>system</code> scope just excludes system dependencies.</li>
+     * </ul>
      *
      * @since 2.0
      */
