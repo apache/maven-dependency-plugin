@@ -122,8 +122,8 @@ public abstract class AbstractDependencyFilterMojo
     protected String excludeTypes;
 
     /**
-     * Scope to include. An empty string indicates include all dependencies (default).<br>
-     * The selected scope value being interpreted is the scope as
+     * Scope threshold to include. An empty string indicates include all dependencies (default).<br>
+     * The scope threshold value being interpreted is the scope as
      * Maven filters for creating a classpath, not as specified in the pom. In summary:
      * <ul>
      * <li><code>runtime</code> include scope gives runtime and compile dependencies,</li>
@@ -139,8 +139,9 @@ public abstract class AbstractDependencyFilterMojo
     protected String includeScope;
 
     /**
-     * Scope to exclude. An empty string indicates no dependencies (default).<br>
-     * The selected scope value being interpreted is the scope as
+     * Scope threshold to exclude, if no value is defined for include.
+     * An empty string indicates no dependencies (default).<br>
+     * The scope threshold value being interpreted is the scope as
      * Maven filters for creating a classpath, not as specified in the pom. In summary:
      * <ul>
      * <li><code>runtime</code> exclude scope excludes runtime and compile dependencies,</li>
