@@ -122,14 +122,15 @@ public abstract class AbstractDependencyFilterMojo
     protected String excludeTypes;
 
     /**
-     * Scope to include. An Empty string indicates all scopes (default). The scopes being interpreted are the scopes as
-     * Maven sees them, not as specified in the pom. In summary:
+     * Scope to include. An empty string indicates include all dependencies (default).<br>
+     * The selected scope value being interpreted is the scope as
+     * Maven filters for creating a classpath, not as specified in the pom. In summary:
      * <ul>
-     * <li><code>runtime</code> scope gives runtime and compile dependencies,</li>
-     * <li><code>compile</code> scope gives compile, provided, and system dependencies,</li>
-     * <li><code>test</code> (default) scope gives all dependencies,</li>
-     * <li><code>provided</code> scope just gives provided dependencies,</li>
-     * <li><code>system</code> scope just gives system dependencies.</li>
+     * <li><code>runtime</code> include scope gives runtime and compile dependencies,</li>
+     * <li><code>compile</code> include scope gives compile, provided, and system dependencies,</li>
+     * <li><code>test</code> include scope gives all dependencies (equivalent to default),</li>
+     * <li><code>provided</code> include scope just gives provided dependencies,</li>
+     * <li><code>system</code> include scope just gives system dependencies.</li>
      * </ul>
      *
      * @since 2.0
@@ -138,15 +139,16 @@ public abstract class AbstractDependencyFilterMojo
     protected String includeScope;
 
     /**
-     * Scope to exclude. An Empty string indicates no scopes (default). The scopes being interpreted are the scopes as
-     * Maven sees them, not as specified in the pom. In summary:
+     * Scope to exclude. An empty string indicates no dependencies (default).<br>
+     * The selected scope value being interpreted is the scope as
+     * Maven filters for creating a classpath, not as specified in the pom. In summary:
      * <ul>
-     * <li><code>runtime</code> scope excludes runtime and compile dependencies,</li>
-     * <li><code>compile</code> scope excludes compile, provided, and system dependencies,</li>
-     * <li><code>test</code> scope excludes all dependencies, then not really a legitimate option: it will fail,
-     * you probably meant to configure includeScope = compile or runtime</li>
-     * <li><code>provided</code> scope just excludes provided dependencies,</li>
-     * <li><code>system</code> scope just excludes system dependencies.</li>
+     * <li><code>runtime</code> exclude scope excludes runtime and compile dependencies,</li>
+     * <li><code>compile</code> exclude scope excludes compile, provided, and system dependencies,</li>
+     * <li><code>test</code> exclude scope excludes all dependencies, then not really a legitimate option: it will
+     * fail, you probably meant to configure includeScope = compile</li>
+     * <li><code>provided</code> exclude scope just excludes provided dependencies,</li>
+     * <li><code>system</code> exclude scope just excludes system dependencies.</li>
      * </ul>
      *
      * @since 2.0
@@ -294,6 +296,12 @@ public abstract class AbstractDependencyFilterMojo
         filter.addFilter( new ProjectTransitivityFilter( getProject().getDependencyArtifacts(),
                                                          this.excludeTransitive ) );
 
+        if ( "test".equals( this.excludeScope ) )
+        {
+            throw new MojoExecutionException( "Excluding every artifact inside 'test' resolution scope means "
+                + "excluding everything: you probably want includeScope='compile', "
+                + "read parameters documentation for detailed explanations" );
+        }
         filter.addFilter( new ScopeFilter( DependencyUtil.cleanToBeTokenizedString( this.includeScope ),
                                            DependencyUtil.cleanToBeTokenizedString( this.excludeScope ) ) );
 
