@@ -19,6 +19,8 @@ package org.apache.maven.plugins.dependency.resolvers;
  * under the License.    
  */
 
+import static java.util.Collections.unmodifiableSet;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -32,6 +34,12 @@ import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.dependency.filters.ArtifactIdFilter;
+import org.apache.maven.plugins.dependency.filters.ClassifierFilter;
+import org.apache.maven.plugins.dependency.filters.FilterDependencies;
+import org.apache.maven.plugins.dependency.filters.GroupIdFilter;
+import org.apache.maven.plugins.dependency.filters.ScopeFilter;
+import org.apache.maven.plugins.dependency.filters.TypeFilter;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
@@ -60,6 +68,7 @@ public class GoOfflineMojo
      */
     @Parameter( property = "includeParents", defaultValue = "false" )
     private boolean includeParents;
+    private Set<Artifact> dependencies;
 
     /**
      * Main entry into mojo. Gets the list of dependencies, filters them by the include/exclude parameters
@@ -77,7 +86,7 @@ public class GoOfflineMojo
         {
             final Set<Artifact> plugins = resolvePluginArtifacts();
 
-            final Set<Artifact> dependencies = resolveDependencyArtifacts();
+            this.dependencies = resolveDependencyArtifacts();
 
             if ( !isSilent() )
             {
@@ -111,7 +120,16 @@ public class GoOfflineMojo
     protected Set<Artifact> resolveDependencyArtifacts()
             throws DependencyResolverException
     {
-        final Collection<Dependency> dependencies = getProject().getDependencies();
+        Collection<Dependency> dependencies = getProject().getDependencies();
+        final FilterDependencies filterDependencies = new FilterDependencies(
+                new ArtifactIdFilter( this.includeArtifactIds, this.excludeArtifactIds ),
+                new GroupIdFilter( this.includeGroupIds, this.excludeGroupIds ),
+                new ScopeFilter( this.includeScope, this.excludeScope ),
+                new ClassifierFilter( this.includeClassifiers, this.excludeClassifiers ),
+                new TypeFilter( this.includeTypes, this.excludeTypes )
+        );
+        dependencies = filterDependencies.filter( dependencies );
+
         final Set<DependableCoordinate> dependableCoordinates = new HashSet<>();
 
         final ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
@@ -141,6 +159,7 @@ public class GoOfflineMojo
 
         for ( DependableCoordinate dependableCoordinate : dependableCoordinates )
         {
+
             final Iterable<ArtifactResult> artifactResults = getDependencyResolver().resolveDependencies(
                     buildingRequest, dependableCoordinate, filter );
 
@@ -220,4 +239,10 @@ public class GoOfflineMojo
     {
         return null;
     }
+
+    public Set<Artifact> getDependencies()
+    {
+        return unmodifiableSet( dependencies );
+    }
+
 }
