@@ -240,7 +240,11 @@ public class GoOfflineMojo
         return null;
     }
 
-    public Set<Artifact> getDependencies()
+    /**
+     * Returns a read-only set of dependencies used for going offline.
+     * @return an immutable set of dependencies used for going offline.
+     */
+    protected Set<Artifact> getDependencies()
     {
         return unmodifiableSet( dependencies );
     }

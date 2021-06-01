@@ -29,7 +29,7 @@ import org.apache.maven.model.Dependency;
 public interface DependencyFilter
 {
     /**
-     * Returns a new unmodifiable set of filtered dependencies.
+     * Filters the given dependencies and returns a new unmodifiable set of filtered dependencies.
      * @param dependencies the dependencies to filter.
      * @return the filtered dependencies.
      */

@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.filters;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableSet;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -46,10 +47,10 @@ public class FilterDependencies
     }
 
     /**
-     * <p>filter.</p>
+     * Filter the given dependencies using the filters from this instance.
      *
      * @param dependencies The {@link Dependency}s to filter.
-     * @return The resulting artifacts set.
+     * @return the remaining dependencies as unmodifiable set.
      */
     public Set<Dependency> filter( Collection<Dependency> dependencies )
     {
@@ -60,7 +61,7 @@ public class FilterDependencies
             filtered = filter.filter( filtered );
         }
 
-        return filtered;
+        return unmodifiableSet( filtered );
     }
 
     /**
