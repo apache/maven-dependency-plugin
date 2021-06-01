@@ -25,7 +25,7 @@ import java.util.Set;
 import org.apache.maven.model.Dependency;
 
 /**
- * Filters dependencies by Classifier.
+ * Filters dependencies by classifier.
  */
 public class ClassifierFilter extends AbstractDependencyFilter
 {

@@ -30,7 +30,7 @@ import java.util.Set;
 import org.apache.maven.model.Dependency;
 
 /**
- * Applies null to any number of filters to a given collection of dependencies.
+ * Applies a given list of filters to a given collection of dependencies.
  */
 public class FilterDependencies
 {
@@ -57,14 +57,7 @@ public class FilterDependencies
 
         for ( DependencyFilter filter : filters )
         {
-            try
-            {
-                filtered = filter.filter( filtered );
-            }
-            catch ( NullPointerException e )
-            {
-                // TODO: log
-            }
+            filtered = filter.filter( filtered );
         }
 
         return filtered;

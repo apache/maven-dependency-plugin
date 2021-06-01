@@ -34,6 +34,4 @@ public interface DependencyFilter
      * @return the filtered dependencies.
      */
     Set<Dependency> filter( Set<Dependency> dependencies );
-
-    boolean isDependencyIncluded( Dependency dependency );
 }

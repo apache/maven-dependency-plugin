@@ -20,31 +20,22 @@ package org.apache.maven.plugins.dependency.filters;
  */
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.apache.maven.model.Dependency;
 
 abstract class AbstractDependencyFilter implements DependencyFilter
 {
-    public boolean isDependencyIncluded( Dependency dependency )
+    protected Set<String> splitValues( String csvValueList )
     {
-        Set<Dependency> set = new LinkedHashSet<>();
-        set.add( dependency );
-
-        set = filter( set );
-        return set.contains( dependency );
-    }
-
-    protected Set<String> splitValues( String csvScopeList )
-    {
-        final String[] scopes = csvScopeList.split( "," );
+        final String[] values = csvValueList.split( "," );
         Set<String> excludeScope = new HashSet<>();
 
-        for ( String scope : scopes )
+        for ( String value : values )
         {
-            final String cleanScope = scope.trim().toLowerCase( Locale.ROOT );
+            // value is expected to be a scope, classifier, etc.
+            // thus assuming an english word. Do not rely on Locale.getDefault()!
+            final String cleanScope = value.trim().toLowerCase( Locale.ENGLISH );
 
             if ( cleanScope.isEmpty() )
             {

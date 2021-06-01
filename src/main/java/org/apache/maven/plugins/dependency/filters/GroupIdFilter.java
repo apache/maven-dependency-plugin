@@ -25,7 +25,7 @@ import java.util.Set;
 import org.apache.maven.model.Dependency;
 
 /**
- * Filters dependencies by GroupId.
+ * Filters dependencies by group ID.
  */
 public class GroupIdFilter extends AbstractDependencyFilter
 {

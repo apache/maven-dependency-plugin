@@ -25,7 +25,7 @@ import java.util.Set;
 import org.apache.maven.model.Dependency;
 
 /**
- * Filters dependencies by ArtifactId.
+ * Filters dependencies by artifact ID.
  */
 public class ArtifactIdFilter extends AbstractDependencyFilter
 {
