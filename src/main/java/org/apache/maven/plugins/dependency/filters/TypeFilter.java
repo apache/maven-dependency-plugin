@@ -29,14 +29,14 @@ import org.apache.maven.model.Dependency;
  */
 public class TypeFilter extends AbstractDependencyFilter
 {
-    private final String includeType;
+    private final String includeTypes;
 
-    private final String excludeType;
+    private final String excludeTypes;
 
-    public TypeFilter( String includeType, String excludeType )
+    public TypeFilter( String includeTypes, String excludeTypes )
     {
-        this.includeType = includeType == null ? "" : includeType;
-        this.excludeType = excludeType == null ? "" : excludeType;
+        this.includeTypes = includeTypes == null ? "" : includeTypes;
+        this.excludeTypes = excludeTypes == null ? "" : excludeTypes;
     }
 
     @Override
@@ -52,12 +52,12 @@ public class TypeFilter extends AbstractDependencyFilter
 
     private Set<Dependency> filterExcludeType( Set<Dependency> dependencies )
     {
-        if ( excludeType.trim().isEmpty() )
+        if ( excludeTypes.trim().isEmpty() )
         {
             return dependencies;
         }
 
-        final Set<String> excludedTypes = splitValues( excludeType );
+        final Set<String> excludedTypes = splitValues( excludeTypes );
 
         Set<Dependency> filtered = new HashSet<>( dependencies.size() );
         for ( Dependency dependency : dependencies )
@@ -75,12 +75,12 @@ public class TypeFilter extends AbstractDependencyFilter
 
     private Set<Dependency> filterIncludeType( Set<Dependency> dependencies )
     {
-        if ( includeType.trim().isEmpty() )
+        if ( includeTypes.trim().isEmpty() )
         {
             return dependencies;
         }
 
-        Set<String> includedTypes = splitValues( includeType );
+        Set<String> includedTypes = splitValues( includeTypes );
 
         Set<Dependency> filtered = new HashSet<>( dependencies.size() );
         for ( Dependency dependency : dependencies )

@@ -29,14 +29,14 @@ import org.apache.maven.model.Dependency;
  */
 public class GroupIdFilter extends AbstractDependencyFilter
 {
-    private final String includeGroupId;
+    private final String includeGroupIds;
 
-    private final String excludeGroupId;
+    private final String excludeGroupIds;
 
-    public GroupIdFilter( String includeGroupId, String excludeGroupId )
+    public GroupIdFilter( String includeGroupIds, String excludeGroupIds )
     {
-        this.includeGroupId = includeGroupId == null ? "" : includeGroupId;
-        this.excludeGroupId = excludeGroupId == null ? "" : excludeGroupId;
+        this.includeGroupIds = includeGroupIds == null ? "" : includeGroupIds;
+        this.excludeGroupIds = excludeGroupIds == null ? "" : excludeGroupIds;
     }
 
     @Override
@@ -52,12 +52,12 @@ public class GroupIdFilter extends AbstractDependencyFilter
 
     private Set<Dependency> filterExcludeGroupIds( Set<Dependency> dependencies )
     {
-        if ( excludeGroupId.trim().isEmpty() )
+        if ( excludeGroupIds.trim().isEmpty() )
         {
             return dependencies;
         }
 
-        final Set<String> excludedGroupIds = splitValues( excludeGroupId );
+        final Set<String> excludedGroupIds = splitValues( excludeGroupIds );
 
         Set<Dependency> filtered = new HashSet<>( dependencies.size() );
         for ( Dependency dependency : dependencies )
@@ -75,12 +75,12 @@ public class GroupIdFilter extends AbstractDependencyFilter
 
     private Set<Dependency> filterIncludeGroupIds( Set<Dependency> dependencies )
     {
-        if ( includeGroupId.trim().isEmpty() )
+        if ( includeGroupIds.trim().isEmpty() )
         {
             return dependencies;
         }
 
-        Set<String> includedGroupIds = splitValues( includeGroupId );
+        Set<String> includedGroupIds = splitValues( includeGroupIds );
 
         Set<Dependency> filtered = new HashSet<>( dependencies.size() );
         for ( Dependency dependency : dependencies )

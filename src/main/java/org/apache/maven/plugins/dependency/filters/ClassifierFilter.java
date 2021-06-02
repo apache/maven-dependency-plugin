@@ -29,14 +29,14 @@ import org.apache.maven.model.Dependency;
  */
 public class ClassifierFilter extends AbstractDependencyFilter
 {
-    private final String includeClassifier;
+    private final String includeClassifiers;
 
-    private final String excludeClassifier;
+    private final String excludeClassifiers;
 
-    public ClassifierFilter( String includeClassifier, String excludeClassifier )
+    public ClassifierFilter( String includeClassifiers, String excludeClassifiers )
     {
-        this.includeClassifier = includeClassifier == null ? "" : includeClassifier;
-        this.excludeClassifier = excludeClassifier == null ? "" : excludeClassifier;
+        this.includeClassifiers = includeClassifiers == null ? "" : includeClassifiers;
+        this.excludeClassifiers = excludeClassifiers == null ? "" : excludeClassifiers;
     }
 
     @Override
@@ -52,12 +52,12 @@ public class ClassifierFilter extends AbstractDependencyFilter
 
     private Set<Dependency> filterExcludeClassifier( Set<Dependency> dependencies )
     {
-        if ( excludeClassifier.trim().isEmpty() )
+        if ( excludeClassifiers.trim().isEmpty() )
         {
             return dependencies;
         }
 
-        final Set<String> excludedClassifiers = splitValues( excludeClassifier );
+        final Set<String> excludedClassifiers = splitValues( excludeClassifiers );
 
         Set<Dependency> filtered = new HashSet<>( dependencies.size() );
         for ( Dependency dependency : dependencies )
@@ -75,12 +75,12 @@ public class ClassifierFilter extends AbstractDependencyFilter
 
     private Set<Dependency> filterIncludeClassifier( Set<Dependency> dependencies )
     {
-        if ( includeClassifier.trim().isEmpty() )
+        if ( includeClassifiers.trim().isEmpty() )
         {
             return dependencies;
         }
 
-        Set<String> includedClassifiers = splitValues( includeClassifier );
+        Set<String> includedClassifiers = splitValues( includeClassifiers );
 
         Set<Dependency> filtered = new HashSet<>( dependencies.size() );
         for ( Dependency dependency : dependencies )

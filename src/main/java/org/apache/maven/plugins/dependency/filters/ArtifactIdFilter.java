@@ -29,14 +29,14 @@ import org.apache.maven.model.Dependency;
  */
 public class ArtifactIdFilter extends AbstractDependencyFilter
 {
-    private final String includeArtifactId;
+    private final String includeArtifactIds;
 
-    private final String excludeArtifactId;
+    private final String excludeArtifactIds;
 
-    public ArtifactIdFilter( String includeArtifactId, String excludeArtifactId )
+    public ArtifactIdFilter( String includeArtifactIds, String excludeArtifactIds )
     {
-        this.includeArtifactId = includeArtifactId == null ? "" : includeArtifactId;
-        this.excludeArtifactId = excludeArtifactId == null ? "" : excludeArtifactId;
+        this.includeArtifactIds = includeArtifactIds == null ? "" : includeArtifactIds;
+        this.excludeArtifactIds = excludeArtifactIds == null ? "" : excludeArtifactIds;
     }
 
     @Override
@@ -52,12 +52,12 @@ public class ArtifactIdFilter extends AbstractDependencyFilter
 
     private Set<Dependency> filterExcludeArtifactIds( Set<Dependency> dependencies )
     {
-        if ( excludeArtifactId.trim().isEmpty() )
+        if ( excludeArtifactIds.trim().isEmpty() )
         {
             return dependencies;
         }
 
-        final Set<String> excludedArtifactIds = splitValues( excludeArtifactId );
+        final Set<String> excludedArtifactIds = splitValues( excludeArtifactIds );
 
         Set<Dependency> filtered = new HashSet<>( dependencies.size() );
         for ( Dependency dependency : dependencies )
@@ -75,12 +75,12 @@ public class ArtifactIdFilter extends AbstractDependencyFilter
 
     private Set<Dependency> filterIncludeArtifactIds( Set<Dependency> dependencies )
     {
-        if ( includeArtifactId.trim().isEmpty() )
+        if ( includeArtifactIds.trim().isEmpty() )
         {
             return dependencies;
         }
 
-        Set<String> includedArtifactIds = splitValues( includeArtifactId );
+        Set<String> includedArtifactIds = splitValues( includeArtifactIds );
 
         Set<Dependency> filtered = new HashSet<>( dependencies.size() );
         for ( Dependency dependency : dependencies )
