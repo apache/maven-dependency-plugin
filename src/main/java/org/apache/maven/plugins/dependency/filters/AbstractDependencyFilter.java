@@ -32,7 +32,7 @@ abstract class AbstractDependencyFilter implements DependencyFilter
     protected final String includeIds;
     protected final String excludeIds;
 
-    public AbstractDependencyFilter( String includeIds, String excludeIds )
+    AbstractDependencyFilter( String includeIds, String excludeIds )
     {
         this.includeIds = includeIds == null ? "" : includeIds;
         this.excludeIds = excludeIds == null ? "" : excludeIds;
@@ -52,15 +52,18 @@ abstract class AbstractDependencyFilter implements DependencyFilter
 
     private Set<Dependency> filterexcludeIds( Set<Dependency> dependencies )
     {
-        if ( excludeIds.trim().isEmpty() ) {
+        if ( excludeIds.trim().isEmpty() )
+        {
             return dependencies;
         }
 
         final Set<String> excludedIds = splitExcludeIds( excludeIds );
 
         Set<Dependency> filtered = new HashSet<>( dependencies.size() );
-        for ( Dependency dependency : dependencies ) {
-            if ( excludedIds.contains( getContainsProperty( dependency ) ) ) {
+        for ( Dependency dependency : dependencies )
+        {
+            if ( excludedIds.contains( getContainsProperty( dependency ) ) )
+            {
                 continue;
             }
 
@@ -72,15 +75,18 @@ abstract class AbstractDependencyFilter implements DependencyFilter
 
     private Set<Dependency> filterincludeIds( Set<Dependency> dependencies )
     {
-        if ( includeIds.trim().isEmpty() ) {
+        if ( includeIds.trim().isEmpty() )
+        {
             return dependencies;
         }
 
         Set<String> includedIds = splitIncludeIds( includeIds );
 
         Set<Dependency> filtered = new HashSet<>( dependencies.size() );
-        for ( Dependency dependency : dependencies ) {
-            if ( includedIds.contains( getContainsProperty( dependency ) ) ) {
+        for ( Dependency dependency : dependencies )
+        {
+            if ( includedIds.contains( getContainsProperty( dependency ) ) )
+            {
                 filtered.add( dependency );
             }
         }
@@ -97,8 +103,6 @@ abstract class AbstractDependencyFilter implements DependencyFilter
     {
         return splitValues( includeIds );
     }
-
-    abstract protected String getContainsProperty( Dependency dependency );
 
     protected Set<String> splitValues( String csvValueList )
     {
@@ -121,4 +125,6 @@ abstract class AbstractDependencyFilter implements DependencyFilter
 
         return excludeScope;
     }
+
+    protected abstract String getContainsProperty( Dependency dependency );
 }

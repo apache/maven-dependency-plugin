@@ -28,11 +28,12 @@ public class TypeFilter extends AbstractDependencyFilter
 {
     public TypeFilter( String includeTypes, String excludeTypes )
     {
-       super( includeTypes, excludeTypes );
+        super( includeTypes, excludeTypes );
     }
 
     @Override
-    protected String getContainsProperty( Dependency dependency ) {
+    protected String getContainsProperty( Dependency dependency )
+    {
         return dependency.getType();
     }
 }

@@ -39,7 +39,8 @@ public class ScopeFilter extends AbstractDependencyFilter
     }
 
     @Override
-    protected String getContainsProperty( Dependency dependency ) {
+    protected String getContainsProperty( Dependency dependency )
+    {
         return dependency.getScope();
     }
 
@@ -54,7 +55,8 @@ public class ScopeFilter extends AbstractDependencyFilter
      * @return Set with excluded scopes
      */
     @Override
-    protected Set<String> splitExcludeIds( String scope ) {
+    protected Set<String> splitExcludeIds( String scope )
+    {
         switch ( scope )
         {
             case Artifact.SCOPE_RUNTIME:
@@ -83,11 +85,13 @@ public class ScopeFilter extends AbstractDependencyFilter
      * test include scope gives all dependencies (equivalent to default),
      * provided include scope just gives provided dependencies,
      * system include scope just gives system dependencies.
+     *
      * @param scope to be included
      * @return set with included scopes
      */
     @Override
-    protected Set<String> splitIncludeIds( String scope ) {
+    protected Set<String> splitIncludeIds( String scope )
+    {
         switch ( scope )
         {
             case Artifact.SCOPE_RUNTIME:

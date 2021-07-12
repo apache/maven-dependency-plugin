@@ -32,7 +32,8 @@ public class GroupIdFilter extends AbstractDependencyFilter
     }
 
     @Override
-    protected String getContainsProperty( Dependency dependency ) {
+    protected String getContainsProperty( Dependency dependency )
+    {
         return dependency.getGroupId();
     }
 }
