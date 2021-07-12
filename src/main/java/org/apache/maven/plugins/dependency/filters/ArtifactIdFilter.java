@@ -28,11 +28,11 @@ public class ArtifactIdFilter extends AbstractDependencyFilter
 {
     public ArtifactIdFilter( String includeArtifactIds, String excludeArtifactIds )
     {
-        super(includeArtifactIds, excludeArtifactIds);
+        super( includeArtifactIds, excludeArtifactIds );
     }
 
     @Override
-    protected String getContainsProperty(Dependency dependency)
+    protected String getContainsProperty( Dependency dependency )
     {
         return dependency.getArtifactId();
     }
