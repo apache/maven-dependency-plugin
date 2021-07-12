@@ -26,7 +26,8 @@ import java.util.Locale;
 import java.util.Set;
 
 
-abstract class AbstractDependencyFilter implements DependencyFilter {
+abstract class AbstractDependencyFilter implements DependencyFilter
+{
 
     protected final String includeIds;
     protected final String excludeIds;
@@ -99,16 +100,16 @@ abstract class AbstractDependencyFilter implements DependencyFilter {
 
     abstract protected String getContainsProperty( Dependency dependency );
 
-    protected Set<String> splitValues(String csvValueList)
+    protected Set<String> splitValues( String csvValueList )
     {
-        final String[] values = csvValueList.split(",");
+        final String[] values = csvValueList.split( "," );
         Set<String> excludeScope = new HashSet<>();
 
         for ( String value : values )
         {
             // value is expected to be a scope, classifier, etc.
             // thus assuming an english word. Do not rely on Locale.getDefault()!
-            final String cleanScope = value.trim().toLowerCase(Locale.ENGLISH);
+            final String cleanScope = value.trim().toLowerCase( Locale.ENGLISH );
 
             if ( cleanScope.isEmpty() )
             {

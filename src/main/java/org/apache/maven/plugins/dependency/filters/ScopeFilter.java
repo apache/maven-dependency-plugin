@@ -35,11 +35,11 @@ public class ScopeFilter extends AbstractDependencyFilter
 {
     public ScopeFilter( String includeScope, String excludeScope )
     {
-        super( includeScope, excludeScope);
+        super( includeScope, excludeScope );
     }
 
     @Override
-    protected String getContainsProperty(Dependency dependency) {
+    protected String getContainsProperty( Dependency dependency ) {
         return dependency.getScope();
     }
 
@@ -54,7 +54,7 @@ public class ScopeFilter extends AbstractDependencyFilter
      * @return Set with excluded scopes
      */
     @Override
-    protected Set<String> splitExcludeIds(String scope) {
+    protected Set<String> splitExcludeIds( String scope ) {
         switch ( scope )
         {
             case Artifact.SCOPE_RUNTIME:
@@ -87,7 +87,7 @@ public class ScopeFilter extends AbstractDependencyFilter
      * @return set with included scopes
      */
     @Override
-    protected Set<String> splitIncludeIds(String scope) {
+    protected Set<String> splitIncludeIds( String scope ) {
         switch ( scope )
         {
             case Artifact.SCOPE_RUNTIME:
@@ -115,6 +115,4 @@ public class ScopeFilter extends AbstractDependencyFilter
         }
 
     }
-
-
 }

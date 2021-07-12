@@ -32,7 +32,7 @@ public class TypeFilter extends AbstractDependencyFilter
     }
 
     @Override
-    protected String getContainsProperty(Dependency dependency) {
+    protected String getContainsProperty( Dependency dependency ) {
         return dependency.getType();
     }
 }
