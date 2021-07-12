@@ -150,6 +150,6 @@ ${project.name}
   Here is a link that provides more reference regarding dependencies
   (i.e. dependency management, transitive dependencies).
 
-  * {{{http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html}Dependency Mechanism}}
+  * {{{https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html}Dependency Mechanism}}
 
   []

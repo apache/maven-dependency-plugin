@@ -63,7 +63,7 @@ Copying project dependencies
 
 * Excluding transitive dependencies
 
-   As mentioned, {{{http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html}transitive dependencies}} are copied by default. However, they
+   As mentioned, {{{https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html}transitive dependencies}} are copied by default. However, they
    can also be excluded by setting the <<<excludeTransitive>>> property to
    <<true>>.
 
