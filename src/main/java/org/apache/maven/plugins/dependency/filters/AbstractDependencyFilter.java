@@ -19,23 +19,96 @@ package org.apache.maven.plugins.dependency.filters;
  * under the License.
  */
 
+import org.apache.maven.model.Dependency;
+
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
 
-abstract class AbstractDependencyFilter implements DependencyFilter
-{
-    protected Set<String> splitValues( String csvValueList )
+abstract class AbstractDependencyFilter implements DependencyFilter {
+
+    protected final String includeIds;
+    protected final String excludeIds;
+
+    public AbstractDependencyFilter( String includeIds, String excludeIds )
     {
-        final String[] values = csvValueList.split( "," );
+        this.includeIds = includeIds == null ? "" : includeIds;
+        this.excludeIds = excludeIds == null ? "" : excludeIds;
+    }
+
+
+    @Override
+    public Set<Dependency> filter( Set<Dependency> dependencies )
+    {
+        Set<Dependency> filtered = new HashSet<>( dependencies );
+
+        filtered = filterincludeIds( filtered );
+        filtered = filterexcludeIds( filtered );
+
+        return filtered;
+    }
+
+    private Set<Dependency> filterexcludeIds( Set<Dependency> dependencies )
+    {
+        if ( excludeIds.trim().isEmpty() ) {
+            return dependencies;
+        }
+
+        final Set<String> excludedIds = splitExcludeIds( excludeIds );
+
+        Set<Dependency> filtered = new HashSet<>( dependencies.size() );
+        for ( Dependency dependency : dependencies ) {
+            if ( excludedIds.contains( getContainsProperty( dependency ) ) ) {
+                continue;
+            }
+
+            filtered.add( dependency );
+        }
+
+        return filtered;
+    }
+
+    private Set<Dependency> filterincludeIds( Set<Dependency> dependencies )
+    {
+        if ( includeIds.trim().isEmpty() ) {
+            return dependencies;
+        }
+
+        Set<String> includedIds = splitIncludeIds( includeIds );
+
+        Set<Dependency> filtered = new HashSet<>( dependencies.size() );
+        for ( Dependency dependency : dependencies ) {
+            if ( includedIds.contains( getContainsProperty( dependency ) ) ) {
+                filtered.add( dependency );
+            }
+        }
+
+        return filtered;
+    }
+
+    protected Set<String> splitExcludeIds( String excludeIds )
+    {
+        return splitValues( excludeIds );
+    }
+
+    protected Set<String> splitIncludeIds( String includeIds )
+    {
+        return splitValues( includeIds );
+    }
+
+    abstract protected String getContainsProperty( Dependency dependency );
+
+    protected Set<String> splitValues(String csvValueList)
+    {
+        final String[] values = csvValueList.split(",");
         Set<String> excludeScope = new HashSet<>();
 
         for ( String value : values )
         {
             // value is expected to be a scope, classifier, etc.
             // thus assuming an english word. Do not rely on Locale.getDefault()!
-            final String cleanScope = value.trim().toLowerCase( Locale.ENGLISH );
+            final String cleanScope = value.trim().toLowerCase(Locale.ENGLISH);
 
             if ( cleanScope.isEmpty() )
             {

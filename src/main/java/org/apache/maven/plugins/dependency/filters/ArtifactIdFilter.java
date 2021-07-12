@@ -19,9 +19,6 @@ package org.apache.maven.plugins.dependency.filters;
  * under the License.
  */
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.maven.model.Dependency;
 
 /**
@@ -29,70 +26,14 @@ import org.apache.maven.model.Dependency;
  */
 public class ArtifactIdFilter extends AbstractDependencyFilter
 {
-    private final String includeArtifactIds;
-
-    private final String excludeArtifactIds;
-
     public ArtifactIdFilter( String includeArtifactIds, String excludeArtifactIds )
     {
-        this.includeArtifactIds = includeArtifactIds == null ? "" : includeArtifactIds;
-        this.excludeArtifactIds = excludeArtifactIds == null ? "" : excludeArtifactIds;
+        super(includeArtifactIds, excludeArtifactIds);
     }
 
     @Override
-    public Set<Dependency> filter( Set<Dependency> dependencies )
+    protected String getContainsProperty(Dependency dependency)
     {
-        Set<Dependency> filtered = new HashSet<>( dependencies );
-
-        filtered = filterIncludeArtifactIds( filtered );
-        filtered = filterExcludeArtifactIds( filtered );
-
-        return filtered;
+        return dependency.getArtifactId();
     }
-
-    private Set<Dependency> filterExcludeArtifactIds( Set<Dependency> dependencies )
-    {
-        if ( excludeArtifactIds.trim().isEmpty() )
-        {
-            return dependencies;
-        }
-
-        final Set<String> excludedArtifactIds = splitValues( excludeArtifactIds );
-
-        Set<Dependency> filtered = new HashSet<>( dependencies.size() );
-        for ( Dependency dependency : dependencies )
-        {
-            if ( excludedArtifactIds.contains( dependency.getArtifactId() ) )
-            {
-                continue;
-            }
-
-            filtered.add( dependency );
-        }
-
-        return filtered;
-    }
-
-    private Set<Dependency> filterIncludeArtifactIds( Set<Dependency> dependencies )
-    {
-        if ( includeArtifactIds.trim().isEmpty() )
-        {
-            return dependencies;
-        }
-
-        Set<String> includedArtifactIds = splitValues( includeArtifactIds );
-
-        Set<Dependency> filtered = new HashSet<>( dependencies.size() );
-        for ( Dependency dependency : dependencies )
-        {
-            if ( includedArtifactIds.contains( dependency.getArtifactId() ) )
-            {
-                filtered.add( dependency );
-            }
-        }
-
-        return filtered;
-    }
-
-
 }

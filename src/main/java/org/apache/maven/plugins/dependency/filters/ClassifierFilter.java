@@ -19,9 +19,6 @@ package org.apache.maven.plugins.dependency.filters;
  * under the License.
  */
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.maven.model.Dependency;
 
 /**
@@ -29,70 +26,16 @@ import org.apache.maven.model.Dependency;
  */
 public class ClassifierFilter extends AbstractDependencyFilter
 {
-    private final String includeClassifiers;
-
-    private final String excludeClassifiers;
 
     public ClassifierFilter( String includeClassifiers, String excludeClassifiers )
     {
-        this.includeClassifiers = includeClassifiers == null ? "" : includeClassifiers;
-        this.excludeClassifiers = excludeClassifiers == null ? "" : excludeClassifiers;
+        super( includeClassifiers, excludeClassifiers );
     }
 
     @Override
-    public Set<Dependency> filter( Set<Dependency> dependencies )
+    protected String getContainsProperty( Dependency dependency )
     {
-        Set<Dependency> filtered = new HashSet<>( dependencies );
-
-        filtered = filterIncludeClassifier( filtered );
-        filtered = filterExcludeClassifier( filtered );
-
-        return filtered;
+        return dependency.getClassifier();
     }
-
-    private Set<Dependency> filterExcludeClassifier( Set<Dependency> dependencies )
-    {
-        if ( excludeClassifiers.trim().isEmpty() )
-        {
-            return dependencies;
-        }
-
-        final Set<String> excludedClassifiers = splitValues( excludeClassifiers );
-
-        Set<Dependency> filtered = new HashSet<>( dependencies.size() );
-        for ( Dependency dependency : dependencies )
-        {
-            if ( excludedClassifiers.contains( dependency.getClassifier() ) )
-            {
-                continue;
-            }
-
-            filtered.add( dependency );
-        }
-
-        return filtered;
-    }
-
-    private Set<Dependency> filterIncludeClassifier( Set<Dependency> dependencies )
-    {
-        if ( includeClassifiers.trim().isEmpty() )
-        {
-            return dependencies;
-        }
-
-        Set<String> includedClassifiers = splitValues( includeClassifiers );
-
-        Set<Dependency> filtered = new HashSet<>( dependencies.size() );
-        for ( Dependency dependency : dependencies )
-        {
-            if ( includedClassifiers.contains( dependency.getClassifier() ) )
-            {
-                filtered.add( dependency );
-            }
-        }
-
-        return filtered;
-    }
-
 
 }
