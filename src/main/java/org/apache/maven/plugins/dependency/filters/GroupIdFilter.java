@@ -19,9 +19,6 @@ package org.apache.maven.plugins.dependency.filters;
  * under the License.
  */
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.maven.model.Dependency;
 
 /**
@@ -29,70 +26,14 @@ import org.apache.maven.model.Dependency;
  */
 public class GroupIdFilter extends AbstractDependencyFilter
 {
-    private final String includeGroupIds;
-
-    private final String excludeGroupIds;
-
     public GroupIdFilter( String includeGroupIds, String excludeGroupIds )
     {
-        this.includeGroupIds = includeGroupIds == null ? "" : includeGroupIds;
-        this.excludeGroupIds = excludeGroupIds == null ? "" : excludeGroupIds;
+        super( includeGroupIds, excludeGroupIds );
     }
 
     @Override
-    public Set<Dependency> filter( Set<Dependency> dependencies )
+    protected String getContainsProperty( Dependency dependency )
     {
-        Set<Dependency> filtered = new HashSet<>( dependencies );
-
-        filtered = filterIncludeGroupIds( filtered );
-        filtered = filterExcludeGroupIds( filtered );
-
-        return filtered;
+        return dependency.getGroupId();
     }
-
-    private Set<Dependency> filterExcludeGroupIds( Set<Dependency> dependencies )
-    {
-        if ( excludeGroupIds.trim().isEmpty() )
-        {
-            return dependencies;
-        }
-
-        final Set<String> excludedGroupIds = splitValues( excludeGroupIds );
-
-        Set<Dependency> filtered = new HashSet<>( dependencies.size() );
-        for ( Dependency dependency : dependencies )
-        {
-            if ( excludedGroupIds.contains( dependency.getGroupId() ) )
-            {
-                continue;
-            }
-
-            filtered.add( dependency );
-        }
-
-        return filtered;
-    }
-
-    private Set<Dependency> filterIncludeGroupIds( Set<Dependency> dependencies )
-    {
-        if ( includeGroupIds.trim().isEmpty() )
-        {
-            return dependencies;
-        }
-
-        Set<String> includedGroupIds = splitValues( includeGroupIds );
-
-        Set<Dependency> filtered = new HashSet<>( dependencies.size() );
-        for ( Dependency dependency : dependencies )
-        {
-            if ( includedGroupIds.contains( dependency.getGroupId() ) )
-            {
-                filtered.add( dependency );
-            }
-        }
-
-        return filtered;
-    }
-
-
 }

@@ -19,9 +19,6 @@ package org.apache.maven.plugins.dependency.filters;
  * under the License.
  */
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.maven.model.Dependency;
 
 /**
@@ -29,70 +26,14 @@ import org.apache.maven.model.Dependency;
  */
 public class TypeFilter extends AbstractDependencyFilter
 {
-    private final String includeTypes;
-
-    private final String excludeTypes;
-
     public TypeFilter( String includeTypes, String excludeTypes )
     {
-        this.includeTypes = includeTypes == null ? "" : includeTypes;
-        this.excludeTypes = excludeTypes == null ? "" : excludeTypes;
+        super( includeTypes, excludeTypes );
     }
 
     @Override
-    public Set<Dependency> filter( Set<Dependency> dependencies )
+    protected String getContainsProperty( Dependency dependency )
     {
-        Set<Dependency> filtered = new HashSet<>( dependencies );
-
-        filtered = filterIncludeType( filtered );
-        filtered = filterExcludeType( filtered );
-
-        return filtered;
+        return dependency.getType();
     }
-
-    private Set<Dependency> filterExcludeType( Set<Dependency> dependencies )
-    {
-        if ( excludeTypes.trim().isEmpty() )
-        {
-            return dependencies;
-        }
-
-        final Set<String> excludedTypes = splitValues( excludeTypes );
-
-        Set<Dependency> filtered = new HashSet<>( dependencies.size() );
-        for ( Dependency dependency : dependencies )
-        {
-            if ( excludedTypes.contains( dependency.getType() ) )
-            {
-                continue;
-            }
-
-            filtered.add( dependency );
-        }
-
-        return filtered;
-    }
-
-    private Set<Dependency> filterIncludeType( Set<Dependency> dependencies )
-    {
-        if ( includeTypes.trim().isEmpty() )
-        {
-            return dependencies;
-        }
-
-        Set<String> includedTypes = splitValues( includeTypes );
-
-        Set<Dependency> filtered = new HashSet<>( dependencies.size() );
-        for ( Dependency dependency : dependencies )
-        {
-            if ( includedTypes.contains( dependency.getType() ) )
-            {
-                filtered.add( dependency );
-            }
-        }
-
-        return filtered;
-    }
-
-
 }
