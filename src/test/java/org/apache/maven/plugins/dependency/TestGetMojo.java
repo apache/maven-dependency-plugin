@@ -131,7 +131,7 @@ public class TestGetMojo
                     InetAddress.getLoopbackAddress().getHostName() : serverConnector.getHost();
             url = url + ":" + serverConnector.getLocalPort();
 
-            setVariableValueToObject( mojo, "remoteRepositories", "myserver::default::" + server.getURI() );
+            setVariableValueToObject( mojo, "remoteRepositories", "myserver::default::" + url );
             mojo.setGroupId( "test" );
             mojo.setArtifactId( "test" );
             mojo.setVersion( "1.0" );
