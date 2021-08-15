@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency;
  */
 
 import java.io.File;
+import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -38,6 +39,7 @@ import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.security.Constraint;
@@ -124,6 +126,10 @@ public class TestGetMojo
         org.eclipse.jetty.server.Server server = createServer();
         try {
             server.start();
+            ServerConnector serverConnector = (ServerConnector)server.getConnectors()[0];
+            String url = "http://" + serverConnector.getHost() == null ?
+                    InetAddress.getLoopbackAddress().getHostName() : serverConnector.getHost();
+            url = url + ":" + serverConnector.getLocalPort();
 
             setVariableValueToObject( mojo, "remoteRepositories", "myserver::default::" + server.getURI() );
             mojo.setGroupId( "test" );
