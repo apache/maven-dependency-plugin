@@ -127,9 +127,9 @@ public class TestGetMojo
         try {
             server.start();
             ServerConnector serverConnector = (ServerConnector)server.getConnectors()[0];
-            String url = "http://" + serverConnector.getHost() == null ?
-                    InetAddress.getLoopbackAddress().getHostName() : serverConnector.getHost();
-            url = url + ":" + serverConnector.getLocalPort();
+            String url = "http://" + (serverConnector.getHost() == null ?
+                    InetAddress.getLoopbackAddress().getHostName() : serverConnector.getHost());
+            url = url + ":" + serverConnector.getLocalPort() + "/maven";
 
             setVariableValueToObject( mojo, "remoteRepositories", "myserver::default::" + url );
             mojo.setGroupId( "test" );
@@ -214,7 +214,7 @@ public class TestGetMojo
     {
         org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server( 0 );
         server.setStopAtShutdown( true );
-
+        
         LoginService loginService = new HashLoginService( "myrealm",
             "src/test/resources/unit/get-test/realm.properties" );
         server.addBean( loginService );
