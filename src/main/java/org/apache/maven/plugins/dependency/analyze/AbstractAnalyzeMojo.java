@@ -415,14 +415,7 @@ public abstract class AbstractAnalyzeMojo
 
     private void filterArtifactsByScope( Set<Artifact> artifacts, String scope )
     {
-        for ( Iterator<Artifact> iterator = artifacts.iterator(); iterator.hasNext(); )
-        {
-            Artifact artifact = iterator.next();
-            if ( artifact.getScope().equals( scope ) )
-            {
-                iterator.remove();
-            }
-        }
+        artifacts.removeIf( artifact -> artifact.getScope().equals( scope ) );
     }
 
     private void logArtifacts( Set<Artifact> artifacts, boolean warn )

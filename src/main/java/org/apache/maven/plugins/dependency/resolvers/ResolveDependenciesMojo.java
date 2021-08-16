@@ -166,8 +166,7 @@ public class ResolveDependenciesMojo
             sb.append( System.lineSeparator() );
             sb.append( "The following files were skipped:" );
             sb.append( System.lineSeparator() );
-            Set<Artifact> skippedDependencies = new LinkedHashSet<>();
-            skippedDependencies.addAll( results.getSkippedDependencies() );
+            Set<Artifact> skippedDependencies = new LinkedHashSet<>( results.getSkippedDependencies() );
             sb.append( buildArtifactListOutput( skippedDependencies, outputAbsoluteArtifactFilename, theOutputScope,
                                                 theSort ) );
         }
@@ -177,8 +176,7 @@ public class ResolveDependenciesMojo
             sb.append( System.lineSeparator() );
             sb.append( "The following files have NOT been resolved:" );
             sb.append( System.lineSeparator() );
-            Set<Artifact> unResolvedDependencies = new LinkedHashSet<>();
-            unResolvedDependencies.addAll( results.getUnResolvedDependencies() );
+            Set<Artifact> unResolvedDependencies = new LinkedHashSet<>( results.getUnResolvedDependencies() );
             sb.append( buildArtifactListOutput( unResolvedDependencies, outputAbsoluteArtifactFilename, theOutputScope,
                                                 theSort ) );
         }
@@ -297,11 +295,8 @@ public class ResolveDependenciesMojo
                 {
                     if ( artifactFile.isFile() )
                     {
-                        JarFile jarFile = null;
-                        try
+                        try ( JarFile jarFile = new JarFile( artifactFile ) )
                         {
-                            jarFile = new JarFile( artifactFile );
-
                             Manifest manifest = jarFile.getManifest();
 
                             if ( manifest != null
@@ -317,20 +312,6 @@ public class ResolveDependenciesMojo
                         catch ( IOException e )
                         {
                             // noop
-                        }
-                        finally
-                        {
-                            if ( jarFile != null )
-                            {
-                                try
-                                {
-                                    jarFile.close();
-                                }
-                                catch ( IOException e )
-                                {
-                                    // noop
-                                }
-                            }
                         }
                     }
                 }

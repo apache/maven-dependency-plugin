@@ -217,26 +217,25 @@ public class ListClassesMojo
             throw new MojoFailureException( "You must specify an artifact, "
                     + "e.g. -Dartifact=org.apache.maven.plugins:maven-downloader-plugin:1.0" );
         }
-        if ( artifact != null )
+
+        String[] tokens = artifact.split( ":" );
+        if ( tokens.length < 3 || tokens.length > 5 )
         {
-            String[] tokens = artifact.split( ":" );
-            if ( tokens.length < 3 || tokens.length > 5 )
-            {
-                throw new MojoFailureException( "Invalid artifact, you must specify "
-                        + "groupId:artifactId:version[:packaging[:classifier]] " + artifact );
-            }
-            coordinate.setGroupId( tokens[0] );
-            coordinate.setArtifactId( tokens[1] );
-            coordinate.setVersion( tokens[2] );
-            if ( tokens.length >= 4 )
-            {
-                coordinate.setType( tokens[3] );
-            }
-            if ( tokens.length == 5 )
-            {
-                coordinate.setClassifier( tokens[4] );
-            }
+            throw new MojoFailureException( "Invalid artifact, you must specify "
+                    + "groupId:artifactId:version[:packaging[:classifier]] " + artifact );
         }
+        coordinate.setGroupId( tokens[0] );
+        coordinate.setArtifactId( tokens[1] );
+        coordinate.setVersion( tokens[2] );
+        if ( tokens.length >= 4 )
+        {
+            coordinate.setType( tokens[3] );
+        }
+        if ( tokens.length == 5 )
+        {
+            coordinate.setClassifier( tokens[4] );
+        }
+
 
         ArtifactRepositoryPolicy always =
                 new ArtifactRepositoryPolicy( true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS,

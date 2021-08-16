@@ -85,7 +85,7 @@ public class AnalyzeDuplicateMojo
         }
 
         MavenXpp3Reader pomReader = new MavenXpp3Reader();
-        Model model = null;
+        Model model;
         try ( Reader reader = ReaderFactory.newXmlReader( project.getFile() ) )
         {
             model = pomReader.read( reader );
@@ -158,7 +158,7 @@ public class AnalyzeDuplicateMojo
         }
 
         // @formatter:off
-        return new LinkedHashSet<String>( 
+        return new LinkedHashSet<>(
                 CollectionUtils.disjunction( modelDependencies2, new LinkedHashSet<>( modelDependencies2 ) ) );
         // @formatter:on
     }

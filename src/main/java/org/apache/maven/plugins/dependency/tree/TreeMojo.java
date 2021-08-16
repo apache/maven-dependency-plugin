@@ -400,7 +400,7 @@ public class TreeMojo
                 child.getArtifact().getProperties().get( "preManagedScope" ), null,
                 child.getDependency().isOptional() );
 
-        newChild.setChildren( new ArrayList<DependencyNode>() );
+        newChild.setChildren( new ArrayList<>() );
 
         for ( org.eclipse.aether.graph.DependencyNode grandChild : child.getChildren() )
         {

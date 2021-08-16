@@ -81,6 +81,7 @@ public class MarkerFileFilter
                 result.add( artifact );
             }
         }
+
         return result;
     }
 

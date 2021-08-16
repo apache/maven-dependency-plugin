@@ -272,7 +272,7 @@ public abstract class AbstractFromConfigurationMojo
     {
         MavenProject project = getProject();
         List<Dependency> deps = project.getDependencies();
-        List<Dependency> depMngt = project.getDependencyManagement() == null ? Collections.<Dependency>emptyList()
+        List<Dependency> depMngt = project.getDependencyManagement() == null ? Collections.emptyList()
                         : project.getDependencyManagement().getDependencies();
 
         if ( !findDependencyVersion( artifact, deps, false )

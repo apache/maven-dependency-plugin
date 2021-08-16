@@ -21,6 +21,8 @@ package org.apache.maven.plugins.dependency.tree;
 
 import org.apache.maven.project.MavenProject;
 
+import java.util.Objects;
+
 /**
  * Uniquely defines an artifact by groupId, artifactId and version.
  */
@@ -63,10 +65,6 @@ final class ArtifactKey
     @Override
     public int hashCode()
     {
-        final int hashPrime = 31;
-        int result = groupId.hashCode();
-        result = hashPrime * result + artifactId.hashCode();
-        result = hashPrime * result + version.hashCode();
-        return result;
+        return Objects.hash( groupId, artifactId, version );
     }
 }
