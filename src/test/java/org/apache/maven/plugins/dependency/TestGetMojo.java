@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency;
  */
 
 import java.io.File;
+import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -38,6 +39,7 @@ import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.security.Constraint;
@@ -124,8 +126,12 @@ public class TestGetMojo
         org.eclipse.jetty.server.Server server = createServer();
         try {
             server.start();
+            ServerConnector serverConnector = (ServerConnector)server.getConnectors()[0];
+            String url = "http://" + (serverConnector.getHost() == null ?
+                    InetAddress.getLoopbackAddress().getHostName() : serverConnector.getHost());
+            url = url + ":" + serverConnector.getLocalPort() + "/maven";
 
-            setVariableValueToObject( mojo, "remoteRepositories", "myserver::default::" + server.getURI() );
+            setVariableValueToObject( mojo, "remoteRepositories", "myserver::default::" + url );
             mojo.setGroupId( "test" );
             mojo.setArtifactId( "test" );
             mojo.setVersion( "1.0" );
@@ -208,7 +214,7 @@ public class TestGetMojo
     {
         org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server( 0 );
         server.setStopAtShutdown( true );
-
+        
         LoginService loginService = new HashLoginService( "myrealm",
             "src/test/resources/unit/get-test/realm.properties" );
         server.addBean( loginService );
