@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Builds the VerboseDependencyGraph
@@ -149,11 +150,9 @@ class VerboseDependencyGraphBuilder
         {
             org.apache.maven.model.Dependency manager = dependencyManagementMap.get(
                     getDependencyManagementCoordinate( node.getArtifact() ) );
-            Map<String, String> artifactProperties = new HashMap<>();
-            for ( Map.Entry<String, String> entry : node.getArtifact().getProperties().entrySet() )
-            {
-                artifactProperties.put( entry.getKey(), entry.getValue() );
-            }
+            Map<String, String> artifactProperties = node.getArtifact().getProperties().entrySet()
+                    .stream()
+                    .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue ) );
 
             if ( !manager.getVersion().equals( node.getArtifact().getVersion() ) )
             {
@@ -182,16 +181,13 @@ class VerboseDependencyGraphBuilder
     private static Map<String, org.apache.maven.model.Dependency> createDependencyManagementMap(
             DependencyManagement dependencyManagement )
     {
-        Map<String, org.apache.maven.model.Dependency> dependencyManagementMap = new HashMap<>();
         if ( dependencyManagement == null )
         {
-            return dependencyManagementMap;
+            return new HashMap<>();
         }
-        for ( org.apache.maven.model.Dependency dependency : dependencyManagement.getDependencies() )
-        {
-            dependencyManagementMap.put( getDependencyManagementCoordinate( dependency ), dependency );
-        }
-        return dependencyManagementMap;
+        return dependencyManagement.getDependencies().stream()
+                .collect( Collectors.toMap( VerboseDependencyGraphBuilder::getDependencyManagementCoordinate,
+                                            dependency -> dependency ) );
     }
 
     private static String getDependencyManagementCoordinate( org.apache.maven.model.Dependency dependency )
@@ -230,7 +226,7 @@ class VerboseDependencyGraphBuilder
     {
         Set<DependencyNode> visitedNodes = new HashSet<>();
         DependencyNode newRoot = new DefaultDependencyNode( getProjectDependency( project ) );
-        newRoot.setChildren( new ArrayList<DependencyNode>() );
+        newRoot.setChildren( new ArrayList<>() );
 
         for ( int i = 0; i < rootNode.getChildren().size(); i++ )
         {
@@ -286,13 +282,13 @@ class VerboseDependencyGraphBuilder
 
     private List<Dependency> getReactorDependencies( Collection<MavenProject> reactorProjects, List<?> dependencies )
     {
-        Set<ArtifactKey> reactorProjectsIds = new HashSet<ArtifactKey>();
+        Set<ArtifactKey> reactorProjectsIds = new HashSet<>();
         for ( MavenProject project : reactorProjects )
         {
             reactorProjectsIds.add( new ArtifactKey( project ) );
         }
 
-        List<Dependency> reactorDeps = new ArrayList<Dependency>();
+        List<Dependency> reactorDeps = new ArrayList<>();
         for ( Object untypedDependency : dependencies )
         {
             Dependency dependency = (Dependency) untypedDependency;

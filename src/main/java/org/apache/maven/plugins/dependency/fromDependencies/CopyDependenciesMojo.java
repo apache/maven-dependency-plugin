@@ -131,10 +131,7 @@ public class CopyDependenciesMojo
                 getRepositoryManager().setLocalRepositoryBasedir( session.getProjectBuildingRequest(),
                                                                   outputDirectory );
 
-            for ( Artifact artifact : artifacts )
-            {
-                installArtifact( artifact, buildingRequest );
-            }
+            artifacts.forEach( artifact -> installArtifact( artifact, buildingRequest ) );
         }
 
         Set<Artifact> skippedArtifacts = dss.getSkippedDependencies();
@@ -240,8 +237,7 @@ public class CopyDependenciesMojo
         String destFileName = DependencyUtil.getFormattedFileName( artifact, removeVersion, prependGroupId,
                                                                    theUseBaseVersion, removeClassifier );
 
-        File destDir;
-        destDir = DependencyUtil.getFormattedOutputDirectory( useSubDirectoryPerScope, useSubDirectoryPerType,
+        File destDir = DependencyUtil.getFormattedOutputDirectory( useSubDirectoryPerScope, useSubDirectoryPerType,
                                                               useSubDirectoryPerArtifact, useRepositoryLayout,
                                                               stripVersion, outputDirectory, artifact );
         File destFile = new File( destDir, destFileName );

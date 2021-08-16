@@ -315,7 +315,7 @@ public class BuildClasspathMojo
         try
         {
             String oldCp = readClasspathFile();
-            return ( cpString == null ? oldCp == null : cpString.equals( oldCp ) );
+            return Objects.equals( cpString, oldCp );
         }
         catch ( IOException ex )
         {

@@ -171,7 +171,7 @@ abstract class AbstractVerboseGraphSerializer
                         ignoreNode = true;
                         nodeErrors.put( node, "omitted for introducing a cycle with "
                                 + getDependencyCoordinate( child ) );
-                        node.setChildren( new ArrayList<DependencyNode>() );
+                        node.setChildren( new ArrayList<>() );
                         break;
                     }
                 }

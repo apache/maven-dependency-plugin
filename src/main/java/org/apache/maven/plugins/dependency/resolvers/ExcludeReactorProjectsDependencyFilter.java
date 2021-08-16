@@ -27,9 +27,9 @@ import org.apache.maven.shared.artifact.filter.resolve.AbstractFilter;
 import org.apache.maven.shared.artifact.filter.resolve.Node;
 import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * {@link TransformableFilter} implementation that excludes artifacts found in the Reactor.
@@ -44,11 +44,9 @@ public class ExcludeReactorProjectsDependencyFilter extends AbstractFilter
     public ExcludeReactorProjectsDependencyFilter( final List<MavenProject> reactorProjects, final Log log )
     {
         this.log = log;
-        this.reactorArtifactKeys = new HashSet<>( reactorProjects.size() );
-        for ( final MavenProject project : reactorProjects )
-        {
-            this.reactorArtifactKeys.add( ArtifactUtils.key( project.getArtifact() ) );
-        }
+        this.reactorArtifactKeys = reactorProjects.stream()
+                .map( project -> ArtifactUtils.key( project.getArtifact() ) )
+                .collect( Collectors.toSet() );
     }
 
     @Override

@@ -19,12 +19,13 @@ package org.apache.maven.plugins.dependency.analyze;
  * under the License.
  */
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
@@ -193,15 +194,12 @@ public class AnalyzeDepMgt
      */
     public Map<String, Exclusion> addExclusions( List<Exclusion> exclusionList )
     {
-        Map<String, Exclusion> exclusions = new HashMap<>();
         if ( exclusionList != null )
         {
-            for ( Exclusion exclusion : exclusionList )
-            {
-                exclusions.put( getExclusionKey( exclusion ), exclusion );
-            }
+            return exclusionList.stream()
+                    .collect( Collectors.toMap( this::getExclusionKey, exclusion -> exclusion ) );
         }
-        return exclusions;
+        return Collections.emptyMap();
     }
 
     /**
@@ -214,17 +212,9 @@ public class AnalyzeDepMgt
      */
     public List<Artifact> getExclusionErrors( Map<String, Exclusion> exclusions, Set<Artifact> allDependencyArtifacts )
     {
-        List<Artifact> list = new ArrayList<>();
-
-        for ( Artifact artifact : allDependencyArtifacts )
-        {
-            if ( exclusions.containsKey( getExclusionKey( artifact ) ) )
-            {
-                list.add( artifact );
-            }
-        }
-
-        return list;
+        return allDependencyArtifacts.stream()
+                .filter( artifact -> exclusions.containsKey( getExclusionKey( artifact ) ) )
+                .collect( Collectors.toList( ) );
     }
 
     /**

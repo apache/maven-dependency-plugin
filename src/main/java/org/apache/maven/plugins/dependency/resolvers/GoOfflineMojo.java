@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Goal that resolves all project dependencies, including plugins and reports and their dependencies.
@@ -98,15 +99,13 @@ public class GoOfflineMojo
     protected Set<Artifact> resolveDependencyArtifacts()
             throws DependencyResolverException
     {
-        final Collection<Dependency> dependencies = getProject().getDependencies();
-        final Set<DependableCoordinate> dependableCoordinates = new HashSet<>();
+        Collection<Dependency> dependencies = getProject().getDependencies();
 
-        final ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
+        Set<DependableCoordinate> dependableCoordinates = dependencies.stream()
+                .map( this::createDependendableCoordinateFromDependency )
+                .collect( Collectors.toSet() );
 
-        for ( Dependency dependency : dependencies )
-        {
-            dependableCoordinates.add( createDependendableCoordinateFromDependency( dependency ) );
-        }
+        ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
 
         return resolveDependableCoordinate( buildingRequest, dependableCoordinates, "dependencies" );
     }
@@ -118,13 +117,13 @@ public class GoOfflineMojo
     {
         final TransformableFilter filter = getTransformableFilter();
 
-        final Set<Artifact> results = new HashSet<>();
-
         this.getLog().debug( "Resolving '" + type + "' with following repositories:" );
         for ( ArtifactRepository repo : buildingRequest.getRemoteRepositories() )
         {
             getLog().debug( repo.getId() + " (" + repo.getUrl() + ")" );
         }
+
+        final Set<Artifact> results = new HashSet<>();
 
         for ( DependableCoordinate dependableCoordinate : dependableCoordinates )
         {
@@ -161,21 +160,20 @@ public class GoOfflineMojo
     protected Set<Artifact> resolvePluginArtifacts()
             throws DependencyResolverException
     {
-        final Set<DependableCoordinate> dependableCoordinates = new HashSet<>();
 
-        final Set<Artifact> plugins = getProject().getPluginArtifacts();
-        final Set<Artifact> reports = getProject().getReportArtifacts();
+        Set<Artifact> plugins = getProject().getPluginArtifacts();
+        Set<Artifact> reports = getProject().getReportArtifacts();
 
-        final Set<Artifact> artifacts = new LinkedHashSet<>();
+        Set<Artifact> artifacts = new LinkedHashSet<>();
         artifacts.addAll( reports );
         artifacts.addAll( plugins );
 
-        final ProjectBuildingRequest buildingRequest = newResolvePluginProjectBuildingRequest();
+        Set<DependableCoordinate> dependableCoordinates = artifacts.stream()
+                .map( this::createDependendableCoordinateFromArtifact )
+                .collect( Collectors.toSet() );
 
-        for ( Artifact artifact : artifacts )
-        {
-            dependableCoordinates.add( createDependendableCoordinateFromArtifact( artifact ) );
-        }
+
+        ProjectBuildingRequest buildingRequest = newResolvePluginProjectBuildingRequest();
 
         return resolveDependableCoordinate( buildingRequest, dependableCoordinates, "plugins" );
     }
