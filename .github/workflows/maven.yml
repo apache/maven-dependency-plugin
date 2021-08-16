@@ -51,4 +51,4 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Build with Maven
-        run: mvn install javadoc:javadoc -e -B -V -Prun-its
+        run: mvn install -e -B -V -Prun-its
