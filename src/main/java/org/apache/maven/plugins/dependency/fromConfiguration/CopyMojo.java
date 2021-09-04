@@ -59,7 +59,7 @@ public class CopyMojo
      * @since 2.7
      */
     @Parameter( property = "mdep.prependGroupId", defaultValue = "false" )
-    private boolean prependGroupId = false;
+    private final boolean prependGroupId = false;
 
     /**
      * Use artifact baseVersion during copy
@@ -138,11 +138,9 @@ public class CopyMojo
     @Override
     protected ArtifactItemFilter getMarkedArtifactFilter( ArtifactItem item )
     {
-        ArtifactItemFilter destinationNameOverrideFilter =
-            new DestFileFilter( this.isOverWriteReleases(), this.isOverWriteSnapshots(), this.isOverWriteIfNewer(),
-                                false, false, false, false, this.stripVersion, prependGroupId, useBaseVersion,
-                                item.getOutputDirectory() );
-        return destinationNameOverrideFilter;
+        return new DestFileFilter( this.isOverWriteReleases(), this.isOverWriteSnapshots(), this.isOverWriteIfNewer(),
+                            false, false, false, false, this.stripVersion, prependGroupId, useBaseVersion,
+                            item.getOutputDirectory() );
     }
 
     /**

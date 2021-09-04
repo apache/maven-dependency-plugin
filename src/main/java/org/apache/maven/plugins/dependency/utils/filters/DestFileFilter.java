@@ -49,7 +49,7 @@ public class DestFileFilter
 
     private boolean useSubDirectoryPerType;
 
-    private boolean useSubDirectoryPerScope;
+    private final boolean useSubDirectoryPerScope;
 
     private boolean useRepositoryLayout;
 
@@ -57,9 +57,9 @@ public class DestFileFilter
 
     private boolean removeClassifier;
 
-    private boolean prependGroupId;
+    private final boolean prependGroupId;
 
-    private boolean useBaseVersion;
+    private final boolean useBaseVersion;
 
     private File outputFileDirectory;
 

@@ -182,7 +182,7 @@ public abstract class AbstractAnalyzeMojo
      * @since 2.10
      */
     @Parameter
-    private String[] ignoredDependencies = new String[0];
+    private final String[] ignoredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are used but undeclared. The filter syntax is:
@@ -201,7 +201,7 @@ public abstract class AbstractAnalyzeMojo
      * @since 2.10
      */
     @Parameter
-    private String[] ignoredUsedUndeclaredDependencies = new String[0];
+    private final String[] ignoredUsedUndeclaredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are declared but unused. The filter syntax is:
@@ -220,7 +220,7 @@ public abstract class AbstractAnalyzeMojo
      * @since 2.10
      */
     @Parameter
-    private String[] ignoredUnusedDeclaredDependencies = new String[0];
+    private final String[] ignoredUnusedDeclaredDependencies = new String[0];
 
     // Mojo methods -----------------------------------------------------------
 

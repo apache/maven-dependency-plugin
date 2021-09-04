@@ -48,17 +48,17 @@ public class TGFDependencyNodeVisitor
         /**
          * Edge start.
          */
-        private DependencyNode from;
+        private final DependencyNode from;
 
         /**
          * Edge end.
          */
-        private DependencyNode to;
+        private final DependencyNode to;
 
         /**
          * Edge label. (optional)
          */
-        private String label;
+        private final String label;
 
         /**
          * Build a new EdgeAppender.
@@ -95,7 +95,7 @@ public class TGFDependencyNodeVisitor
     /**
      * List of edges.
      */
-    private List<EdgeAppender> edges = new ArrayList<>();
+    private final List<EdgeAppender> edges = new ArrayList<>();
 
     /**
      * Constructor.

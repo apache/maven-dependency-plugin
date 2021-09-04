@@ -468,8 +468,7 @@ public abstract class AbstractDependencyFilterMojo
         }
 
         // calculate the skipped artifacts
-        Set<Artifact> skippedArtifacts = new LinkedHashSet<>();
-        skippedArtifacts.addAll( artifacts );
+        Set<Artifact> skippedArtifacts = new LinkedHashSet<>( artifacts );
         skippedArtifacts.removeAll( unMarkedArtifacts );
 
         return new DependencyStatusSets( unMarkedArtifacts, null, skippedArtifacts );
