@@ -43,7 +43,7 @@ final class CycleBreakerGraphTransformer implements DependencyGraphTransformer
     public DependencyNode transformGraph( DependencyNode dependencyNode, DependencyGraphTransformationContext context )
     {
 
-        flagCycle( dependencyNode, new HashSet<Artifact>(), new HashSet<DependencyNode>() );
+        flagCycle( dependencyNode, new HashSet<>(), new HashSet<>() );
         return dependencyNode;
     }
 
@@ -53,7 +53,7 @@ final class CycleBreakerGraphTransformer implements DependencyGraphTransformer
 
         if ( ancestors.contains( artifact ) )
         {
-            node.setChildren( new ArrayList<DependencyNode>() );
+            node.setChildren( new ArrayList<>() );
             Map<String, String> newProperties = new HashMap<>( node.getArtifact().getProperties() );
             newProperties.put( "Cycle", "True" );
             node.setArtifact( node.getArtifact().setProperties( newProperties ) );

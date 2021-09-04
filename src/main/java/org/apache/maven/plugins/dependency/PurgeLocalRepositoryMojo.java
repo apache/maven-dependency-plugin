@@ -234,9 +234,9 @@ public class PurgeLocalRepositoryMojo
     private class DirectDependencyFilter
         extends AbstractFilter
     {
-        private Artifact projectArtifact;
+        private final Artifact projectArtifact;
 
-        private List<Dependency> directDependencies;
+        private final List<Dependency> directDependencies;
 
         /**
          * Default constructor

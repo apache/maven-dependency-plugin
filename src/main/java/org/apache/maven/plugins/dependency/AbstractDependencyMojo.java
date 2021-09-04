@@ -324,8 +324,7 @@ public abstract class AbstractDependencyMojo
         }
         catch ( ArchiverException e )
         {
-            throw new MojoExecutionException( "Error unpacking file: " + file + " to: " + location
-                + System.lineSeparator() + e.toString(), e );
+            throw new MojoExecutionException( "Error unpacking file: " + file + " to: " + location, e );
         }
     }
 

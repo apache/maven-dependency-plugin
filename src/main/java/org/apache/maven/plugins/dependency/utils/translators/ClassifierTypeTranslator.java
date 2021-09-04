@@ -36,7 +36,7 @@ import org.codehaus.plexus.util.StringUtils;
 public class ClassifierTypeTranslator
     implements ArtifactTranslator
 {
-    private ArtifactHandlerManager artifactHandlerManager;
+    private final ArtifactHandlerManager artifactHandlerManager;
 
     private String classifier;
 

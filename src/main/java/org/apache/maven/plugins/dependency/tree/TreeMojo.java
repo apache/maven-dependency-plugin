@@ -375,7 +375,7 @@ public class TreeMojo
         DefaultDependencyNode rootNode = new DefaultDependencyNode( null,
                 convertAetherArtifactToMavenArtifact( node ), null, null, null );
 
-        rootNode.setChildren( new ArrayList<DependencyNode>() );
+        rootNode.setChildren( new ArrayList<>() );
 
         for ( org.eclipse.aether.graph.DependencyNode child : node.getChildren() )
         {

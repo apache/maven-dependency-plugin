@@ -78,7 +78,7 @@ public class BuildClasspathMojo
      * Strip artifact classifier during copy (only works if prefix is set)
      */
     @Parameter( property = "mdep.stripClassifier", defaultValue = "false" )
-    private boolean stripClassifier = false;
+    private final boolean stripClassifier = false;
 
     /**
      * The prefix to prepend on each dependent artifact. If undefined, the paths refer to the actual files store in the
@@ -158,7 +158,7 @@ public class BuildClasspathMojo
      * @since 2.6
      */
     @Parameter( property = "mdep.useBaseVersion", defaultValue = "true" )
-    private boolean useBaseVersion = true;
+    private final boolean useBaseVersion = true;
 
     /**
      * Maven ProjectHelper
@@ -347,7 +347,7 @@ public class BuildClasspathMojo
         }
         catch ( IOException ex )
         {
-            throw new MojoExecutionException( "Error while writing to classpath file '" + out + "': " + ex.toString(),
+            throw new MojoExecutionException( "Error while writing to classpath file '" + out,
                                               ex );
         }
     }
