@@ -447,6 +447,8 @@ under the License.
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-invoker-plugin</artifactId>
+            <!-- version should be removed after will be updated in parent pom -->
+            <version>3.2.2</version>
             <configuration>
               <goals>
                 <goal>clean</goal>
@@ -466,6 +468,7 @@ under the License.
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
               <addTestClassPath>true</addTestClassPath>
+              <streamLogsOnFailures>true</streamLogsOnFailures>
             </configuration>
           </plugin>
           <plugin>
