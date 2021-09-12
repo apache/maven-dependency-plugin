@@ -222,14 +222,6 @@ public abstract class AbstractAnalyzeMojo
     @Parameter
     private String[] ignoredUnusedDeclaredDependencies = new String[0];
 
-    /**
-     * List of project packaging that will be ignored.
-     *
-     * @since 3.2.1
-     */
-    @Parameter( defaultValue = "pom,ear" )
-    private List<String> ignoredPackagings = new ArrayList<>();
-
     // Mojo methods -----------------------------------------------------------
 
     /*
@@ -245,9 +237,9 @@ public abstract class AbstractAnalyzeMojo
             return;
         }
 
-        if ( ignoredPackagings.contains( project.getPackaging() ) )
+        if ( "pom".equals( project.getPackaging() ) )
         {
-            getLog().info( "Skipping " + project.getPackaging() + " project" );
+            getLog().info( "Skipping pom project" );
             return;
         }
 
@@ -529,6 +521,7 @@ public abstract class AbstractAnalyzeMojo
     }
 
     private List<Artifact> filterDependencies( Set<Artifact> artifacts, String[] excludes )
+        throws MojoExecutionException
     {
         ArtifactFilter filter = new StrictPatternExcludesArtifactFilter( Arrays.asList( excludes ) );
         List<Artifact> result = new ArrayList<>();
