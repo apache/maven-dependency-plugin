@@ -59,7 +59,7 @@ public class CopyMojo
      * @since 2.7
      */
     @Parameter( property = "mdep.prependGroupId", defaultValue = "false" )
-    private final boolean prependGroupId = false;
+    private boolean prependGroupId = false;
 
     /**
      * Use artifact baseVersion during copy
