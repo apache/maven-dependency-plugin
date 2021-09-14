@@ -24,12 +24,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.maven.its.dependency</groupId>
-  <artifactId>build-classpath</artifactId>
+  <artifactId>build-classpath-changeparams</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <name>Test</name>
   <description>
-    Test dependency:build-classpath
+    Test dependency:build-classpath with changed default parameters
   </description>
 
   <properties>

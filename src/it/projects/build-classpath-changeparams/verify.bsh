@@ -29,13 +29,13 @@ classpath = StringUtils.replace( classpath, "PREFIX/", "" );
 List actual = Arrays.asList( classpath.split( ":" ) );
 
 List expected = new ArrayList();
-expected.add( "maven-profile-2.0.6.jar" );
-expected.add( "maven-model-2.0.6.jar" );
-expected.add( "plexus-utils-1.4.1.jar" );
-expected.add( "plexus-container-default-1.0-alpha-9-stable-1.jar" );
-expected.add( "junit-3.8.1.jar" );
+expected.add( "org.apache.maven.maven-profile-2.0.6.jar" );
+expected.add( "org.apache.maven.maven-model-2.0.6.jar" );
+expected.add( "org.codehaus.plexus.plexus-utils-1.4.1.jar" );
+expected.add( "org.codehaus.plexus.plexus-container-default-1.0-alpha-9-stable-1.jar" );
+expected.add( "junit.junit-3.8.1.jar" );
 // dependency with classifier in pom
-expected.add( "maven-project-2.0.6-sources.jar" );
+expected.add( "org.apache.maven.maven-project-2.0.6.jar" );
 
 System.out.println( "Checking classpath... " );
 System.out.println( "Actual  : " + actual );

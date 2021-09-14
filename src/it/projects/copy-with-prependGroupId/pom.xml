@@ -24,45 +24,42 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.maven.its.dependency</groupId>
-  <artifactId>build-classpath</artifactId>
+  <artifactId>copy-with-prependGroupId</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <name>Test</name>
   <description>
-    Test dependency:build-classpath
+    Test dependency:copy with changed default value of prependGroupId
   </description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-profile</artifactId>
-      <version>2.0.6</version>
-      <exclusions>
-        <exclusion>
-          <!-- NOTE: Excluded because of questionable handling of dependencyManagement in maven-profile:pom:2.0.6 -->
-          <groupId>classworlds</groupId>
-          <artifactId>classworlds</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <!-- one dependency with classifier -->
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
-      <version>2.0.6</version>
-      <classifier>sources</classifier>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-  </dependencies>
-
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>@project.version@</version>
+        <executions>
+          <execution>
+            <id>test</id>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <prependGroupId>true</prependGroupId>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.apache.maven</groupId>
+                  <artifactId>maven-model</artifactId>
+                  <version>2.0.6</version>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
