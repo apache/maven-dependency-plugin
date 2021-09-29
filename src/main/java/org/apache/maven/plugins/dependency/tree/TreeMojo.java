@@ -398,7 +398,7 @@ public class TreeMojo
                 convertAetherArtifactToMavenArtifact( child ),
                 child.getArtifact().getProperties().get( "preManagedVersion" ),
                 child.getArtifact().getProperties().get( "preManagedScope" ), null,
-                child.getDependency().isOptional() );
+                child.getDependency().isOptional(), exclusions );
 
         newChild.setChildren( new ArrayList<>() );
 
