@@ -14,30 +14,15 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
 name: Java CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore:
+      - dependabot/**
+  pull_request:
 
 jobs:
   build:
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest,windows-latest, macOS-latest]
-        java: [8, 11, 17]
-        jdk: [temurin]
-      fail-fast: false
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v2
-        with:
-          distribution: ${{ matrix.jdk }}
-          java-version: ${{ matrix.java }}
-          cache: 'maven'
-
-      - name: Build with Maven
-        run: mvn install -e -B -V -Prun-its
+    name: Verify
+    uses: apache/maven-gh-actions-shared/.github/workflows/maven-verify.yml@v1
