@@ -365,7 +365,14 @@ public abstract class AbstractAnalyzeMojo
         {
             getLog().warn( "Used undeclared dependencies found:" );
 
-            logArtifacts( usedUndeclaredWithClasses, true );
+            if ( verbose )
+            {
+                logArtifacts( usedUndeclaredWithClasses, true );
+            }
+            else
+            {
+                logArtifacts( usedUndeclaredWithClasses.keySet(), true );
+            }
             reported = true;
             warning = true;
         }
