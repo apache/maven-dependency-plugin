@@ -427,6 +427,12 @@ under the License.
           <artifactId>maven-site-plugin</artifactId>
           <version>3.9.1</version>
         </plugin>
+        <plugin>
+          <!-- version should be removed after will be updated in parent pom -->
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-invoker-plugin</artifactId>
+          <version>3.2.2</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -480,8 +486,6 @@ under the License.
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-invoker-plugin</artifactId>
-            <!-- version should be removed after will be updated in parent pom -->
-            <version>3.2.2</version>
             <configuration>
               <goals>
                 <goal>clean</goal>
