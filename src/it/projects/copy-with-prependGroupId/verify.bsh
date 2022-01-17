@@ -18,32 +18,21 @@
  */
 
 import java.io.*;
-import java.util.*;
 
-import org.codehaus.plexus.util.*;
+File libDir = new File( basedir, "target/dependency" );
 
-String classpath = FileUtils.fileRead( new File( basedir, "target/classpath.txt" ) );
+String[] expectedFiles = {
+    "org.apache.maven.maven-model-2.0.6.jar",
+};
 
-classpath = StringUtils.replace( classpath, "PREFIX/", "" );
-
-List actual = Arrays.asList( classpath.split( ":" ) );
-
-List expected = new ArrayList();
-expected.add( "maven-profile-2.0.6.jar" );
-expected.add( "maven-model-2.0.6.jar" );
-expected.add( "plexus-utils-1.4.1.jar" );
-expected.add( "plexus-container-default-1.0-alpha-9-stable-1.jar" );
-expected.add( "junit-3.8.1.jar" );
-// dependency with classifier in pom
-expected.add( "maven-project-2.0.6-sources.jar" );
-
-System.out.println( "Checking classpath... " );
-System.out.println( "Actual  : " + actual );
-System.out.println( "Expected: " + expected );
-
-if ( !actual.equals( expected ) )
+for ( String expectedFile : expectedFiles )
 {
-    throw new Exception( "Unexpected classpath" );
+    File file = new File( libDir, expectedFile );
+    System.out.println( "Checking for existence of " + file );
+    if ( !file.isFile() )
+    {
+        throw new Exception( "Missing file " + file );
+    }
 }
 
 return true;

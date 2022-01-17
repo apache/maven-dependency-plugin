@@ -24,40 +24,42 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.maven.its.dependency</groupId>
-  <artifactId>test</artifactId>
+  <artifactId>copy-with-prependGroupId</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <name>Test</name>
   <description>
-    Test dependency:analyze with ignoreUsedUndeclaredDependencies
+    Test dependency:copy with changed default value of prependGroupId
   </description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
-      <version>3.0</version>
-    </dependency>
-  </dependencies>
-
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <configuration>
-           <verbose>true</verbose>
-           <failOnWarning>true</failOnWarning>
-           <ignoredUsedUndeclaredDependencies>
-             <ignoreUsedUndeclaredDependency>org.apache.maven:maven-model</ignoreUsedUndeclaredDependency>
-           </ignoredUsedUndeclaredDependencies>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>@project.version@</version>
+        <executions>
+          <execution>
+            <id>test</id>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <prependGroupId>true</prependGroupId>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.apache.maven</groupId>
+                  <artifactId>maven-model</artifactId>
+                  <version>2.0.6</version>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 </project>

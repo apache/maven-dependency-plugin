@@ -182,7 +182,7 @@ public abstract class AbstractAnalyzeMojo
      * @since 2.10
      */
     @Parameter
-    private final String[] ignoredDependencies = new String[0];
+    private String[] ignoredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are used but undeclared. The filter syntax is:
@@ -201,7 +201,7 @@ public abstract class AbstractAnalyzeMojo
      * @since 2.10
      */
     @Parameter
-    private final String[] ignoredUsedUndeclaredDependencies = new String[0];
+    private String[] ignoredUsedUndeclaredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are declared but unused. The filter syntax is:
@@ -220,7 +220,19 @@ public abstract class AbstractAnalyzeMojo
      * @since 2.10
      */
     @Parameter
-    private final String[] ignoredUnusedDeclaredDependencies = new String[0];
+    private String[] ignoredUnusedDeclaredDependencies = new String[0];
+
+    /**
+     * List of project packaging that will be ignored.
+     * <br/>
+     * <b>Default value is<b>: <code>pom, ear</code>
+     *
+     * @since 3.2.1
+     */
+    // defaultValue value on @Parameter - not work with Maven 3.2.5
+    // When is set defaultValue always win, and there is no possibility to override by plugin configuration.
+    @Parameter
+    private List<String> ignoredPackagings = Arrays.asList( "pom", "ear" );
 
     // Mojo methods -----------------------------------------------------------
 
@@ -237,9 +249,9 @@ public abstract class AbstractAnalyzeMojo
             return;
         }
 
-        if ( "pom".equals( project.getPackaging() ) )
+        if ( ignoredPackagings.contains( project.getPackaging() ) )
         {
-            getLog().info( "Skipping pom project" );
+            getLog().info( "Skipping " + project.getPackaging() + " project" );
             return;
         }
 
@@ -521,7 +533,6 @@ public abstract class AbstractAnalyzeMojo
     }
 
     private List<Artifact> filterDependencies( Set<Artifact> artifacts, String[] excludes )
-        throws MojoExecutionException
     {
         ArtifactFilter filter = new StrictPatternExcludesArtifactFilter( Arrays.asList( excludes ) );
         List<Artifact> result = new ArrayList<>();
