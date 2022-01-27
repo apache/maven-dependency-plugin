@@ -149,9 +149,8 @@ public class TreeMojo
 
     /**
      * The scope to filter by when resolving the dependency tree, or <code>null</code> to include dependencies from all
-     * scopes. Note that this feature does not currently work due to MSHARED-4
+     * scopes
      *
-     * @see <a href="https://issues.apache.org/jira/browse/MSHARED-4">MSHARED-4</a>
      * @since 2.0-alpha-5
      */
     @Parameter( property = "scope" )
