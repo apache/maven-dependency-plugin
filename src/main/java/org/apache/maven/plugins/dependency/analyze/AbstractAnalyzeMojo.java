@@ -277,19 +277,18 @@ public abstract class AbstractAnalyzeMojo
         throws MojoExecutionException
     {
 
-        final String role = ProjectDependencyAnalyzer.ROLE;
         final String roleHint = analyzer;
 
         try
         {
             final PlexusContainer container = (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
 
-            return (ProjectDependencyAnalyzer) container.lookup( role, roleHint );
+            return container.lookup( ProjectDependencyAnalyzer.class, roleHint );
         }
         catch ( Exception exception )
         {
-            throw new MojoExecutionException( "Failed to instantiate ProjectDependencyAnalyser with role " + role
-                + " / role-hint " + roleHint, exception );
+            throw new MojoExecutionException( "Failed to instantiate ProjectDependencyAnalyser with role-hint "
+                + roleHint, exception );
         }
     }
 

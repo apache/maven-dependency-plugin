@@ -35,7 +35,6 @@ import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
-import org.apache.maven.plugin.testing.stubs.StubArtifactRepository;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
@@ -48,9 +47,9 @@ public class TestClassifierTypeTranslator
 {
     Set<Artifact> artifacts = new HashSet<>();
 
-    ArtifactFactory artifactFactory;
+//    ArtifactFactory artifactFactory;
 
-    ArtifactRepository artifactRepository;
+//    ArtifactRepository artifactRepository;
 
     Log log = new SilentLog();
 
@@ -62,13 +61,13 @@ public class TestClassifierTypeTranslator
     {
         super.setUp( "classifiertype-translator", false );
 
-        artifactHandlerManager = new DefaultArtifactHandlerManager();
-        this.setVariableValueToObject( artifactHandlerManager, "artifactHandlers", new HashMap<>() );
+        artifactHandlerManager = new DefaultArtifactHandlerManager( new HashMap<>() );
+//        this.setVariableValueToObject( artifactHandlerManager, "artifactHandlers", new HashMap<>() );
 
-        artifactFactory = new DefaultArtifactFactory();
-        this.setVariableValueToObject( artifactFactory, "artifactHandlerManager", artifactHandlerManager );
+//        artifactFactory = new DefaultArtifactFactory();
+//        this.setVariableValueToObject( artifactFactory, "artifactHandlerManager", artifactHandlerManager );
 
-        artifactRepository = new StubArtifactRepository( null );
+//        artifactRepository = new StubArtifactRepository( null );
 
         DependencyArtifactStubFactory factory = new DependencyArtifactStubFactory( null, false );
         artifacts = factory.getMixedArtifacts();

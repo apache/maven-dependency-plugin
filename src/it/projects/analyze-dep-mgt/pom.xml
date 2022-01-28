@@ -49,8 +49,8 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
-      <version>2.0.6</version>
+      <artifactId>maven-compat</artifactId>
+      <version>4.0.0-alpha-1-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>
