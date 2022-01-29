@@ -43,7 +43,6 @@ import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerExce
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.context.Context;
-import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 
@@ -276,26 +275,20 @@ public abstract class AbstractAnalyzeMojo
     protected ProjectDependencyAnalyzer createProjectDependencyAnalyzer()
         throws MojoExecutionException
     {
-
-        final String role = ProjectDependencyAnalyzer.ROLE;
-        final String roleHint = analyzer;
-
         try
         {
             final PlexusContainer container = (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
-
-            return (ProjectDependencyAnalyzer) container.lookup( role, roleHint );
+            return container.lookup( ProjectDependencyAnalyzer.class, analyzer );
         }
         catch ( Exception exception )
         {
-            throw new MojoExecutionException( "Failed to instantiate ProjectDependencyAnalyser with role " + role
-                + " / role-hint " + roleHint, exception );
+            throw new MojoExecutionException( "Failed to instantiate ProjectDependencyAnalyser"
+                + " / role-hint " + analyzer, exception );
         }
     }
 
     @Override
     public void contextualize( Context theContext )
-        throws ContextException
     {
         this.context = theContext;
     }
