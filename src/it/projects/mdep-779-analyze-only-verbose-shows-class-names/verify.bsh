@@ -21,6 +21,8 @@ import org.codehaus.plexus.util.*;
 
 String log = FileUtils.fileRead( new File( basedir, "build.log" ) );
 
+log = StringUtils.unifyLineSeparators(log, "\n");
+
 String expected = "[WARNING] Used undeclared dependencies found:\n"
                 + "[WARNING]    xml-apis:xml-apis:jar:1.0.b2:compile\n"
                 + "[WARNING]       class org.apache.xmlcommons.Version\n";
