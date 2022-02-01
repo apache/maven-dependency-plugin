@@ -24,8 +24,10 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -327,7 +329,8 @@ public abstract class AbstractAnalyzeMojo
         }
 
         Set<Artifact> usedDeclared = new LinkedHashSet<>( analysis.getUsedDeclaredArtifacts() );
-        Set<Artifact> usedUndeclared = new LinkedHashSet<>( analysis.getUsedUndeclaredArtifacts() );
+        Map<Artifact, Set<String>> usedUndeclaredWithClasses =
+                new LinkedHashMap<>( analysis.getUsedUndeclaredArtifactsWithClasses() );
         Set<Artifact> unusedDeclared = new LinkedHashSet<>( analysis.getUnusedDeclaredArtifacts() );
         Set<Artifact> testArtifactsWithNonTestScope = new LinkedHashSet<>(
                 analysis.getTestArtifactsWithNonTestScope() );
@@ -340,8 +343,9 @@ public abstract class AbstractAnalyzeMojo
             filterArtifactsByScope( unusedDeclared, Artifact.SCOPE_RUNTIME );
         }
 
-        ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclared, ignoredDependencies ) );
-        ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclared, ignoredUsedUndeclaredDependencies ) );
+        ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclaredWithClasses.keySet(), ignoredDependencies ) );
+        ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclaredWithClasses.keySet(),
+                ignoredUsedUndeclaredDependencies ) );
 
         ignoredUnusedDeclared.addAll( filterDependencies( unusedDeclared, ignoredDependencies ) );
         ignoredUnusedDeclared.addAll( filterDependencies( unusedDeclared, ignoredUnusedDeclaredDependencies ) );
@@ -357,11 +361,18 @@ public abstract class AbstractAnalyzeMojo
             reported = true;
         }
 
-        if ( !usedUndeclared.isEmpty() )
+        if ( !usedUndeclaredWithClasses.isEmpty() )
         {
             getLog().warn( "Used undeclared dependencies found:" );
 
-            logArtifacts( usedUndeclared, true );
+            if ( verbose )
+            {
+                logArtifacts( usedUndeclaredWithClasses, true );
+            }
+            else
+            {
+                logArtifacts( usedUndeclaredWithClasses.keySet(), true );
+            }
             reported = true;
             warning = true;
         }
@@ -402,12 +413,12 @@ public abstract class AbstractAnalyzeMojo
 
         if ( outputXML )
         {
-            writeDependencyXML( usedUndeclared );
+            writeDependencyXML( usedUndeclaredWithClasses.keySet() );
         }
 
         if ( scriptableOutput )
         {
-            writeScriptableOutput( usedUndeclared );
+            writeScriptableOutput( usedUndeclaredWithClasses.keySet() );
         }
 
         if ( !reported )
@@ -443,6 +454,40 @@ public abstract class AbstractAnalyzeMojo
                 else
                 {
                     getLog().info( "   " + artifact );
+                }
+
+            }
+        }
+    }
+
+    private void logArtifacts( Map<Artifact, Set<String>> artifacts, boolean warn )
+    {
+        if ( artifacts.isEmpty() )
+        {
+            getLog().info( "   None" );
+        }
+        else
+        {
+            for ( Map.Entry<Artifact, Set<String>> entry : artifacts.entrySet() )
+            {
+                // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
+                entry.getKey().isSnapshot();
+
+                if ( warn )
+                {
+                    getLog().warn( "   " + entry.getKey() );
+                    for ( String clazz : entry.getValue() )
+                    {
+                        getLog().warn( "      class " + clazz );
+                    }
+                }
+                else
+                {
+                    getLog().info( "   " + entry.getKey() );
+                    for ( String clazz : entry.getValue() )
+                    {
+                        getLog().info( "      class " + clazz );
+                    }
                 }
 
             }
