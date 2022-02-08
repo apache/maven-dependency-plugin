@@ -69,6 +69,12 @@ public class BuildClasspathMojo
     private String outputEncoding;
     
     /**
+     * Should the classpath be lexicographically sorted.
+     */
+    @Parameter( property = "mdep.sortClasspath", defaultValue = "false" )
+    private boolean sortClasspath = false;
+
+    /**
      * Strip artifact version during copy (only works if prefix is set)
      */
     @Parameter( property = "mdep.stripVersion", defaultValue = "false" )
@@ -197,6 +203,10 @@ public class BuildClasspathMojo
         }
 
         List<Artifact> artList = new ArrayList<>( artifacts );
+        if ( sortClasspath )
+        {
+            artList.sort( this );
+        }
 
         StringBuilder sb = new StringBuilder();
         Iterator<Artifact> i = artList.iterator();
