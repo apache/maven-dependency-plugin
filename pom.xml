@@ -95,7 +95,7 @@ under the License.
     <jettyVersion>9.4.44.v20210927</jettyVersion>
     <pluginTestingVersion>3.1.0</pluginTestingVersion>
     <javaVersion>8</javaVersion>
-    <mavenPluginToolsVersion>3.6.2</mavenPluginToolsVersion>
+    <mavenPluginToolsVersion>3.6.4</mavenPluginToolsVersion>
     <project.build.outputTimestamp>2021-06-07T12:17:08Z</project.build.outputTimestamp>
     <slf4j.version>1.7.32</slf4j.version>
   </properties>
