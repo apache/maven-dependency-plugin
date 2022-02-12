@@ -29,7 +29,7 @@
 
   <name>Test</name>
   <description>
-    Test dependency:analyze with ignoreDependencies
+    Test dependency:analyze with ignoredNonTestScopedDependencies
   </description>
 
   <properties>
@@ -39,8 +39,8 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
-      <version>2.0.6</version>
+      <artifactId>maven-settings</artifactId>
+      <version>@mavenVersion@</version>
     </dependency>
   </dependencies>
 
@@ -52,11 +52,9 @@
           <configuration>
            <verbose>true</verbose>
            <failOnWarning>true</failOnWarning>
-           <ignoredDependencies>
-             <ignoredDependency>org.apache.maven:maven-project</ignoredDependency>
-             <ignoredDependency>org.apache.maven:maven-model</ignoredDependency>
-             <ignoredDependency>org.apache.maven:maven-settings</ignoredDependency>
-           </ignoredDependencies>
+           <ignoredNonTestScopedDependencies>
+             <ignoredNonTestScopedDependency>org.apache.maven:maven-settings</ignoredNonTestScopedDependency>
+           </ignoredNonTestScopedDependencies>
           </configuration>
         </plugin>
       </plugins>
