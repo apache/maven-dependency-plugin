@@ -224,6 +224,26 @@ public abstract class AbstractAnalyzeMojo
     private String[] ignoredUnusedDeclaredDependencies = new String[0];
 
     /**
+     * List of dependencies that will be ignored if they are in not test scope but are only used in test classes.
+     * The filter syntax is:
+     *
+     * <pre>
+     * [groupId]:[artifactId]:[type]:[version]
+     * </pre>
+     *
+     * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
+     * segment is treated as an implicit wildcard. *
+     * <p>
+     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
+     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
+     * </p>
+     *
+     * @since 3.3.0
+     */
+    @Parameter
+    private String[] ignoredNonTestScopedDependencies = new String[0];
+
+    /**
      * List of project packaging that will be ignored.
      * <br/>
      * <b>Default value is<b>: <code>pom, ear</code>
@@ -332,11 +352,11 @@ public abstract class AbstractAnalyzeMojo
         Map<Artifact, Set<String>> usedUndeclaredWithClasses =
                 new LinkedHashMap<>( analysis.getUsedUndeclaredArtifactsWithClasses() );
         Set<Artifact> unusedDeclared = new LinkedHashSet<>( analysis.getUnusedDeclaredArtifacts() );
-        Set<Artifact> testArtifactsWithNonTestScope = new LinkedHashSet<>(
-                analysis.getTestArtifactsWithNonTestScope() );
+        Set<Artifact> nonTestScope = new LinkedHashSet<>( analysis.getTestArtifactsWithNonTestScope() );
 
         Set<Artifact> ignoredUsedUndeclared = new LinkedHashSet<>();
         Set<Artifact> ignoredUnusedDeclared = new LinkedHashSet<>();
+        Set<Artifact> ignoredNonTestScope = new LinkedHashSet<>();
 
         if ( ignoreUnusedRuntime )
         {
@@ -349,6 +369,9 @@ public abstract class AbstractAnalyzeMojo
 
         ignoredUnusedDeclared.addAll( filterDependencies( unusedDeclared, ignoredDependencies ) );
         ignoredUnusedDeclared.addAll( filterDependencies( unusedDeclared, ignoredUnusedDeclaredDependencies ) );
+
+        ignoredNonTestScope.addAll( filterDependencies( nonTestScope, ignoredDependencies ) );
+        ignoredNonTestScope.addAll( filterDependencies( nonTestScope, ignoredNonTestScopedDependencies ) );
 
         boolean reported = false;
         boolean warning = false;
@@ -386,11 +409,11 @@ public abstract class AbstractAnalyzeMojo
             warning = true;
         }
 
-        if ( !testArtifactsWithNonTestScope.isEmpty() )
+        if ( !nonTestScope.isEmpty() )
         {
             getLog().warn( "Non-test scoped test only dependencies found:" );
 
-            logArtifacts( testArtifactsWithNonTestScope, true );
+            logArtifacts( nonTestScope, true );
             reported = true;
             warning = true;
         }
@@ -408,6 +431,14 @@ public abstract class AbstractAnalyzeMojo
             getLog().info( "Ignored unused declared dependencies:" );
 
             logArtifacts( ignoredUnusedDeclared, false );
+            reported = true;
+        }
+
+        if ( verbose && !ignoredNonTestScope.isEmpty() )
+        {
+            getLog().info( "Ignored non-test scoped test only dependencies:" );
+
+            logArtifacts( ignoredNonTestScope, false );
             reported = true;
         }
 
