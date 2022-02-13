@@ -19,7 +19,7 @@
 
 import java.io.*;
 
-File htmlFile = new File( basedir, "target/dependency-analysis.html" );
+File htmlFile = new File( basedir, "target/site/dependency-analysis.html" );
 
 if ( !htmlFile.isFile() )
 {
