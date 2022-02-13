@@ -59,13 +59,40 @@
       <plugins>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
-          <configuration>
-           <outputXML>true</outputXML>
-           <scriptableOutput>true</scriptableOutput>
-           <verbose>true</verbose>
-          </configuration>
+          <version>@project.version@</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.10.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
   </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>3.2.1</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>index</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>analyze-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>
