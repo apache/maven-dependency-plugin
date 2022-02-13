@@ -98,6 +98,8 @@ public abstract class AbstractAnalyzeMojo
 
     /**
      * Ignore Runtime/Provided/Test/System scopes for unused dependency analysis.
+     *
+     * <code><b>Non-test scoped</b></code> list will be not affected.
      */
     @Parameter( property = "ignoreNonCompile", defaultValue = "false" )
     private boolean ignoreNonCompile;
@@ -167,7 +169,7 @@ public abstract class AbstractAnalyzeMojo
 
     /**
      * List of dependencies that will be ignored. Any dependency on this list will be excluded from the "declared but
-     * unused" and the "used but undeclared" list. The filter syntax is:
+     * unused", the "used but undeclared", and the "non-test scoped" list. The filter syntax is:
      *
      * <pre>
      * [groupId]:[artifactId]:[type]:[version]

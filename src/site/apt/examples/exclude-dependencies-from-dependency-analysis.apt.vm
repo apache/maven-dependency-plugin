@@ -34,10 +34,11 @@ Exclude dependencies from dependency analysis
   that contain annotations and the byte code analysis is unable to
   determine whether a jar is actually required or not.
 
-  The plugin can then be configured to ignore these dependencies in
-  either "declared but unused" or "undeclared but used" case or in
-  both simultaneously.  See the following POM configuration for an
-  example:
+  The plugin can then be configured to ignore dependencies that are
+  "declared but unused", "undeclared but used", and "non-test scoped"
+  in selected list or in all simultaneously.
+
+  See the following POM configuration for an example:
 
 +---+
 <project>
@@ -57,7 +58,7 @@ Exclude dependencies from dependency analysis
             <configuration>
               <failOnWarning>true</failOnWarning>
 
-              <!-- ignore jsr305 for both "used but undeclared" and "declared but unused" -->
+              <!-- ignore jsr305 for "used but undeclared", "declared but unused", and "non-test scoped" -->
               <ignoredDependencies>
                 <ignoredDependency>com.google.code.findbugs:jsr305</ignoredDependency>
               </ignoredDependencies>
@@ -71,6 +72,11 @@ Exclude dependencies from dependency analysis
               <ignoredUnusedDeclaredDependencies>
                 <ignoredUnusedDeclaredDependency>com.google.code.findbugs:annotations</ignoredUnusedDeclaredDependency>
               </ignoredUnusedDeclaredDependencies>
+
+              <!-- ignore annotations for "non-test scoped" warnings -->
+              <ignoredNonTestScopedDependencies>
+                <ignoredNonTestScopedDependency>com.google.code.findbugs:annotations</ignoredNonTestScopedDependency>
+              </ignoredNonTestScopedDependencies>
             </configuration>
           </execution>
         </executions>
