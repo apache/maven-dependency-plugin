@@ -403,7 +403,7 @@ under the License.
         </plugin>
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.3.1</version>
+          <version>3.3.2</version>
           <configuration> <!--  remove after MPOM-269 -->
             <tagletArtifacts combine.self="override"/>
           </configuration>
