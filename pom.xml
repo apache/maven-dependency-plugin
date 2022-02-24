@@ -25,7 +25,7 @@ under the License.
   <parent>
     <artifactId>maven-plugins</artifactId>
     <groupId>org.apache.maven.plugins</groupId>
-    <version>34</version>
+    <version>35-SNAPSHOT</version>
     <relativePath/>
   </parent>
 
@@ -91,11 +91,11 @@ under the License.
   <properties>
     <mavenVersion>4.0.0-alpha-1-SNAPSHOT</mavenVersion>
     <doxiaVersion>2.0.0-M2-SNAPSHOT</doxiaVersion>
-    <doxiaSitetoolsVersion>2.0.0-M1-SNAPSHOT</doxiaSitetoolsVersion>
+    <doxiaSitetoolsVersion>2.0.0-M3-SNAPSHOT</doxiaSitetoolsVersion>
     <jettyVersion>9.4.41.v20210516</jettyVersion>
     <pluginTestingVersion>3.4.0-SNAPSHOT</pluginTestingVersion>
     <javaVersion>8</javaVersion>
-    <mavenPluginToolsVersion>3.6.2</mavenPluginToolsVersion>
+    <mavenPluginToolsVersion>3.6.5-SNAPSHOT</mavenPluginToolsVersion>
     <project.build.outputTimestamp>2021-06-07T12:17:08Z</project.build.outputTimestamp>
     <slf4j.version>1.7.32</slf4j.version>
   </properties>
