@@ -20,6 +20,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    ignore:
+      # Jetty >=10 requires Java 11+
+      - dependency-name: "org.eclipse.jetty:*"
+        versions: [">= 10.0"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
