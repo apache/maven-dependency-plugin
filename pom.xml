@@ -25,7 +25,7 @@ under the License.
   <parent>
     <artifactId>maven-plugins</artifactId>
     <groupId>org.apache.maven.plugins</groupId>
-    <version>34</version>
+    <version>35</version>
     <relativePath/>
   </parent>
 
@@ -93,10 +93,26 @@ under the License.
     <jettyVersion>9.4.45.v20220203</jettyVersion>
     <pluginTestingVersion>3.1.0</pluginTestingVersion>
     <javaVersion>8</javaVersion>
-    <mavenPluginToolsVersion>3.6.4</mavenPluginToolsVersion>
     <project.build.outputTimestamp>2021-06-07T12:17:08Z</project.build.outputTimestamp>
     <slf4j.version>1.7.36</slf4j.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- TODO check with Maven Api upgrade -->
+      <!-- the same version as in Maven 3.1.1 -->
+      <dependency>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>org.eclipse.sisu.inject</artifactId>
+        <version>0.0.0.M5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>org.eclipse.sisu.plexus</artifactId>
+        <version>0.0.0.M5</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!-- maven -->
@@ -221,6 +237,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
+      <scope>provided</scope>
     </dependency>
     
     <dependency>
@@ -324,6 +341,17 @@ under the License.
   <build>
     <pluginManagement>
       <plugins>
+        <!-- TODO check with next parent pom -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>3.16.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>taglist-maven-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
@@ -353,29 +381,6 @@ under the License.
             </excludes>
           </configuration>
         </plugin>
-        <plugin>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.3.1</version>
-          <configuration> <!--  remove after MPOM-269 -->
-            <tagletArtifacts combine.self="override"/>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-project-info-reports-plugin</artifactId>
-          <version>3.1.2</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>3.10.0</version>
-        </plugin>
-        <plugin>
-          <!-- version should be removed after will be updated in parent pom -->
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-invoker-plugin</artifactId>
-          <version>3.2.2</version>
-        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -400,12 +405,6 @@ under the License.
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration> <!--  remove after MPOM-269 -->
-          <tagletArtifacts combine.self="override"/>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -448,7 +447,6 @@ under the License.
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
               <addTestClassPath>true</addTestClassPath>
-              <streamLogsOnFailures>true</streamLogsOnFailures>
             </configuration>
           </plugin>
           <plugin>
@@ -480,25 +478,6 @@ under the License.
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>reporting</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>l10n-maven-plugin</artifactId>
-            <version>1.0-alpha-2</version>
-            <configuration>
-              <locales>
-                <locale>de</locale>
-                <locale>pt_BR</locale>
-                <locale>sv</locale>
-              </locales>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>
     </profile>
   </profiles>
 </project>
