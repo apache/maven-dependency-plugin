@@ -90,7 +90,7 @@ under the License.
 
   <properties>
     <mavenVersion>3.1.1</mavenVersion>
-    <jettyVersion>9.4.44.v20210927</jettyVersion>
+    <jettyVersion>9.4.45.v20220203</jettyVersion>
     <pluginTestingVersion>3.1.0</pluginTestingVersion>
     <javaVersion>8</javaVersion>
     <mavenPluginToolsVersion>3.6.4</mavenPluginToolsVersion>
