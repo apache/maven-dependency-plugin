@@ -26,11 +26,11 @@ under the License.
     <artifactId>maven-plugins</artifactId>
     <groupId>org.apache.maven.plugins</groupId>
     <version>35</version>
-    <relativePath/>
+    <relativePath />
   </parent>
 
   <artifactId>maven-dependency-plugin</artifactId>
-  <version>3.3.0-SNAPSHOT</version>
+  <version>3.3.0</version>
   <packaging>maven-plugin</packaging>
 
   <name>Apache Maven Dependency Plugin</name>
@@ -44,7 +44,7 @@ under the License.
     <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-dependency-plugin.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-dependency-plugin.git</developerConnection>
     <url>https://github.com/apache/maven-dependency-plugin/tree/${project.scm.tag}</url>
-    <tag>HEAD</tag>
+    <tag>maven-dependency-plugin-3.3.0</tag>
   </scm>
   <issueManagement>
     <system>JIRA</system>
@@ -93,7 +93,7 @@ under the License.
     <jettyVersion>9.4.45.v20220203</jettyVersion>
     <pluginTestingVersion>3.1.0</pluginTestingVersion>
     <javaVersion>8</javaVersion>
-    <project.build.outputTimestamp>2021-06-07T12:17:08Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2022-03-05T18:51:05Z</project.build.outputTimestamp>
     <slf4j.version>1.7.36</slf4j.version>
   </properties>
 
