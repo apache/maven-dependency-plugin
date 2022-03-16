@@ -109,7 +109,7 @@ under the License.
       <dependency>
         <groupId>org.eclipse.sisu</groupId>
         <artifactId>org.eclipse.sisu.plexus</artifactId>
-        <version>0.0.0.M5</version>
+        <version>0.3.5</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
