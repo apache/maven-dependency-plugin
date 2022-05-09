@@ -111,6 +111,17 @@ public abstract class AbstractAnalyzeMojo
     private boolean ignoreUnusedRuntime;
 
     /**
+     * Ignore all dependencies that are used only in test but not test-scoped. Setting
+     * this flag has the same effect as adding all dependencies that have been flagged with
+     * the <i>Non-test scoped test only dependencies found</i> warning to the
+     * <code>&lt;ignoredNonTestScopedDependencies&gt;</code> configuration.
+     *
+     * @since 3.3.1-SNAPSHOT
+     */
+    @Parameter( property = "ignoreAllNonTestScoped", defaultValue = "false" )
+    private boolean ignoreAllNonTestScoped;
+
+    /**
      * Output the xml for the missing dependencies (used but not declared).
      *
      * @since 2.0-alpha-5
@@ -372,8 +383,15 @@ public abstract class AbstractAnalyzeMojo
         ignoredUnusedDeclared.addAll( filterDependencies( unusedDeclared, ignoredDependencies ) );
         ignoredUnusedDeclared.addAll( filterDependencies( unusedDeclared, ignoredUnusedDeclaredDependencies ) );
 
-        ignoredNonTestScope.addAll( filterDependencies( nonTestScope, ignoredDependencies ) );
-        ignoredNonTestScope.addAll( filterDependencies( nonTestScope, ignoredNonTestScopedDependencies ) );
+        if ( ignoreAllNonTestScoped )
+        {
+            ignoredNonTestScope.addAll( filterDependencies ( nonTestScope, new String [] { "*" } ) );
+        }
+        else
+        {
+            ignoredNonTestScope.addAll( filterDependencies( nonTestScope, ignoredDependencies ) );
+            ignoredNonTestScope.addAll( filterDependencies( nonTestScope, ignoredNonTestScopedDependencies ) );
+        }
 
         boolean reported = false;
         boolean warning = false;
