@@ -39,6 +39,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
+import org.apache.maven.shared.artifact.filter.StrictPatternIncludesArtifactFilter;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerException;
@@ -196,7 +197,7 @@ public abstract class AbstractAnalyzeMojo
      * @since 2.10
      */
     @Parameter
-    private String[] ignoredDependencies = new String[0];
+    private final String[] ignoredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are used but undeclared. The filter syntax is:
@@ -215,7 +216,7 @@ public abstract class AbstractAnalyzeMojo
      * @since 2.10
      */
     @Parameter
-    private String[] ignoredUsedUndeclaredDependencies = new String[0];
+    private final String[] ignoredUsedUndeclaredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are declared but unused. The filter syntax is:
@@ -234,7 +235,7 @@ public abstract class AbstractAnalyzeMojo
      * @since 2.10
      */
     @Parameter
-    private String[] ignoredUnusedDeclaredDependencies = new String[0];
+    private final String[] ignoredUnusedDeclaredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are in not test scope but are only used in test classes.
@@ -254,7 +255,7 @@ public abstract class AbstractAnalyzeMojo
      * @since 3.3.0
      */
     @Parameter
-    private String[] ignoredNonTestScopedDependencies = new String[0];
+    private final String[] ignoredNonTestScopedDependencies = new String[0];
 
     /**
      * List of project packaging that will be ignored.
@@ -266,7 +267,30 @@ public abstract class AbstractAnalyzeMojo
     // defaultValue value on @Parameter - not work with Maven 3.2.5
     // When is set defaultValue always win, and there is no possibility to override by plugin configuration.
     @Parameter
-    private List<String> ignoredPackagings = Arrays.asList( "pom", "ear" );
+    private final List<String> ignoredPackagings = Arrays.asList( "pom", "ear" );
+
+
+    /**
+     * List of dependencies to be included. The result of this list is then applied to the ignore parameters.
+     *
+     * The filter syntax is:
+     *
+     * <pre>
+     * [groupId]:[artifactId]:[type]:[version]
+     * </pre>
+     *
+     * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
+     * segment is treated as an implicit wildcard. *
+     * <p>
+     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
+     * <code>org.apache.</code>, and <code>:maven-dependency-plugin</code> will result in the analysis being applied
+     * where <code>maven-dependency-plugin</code> is a dependency.
+     * </p>
+     *
+     * @since 3.3.1-SNAPSHOT
+     */
+    @Parameter
+    private final String[] includeDependencies = new String[0];
 
     // Mojo methods -----------------------------------------------------------
 
@@ -367,6 +391,11 @@ public abstract class AbstractAnalyzeMojo
         Set<Artifact> unusedDeclared = new LinkedHashSet<>( analysis.getUnusedDeclaredArtifacts() );
         Set<Artifact> nonTestScope = new LinkedHashSet<>( analysis.getTestArtifactsWithNonTestScope() );
 
+        Set<Artifact> notIncludedUsedDeclared = new LinkedHashSet<>();
+        Set<Artifact> notIncludedUsedUndeclared = new LinkedHashSet<>();
+        Set<Artifact> notIncludedUnusedDeclared = new LinkedHashSet<>();
+        Set<Artifact> notIncludedNonTestScope = new LinkedHashSet<>();
+
         Set<Artifact> ignoredUsedUndeclared = new LinkedHashSet<>();
         Set<Artifact> ignoredUnusedDeclared = new LinkedHashSet<>();
         Set<Artifact> ignoredNonTestScope = new LinkedHashSet<>();
@@ -376,21 +405,32 @@ public abstract class AbstractAnalyzeMojo
             filterArtifactsByScope( unusedDeclared, Artifact.SCOPE_RUNTIME );
         }
 
-        ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclaredWithClasses.keySet(), ignoredDependencies ) );
-        ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclaredWithClasses.keySet(),
-                ignoredUsedUndeclaredDependencies ) );
+        notIncludedUsedDeclared.addAll( filterDependencies( usedDeclared, includeDependencies ) );
 
-        ignoredUnusedDeclared.addAll( filterDependencies( unusedDeclared, ignoredDependencies ) );
-        ignoredUnusedDeclared.addAll( filterDependencies( unusedDeclared, ignoredUnusedDeclaredDependencies ) );
+        notIncludedUsedUndeclared.addAll( filterDependencies( usedUndeclaredWithClasses.keySet(),
+          includeDependencies ) );
+        ignoredUsedUndeclared.addAll( filterDependenciesNotMatching( usedUndeclaredWithClasses.keySet(),
+          ignoredDependencies ) );
+        ignoredUsedUndeclared.addAll( filterDependenciesNotMatching( usedUndeclaredWithClasses.keySet(),
+          ignoredUsedUndeclaredDependencies ) );
 
+        notIncludedUnusedDeclared.addAll( filterDependencies( unusedDeclared, includeDependencies ) );
+        ignoredUnusedDeclared.addAll( filterDependenciesNotMatching( unusedDeclared,
+          ignoredDependencies ) );
+        ignoredUnusedDeclared.addAll( filterDependenciesNotMatching( unusedDeclared,
+          ignoredUnusedDeclaredDependencies ) );
+
+
+        notIncludedNonTestScope.addAll( filterDependencies ( nonTestScope, includeDependencies ) );
         if ( ignoreAllNonTestScoped )
         {
-            ignoredNonTestScope.addAll( filterDependencies ( nonTestScope, new String [] { "*" } ) );
+            ignoredNonTestScope.addAll( filterDependenciesNotMatching ( nonTestScope, new String [] { "*" } ) );
         }
         else
         {
-            ignoredNonTestScope.addAll( filterDependencies( nonTestScope, ignoredDependencies ) );
-            ignoredNonTestScope.addAll( filterDependencies( nonTestScope, ignoredNonTestScopedDependencies ) );
+            ignoredNonTestScope.addAll( filterDependenciesNotMatching( nonTestScope, ignoredDependencies ) );
+            ignoredNonTestScope.addAll( filterDependenciesNotMatching( nonTestScope,
+              ignoredNonTestScopedDependencies ) );
         }
 
         boolean reported = false;
@@ -438,6 +478,40 @@ public abstract class AbstractAnalyzeMojo
             warning = true;
         }
 
+        // log dependencies that weren't included
+        if ( verbose && !notIncludedUsedDeclared.isEmpty() )
+        {
+            getLog().info( "Not included used declared dependencies:" );
+
+            logArtifacts( notIncludedUsedDeclared, false );
+            reported = true;
+        }
+
+        if ( verbose && !notIncludedUsedUndeclared.isEmpty() )
+        {
+            getLog().info( "Not included used undeclared dependencies:" );
+
+            logArtifacts( notIncludedUsedUndeclared, false );
+            reported = true;
+        }
+
+        if ( verbose && !notIncludedUnusedDeclared.isEmpty() )
+        {
+            getLog().info( "Not included unused declared dependencies:" );
+
+            logArtifacts( notIncludedUnusedDeclared, false );
+            reported = true;
+        }
+
+        if ( verbose && !notIncludedNonTestScope.isEmpty() )
+        {
+            getLog().info( "Not included non-test scoped test only dependencies:" );
+
+            logArtifacts( notIncludedNonTestScope, false );
+            reported = true;
+        }
+
+        // log ignored dependencies
         if ( verbose && !ignoredUsedUndeclared.isEmpty() )
         {
             getLog().info( "Ignored used undeclared dependencies:" );
@@ -621,7 +695,15 @@ public abstract class AbstractAnalyzeMojo
         }
     }
 
-    private List<Artifact> filterDependencies( Set<Artifact> artifacts, String[] excludes )
+
+    /**
+     * Filter for artifacts that don't match the <code>exclude</code> criteria.
+     *
+     * @param artifacts filtered by elements that don't match the <code>excludes</code> argument
+     * @param excludes the filter to be applied
+     * @return the list of artifacts that matched the criteria
+     */
+    private List<Artifact> filterDependenciesNotMatching( Set<Artifact> artifacts, String[] excludes )
     {
         ArtifactFilter filter = new StrictPatternExcludesArtifactFilter( Arrays.asList( excludes ) );
         List<Artifact> result = new ArrayList<>();
@@ -633,6 +715,37 @@ public abstract class AbstractAnalyzeMojo
             {
                 it.remove();
                 result.add( artifact );
+            }
+        }
+
+        return result;
+    }
+
+
+    /**
+     * Filter for artifacts that match the <code>include</code> criteria.
+     * No filtering is applied if the criteria is empty.
+     *
+     * @param artifacts filtered for elements that do match the criteria
+     * @param includes the filter to be applied
+     * @return the list of artifacts that didn't match the criteria
+     */
+    private List<Artifact> filterDependencies( Set<Artifact> artifacts, String[] includes )
+    {
+        List<Artifact> result = new ArrayList<>();
+
+        if ( includes.length > 0 )
+        {
+          ArtifactFilter filter = new StrictPatternIncludesArtifactFilter( Arrays.asList( includes ) );
+
+            for ( Iterator<Artifact> it = artifacts.iterator(); it.hasNext(); )
+            {
+                Artifact artifact = it.next();
+                if ( !filter.include( artifact ) )
+                {
+                    it.remove();
+                    result.add( artifact );
+                }
             }
         }
 
