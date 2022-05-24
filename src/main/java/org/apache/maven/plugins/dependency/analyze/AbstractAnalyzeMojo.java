@@ -406,7 +406,7 @@ public abstract class AbstractAnalyzeMojo
 
         if ( !usedUndeclaredWithClasses.isEmpty() )
         {
-            getLog().warn( "Used undeclared dependencies found:" );
+            logDependencyWarning( "Used undeclared dependencies found:" );
 
             if ( verbose )
             {
@@ -422,7 +422,7 @@ public abstract class AbstractAnalyzeMojo
 
         if ( !unusedDeclared.isEmpty() )
         {
-            getLog().warn( "Unused declared dependencies found:" );
+            logDependencyWarning( "Unused declared dependencies found:" );
 
             logArtifacts( unusedDeclared, true );
             reported = true;
@@ -431,7 +431,7 @@ public abstract class AbstractAnalyzeMojo
 
         if ( !nonTestScope.isEmpty() )
         {
-            getLog().warn( "Non-test scoped test only dependencies found:" );
+            logDependencyWarning( "Non-test scoped test only dependencies found:" );
 
             logArtifacts( nonTestScope, true );
             reported = true;
@@ -500,7 +500,7 @@ public abstract class AbstractAnalyzeMojo
 
                 if ( warn )
                 {
-                    getLog().warn( "   " + artifact );
+                    logDependencyWarning( "   " + artifact );
                 }
                 else
                 {
@@ -526,10 +526,10 @@ public abstract class AbstractAnalyzeMojo
 
                 if ( warn )
                 {
-                    getLog().warn( "   " + entry.getKey() );
+                    logDependencyWarning( "   " + entry.getKey() );
                     for ( String clazz : entry.getValue() )
                     {
-                        getLog().warn( "      class " + clazz );
+                        logDependencyWarning( "      class " + clazz );
                     }
                 }
                 else
@@ -542,6 +542,18 @@ public abstract class AbstractAnalyzeMojo
                 }
 
             }
+        }
+    }
+
+    private void logDependencyWarning( CharSequence content )
+    {
+        if ( failOnWarning )
+        {
+            getLog().error( content );
+        }
+        else
+        {
+            getLog().warn( content );
         }
     }
 
