@@ -25,7 +25,7 @@ under the License.
   <parent>
     <artifactId>maven-plugins</artifactId>
     <groupId>org.apache.maven.plugins</groupId>
-    <version>35</version>
+    <version>37</version>
     <relativePath />
   </parent>
 
@@ -453,7 +453,7 @@ under the License.
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>mrm-maven-plugin</artifactId>
-            <version>1.2.0</version>
+            <version>1.4.1</version>
             <executions>
               <execution>
                 <goals>
