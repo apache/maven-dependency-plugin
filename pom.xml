@@ -25,7 +25,7 @@ under the License.
   <parent>
     <artifactId>maven-plugins</artifactId>
     <groupId>org.apache.maven.plugins</groupId>
-    <version>35</version>
+    <version>37</version>
     <relativePath />
   </parent>
 
@@ -335,17 +335,6 @@ under the License.
   <build>
     <pluginManagement>
       <plugins>
-        <!-- TODO check with next parent pom -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-pmd-plugin</artifactId>
-          <version>3.16.0</version>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>taglist-maven-plugin</artifactId>
-          <version>3.0.0</version>
-        </plugin>
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
@@ -378,28 +367,6 @@ under the License.
       </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId> 
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>enforce-bytecode-version</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <enforceBytecodeVersion>
-                  <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
-                  <ignoreClasses>
-                    <ignoreClass>module-info</ignoreClass>
-                  </ignoreClasses>
-                </enforceBytecodeVersion>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -468,11 +435,9 @@ under the License.
                 <mockRepo>
                   <source>src/it/mrm/repository</source>
                 </mockRepo>
-                <!--
-                <mockRepo>
-                  <source>src/test/resources/m2repo</source>
-                </mockRepo>
-                 -->
+                <localRepo>
+                  <source>${project.build.directory}/local-repo</source>
+                </localRepo>
                 <proxyRepo />
               </repositories>
             </configuration>
