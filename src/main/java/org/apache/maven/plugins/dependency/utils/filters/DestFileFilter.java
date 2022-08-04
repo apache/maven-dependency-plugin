@@ -55,6 +55,8 @@ public class DestFileFilter
 
     private boolean removeVersion;
 
+    private boolean removeType;
+
     private boolean removeClassifier;
 
     private final boolean prependGroupId;
@@ -196,6 +198,22 @@ public class DestFileFilter
     }
 
     /**
+     * @param removeType The removeType to set.
+     */
+    public void setRemoveType( boolean removeType )
+    {
+        this.removeType = removeType;
+    }
+
+    /**
+     * @return Returns the removeType.
+     */
+    public boolean isRemoveType()
+    {
+        return this.removeType;
+    }
+
+    /**
      * @param removeVersion The removeVersion to set.
      */
     public void setRemoveVersion( boolean removeVersion )
@@ -281,7 +299,8 @@ public class DestFileFilter
             destFolder =
                 DependencyUtil.getFormattedOutputDirectory( useSubDirectoryPerScope, useSubDirectoryPerType,
                                                             useSubDirectoryPerArtifact, useRepositoryLayout,
-                                                            removeVersion, this.outputFileDirectory, artifact );
+                                                            removeVersion, removeType, this.outputFileDirectory,
+                                                            artifact );
         }
 
         File destFile;

@@ -46,6 +46,12 @@ public abstract class AbstractFromDependenciesMojo
     protected boolean stripVersion = false;
 
     /**
+     * Strip artifact type during copy
+     */
+    @Parameter( property = "mdep.stripType", defaultValue = "false" )
+    protected boolean stripType = false;
+
+    /**
      * Strip artifact classifier during copy
      */
     @Parameter( property = "mdep.stripClassifier", defaultValue = "false" )
@@ -196,6 +202,24 @@ public abstract class AbstractFromDependenciesMojo
     {
         this.stripVersion = stripVersion;
     }
+
+
+    /**
+     * @return {@link #stripType}
+     */
+    public boolean isStripType()
+    {
+        return stripType;
+    }
+
+    /**
+     * @param stripType {@link #stripType}
+     */
+    public void setStripType( boolean stripType )
+    {
+        this.stripType = stripType;
+    }
+
 
     /**
      * @return true, if dependencies must be planted in a repository layout
