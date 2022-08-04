@@ -93,91 +93,144 @@ public class TestDependencyUtil
     {
         File folder = new File( "target/a" );
         final Artifact artifact = artifacts.get( 0 );
-        File name = DependencyUtil.getFormattedOutputDirectory( false, false, false, false, false, folder, artifact );
+        File name = DependencyUtil.getFormattedOutputDirectory( false, false, false, false, false, false, folder, artifact );
         // object is the same.
         assertEquals( folder, name );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, false, false, true, false, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, false, true, false, false, folder, artifact );
         String expectedResult = folder.getAbsolutePath() + File.separatorChar + "test" + File.separatorChar + "one"
             + File.separatorChar + "1.1";
         assertTrue( expectedResult.equalsIgnoreCase( name.getAbsolutePath() ) );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, true, false, false, false, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, true, false, false, false, false, folder, artifact );
         expectedResult = folder.getAbsolutePath() + File.separatorChar + "jars";
         assertTrue( expectedResult.equalsIgnoreCase( name.getAbsolutePath() ) );
 
-        name = DependencyUtil.getFormattedOutputDirectory( true, false, false, false, false, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( true, false, false, false, false, false, folder, artifact );
         expectedResult = folder.getAbsolutePath() + File.separatorChar + "compile";
         assertEquals( expectedResult, name.getAbsolutePath() );
         assertTrue( expectedResult.equalsIgnoreCase( name.getAbsolutePath() ) );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false, false, folder, artifact );
         expectedResult = folder.getAbsolutePath() + File.separatorChar + "one-1.1-sources-jar";
         assertEquals( expectedResult, name.getAbsolutePath() );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, true, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, true, false, folder, artifact );
         expectedResult = folder.getAbsolutePath() + File.separatorChar + "one-sources-jar";
         assertEquals( expectedResult, name.getAbsolutePath() );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, false, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false, true, folder, artifact );
+        expectedResult = folder.getAbsolutePath() + File.separatorChar + "one-1.1-sources";
+        assertEquals( expectedResult, name.getAbsolutePath() );
+
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, true, true, folder, artifact );
+        expectedResult = folder.getAbsolutePath() + File.separatorChar + "one-sources";
+        assertEquals( expectedResult, name.getAbsolutePath() );
+
+        name = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, false, false, folder, artifact );
         expectedResult =
             folder.getAbsolutePath() + File.separatorChar + "jars" + File.separatorChar + "one-1.1-sources-jar";
         assertEquals( expectedResult, name.getAbsolutePath() );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, true, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, true, false, folder, artifact );
         expectedResult =
             folder.getAbsolutePath() + File.separatorChar + "jars" + File.separatorChar + "one-sources-jar";
         assertEquals( expectedResult, name.getAbsolutePath() );
 
-        name = DependencyUtil.getFormattedOutputDirectory( true, false, true, false, true, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, false, true, folder, artifact );
+        expectedResult =
+            folder.getAbsolutePath() + File.separatorChar + "jars" + File.separatorChar + "one-1.1-sources";
+        assertEquals( expectedResult, name.getAbsolutePath() );
+
+        name = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, true, true, folder, artifact );
+        expectedResult =
+            folder.getAbsolutePath() + File.separatorChar + "jars" + File.separatorChar + "one-sources";
+        assertEquals( expectedResult, name.getAbsolutePath() );
+
+        name = DependencyUtil.getFormattedOutputDirectory( true, false, true, false, true, false, folder, artifact );
         expectedResult =
             folder.getAbsolutePath() + File.separatorChar + "compile" + File.separatorChar + "one-sources-jar";
         assertEquals( expectedResult, name.getAbsolutePath() );
+
+        name = DependencyUtil.getFormattedOutputDirectory( true, false, true, false, false, true, folder, artifact );
+        expectedResult =
+            folder.getAbsolutePath() + File.separatorChar + "compile" + File.separatorChar + "one-1.1-sources";
+        assertEquals( expectedResult, name.getAbsolutePath() );
+
+        name = DependencyUtil.getFormattedOutputDirectory( true, false, true, false, true, true, folder, artifact );
+        expectedResult =
+            folder.getAbsolutePath() + File.separatorChar + "compile" + File.separatorChar + "one-sources";
+        assertEquals( expectedResult, name.getAbsolutePath() );
     }
 
+    // TODO fix test
     public void testDirectoryName2()
     {
         File folder = new File( "target/a" );
         final Artifact artifact = artifacts.get( 1 );
-        File name = DependencyUtil.getFormattedOutputDirectory( false, false, false, false, false, folder, artifact );
+        File name = DependencyUtil.getFormattedOutputDirectory( false, false, false, false, false, false, folder, artifact );
         // object is the same.
         assertEquals( folder, name );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, true, false, false, false, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, true, false, false, false, false, folder, artifact );
         String expectedResult = folder.getAbsolutePath() + File.separatorChar + "wars";
         assertEquals( expectedResult, name.getAbsolutePath() );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, false, false, true, false, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, false, true, false, false, folder, artifact );
         expectedResult = folder.getAbsolutePath() + File.separatorChar + "test" + File.separatorChar + "two"
             + File.separatorChar + "1.1-SNAPSHOT";
         assertEquals( expectedResult, name.getAbsolutePath() );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false, false, folder, artifact );
         expectedResult = folder.getAbsolutePath() + File.separatorChar + "two-1.1-SNAPSHOT-war";
         assertEquals( expectedResult, name.getAbsolutePath() );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, false, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, false, false, folder, artifact );
         expectedResult =
             folder.getAbsolutePath() + File.separatorChar + "wars" + File.separatorChar + "two-1.1-SNAPSHOT-war";
         assertEquals( expectedResult, name.getAbsolutePath() );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, true, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, true, false, folder, artifact );
         expectedResult = folder.getAbsolutePath() + File.separatorChar + "two-war";
         assertEquals( expectedResult, name.getAbsolutePath() );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, true, folder, artifact );
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false, true, folder, artifact );
+        expectedResult = folder.getAbsolutePath() + File.separatorChar + "two-1.1-SNAPSHOT";
+        assertEquals( expectedResult, name.getAbsolutePath() );
+
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, true, true, folder, artifact );
+        expectedResult = folder.getAbsolutePath() + File.separatorChar + "two";
+        assertEquals( expectedResult, name.getAbsolutePath() );
+
+        name = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, true, false, folder, artifact );
         expectedResult = folder.getAbsolutePath() + File.separatorChar + "wars" + File.separatorChar + "two-war";
+        assertEquals( expectedResult, name.getAbsolutePath() );
+
+        name = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, false, true, folder, artifact );
+        expectedResult = folder.getAbsolutePath() + File.separatorChar + "wars" + File.separatorChar + "two-1.1-SNAPSHOT";
+        assertEquals( expectedResult, name.getAbsolutePath() );
+
+        name = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, true, true, folder, artifact );
+        expectedResult = folder.getAbsolutePath() + File.separatorChar + "wars" + File.separatorChar + "two";
         assertEquals( expectedResult, name.getAbsolutePath() );
     }
 
     public void testDirectoryNameSources()
     {
         File folder = new File( "target/a" );
-        File name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, true, folder, sources );
+        File name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, true, false, folder, sources );
         String expectedResult = folder.getAbsolutePath() + File.separatorChar + "two-sources";
         assertEquals( expectedResult, name.getAbsolutePath() );
 
-        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false, folder, sources );
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, true, true, folder, sources );
+        expectedResult = folder.getAbsolutePath() + File.separatorChar + "two-sources";
+        assertEquals( expectedResult, name.getAbsolutePath() );
+
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false, false, folder, sources );
+        expectedResult = folder.getAbsolutePath() + File.separatorChar + "two-1.1-SNAPSHOT-sources";
+        assertEquals( expectedResult, name.getAbsolutePath() );
+
+        name = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false, true, folder, sources );
         expectedResult = folder.getAbsolutePath() + File.separatorChar + "two-1.1-SNAPSHOT-sources";
         assertEquals( expectedResult, name.getAbsolutePath() );
     }

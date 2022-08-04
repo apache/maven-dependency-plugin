@@ -87,7 +87,7 @@ public class TestDestFileFilter
     {
         File destFolder =
             DependencyUtil.getFormattedOutputDirectory( false, useSubDirectoryPerType, useSubDirectoryPerArtifact,
-                                                        false, false, outputFolder, artifact );
+                                                        false, false, false, outputFolder, artifact );
         File destFile =
             new File( destFolder,
                       DependencyUtil.getFormattedFileName( artifact, removeVersion, false, false, removeClassifier ) );

@@ -148,13 +148,15 @@ public final class DependencyUtil
      * @param useRepositoryLayout if dependencies must be moved into a Maven repository layout, if set, other settings
      *            will be ignored.
      * @param removeVersion if the version must not be mentioned in the filename
+     * @param removeType if the type must not be mentioned in the filename
      * @param outputDirectory base outputDirectory.
      * @param artifact information about the artifact.
      * @return a formatted File object to use for output.
      */
     public static File getFormattedOutputDirectory( boolean useSubdirsPerScope, boolean useSubdirsPerType,
                                                     boolean useSubdirPerArtifact, boolean useRepositoryLayout,
-                                                    boolean removeVersion, File outputDirectory, Artifact artifact )
+                                                    boolean removeVersion, boolean removeType, File outputDirectory,
+                                                    Artifact artifact )
     {
         StringBuilder sb = new StringBuilder( 128 );
         if ( useRepositoryLayout )
@@ -178,14 +180,14 @@ public final class DependencyUtil
             }
             if ( useSubdirPerArtifact )
             {
-                String artifactString = getDependencyId( artifact, removeVersion );
+                String artifactString = getDependencyId( artifact, removeVersion, removeType );
                 sb.append( artifactString ).append( File.separatorChar );
             }
         }
         return new File( outputDirectory, sb.toString() );
     }
 
-    private static String getDependencyId( Artifact artifact, boolean removeVersion )
+    private static String getDependencyId( Artifact artifact, boolean removeVersion, boolean removeType )
     {
         StringBuilder sb = new StringBuilder();
 
@@ -206,7 +208,7 @@ public final class DependencyUtil
         // if the classifier and type are the same (sources), then don't
         // repeat.
         // avoids names like foo-sources-sources
-        if ( !Objects.equals( artifact.getClassifier(), artifact.getType() ) )
+        if ( !removeType && !Objects.equals( artifact.getClassifier(), artifact.getType() ) )
         {
             sb.append( "-" );
             sb.append( artifact.getType() );

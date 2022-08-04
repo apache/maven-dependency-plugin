@@ -89,7 +89,7 @@ public class TestUnpackDependenciesMojo2
             DependencyUtil.getFormattedOutputDirectory( mojo.isUseSubDirectoryPerScope(),
                                                         mojo.isUseSubDirectoryPerType(),
                                                         mojo.isUseSubDirectoryPerArtifact(), mojo.useRepositoryLayout,
-                                                        mojo.stripVersion, mojo.getOutputDirectory(), artifact );
+                                                        mojo.stripVersion, mojo.stripType, mojo.getOutputDirectory(), artifact );
         File unpacked = new File( destDir, DependencyArtifactStubFactory.getUnpackableFileName( artifact ) );
         assertTrue( unpacked.exists() );
         return unpacked;

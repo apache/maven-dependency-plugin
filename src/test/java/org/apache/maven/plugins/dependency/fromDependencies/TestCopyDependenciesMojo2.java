@@ -197,7 +197,7 @@ public class TestCopyDependenciesMojo2
         for ( Artifact artifact : artifacts )
         {
             String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File folder = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false,
+            File folder = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false, false,
                                                                       mojo.outputDirectory, artifact );
             File file = new File( folder, fileName );
             assertTrue( file.exists() );
@@ -218,7 +218,7 @@ public class TestCopyDependenciesMojo2
         for ( Artifact artifact : artifacts )
         {
             String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File folder = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, false,
+            File folder = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, false, false,
                                                                       mojo.outputDirectory, artifact );
             File file = new File( folder, fileName );
             assertTrue( file.exists() );
@@ -239,7 +239,7 @@ public class TestCopyDependenciesMojo2
         for ( Artifact artifact : artifacts )
         {
             String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File folder = DependencyUtil.getFormattedOutputDirectory( true, false, true, false, false,
+            File folder = DependencyUtil.getFormattedOutputDirectory( true, false, true, false, false, false,
                                                                       mojo.outputDirectory, artifact );
             File file = new File( folder, fileName );
             assertTrue( file.exists() );
@@ -351,7 +351,7 @@ public class TestCopyDependenciesMojo2
         for ( Artifact artifact : artifacts )
         {
             String fileName = DependencyUtil.getFormattedFileName( artifact, true );
-            File folder = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, true,
+            File folder = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, true, false,
                                                                       mojo.outputDirectory, artifact );
             File file = new File( folder, fileName );
             assertTrue( file.exists() );
@@ -373,7 +373,50 @@ public class TestCopyDependenciesMojo2
         for ( Artifact artifact : artifacts )
         {
             String fileName = DependencyUtil.getFormattedFileName( artifact, true );
-            File folder = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, true,
+            File folder = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, true, false,
+                                                                      mojo.outputDirectory, artifact );
+            File file = new File( folder, fileName );
+            assertTrue( file.exists() );
+        }
+    }
+
+    public void testSubPerArtifactRemoveType()
+        throws Exception
+    {
+        mojo.useSubDirectoryPerArtifact = true;
+        mojo.stripType = true;
+
+        mojo.execute();
+
+        Set<Artifact> artifacts = mojo.getProject().getArtifacts();
+        for ( Artifact artifact : artifacts )
+        {
+            // TODO fix test
+            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
+            File folder = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false, true,
+                mojo.outputDirectory, artifact );
+            File file = new File( folder, fileName );
+            assertTrue( file.exists() );
+        }
+    }
+
+    public void testSubPerArtifactAndTypeRemoveType()
+        throws Exception
+    {
+        mojo.getProject().setArtifacts( stubFactory.getTypedArtifacts() );
+        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+        mojo.useSubDirectoryPerArtifact = true;
+        mojo.useSubDirectoryPerType = true;
+        mojo.stripType = true;
+
+        mojo.execute();
+
+        Set<Artifact> artifacts = mojo.getProject().getArtifacts();
+        for ( Artifact artifact : artifacts )
+        {
+            // TODO fix test
+            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
+            File folder = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, false, true,
                                                                       mojo.outputDirectory, artifact );
             File file = new File( folder, fileName );
             assertTrue( file.exists() );
