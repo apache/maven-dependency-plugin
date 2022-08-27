@@ -95,7 +95,7 @@ under the License.
     <resolverVersion>1.0.0.v20140518</resolverVersion>
     <javaVersion>8</javaVersion>
     <project.build.outputTimestamp>2022-03-05T18:51:54Z</project.build.outputTimestamp>
-    <slf4j.version>1.7.36</slf4j.version>
+    <slf4j.version>2.0.0</slf4j.version>
   </properties>
 
   <dependencyManagement>
@@ -413,7 +413,7 @@ under the License.
               <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
-                <version>1.15.2</version>
+                <version>1.15.3</version>
               </dependency>
             </dependencies>
           </plugin>
