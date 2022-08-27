@@ -106,6 +106,8 @@ public abstract class AbstractAnalyzeMojo
 
     /**
      * Ignore Runtime scope for unused dependency analysis.
+     *
+     * @since 3.2.0
      */
     @Parameter( property = "ignoreUnusedRuntime", defaultValue = "false" )
     private boolean ignoreUnusedRuntime;
