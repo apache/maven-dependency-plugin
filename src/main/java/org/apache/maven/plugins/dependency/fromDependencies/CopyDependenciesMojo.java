@@ -108,7 +108,7 @@ public class CopyDependenciesMojo
      *
      * @throws MojoExecutionException with a message if an error occurs.
      * @see #getDependencySets(boolean, boolean)
-     * @see #copyArtifact(Artifact, boolean, boolean, boolean, boolean, boolean)
+     * @see #copyArtifact(Artifact, boolean, boolean, boolean, boolean)
      */
     @Override
     protected void doExecute()
@@ -121,7 +121,7 @@ public class CopyDependenciesMojo
         {
             for ( Artifact artifact : artifacts )
             {
-                copyArtifact( artifact, isStripVersion(), isStripType(), this.prependGroupId, this.useBaseVersion,
+                copyArtifact( artifact, isStripVersion(), this.prependGroupId, this.useBaseVersion,
                               this.stripClassifier );
             }
         }
@@ -204,17 +204,16 @@ public class CopyDependenciesMojo
      *
      * @param artifact representing the object to be copied.
      * @param removeVersion specifies if the version should be removed from the file name when copying.
-     * @param removeType specifies if the type should be removed from the file name when copying.
      * @param prependGroupId specifies if the groupId should be prepend to the file while copying.
      * @param theUseBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
      * @throws MojoExecutionException with a message if an error occurs.
      * @see #copyArtifact(Artifact, boolean, boolean, boolean, boolean)
      */
-    protected void copyArtifact( Artifact artifact, boolean removeVersion, boolean removeType, boolean prependGroupId,
+    protected void copyArtifact( Artifact artifact, boolean removeVersion, boolean prependGroupId,
                                  boolean theUseBaseVersion )
         throws MojoExecutionException
     {
-        copyArtifact( artifact, removeVersion, removeType, prependGroupId, theUseBaseVersion, false );
+        copyArtifact( artifact, removeVersion, prependGroupId, theUseBaseVersion, false );
     }
 
     /**
@@ -223,7 +222,6 @@ public class CopyDependenciesMojo
      *
      * @param artifact representing the object to be copied.
      * @param removeVersion specifies if the version should be removed from the file name when copying.
-     * @param removeType specifies if the type should be removed from the file name when copying.
      * @param prependGroupId specifies if the groupId should be prepend to the file while copying.
      * @param theUseBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
      * @param removeClassifier specifies if the classifier should be removed from the file name when copying.
@@ -231,7 +229,7 @@ public class CopyDependenciesMojo
      * @see #copyFile(File, File)
      * @see DependencyUtil#getFormattedOutputDirectory(boolean, boolean, boolean, boolean, boolean, boolean, File, Artifact)
      */
-    protected void copyArtifact( Artifact artifact, boolean removeVersion, boolean stripType, boolean prependGroupId,
+    protected void copyArtifact( Artifact artifact, boolean removeVersion, boolean prependGroupId,
                                  boolean theUseBaseVersion, boolean removeClassifier )
         throws MojoExecutionException
     {
