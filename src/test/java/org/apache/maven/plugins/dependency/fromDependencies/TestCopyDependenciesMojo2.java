@@ -391,7 +391,6 @@ public class TestCopyDependenciesMojo2
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
         for ( Artifact artifact : artifacts )
         {
-            // TODO fix test
             String fileName = DependencyUtil.getFormattedFileName( artifact, false );
             File folder = DependencyUtil.getFormattedOutputDirectory( false, false, true, false, false, true,
                 mojo.outputDirectory, artifact );
@@ -414,7 +413,6 @@ public class TestCopyDependenciesMojo2
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
         for ( Artifact artifact : artifacts )
         {
-            // TODO fix test
             String fileName = DependencyUtil.getFormattedFileName( artifact, false );
             File folder = DependencyUtil.getFormattedOutputDirectory( false, true, true, false, false, true,
                                                                       mojo.outputDirectory, artifact );
