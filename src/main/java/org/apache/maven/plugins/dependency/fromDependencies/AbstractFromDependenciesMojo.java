@@ -47,6 +47,8 @@ public abstract class AbstractFromDependenciesMojo
 
     /**
      * Strip artifact type during copy
+     *
+     * @since 3.4.0
      */
     @Parameter( property = "mdep.stripType", defaultValue = "false" )
     protected boolean stripType = false;
