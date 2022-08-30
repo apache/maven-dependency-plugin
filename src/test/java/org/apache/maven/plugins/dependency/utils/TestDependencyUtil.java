@@ -163,7 +163,6 @@ public class TestDependencyUtil
         assertEquals( expectedResult, name.getAbsolutePath() );
     }
 
-    // TODO fix test
     public void testDirectoryName2()
     {
         File folder = new File( "target/a" );
