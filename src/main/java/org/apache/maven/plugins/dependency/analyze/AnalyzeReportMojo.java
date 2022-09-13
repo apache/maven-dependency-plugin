@@ -20,14 +20,12 @@ package org.apache.maven.plugins.dependency.analyze;
  */
 
 import org.apache.maven.doxia.sink.Sink;
-import org.apache.maven.doxia.siterenderer.Renderer;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
@@ -52,22 +50,10 @@ public class AnalyzeReportMojo
     // fields -----------------------------------------------------------------
 
     /**
-     * The Maven project to analyze.
-     */
-    @Parameter( defaultValue = "${project}", readonly = true, required = true )
-    private MavenProject project;
-
-    /**
      * The Maven project dependency analyzer to use.
      */
     @Component
     private ProjectDependencyAnalyzer analyzer;
-
-    /**
-     *
-     */
-    @Component
-    private Renderer siteRenderer;
 
     /**
      * Target folder
@@ -111,19 +97,6 @@ public class AnalyzeReportMojo
     public void executeReport( Locale locale )
         throws MavenReportException
     {
-        if ( skip )
-        {
-            getLog().info( "Skipping plugin execution" );
-            return;
-        }
-
-        // Step 0: Checking pom availability
-        if ( "pom".equals( project.getPackaging() ) )
-        {
-            getLog().info( "Skipping pom project" );
-            return;
-        }
-
         if ( outputDirectory == null || !outputDirectory.exists() )
         {
             getLog().info( "Skipping project with no Target directory" );
@@ -163,6 +136,26 @@ public class AnalyzeReportMojo
 
     // MavenReport methods ----------------------------------------------------
 
+
+    @Override
+    public boolean canGenerateReport()
+    {
+        if ( skip )
+        {
+            getLog().info( "Skipping plugin execution" );
+            return false;
+        }
+
+        // Step 0: Checking pom availability
+        if ( "pom".equals( project.getPackaging() ) )
+        {
+            getLog().info( "Skipping pom project" );
+            return false;
+        }
+
+        return true;
+    }
+
     /*
      * @see org.apache.maven.reporting.AbstractMavenReport#getOutputName()
      */
@@ -190,17 +183,6 @@ public class AnalyzeReportMojo
         return getBundle( locale ).getString( "analyze.report.description" );
     }
 
-    // AbstractMavenReport methods --------------------------------------------
-
-    /*
-     * @see org.apache.maven.reporting.AbstractMavenReport#getProject()
-     */
-    @Override
-    protected MavenProject getProject()
-    {
-        return project;
-    }
-
     /*
      * @see org.apache.maven.reporting.AbstractMavenReport#getOutputDirectory()
      */
@@ -210,15 +192,6 @@ public class AnalyzeReportMojo
         getLog().info( outputDirectory.toString() );
 
         return outputDirectory.toString();
-    }
-
-    /*
-     * @see org.apache.maven.reporting.AbstractMavenReport#getSiteRenderer()
-     */
-    @Override
-    protected Renderer getSiteRenderer()
-    {
-        return siteRenderer;
     }
 
     // protected methods ------------------------------------------------------
