@@ -24,7 +24,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-File htmlFile = new File( basedir, "target/dependency-analysis.html" );
+File htmlFile = new File( basedir, "target/site/dependency-analysis.html" );
 
 if ( !htmlFile.isFile() )
 {

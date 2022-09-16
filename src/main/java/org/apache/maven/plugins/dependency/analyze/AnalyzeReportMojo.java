@@ -32,7 +32,6 @@ import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerException;
 
-import java.io.File;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -56,16 +55,8 @@ public class AnalyzeReportMojo
     private ProjectDependencyAnalyzer analyzer;
 
     /**
-     * Target folder
-     *
-     * @since 2.0-alpha-5
-     */
-    @Parameter( defaultValue = "${project.build.directory}", readonly = true )
-    private File outputDirectory;
-
-    /**
      * Ignore Runtime/Provided/Test/System scopes for unused dependency analysis
-     * 
+     *
      * @since 2.2
      */
     @Parameter( property = "ignoreNonCompile", defaultValue = "false" )
@@ -74,7 +65,7 @@ public class AnalyzeReportMojo
     /**
      * Force dependencies as used, to override incomplete result caused by bytecode-level analysis. Dependency format is
      * <code>groupId:artifactId</code>.
-     * 
+     *
      * @since 2.6
      */
     @Parameter
@@ -97,12 +88,6 @@ public class AnalyzeReportMojo
     public void executeReport( Locale locale )
         throws MavenReportException
     {
-        if ( outputDirectory == null || !outputDirectory.exists() )
-        {
-            getLog().info( "Skipping project with no Target directory" );
-            return;
-        }
-
         // Step 1: Analyze the project
         ProjectDependencyAnalysis analysis;
         try
@@ -181,17 +166,6 @@ public class AnalyzeReportMojo
     public String getDescription( Locale locale )
     {
         return getBundle( locale ).getString( "analyze.report.description" );
-    }
-
-    /*
-     * @see org.apache.maven.reporting.AbstractMavenReport#getOutputDirectory()
-     */
-    @Override
-    protected String getOutputDirectory()
-    {
-        getLog().info( outputDirectory.toString() );
-
-        return outputDirectory.toString();
     }
 
     // protected methods ------------------------------------------------------
