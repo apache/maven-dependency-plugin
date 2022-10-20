@@ -20,14 +20,14 @@ package org.apache.maven.plugins.dependency.analyze;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
@@ -131,14 +131,11 @@ public class AnalyzeDuplicateMojo extends AbstractMojo {
     }
 
     private Set<String> findDuplicateDependencies(List<Dependency> modelDependencies) {
-        List<String> modelDependencies2 = new ArrayList<>();
-        for (Dependency dep : modelDependencies) {
-            modelDependencies2.add(dep.getManagementKey());
-        }
-
-        // @formatter:off
-        return new LinkedHashSet<>(
-                CollectionUtils.disjunction(modelDependencies2, new LinkedHashSet<>(modelDependencies2)));
-        // @formatter:on
+        List<String> modelDependencies2 =
+                modelDependencies.stream().map(Dependency::getManagementKey).collect(Collectors.toList());
+        // remove one instance of each element from the list
+        modelDependencies2.removeIf(new HashSet<>(modelDependencies2)::remove);
+        // keep a single instance of each duplicate
+        return new LinkedHashSet<>(modelDependencies2);
     }
 }
