@@ -46,6 +46,7 @@ import org.codehaus.plexus.components.io.fileselectors.IncludeExcludeFileSelecto
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
@@ -58,6 +59,21 @@ public abstract class AbstractDependencyMojo
      */
     @Component
     private ArchiverManager archiverManager;
+
+
+    /**
+     * For m2e incremental build support
+     */
+    @Component
+    private BuildContext buildContext;
+
+    /**
+     * Skip plugin execution during incremental builds (e.g. triggered from M2E).
+     * 
+     * @since 3.3.1
+     */
+    @Parameter( defaultValue = "false" )
+    private boolean skipDuringIncrementalBuild;
 
     /**
      * <p>
@@ -189,6 +205,7 @@ public abstract class AbstractDependencyMojo
             }
 
             FileUtils.copyFile( artifact, destFile );
+            buildContext.refresh( destFile );
         }
         catch ( IOException e )
         {
@@ -326,6 +343,7 @@ public abstract class AbstractDependencyMojo
         {
             throw new MojoExecutionException( "Error unpacking file: " + file + " to: " + location, e );
         }
+        buildContext.refresh( location );
     }
 
     private void silenceUnarchiver( UnArchiver unArchiver )
@@ -410,6 +428,10 @@ public abstract class AbstractDependencyMojo
      */
     public boolean isSkip()
     {
+        if ( skipDuringIncrementalBuild && buildContext.isIncremental() )
+        {
+            return true;
+        }
         return skip;
     }
 
