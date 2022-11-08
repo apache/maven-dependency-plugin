@@ -40,6 +40,13 @@ import java.util.List;
 public class CopyMojo
     extends AbstractFromConfigurationMojo
 {
+    /**
+     * Link instead of copy
+
+     * @since 3.1.3
+     */
+    @Parameter( property = "mdep.link", defaultValue = "false" )
+    private boolean link = false;
 
     /**
      * Strip artifact version during copy
@@ -132,7 +139,14 @@ public class CopyMojo
     {
         File destFile = new File( artifactItem.getOutputDirectory(), artifactItem.getDestFileName() );
 
-        copyFile( artifactItem.getArtifact().getFile(), destFile );
+        if ( this.isLink() )
+        {
+            linkFile( artifactItem.getArtifact().getFile(), destFile );
+        }
+        else
+        {
+            copyFile( artifactItem.getArtifact().getFile(), destFile );
+        }
     }
 
     @Override
@@ -141,6 +155,22 @@ public class CopyMojo
         return new DestFileFilter( this.isOverWriteReleases(), this.isOverWriteSnapshots(), this.isOverWriteIfNewer(),
                             false, false, false, false, this.stripVersion, prependGroupId, useBaseVersion,
                             item.getOutputDirectory() );
+    }
+
+    /**
+     * @return Returns whether to link instead of copy
+     */
+    public boolean isLink()
+    {
+        return this.link;
+    }
+
+    /**
+     * @param link Whether to link instead of copy.
+     */
+    public void setLink( boolean link )
+    {
+        this.link = link;
     }
 
     /**
