@@ -247,7 +247,7 @@ under the License.
       <version>${resolverVersion}</version>
       <scope>provided</scope>
     </dependency>
-    <!-- incremental build support (http://www.eclipse.org/m2e/documentation/m2e-making-maven-plugins-compat.html) -->
+    <!-- IDE build support (http://www.eclipse.org/m2e/documentation/m2e-making-maven-plugins-compat.html) -->
     <dependency>
       <groupId>org.sonatype.plexus</groupId>
       <artifactId>plexus-build-api</artifactId>

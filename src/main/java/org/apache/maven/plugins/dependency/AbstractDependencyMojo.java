@@ -62,7 +62,7 @@ public abstract class AbstractDependencyMojo
 
 
     /**
-     * For m2e incremental build support
+     * For IDE build support
      */
     @Component
     private BuildContext buildContext;
