@@ -251,7 +251,7 @@ under the License.
     <dependency>
       <groupId>org.sonatype.plexus</groupId>
       <artifactId>plexus-build-api</artifactId>
-      <version>0.0.7</version>
+      <version>0.0.7</version><!-- stick with old GAV until https://github.com/eclipse-m2e/m2e-core/issues/944 is fixed -->
       <scope>compile</scope>
     </dependency>
     
