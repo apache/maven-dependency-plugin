@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -87,7 +88,7 @@ public class TestCopyDependenciesMojo
     public void testCopyFile()
         throws MojoExecutionException, IOException
     {
-        File src = File.createTempFile( "copy", null );
+        File src = Files.createTempFile( "copy", null ).toFile();
 
         File dest = new File( mojo.outputDirectory, "toMe.jar" );
 
