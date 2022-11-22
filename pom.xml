@@ -247,6 +247,15 @@ under the License.
       <version>${resolverVersion}</version>
       <scope>provided</scope>
     </dependency>
+    <!-- IDE build support (https://github.com/codehaus-plexus/plexus-build-api) -->
+    <dependency>
+      <groupId>org.sonatype.plexus</groupId>
+      <artifactId>plexus-build-api</artifactId>
+      <version>0.0.7</version><!-- stick with old GAV until https://github.com/eclipse-m2e/m2e-core/issues/944 is fixed -->
+      <scope>compile</scope>
+    </dependency>
+    
+    <!-- test -->
     <dependency>
       <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-connector-basic</artifactId>
@@ -265,8 +274,6 @@ under the License.
       <version>${resolverVersion}</version>
       <scope>test</scope>
     </dependency>
-
-    <!-- test -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
