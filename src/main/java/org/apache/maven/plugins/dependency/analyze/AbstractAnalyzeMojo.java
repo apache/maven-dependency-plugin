@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.analyze;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.analyze;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugins.dependency.analyze;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency.analyze;
 
 import java.io.File;
 import java.io.StringWriter;
@@ -29,7 +28,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
@@ -55,10 +53,7 @@ import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @since 2.0-alpha-5
  */
-public abstract class AbstractAnalyzeMojo
-    extends AbstractMojo
-    implements Contextualizable
-{
+public abstract class AbstractAnalyzeMojo extends AbstractMojo implements Contextualizable {
     // fields -----------------------------------------------------------------
 
     /**
@@ -70,7 +65,7 @@ public abstract class AbstractAnalyzeMojo
     /**
      * The Maven project to analyze.
      */
-    @Parameter( defaultValue = "${project}", readonly = true, required = true )
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
     /**
@@ -81,19 +76,19 @@ public abstract class AbstractAnalyzeMojo
      *
      * @since 2.2
      */
-    @Parameter( property = "analyzer", defaultValue = "default" )
+    @Parameter(property = "analyzer", defaultValue = "default")
     private String analyzer;
 
     /**
      * Whether to fail the build if a dependency warning is found.
      */
-    @Parameter( property = "failOnWarning", defaultValue = "false" )
+    @Parameter(property = "failOnWarning", defaultValue = "false")
     private boolean failOnWarning;
 
     /**
      * Output used dependencies.
      */
-    @Parameter( property = "verbose", defaultValue = "false" )
+    @Parameter(property = "verbose", defaultValue = "false")
     private boolean verbose;
 
     /**
@@ -101,7 +96,7 @@ public abstract class AbstractAnalyzeMojo
      *
      * <code><b>Non-test scoped</b></code> list will be not affected.
      */
-    @Parameter( property = "ignoreNonCompile", defaultValue = "false" )
+    @Parameter(property = "ignoreNonCompile", defaultValue = "false")
     private boolean ignoreNonCompile;
 
     /**
@@ -109,7 +104,7 @@ public abstract class AbstractAnalyzeMojo
      *
      * @since 3.2.0
      */
-    @Parameter( property = "ignoreUnusedRuntime", defaultValue = "false" )
+    @Parameter(property = "ignoreUnusedRuntime", defaultValue = "false")
     private boolean ignoreUnusedRuntime;
 
     /**
@@ -120,7 +115,7 @@ public abstract class AbstractAnalyzeMojo
      *
      * @since 3.3.1-SNAPSHOT
      */
-    @Parameter( property = "ignoreAllNonTestScoped", defaultValue = "false" )
+    @Parameter(property = "ignoreAllNonTestScoped", defaultValue = "false")
     private boolean ignoreAllNonTestScoped;
 
     /**
@@ -128,7 +123,7 @@ public abstract class AbstractAnalyzeMojo
      *
      * @since 2.0-alpha-5
      */
-    @Parameter( property = "outputXML", defaultValue = "false" )
+    @Parameter(property = "outputXML", defaultValue = "false")
     private boolean outputXML;
 
     /**
@@ -136,7 +131,7 @@ public abstract class AbstractAnalyzeMojo
      *
      * @since 2.0-alpha-5
      */
-    @Parameter( property = "scriptableOutput", defaultValue = "false" )
+    @Parameter(property = "scriptableOutput", defaultValue = "false")
     private boolean scriptableOutput;
 
     /**
@@ -144,7 +139,7 @@ public abstract class AbstractAnalyzeMojo
      *
      * @since 2.0-alpha-5
      */
-    @Parameter( property = "scriptableFlag", defaultValue = "$$$%%%" )
+    @Parameter(property = "scriptableFlag", defaultValue = "$$$%%%")
     private String scriptableFlag;
 
     /**
@@ -152,7 +147,7 @@ public abstract class AbstractAnalyzeMojo
      *
      * @since 2.0-alpha-5
      */
-    @Parameter( defaultValue = "${basedir}", readonly = true )
+    @Parameter(defaultValue = "${basedir}", readonly = true)
     private File baseDir;
 
     /**
@@ -160,7 +155,7 @@ public abstract class AbstractAnalyzeMojo
      *
      * @since 2.0-alpha-5
      */
-    @Parameter( defaultValue = "${project.build.directory}", readonly = true )
+    @Parameter(defaultValue = "${project.build.directory}", readonly = true)
     private File outputDirectory;
 
     /**
@@ -177,7 +172,7 @@ public abstract class AbstractAnalyzeMojo
      *
      * @since 2.7
      */
-    @Parameter( property = "mdep.analyze.skip", defaultValue = "false" )
+    @Parameter(property = "mdep.analyze.skip", defaultValue = "false")
     private boolean skip;
 
     /**
@@ -268,7 +263,7 @@ public abstract class AbstractAnalyzeMojo
     // defaultValue value on @Parameter - not work with Maven 3.2.5
     // When is set defaultValue always win, and there is no possibility to override by plugin configuration.
     @Parameter
-    private List<String> ignoredPackagings = Arrays.asList( "pom", "ear" );
+    private List<String> ignoredPackagings = Arrays.asList("pom", "ear");
 
     // Mojo methods -----------------------------------------------------------
 
@@ -276,32 +271,26 @@ public abstract class AbstractAnalyzeMojo
      * @see org.apache.maven.plugin.Mojo#execute()
      */
     @Override
-    public void execute()
-        throws MojoExecutionException, MojoFailureException
-    {
-        if ( isSkip() )
-        {
-            getLog().info( "Skipping plugin execution" );
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        if (isSkip()) {
+            getLog().info("Skipping plugin execution");
             return;
         }
 
-        if ( ignoredPackagings.contains( project.getPackaging() ) )
-        {
-            getLog().info( "Skipping " + project.getPackaging() + " project" );
+        if (ignoredPackagings.contains(project.getPackaging())) {
+            getLog().info("Skipping " + project.getPackaging() + " project");
             return;
         }
 
-        if ( outputDirectory == null || !outputDirectory.exists() )
-        {
-            getLog().info( "Skipping project with no build directory" );
+        if (outputDirectory == null || !outputDirectory.exists()) {
+            getLog().info("Skipping project with no build directory");
             return;
         }
 
         boolean warning = checkDependencies();
 
-        if ( warning && failOnWarning )
-        {
-            throw new MojoExecutionException( "Dependency problems found" );
+        if (warning && failOnWarning) {
+            throw new MojoExecutionException("Dependency problems found");
         }
     }
 
@@ -309,344 +298,277 @@ public abstract class AbstractAnalyzeMojo
      * @return {@link ProjectDependencyAnalyzer}
      * @throws MojoExecutionException in case of an error.
      */
-    protected ProjectDependencyAnalyzer createProjectDependencyAnalyzer()
-        throws MojoExecutionException
-    {
-        try
-        {
-            final PlexusContainer container = (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
-            return container.lookup( ProjectDependencyAnalyzer.class, analyzer );
-        }
-        catch ( Exception exception )
-        {
-            throw new MojoExecutionException( "Failed to instantiate ProjectDependencyAnalyser"
-                + " / role-hint " + analyzer, exception );
+    protected ProjectDependencyAnalyzer createProjectDependencyAnalyzer() throws MojoExecutionException {
+        try {
+            final PlexusContainer container = (PlexusContainer) context.get(PlexusConstants.PLEXUS_KEY);
+            return container.lookup(ProjectDependencyAnalyzer.class, analyzer);
+        } catch (Exception exception) {
+            throw new MojoExecutionException(
+                    "Failed to instantiate ProjectDependencyAnalyser" + " / role-hint " + analyzer, exception);
         }
     }
 
     @Override
-    public void contextualize( Context theContext )
-    {
+    public void contextualize(Context theContext) {
         this.context = theContext;
     }
 
     /**
      * @return {@link #skip}
      */
-    protected final boolean isSkip()
-    {
+    protected final boolean isSkip() {
         return skip;
     }
 
     // private methods --------------------------------------------------------
 
-    private boolean checkDependencies()
-        throws MojoExecutionException
-    {
+    private boolean checkDependencies() throws MojoExecutionException {
         ProjectDependencyAnalysis analysis;
-        try
-        {
-            analysis = createProjectDependencyAnalyzer().analyze( project );
+        try {
+            analysis = createProjectDependencyAnalyzer().analyze(project);
 
-            if ( usedDependencies != null )
-            {
-                analysis = analysis.forceDeclaredDependenciesUsage( usedDependencies );
+            if (usedDependencies != null) {
+                analysis = analysis.forceDeclaredDependenciesUsage(usedDependencies);
             }
-        }
-        catch ( ProjectDependencyAnalyzerException exception )
-        {
-            throw new MojoExecutionException( "Cannot analyze dependencies", exception );
+        } catch (ProjectDependencyAnalyzerException exception) {
+            throw new MojoExecutionException("Cannot analyze dependencies", exception);
         }
 
-        if ( ignoreNonCompile )
-        {
+        if (ignoreNonCompile) {
             analysis = analysis.ignoreNonCompile();
         }
 
-        Set<Artifact> usedDeclared = new LinkedHashSet<>( analysis.getUsedDeclaredArtifacts() );
+        Set<Artifact> usedDeclared = new LinkedHashSet<>(analysis.getUsedDeclaredArtifacts());
         Map<Artifact, Set<String>> usedUndeclaredWithClasses =
-                new LinkedHashMap<>( analysis.getUsedUndeclaredArtifactsWithClasses() );
-        Set<Artifact> unusedDeclared = new LinkedHashSet<>( analysis.getUnusedDeclaredArtifacts() );
-        Set<Artifact> nonTestScope = new LinkedHashSet<>( analysis.getTestArtifactsWithNonTestScope() );
+                new LinkedHashMap<>(analysis.getUsedUndeclaredArtifactsWithClasses());
+        Set<Artifact> unusedDeclared = new LinkedHashSet<>(analysis.getUnusedDeclaredArtifacts());
+        Set<Artifact> nonTestScope = new LinkedHashSet<>(analysis.getTestArtifactsWithNonTestScope());
 
         Set<Artifact> ignoredUsedUndeclared = new LinkedHashSet<>();
         Set<Artifact> ignoredUnusedDeclared = new LinkedHashSet<>();
         Set<Artifact> ignoredNonTestScope = new LinkedHashSet<>();
 
-        if ( ignoreUnusedRuntime )
-        {
-            filterArtifactsByScope( unusedDeclared, Artifact.SCOPE_RUNTIME );
+        if (ignoreUnusedRuntime) {
+            filterArtifactsByScope(unusedDeclared, Artifact.SCOPE_RUNTIME);
         }
 
-        ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclaredWithClasses.keySet(), ignoredDependencies ) );
-        ignoredUsedUndeclared.addAll( filterDependencies( usedUndeclaredWithClasses.keySet(),
-                ignoredUsedUndeclaredDependencies ) );
+        ignoredUsedUndeclared.addAll(filterDependencies(usedUndeclaredWithClasses.keySet(), ignoredDependencies));
+        ignoredUsedUndeclared.addAll(
+                filterDependencies(usedUndeclaredWithClasses.keySet(), ignoredUsedUndeclaredDependencies));
 
-        ignoredUnusedDeclared.addAll( filterDependencies( unusedDeclared, ignoredDependencies ) );
-        ignoredUnusedDeclared.addAll( filterDependencies( unusedDeclared, ignoredUnusedDeclaredDependencies ) );
+        ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, ignoredDependencies));
+        ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, ignoredUnusedDeclaredDependencies));
 
-        if ( ignoreAllNonTestScoped )
-        {
-            ignoredNonTestScope.addAll( filterDependencies ( nonTestScope, new String [] { "*" } ) );
-        }
-        else
-        {
-            ignoredNonTestScope.addAll( filterDependencies( nonTestScope, ignoredDependencies ) );
-            ignoredNonTestScope.addAll( filterDependencies( nonTestScope, ignoredNonTestScopedDependencies ) );
+        if (ignoreAllNonTestScoped) {
+            ignoredNonTestScope.addAll(filterDependencies(nonTestScope, new String[] {"*"}));
+        } else {
+            ignoredNonTestScope.addAll(filterDependencies(nonTestScope, ignoredDependencies));
+            ignoredNonTestScope.addAll(filterDependencies(nonTestScope, ignoredNonTestScopedDependencies));
         }
 
         boolean reported = false;
         boolean warning = false;
 
-        if ( verbose && !usedDeclared.isEmpty() )
-        {
-            getLog().info( "Used declared dependencies found:" );
+        if (verbose && !usedDeclared.isEmpty()) {
+            getLog().info("Used declared dependencies found:");
 
-            logArtifacts( analysis.getUsedDeclaredArtifacts(), false );
+            logArtifacts(analysis.getUsedDeclaredArtifacts(), false);
             reported = true;
         }
 
-        if ( !usedUndeclaredWithClasses.isEmpty() )
-        {
-            logDependencyWarning( "Used undeclared dependencies found:" );
+        if (!usedUndeclaredWithClasses.isEmpty()) {
+            logDependencyWarning("Used undeclared dependencies found:");
 
-            if ( verbose )
-            {
-                logArtifacts( usedUndeclaredWithClasses, true );
-            }
-            else
-            {
-                logArtifacts( usedUndeclaredWithClasses.keySet(), true );
+            if (verbose) {
+                logArtifacts(usedUndeclaredWithClasses, true);
+            } else {
+                logArtifacts(usedUndeclaredWithClasses.keySet(), true);
             }
             reported = true;
             warning = true;
         }
 
-        if ( !unusedDeclared.isEmpty() )
-        {
-            logDependencyWarning( "Unused declared dependencies found:" );
+        if (!unusedDeclared.isEmpty()) {
+            logDependencyWarning("Unused declared dependencies found:");
 
-            logArtifacts( unusedDeclared, true );
+            logArtifacts(unusedDeclared, true);
             reported = true;
             warning = true;
         }
 
-        if ( !nonTestScope.isEmpty() )
-        {
-            logDependencyWarning( "Non-test scoped test only dependencies found:" );
+        if (!nonTestScope.isEmpty()) {
+            logDependencyWarning("Non-test scoped test only dependencies found:");
 
-            logArtifacts( nonTestScope, true );
+            logArtifacts(nonTestScope, true);
             reported = true;
             warning = true;
         }
 
-        if ( verbose && !ignoredUsedUndeclared.isEmpty() )
-        {
-            getLog().info( "Ignored used undeclared dependencies:" );
+        if (verbose && !ignoredUsedUndeclared.isEmpty()) {
+            getLog().info("Ignored used undeclared dependencies:");
 
-            logArtifacts( ignoredUsedUndeclared, false );
+            logArtifacts(ignoredUsedUndeclared, false);
             reported = true;
         }
 
-        if ( verbose && !ignoredUnusedDeclared.isEmpty() )
-        {
-            getLog().info( "Ignored unused declared dependencies:" );
+        if (verbose && !ignoredUnusedDeclared.isEmpty()) {
+            getLog().info("Ignored unused declared dependencies:");
 
-            logArtifacts( ignoredUnusedDeclared, false );
+            logArtifacts(ignoredUnusedDeclared, false);
             reported = true;
         }
 
-        if ( verbose && !ignoredNonTestScope.isEmpty() )
-        {
-            getLog().info( "Ignored non-test scoped test only dependencies:" );
+        if (verbose && !ignoredNonTestScope.isEmpty()) {
+            getLog().info("Ignored non-test scoped test only dependencies:");
 
-            logArtifacts( ignoredNonTestScope, false );
+            logArtifacts(ignoredNonTestScope, false);
             reported = true;
         }
 
-        if ( outputXML )
-        {
-            writeDependencyXML( usedUndeclaredWithClasses.keySet() );
+        if (outputXML) {
+            writeDependencyXML(usedUndeclaredWithClasses.keySet());
         }
 
-        if ( scriptableOutput )
-        {
-            writeScriptableOutput( usedUndeclaredWithClasses.keySet() );
+        if (scriptableOutput) {
+            writeScriptableOutput(usedUndeclaredWithClasses.keySet());
         }
 
-        if ( !reported )
-        {
-            getLog().info( "No dependency problems found" );
+        if (!reported) {
+            getLog().info("No dependency problems found");
         }
 
         return warning;
     }
 
-    private void filterArtifactsByScope( Set<Artifact> artifacts, String scope )
-    {
-        artifacts.removeIf( artifact -> artifact.getScope().equals( scope ) );
+    private void filterArtifactsByScope(Set<Artifact> artifacts, String scope) {
+        artifacts.removeIf(artifact -> artifact.getScope().equals(scope));
     }
 
-    private void logArtifacts( Set<Artifact> artifacts, boolean warn )
-    {
-        if ( artifacts.isEmpty() )
-        {
-            getLog().info( "   None" );
-        }
-        else
-        {
-            for ( Artifact artifact : artifacts )
-            {
+    private void logArtifacts(Set<Artifact> artifacts, boolean warn) {
+        if (artifacts.isEmpty()) {
+            getLog().info("   None");
+        } else {
+            for (Artifact artifact : artifacts) {
                 // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
                 artifact.isSnapshot();
 
-                if ( warn )
-                {
-                    logDependencyWarning( "   " + artifact );
+                if (warn) {
+                    logDependencyWarning("   " + artifact);
+                } else {
+                    getLog().info("   " + artifact);
                 }
-                else
-                {
-                    getLog().info( "   " + artifact );
-                }
-
             }
         }
     }
 
-    private void logArtifacts( Map<Artifact, Set<String>> artifacts, boolean warn )
-    {
-        if ( artifacts.isEmpty() )
-        {
-            getLog().info( "   None" );
-        }
-        else
-        {
-            for ( Map.Entry<Artifact, Set<String>> entry : artifacts.entrySet() )
-            {
+    private void logArtifacts(Map<Artifact, Set<String>> artifacts, boolean warn) {
+        if (artifacts.isEmpty()) {
+            getLog().info("   None");
+        } else {
+            for (Map.Entry<Artifact, Set<String>> entry : artifacts.entrySet()) {
                 // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
                 entry.getKey().isSnapshot();
 
-                if ( warn )
-                {
-                    logDependencyWarning( "   " + entry.getKey() );
-                    for ( String clazz : entry.getValue() )
-                    {
-                        logDependencyWarning( "      class " + clazz );
+                if (warn) {
+                    logDependencyWarning("   " + entry.getKey());
+                    for (String clazz : entry.getValue()) {
+                        logDependencyWarning("      class " + clazz);
+                    }
+                } else {
+                    getLog().info("   " + entry.getKey());
+                    for (String clazz : entry.getValue()) {
+                        getLog().info("      class " + clazz);
                     }
                 }
-                else
-                {
-                    getLog().info( "   " + entry.getKey() );
-                    for ( String clazz : entry.getValue() )
-                    {
-                        getLog().info( "      class " + clazz );
-                    }
-                }
-
             }
         }
     }
 
-    private void logDependencyWarning( CharSequence content )
-    {
-        if ( failOnWarning )
-        {
-            getLog().error( content );
-        }
-        else
-        {
-            getLog().warn( content );
+    private void logDependencyWarning(CharSequence content) {
+        if (failOnWarning) {
+            getLog().error(content);
+        } else {
+            getLog().warn(content);
         }
     }
 
-    private void writeDependencyXML( Set<Artifact> artifacts )
-    {
-        if ( !artifacts.isEmpty() )
-        {
-            getLog().info( "Add the following to your pom to correct the missing dependencies: " );
+    private void writeDependencyXML(Set<Artifact> artifacts) {
+        if (!artifacts.isEmpty()) {
+            getLog().info("Add the following to your pom to correct the missing dependencies: ");
 
             StringWriter out = new StringWriter();
-            PrettyPrintXMLWriter writer = new PrettyPrintXMLWriter( out );
+            PrettyPrintXMLWriter writer = new PrettyPrintXMLWriter(out);
 
-            for ( Artifact artifact : artifacts )
-            {
+            for (Artifact artifact : artifacts) {
                 // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
                 artifact.isSnapshot();
 
-                writer.startElement( "dependency" );
-                writer.startElement( "groupId" );
-                writer.writeText( artifact.getGroupId() );
+                writer.startElement("dependency");
+                writer.startElement("groupId");
+                writer.writeText(artifact.getGroupId());
                 writer.endElement();
-                writer.startElement( "artifactId" );
-                writer.writeText( artifact.getArtifactId() );
+                writer.startElement("artifactId");
+                writer.writeText(artifact.getArtifactId());
                 writer.endElement();
-                writer.startElement( "version" );
-                writer.writeText( artifact.getBaseVersion() );
-                if ( !StringUtils.isBlank( artifact.getClassifier() ) )
-                {
-                    writer.startElement( "classifier" );
-                    writer.writeText( artifact.getClassifier() );
+                writer.startElement("version");
+                writer.writeText(artifact.getBaseVersion());
+                if (!StringUtils.isBlank(artifact.getClassifier())) {
+                    writer.startElement("classifier");
+                    writer.writeText(artifact.getClassifier());
                     writer.endElement();
                 }
                 writer.endElement();
 
-                if ( !Artifact.SCOPE_COMPILE.equals( artifact.getScope() ) )
-                {
-                    writer.startElement( "scope" );
-                    writer.writeText( artifact.getScope() );
+                if (!Artifact.SCOPE_COMPILE.equals(artifact.getScope())) {
+                    writer.startElement("scope");
+                    writer.writeText(artifact.getScope());
                     writer.endElement();
                 }
                 writer.endElement();
             }
 
-            getLog().info( System.lineSeparator() + out.getBuffer() );
+            getLog().info(System.lineSeparator() + out.getBuffer());
         }
     }
 
-    private void writeScriptableOutput( Set<Artifact> artifacts )
-    {
-        if ( !artifacts.isEmpty() )
-        {
-            getLog().info( "Missing dependencies: " );
+    private void writeScriptableOutput(Set<Artifact> artifacts) {
+        if (!artifacts.isEmpty()) {
+            getLog().info("Missing dependencies: ");
             String pomFile = baseDir.getAbsolutePath() + File.separatorChar + "pom.xml";
             StringBuilder buf = new StringBuilder();
 
-            for ( Artifact artifact : artifacts )
-            {
+            for (Artifact artifact : artifacts) {
                 // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
                 artifact.isSnapshot();
 
-                //CHECKSTYLE_OFF: LineLength
-                buf.append( scriptableFlag )
-                   .append( ":" )
-                   .append( pomFile )
-                   .append( ":" )
-                   .append( artifact.getDependencyConflictId() )
-                   .append( ":" )
-                   .append( artifact.getClassifier() )
-                   .append( ":" )
-                   .append( artifact.getBaseVersion() )
-                   .append( ":" )
-                   .append( artifact.getScope() )
-                   .append( System.lineSeparator() );
-                //CHECKSTYLE_ON: LineLength
+                // CHECKSTYLE_OFF: LineLength
+                buf.append(scriptableFlag)
+                        .append(":")
+                        .append(pomFile)
+                        .append(":")
+                        .append(artifact.getDependencyConflictId())
+                        .append(":")
+                        .append(artifact.getClassifier())
+                        .append(":")
+                        .append(artifact.getBaseVersion())
+                        .append(":")
+                        .append(artifact.getScope())
+                        .append(System.lineSeparator());
+                // CHECKSTYLE_ON: LineLength
             }
-            getLog().info( System.lineSeparator() + buf );
+            getLog().info(System.lineSeparator() + buf);
         }
     }
 
-    private List<Artifact> filterDependencies( Set<Artifact> artifacts, String[] excludes )
-    {
-        ArtifactFilter filter = new StrictPatternExcludesArtifactFilter( Arrays.asList( excludes ) );
+    private List<Artifact> filterDependencies(Set<Artifact> artifacts, String[] excludes) {
+        ArtifactFilter filter = new StrictPatternExcludesArtifactFilter(Arrays.asList(excludes));
         List<Artifact> result = new ArrayList<>();
 
-        for ( Iterator<Artifact> it = artifacts.iterator(); it.hasNext(); )
-        {
+        for (Iterator<Artifact> it = artifacts.iterator(); it.hasNext(); ) {
             Artifact artifact = it.next();
-            if ( !filter.include( artifact ) )
-            {
+            if (!filter.include(artifact)) {
                 it.remove();
-                result.add( artifact );
+                result.add(artifact);
             }
         }
 

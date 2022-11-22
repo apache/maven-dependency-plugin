@@ -1,6 +1,4 @@
-package org.apache.maven.plugins.dependency.testUtils.stubs;
-
-/* 
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -9,43 +7,36 @@ package org.apache.maven.plugins.dependency.testUtils.stubs;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.    
+ * under the License.
  */
+package org.apache.maven.plugins.dependency.testUtils.stubs;
 
 import java.io.File;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.utils.markers.SourcesFileMarkerHandler;
 
-public class StubSourcesFileMarkerHandler
-    extends SourcesFileMarkerHandler
-{
+public class StubSourcesFileMarkerHandler extends SourcesFileMarkerHandler {
 
-    public StubSourcesFileMarkerHandler( Artifact artifact, File markerFilesDirectory, boolean resolved )
-    {
-        super( artifact, markerFilesDirectory, resolved );
+    public StubSourcesFileMarkerHandler(Artifact artifact, File markerFilesDirectory, boolean resolved) {
+        super(artifact, markerFilesDirectory, resolved);
     }
 
-    protected File getMarkerFile( boolean res )
-    {
+    protected File getMarkerFile(boolean res) {
         String suffix;
-        if ( res )
-        {
+        if (res) {
             suffix = ".resolved";
-        }
-        else
-        {
+        } else {
             suffix = ".unresolved";
         }
 
-        return new StubMarkerFile( this.markerFilesDirectory, this.artifact.getId().replace( ':', '-' ) + suffix );
+        return new StubMarkerFile(
+                this.markerFilesDirectory, this.artifact.getId().replace(':', '-') + suffix);
     }
-
 }

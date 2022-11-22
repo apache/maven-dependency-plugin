@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.analyze;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.analyze;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugins.dependency.analyze;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency.analyze;
 
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -38,10 +37,8 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
  * @see AnalyzeOnlyMojo
  * @since 2.0-alpha-3
  */
-@Mojo( name = "analyze", requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true )
-@Execute( phase = LifecyclePhase.TEST_COMPILE )
-public class AnalyzeMojo
-    extends AbstractAnalyzeMojo
-{
+@Mojo(name = "analyze", requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
+@Execute(phase = LifecyclePhase.TEST_COMPILE)
+public class AnalyzeMojo extends AbstractAnalyzeMojo {
     // subclassed to provide annotations
 }

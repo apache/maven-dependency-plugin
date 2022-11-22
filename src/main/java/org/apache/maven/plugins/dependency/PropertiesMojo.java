@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,9 +16,9 @@ package org.apache.maven.plugins.dependency;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency;
 
 import java.util.Set;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -38,17 +36,19 @@ import org.apache.maven.project.MavenProject;
  * @author Paul Gier
  * @since 2.2
  */
-//CHECKSTYLE_OFF: LineLength
-@Mojo( name = "properties", requiresDependencyResolution = ResolutionScope.TEST, defaultPhase = LifecyclePhase.INITIALIZE, threadSafe = true )
-//CHECKSTYLE_ON: LineLength
-public class PropertiesMojo
-    extends AbstractMojo
-{
+// CHECKSTYLE_OFF: LineLength
+@Mojo(
+        name = "properties",
+        requiresDependencyResolution = ResolutionScope.TEST,
+        defaultPhase = LifecyclePhase.INITIALIZE,
+        threadSafe = true)
+// CHECKSTYLE_ON: LineLength
+public class PropertiesMojo extends AbstractMojo {
 
     /**
      * The current Maven project
      */
-    @Parameter( defaultValue = "${project}", readonly = true, required = true )
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
     /**
@@ -56,7 +56,7 @@ public class PropertiesMojo
      *
      * @since 2.7
      */
-    @Parameter( property = "mdep.skip", defaultValue = "false" )
+    @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
 
     /**
@@ -65,29 +65,26 @@ public class PropertiesMojo
      * @throws MojoExecutionException with a message if an error occurs.
      */
     @Override
-    public void execute()
-        throws MojoExecutionException
-    {
-        if ( isSkip() )
-        {
-            getLog().info( "Skipping plugin execution" );
+    public void execute() throws MojoExecutionException {
+        if (isSkip()) {
+            getLog().info("Skipping plugin execution");
             return;
         }
 
         Set<Artifact> artifacts = project.getArtifacts();
 
-        for ( Artifact artifact : artifacts )
-        {
-            project.getProperties().setProperty( artifact.getDependencyConflictId(),
-                                                 artifact.getFile().getAbsolutePath() );
+        for (Artifact artifact : artifacts) {
+            project.getProperties()
+                    .setProperty(
+                            artifact.getDependencyConflictId(),
+                            artifact.getFile().getAbsolutePath());
         }
     }
 
     /**
      * @return {@link #skip}
      */
-    public boolean isSkip()
-    {
+    public boolean isSkip() {
         return skip;
     }
 }
