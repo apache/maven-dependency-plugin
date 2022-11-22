@@ -96,6 +96,7 @@ under the License.
     <javaVersion>8</javaVersion>
     <project.build.outputTimestamp>2022-03-05T18:51:54Z</project.build.outputTimestamp>
     <slf4j.version>1.7.36</slf4j.version>
+    <plexus-archiver.version>4.6.0</plexus-archiver.version>
   </properties>
 
   <dependencyManagement>
@@ -176,7 +177,7 @@ under the License.
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-archiver</artifactId>
-      <version>4.6.0</version>
+      <version>${plexus-archiver.version}</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
