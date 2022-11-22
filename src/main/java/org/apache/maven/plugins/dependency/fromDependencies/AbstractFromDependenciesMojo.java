@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.fromDependencies;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.fromDependencies;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,31 +16,29 @@ package org.apache.maven.plugins.dependency.fromDependencies;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.plugins.annotations.Parameter;
+package org.apache.maven.plugins.dependency.fromDependencies;
 
 import java.io.File;
+import org.apache.maven.plugins.annotations.Parameter;
 
 /**
  * Abstract Parent class used by mojos that get Artifact information from the project dependencies.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  */
-public abstract class AbstractFromDependenciesMojo
-    extends AbstractDependencyFilterMojo
-{
+public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFilterMojo {
     /**
      * Output location.
      *
      * @since 1.0
      */
-    @Parameter( property = "outputDirectory", defaultValue = "${project.build.directory}/dependency" )
+    @Parameter(property = "outputDirectory", defaultValue = "${project.build.directory}/dependency")
     protected File outputDirectory;
 
     /**
      * Strip artifact version during copy
      */
-    @Parameter( property = "mdep.stripVersion", defaultValue = "false" )
+    @Parameter(property = "mdep.stripVersion", defaultValue = "false")
     protected boolean stripVersion = false;
 
     /**
@@ -50,13 +46,13 @@ public abstract class AbstractFromDependenciesMojo
      *
      * @since 3.4.0
      */
-    @Parameter( property = "mdep.stripType", defaultValue = "false" )
+    @Parameter(property = "mdep.stripType", defaultValue = "false")
     protected boolean stripType = false;
 
     /**
      * Strip artifact classifier during copy
      */
-    @Parameter( property = "mdep.stripClassifier", defaultValue = "false" )
+    @Parameter(property = "mdep.stripClassifier", defaultValue = "false")
     protected boolean stripClassifier = false;
 
     /**
@@ -66,14 +62,14 @@ public abstract class AbstractFromDependenciesMojo
      * <p>
      * example:
      * </p>
-     * 
+     *
      * <pre>
      *   /outputDirectory/junit/junit/3.8.1/junit-3.8.1.jar
      * </pre>
      *
      * @since 2.0-alpha-2
      */
-    @Parameter( property = "mdep.useRepositoryLayout", defaultValue = "false" )
+    @Parameter(property = "mdep.useRepositoryLayout", defaultValue = "false")
     protected boolean useRepositoryLayout;
 
     /**
@@ -82,7 +78,7 @@ public abstract class AbstractFromDependenciesMojo
      *
      * @since 2.2
      */
-    @Parameter( property = "mdep.useSubDirectoryPerScope", defaultValue = "false" )
+    @Parameter(property = "mdep.useSubDirectoryPerScope", defaultValue = "false")
     protected boolean useSubDirectoryPerScope;
 
     /**
@@ -90,7 +86,7 @@ public abstract class AbstractFromDependenciesMojo
      *
      * @since 2.0-alpha-1
      */
-    @Parameter( property = "mdep.useSubDirectoryPerType", defaultValue = "false" )
+    @Parameter(property = "mdep.useSubDirectoryPerType", defaultValue = "false")
     protected boolean useSubDirectoryPerType;
 
     /**
@@ -98,7 +94,7 @@ public abstract class AbstractFromDependenciesMojo
      *
      * @since 2.0-alpha-1
      */
-    @Parameter( property = "mdep.useSubDirectoryPerArtifact", defaultValue = "false" )
+    @Parameter(property = "mdep.useSubDirectoryPerArtifact", defaultValue = "false")
     protected boolean useSubDirectoryPerArtifact;
 
     /**
@@ -106,136 +102,118 @@ public abstract class AbstractFromDependenciesMojo
      *
      * @since 2.0-alpha-2
      */
-    @Parameter( property = "mdep.failOnMissingClassifierArtifact", defaultValue = "false" )
+    @Parameter(property = "mdep.failOnMissingClassifierArtifact", defaultValue = "false")
     protected boolean failOnMissingClassifierArtifact = true;
 
     /**
      * @return Returns the outputDirectory.
      */
-    public File getOutputDirectory()
-    {
+    public File getOutputDirectory() {
         return this.outputDirectory;
     }
 
     /**
      * @param theOutputDirectory The outputDirectory to set.
      */
-    public void setOutputDirectory( File theOutputDirectory )
-    {
+    public void setOutputDirectory(File theOutputDirectory) {
         this.outputDirectory = theOutputDirectory;
     }
 
     /**
      * @return Returns the useSubDirectoryPerArtifact.
      */
-    public boolean isUseSubDirectoryPerArtifact()
-    {
+    public boolean isUseSubDirectoryPerArtifact() {
         return this.useSubDirectoryPerArtifact;
     }
 
     /**
      * @param theUseSubDirectoryPerArtifact The useSubDirectoryPerArtifact to set.
      */
-    public void setUseSubDirectoryPerArtifact( boolean theUseSubDirectoryPerArtifact )
-    {
+    public void setUseSubDirectoryPerArtifact(boolean theUseSubDirectoryPerArtifact) {
         this.useSubDirectoryPerArtifact = theUseSubDirectoryPerArtifact;
     }
 
     /**
      * @return Returns the useSubDirectoryPerScope
      */
-    public boolean isUseSubDirectoryPerScope()
-    {
+    public boolean isUseSubDirectoryPerScope() {
         return this.useSubDirectoryPerScope;
     }
 
     /**
      * @param theUseSubDirectoryPerScope The useSubDirectoryPerScope to set.
      */
-    public void setUseSubDirectoryPerScope( boolean theUseSubDirectoryPerScope )
-    {
+    public void setUseSubDirectoryPerScope(boolean theUseSubDirectoryPerScope) {
         this.useSubDirectoryPerScope = theUseSubDirectoryPerScope;
     }
 
     /**
      * @return Returns the useSubDirectoryPerType.
      */
-    public boolean isUseSubDirectoryPerType()
-    {
+    public boolean isUseSubDirectoryPerType() {
         return this.useSubDirectoryPerType;
     }
 
     /**
      * @param theUseSubDirectoryPerType The useSubDirectoryPerType to set.
      */
-    public void setUseSubDirectoryPerType( boolean theUseSubDirectoryPerType )
-    {
+    public void setUseSubDirectoryPerType(boolean theUseSubDirectoryPerType) {
         this.useSubDirectoryPerType = theUseSubDirectoryPerType;
     }
 
     /**
      * @return {@link #failOnMissingClassifierArtifact}
      */
-    public boolean isFailOnMissingClassifierArtifact()
-    {
+    public boolean isFailOnMissingClassifierArtifact() {
         return failOnMissingClassifierArtifact;
     }
 
     /**
      * @param failOnMissingClassifierArtifact {@link #failOnMissingClassifierArtifact}
      */
-    public void setFailOnMissingClassifierArtifact( boolean failOnMissingClassifierArtifact )
-    {
+    public void setFailOnMissingClassifierArtifact(boolean failOnMissingClassifierArtifact) {
         this.failOnMissingClassifierArtifact = failOnMissingClassifierArtifact;
     }
 
     /**
      * @return {@link #stripVersion}
      */
-    public boolean isStripVersion()
-    {
+    public boolean isStripVersion() {
         return stripVersion;
     }
 
     /**
      * @param stripVersion {@link #stripVersion}
      */
-    public void setStripVersion( boolean stripVersion )
-    {
+    public void setStripVersion(boolean stripVersion) {
         this.stripVersion = stripVersion;
     }
-
 
     /**
      * @return {@link #stripType}
      */
-    public boolean isStripType()
-    {
+    public boolean isStripType() {
         return stripType;
     }
 
     /**
      * @param stripType {@link #stripType}
      */
-    public void setStripType( boolean stripType )
-    {
+    public void setStripType(boolean stripType) {
         this.stripType = stripType;
     }
-
 
     /**
      * @return true, if dependencies must be planted in a repository layout
      */
-    public boolean isUseRepositoryLayout()
-    {
+    public boolean isUseRepositoryLayout() {
         return useRepositoryLayout;
     }
 
     /**
      * @param useRepositoryLayout - true if dependencies must be planted in a repository layout
      */
-    public void setUseRepositoryLayout( boolean useRepositoryLayout )
-    {
+    public void setUseRepositoryLayout(boolean useRepositoryLayout) {
         this.useRepositoryLayout = useRepositoryLayout;
     }
 }

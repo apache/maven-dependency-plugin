@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.fromDependencies;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.fromDependencies;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,21 +16,21 @@ package org.apache.maven.plugins.dependency.fromDependencies;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency.fromDependencies;
 
+import java.io.File;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
-import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.plugins.dependency.utils.filters.MarkerFileFilter;
-import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
+import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.filters.MarkerFileFilter;
+import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
-
-import java.io.File;
 
 /**
  * Goal that unpacks the project dependencies from the repository to a defined location.
@@ -40,12 +38,14 @@ import java.io.File;
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 1.0
  */
-//CHECKSTYLE_OFF: LineLength
-@Mojo( name = "unpack-dependencies", requiresDependencyResolution = ResolutionScope.TEST, defaultPhase = LifecyclePhase.PROCESS_SOURCES, threadSafe = true )
-//CHECKSTYLE_ON: LineLength
-public class UnpackDependenciesMojo
-    extends AbstractFromDependenciesMojo
-{
+// CHECKSTYLE_OFF: LineLength
+@Mojo(
+        name = "unpack-dependencies",
+        requiresDependencyResolution = ResolutionScope.TEST,
+        defaultPhase = LifecyclePhase.PROCESS_SOURCES,
+        threadSafe = true)
+// CHECKSTYLE_ON: LineLength
+public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
     /**
      * A comma separated list of file patterns to include when unpacking the artifact. i.e.
      * <code>**&#47;*.xml,**&#47;*.properties</code> NOTE: Excludes patterns override the includes. (component code =
@@ -53,7 +53,7 @@ public class UnpackDependenciesMojo
      *
      * @since 2.0
      */
-    @Parameter( property = "mdep.unpack.includes" )
+    @Parameter(property = "mdep.unpack.includes")
     private String includes;
 
     /**
@@ -63,15 +63,15 @@ public class UnpackDependenciesMojo
      *
      * @since 2.0
      */
-    @Parameter( property = "mdep.unpack.excludes" )
+    @Parameter(property = "mdep.unpack.excludes")
     private String excludes;
 
     /**
      * Encoding of artifacts.
-     * 
+     *
      * @since 3.0
      */
-    @Parameter( property = "mdep.unpack.encoding" )
+    @Parameter(property = "mdep.unpack.encoding")
     private String encoding;
 
     /**
@@ -79,7 +79,7 @@ public class UnpackDependenciesMojo
      *
      * @since 3.1.2
      */
-    @Parameter( property = "mdep.unpack.filemappers" )
+    @Parameter(property = "mdep.unpack.filemappers")
     private FileMapper[] fileMappers;
 
     /**
@@ -91,63 +91,63 @@ public class UnpackDependenciesMojo
      * @see #unpack(Artifact, File, String, FileMapper[])
      */
     @Override
-    protected void doExecute()
-        throws MojoExecutionException
-    {
-        DependencyStatusSets dss = getDependencySets( this.failOnMissingClassifierArtifact );
+    protected void doExecute() throws MojoExecutionException {
+        DependencyStatusSets dss = getDependencySets(this.failOnMissingClassifierArtifact);
 
-        for ( Artifact artifact : dss.getResolvedDependencies() )
-        {
-            File destDir = DependencyUtil.getFormattedOutputDirectory( useSubDirectoryPerScope, useSubDirectoryPerType,
-                                                                  useSubDirectoryPerArtifact, useRepositoryLayout,
-                                                                  stripVersion, stripType, outputDirectory, artifact );
-            unpack( artifact, destDir, getIncludes(), getExcludes(), getEncoding(), getFileMappers() );
-            DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler( artifact, this.markersDirectory );
+        for (Artifact artifact : dss.getResolvedDependencies()) {
+            File destDir = DependencyUtil.getFormattedOutputDirectory(
+                    useSubDirectoryPerScope,
+                    useSubDirectoryPerType,
+                    useSubDirectoryPerArtifact,
+                    useRepositoryLayout,
+                    stripVersion,
+                    stripType,
+                    outputDirectory,
+                    artifact);
+            unpack(artifact, destDir, getIncludes(), getExcludes(), getEncoding(), getFileMappers());
+            DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler(artifact, this.markersDirectory);
             handler.setMarker();
         }
 
-        for ( Artifact artifact : dss.getSkippedDependencies() )
-        {
-            getLog().info( artifact.getId() + " already exists in destination." );
+        for (Artifact artifact : dss.getSkippedDependencies()) {
+            getLog().info(artifact.getId() + " already exists in destination.");
         }
     }
 
     @Override
-    protected ArtifactsFilter getMarkedArtifactFilter()
-    {
-        return new MarkerFileFilter( this.overWriteReleases, this.overWriteSnapshots, this.overWriteIfNewer,
-                                     new DefaultFileMarkerHandler( this.markersDirectory ) );
+    protected ArtifactsFilter getMarkedArtifactFilter() {
+        return new MarkerFileFilter(
+                this.overWriteReleases,
+                this.overWriteSnapshots,
+                this.overWriteIfNewer,
+                new DefaultFileMarkerHandler(this.markersDirectory));
     }
 
     /**
      * @return Returns a comma separated list of excluded items
      */
-    public String getExcludes()
-    {
-        return DependencyUtil.cleanToBeTokenizedString( this.excludes );
+    public String getExcludes() {
+        return DependencyUtil.cleanToBeTokenizedString(this.excludes);
     }
 
     /**
      * @param excludes A comma separated list of items to exclude i.e. <code>**\/*.xml, **\/*.properties</code>
      */
-    public void setExcludes( String excludes )
-    {
+    public void setExcludes(String excludes) {
         this.excludes = excludes;
     }
 
     /**
      * @return Returns a comma separated list of included items
      */
-    public String getIncludes()
-    {
-        return DependencyUtil.cleanToBeTokenizedString( this.includes );
+    public String getIncludes() {
+        return DependencyUtil.cleanToBeTokenizedString(this.includes);
     }
 
     /**
      * @param includes A comma separated list of items to include i.e. <code>**\/*.xml, **\/*.properties</code>
      */
-    public void setIncludes( String includes )
-    {
+    public void setIncludes(String includes) {
         this.includes = includes;
     }
 
@@ -155,8 +155,7 @@ public class UnpackDependenciesMojo
      * @param encoding The encoding to set.
      * @since 3.0
      */
-    public void setEncoding( String encoding )
-    {
+    public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
 
@@ -164,8 +163,7 @@ public class UnpackDependenciesMojo
      * @return Returns the encoding.
      * @since 3.0
      */
-    public String getEncoding()
-    {
+    public String getEncoding() {
         return this.encoding;
     }
 
@@ -175,8 +173,7 @@ public class UnpackDependenciesMojo
      *
      * @since 3.1.2
      */
-    public FileMapper[] getFileMappers()
-    {
+    public FileMapper[] getFileMappers() {
         return this.fileMappers;
     }
 
@@ -186,8 +183,7 @@ public class UnpackDependenciesMojo
      *
      * @since 3.1.2
      */
-    public void setFileMappers( FileMapper[] fileMappers )
-    {
+    public void setFileMappers(FileMapper[] fileMappers) {
         this.fileMappers = fileMappers;
     }
 }

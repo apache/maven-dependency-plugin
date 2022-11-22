@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.utils;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.utils;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,22 +16,18 @@ package org.apache.maven.plugins.dependency.utils;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency.utils;
 
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 
-public class TestDependencyStatusSets
-    extends AbstractDependencyMojoTestCase
-{
+public class TestDependencyStatusSets extends AbstractDependencyMojoTestCase {
 
-    protected void setUp()
-        throws Exception
-    {
+    protected void setUp() throws Exception {
         // required for mojo lookups to work
-        super.setUp( "dss", true );
+        super.setUp("dss", true);
     }
 
-    public void testDependencyStatusSettersGetters()
-    {
+    public void testDependencyStatusSettersGetters() {
         /*
          * DependencyStatusSets dss = new DependencyStatusSets(); Set set = new HashSet(); dss.setResolvedDependencies(
          * set ); assertSame( set, dss.getResolvedDependencies() ); set = new HashSet(); dss.setUnResolvedDependencies(
@@ -44,8 +38,7 @@ public class TestDependencyStatusSets
          */
     }
 
-    public void testDependencyStatusConstructor()
-    {
+    public void testDependencyStatusConstructor() {
         /*
          * Set r = new HashSet(); Set u = new HashSet(); Set s = new HashSet(); DependencyStatusSets dss = new
          * DependencyStatusSets( r, u, s ); assertSame( r, dss.getResolvedDependencies() ); assertSame( u,
