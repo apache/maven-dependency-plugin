@@ -110,7 +110,7 @@ public class TestTreeMojo
 
     /**
      * Test the GraphML format serialization
-     * 
+     *
      * @throws Exception in case of an error.
      */
     public void _testTreeGraphMLSerializing()
@@ -129,7 +129,7 @@ public class TestTreeMojo
 
     /**
      * Test the TGF format serialization
-     * 
+     *
      * @throws Exception in case of an error.
      */
     public void _testTreeTGFSerializing()
@@ -142,8 +142,31 @@ public class TestTreeMojo
     }
 
     /**
+     * Test the JSON format serialization
+     *
+     * @throws Exception in case of an error.
+     */
+    public void _testTreeJSONSerializing()
+        throws Exception
+    {
+        List<String> contents = runTreeMojo( "tree1.json", "json" );
+        assertTrue( findString( contents, "\"testGroupId\": \"project\"" ) );
+        assertTrue( findString( contents, "\"type: \"jar\"" ) );
+        assertTrue( findString( contents, "\"version\": \"1.0\"" ) );
+        assertTrue( findString( contents, "\"scope\": \"compile\"" ) );
+        assertTrue( findString( contents, "\"testGroupId\": \"snapshot\"" ) );
+        assertTrue( findString( contents, "\"type: \"jar\"" ) );
+        assertTrue( findString( contents, "\"version\": \"2.0-SNAPSHOT\"" ) );
+        assertTrue( findString( contents, "\"scope\": \"compile\"" ) );
+        assertTrue( findString( contents, "\"testGroupId\": \"release\"" ) );
+        assertTrue( findString( contents, "\"type: \"jar\"" ) );
+        assertTrue( findString( contents, "\"version\": \"1.0\"" ) );
+        assertTrue( findString( contents, "\"scope\": \"compile\"" ) );
+    }
+
+    /**
      * Help finding content in the given list of string
-     * 
+     *
      * @param outputFile the outputFile.
      * @param format The format.
      * @throws Exception in case of an error.
@@ -187,7 +210,7 @@ public class TestTreeMojo
 
     /**
      * Help finding content in the given list of string
-     * 
+     *
      * @param contents The contents.
      * @param str The content which should be checked for.
      */

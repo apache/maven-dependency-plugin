@@ -88,7 +88,7 @@ public class TreeMojo
 
     @Parameter( defaultValue = "${session}", readonly = true, required = true )
     private MavenSession session;
-    
+
     @Parameter( property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String outputEncoding;
 
@@ -179,18 +179,18 @@ public class TreeMojo
     /**
      * A comma-separated list of artifacts to filter the serialized dependency tree by, or <code>null</code> not to
      * filter the dependency tree. The filter syntax is:
-     * 
+     *
      * <pre>
      * [groupId]:[artifactId]:[type]:[version]
      * </pre>
-     * 
+     *
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard.
      * <p>
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
-     * 
+     *
      * @see StrictPatternIncludesArtifactFilter
      * @since 2.0-alpha-6
      */
@@ -200,11 +200,11 @@ public class TreeMojo
     /**
      * A comma-separated list of artifacts to filter from the serialized dependency tree, or <code>null</code> not to
      * filter any artifacts from the dependency tree. The filter syntax is:
-     * 
+     *
      * <pre>
      * [groupId]:[artifactId]:[type]:[version]
      * </pre>
-     * 
+     *
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard.
      * <p>
@@ -415,6 +415,10 @@ public class TreeMojo
         else if ( "dot".equals( outputType ) )
         {
             return new DOTDependencyNodeVisitor( writer );
+        }
+        else if ( "json".equals( outputType ) )
+        {
+            return new JSONDependencyNodeVisitor( writer );
         }
         else
         {
