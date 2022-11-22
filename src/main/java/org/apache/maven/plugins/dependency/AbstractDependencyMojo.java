@@ -68,9 +68,10 @@ public abstract class AbstractDependencyMojo
     private BuildContext buildContext;
 
     /**
-     * Skip plugin execution during incremental builds (e.g. triggered from M2E).
+     * Skip plugin execution only during incremental builds (e.g. triggered from M2E).
      * 
-     * @since 3.3.1
+     * @since 3.4.0
+     * @see #skip
      */
     @Parameter( defaultValue = "false" )
     private boolean skipDuringIncrementalBuild;
