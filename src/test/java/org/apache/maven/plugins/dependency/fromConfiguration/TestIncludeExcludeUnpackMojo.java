@@ -68,7 +68,7 @@ public class TestIncludeExcludeUnpackMojo
         assertNotNull( mojo );
         assertNotNull( mojo.getProject() );
 
-        mojo.setArchiverManager( (ArchiverManager) lookup( ArchiverManager.ROLE ) );
+        mojo.setArchiverManager( lookup( ArchiverManager.class ) );
 
         mojo.setMarkersDirectory( new File( this.testDir, "markers" ) );
         mojo.setArtifactItems( list );
