@@ -23,10 +23,10 @@ under the License.
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>maven-plugins</artifactId>
     <groupId>org.apache.maven.plugins</groupId>
-    <version>37</version>
-    <relativePath />
+    <artifactId>maven-plugins</artifactId>
+    <version>38</version>
+    <relativePath/>
   </parent>
 
   <artifactId>maven-dependency-plugin</artifactId>
@@ -362,6 +362,13 @@ under the License.
               -->
               <exclude>src/test/resources/unit/list-test/testListClasses*.txt</exclude>
             </excludes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <configuration>
+            <configLocation>config/maven_checks_nocodestyle.xml</configLocation>
           </configuration>
         </plugin>
       </plugins>
