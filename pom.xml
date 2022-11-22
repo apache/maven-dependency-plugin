@@ -30,7 +30,7 @@ under the License.
   </parent>
 
   <artifactId>maven-dependency-plugin</artifactId>
-  <version>3.3.1-SNAPSHOT</version>
+  <version>3.4.0-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
   <name>Apache Maven Dependency Plugin</name>
@@ -94,7 +94,7 @@ under the License.
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
     <resolverVersion>1.0.0.v20140518</resolverVersion>
     <javaVersion>8</javaVersion>
-    <project.build.outputTimestamp>2022-03-05T18:51:54Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2022-11-22T08:07:26Z</project.build.outputTimestamp>
     <slf4j.version>1.7.36</slf4j.version>
   </properties>
 
