@@ -1,6 +1,6 @@
 package org.apache.maven.plugins.dependency.testUtils;
 
-/* 
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,13 +28,19 @@ import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
 import org.apache.maven.plugin.testing.ArtifactStubFactory;
+import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
+import org.codehaus.plexus.archiver.Archiver;
+import org.codehaus.plexus.archiver.ArchiverException;
+import org.codehaus.plexus.archiver.manager.ArchiverManager;
+import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
+import org.codehaus.plexus.archiver.war.WarArchiver;
 
 public class DependencyArtifactStubFactory
     extends ArtifactStubFactory
 {
     private boolean flattenedPath = true;
+    private ArchiverManager archiverManager;
 
     public DependencyArtifactStubFactory( File theWorkingDir, boolean theCreateFiles, boolean flattenedPath )
     {
@@ -94,5 +100,38 @@ public class DependencyArtifactStubFactory
         setWorkingDir( workingDir );
 
         return artifact;
+    }
+
+
+    @Override
+    public void setUnpackableFile( ArchiverManager archiverManager )
+    {
+        // it is needed in createUnpackableFile method
+        this.archiverManager = archiverManager;
+        super.setUnpackableFile( archiverManager );
+    }
+
+    /**
+     * We need override original method which try to set wrong class of logger on Archiver.
+     * <p>
+     * Newer version of Archiver use SLF4J instead of Plexus logger.
+     */
+    @Override
+    public void createUnpackableFile( Artifact artifact, File destFile )
+        throws NoSuchArchiverException, ArchiverException, IOException
+    {
+        Archiver archiver = archiverManager.getArchiver( destFile );
+
+        archiver.setDestFile( destFile );
+        archiver.addFile( getSrcFile(), getUnpackableFileName( artifact ) );
+
+        if ( archiver instanceof WarArchiver )
+        {
+            WarArchiver war = (WarArchiver) archiver;
+            // the use of this is counter-intuitive:
+            // http://jira.codehaus.org/browse/PLX-286
+            war.setIgnoreWebxml( false );
+        }
+        archiver.createArchive();
     }
 }
