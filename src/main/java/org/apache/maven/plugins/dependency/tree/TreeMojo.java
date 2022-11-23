@@ -157,9 +157,7 @@ public class TreeMojo
     private String scope;
 
     /**
-     * Whether to include omitted nodes in the serialized dependency tree. Notice this feature actually uses Maven 2
-     * algorithm and <a href="https://maven.apache.org/shared/maven-dependency-tree/">may give wrong results when used
-     * with Maven 3</a>.
+     * Whether to include omitted nodes in the serialized dependency tree.
      *
      * @since 2.0-alpha-6
      */
