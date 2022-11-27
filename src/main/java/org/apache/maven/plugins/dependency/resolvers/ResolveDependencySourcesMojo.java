@@ -48,7 +48,7 @@ public class ResolveDependencySourcesMojo
     protected void doExecute()
         throws MojoExecutionException
     {
-        if ( this.classifier == null || this.classifier.length() == 0 )
+        if ( this.classifier == null || this.classifier.isEmpty() )
         {
             this.classifier = SOURCE_CLASSIFIER;
         }
