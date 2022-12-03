@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.tree;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.tree;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,11 +16,11 @@ package org.apache.maven.plugins.dependency.tree;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency.tree;
 
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 
@@ -33,18 +31,14 @@ import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
  * @author <a href="mailto:jerome.creignou@gmail.com">Jerome Creignou</a>
  * @since 2.1
  */
-public class TGFDependencyNodeVisitor
-    extends AbstractSerializingVisitor
-    implements DependencyNodeVisitor
-{
+public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor implements DependencyNodeVisitor {
 
     /**
      * Utiity class to write an Edge.
      *
      * @author <a href="mailto:jerome.creignou@gmail.com">Jerome Creignou</a>
      */
-    static final class EdgeAppender
-    {
+    static final class EdgeAppender {
         /**
          * Edge start.
          */
@@ -67,8 +61,7 @@ public class TGFDependencyNodeVisitor
          * @param to edge end
          * @param label optional label.
          */
-        EdgeAppender( DependencyNode from, DependencyNode to, String label )
-        {
+        EdgeAppender(DependencyNode from, DependencyNode to, String label) {
             super();
             this.from = from;
             this.to = to;
@@ -79,17 +72,14 @@ public class TGFDependencyNodeVisitor
          * build a string representing the edge.
          */
         @Override
-        public String toString()
-        {
-            StringBuilder result = new StringBuilder( generateId( from ) );
-            result.append( ' ' ).append( generateId( to ) );
-            if ( label != null )
-            {
-                result.append( ' ' ).append( label );
+        public String toString() {
+            StringBuilder result = new StringBuilder(generateId(from));
+            result.append(' ').append(generateId(to));
+            if (label != null) {
+                result.append(' ').append(label);
             }
             return result.toString();
         }
-
     }
 
     /**
@@ -102,31 +92,25 @@ public class TGFDependencyNodeVisitor
      *
      * @param writer the writer to write to.
      */
-    public TGFDependencyNodeVisitor( Writer writer )
-    {
-        super( writer );
+    public TGFDependencyNodeVisitor(Writer writer) {
+        super(writer);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean endVisit( DependencyNode node )
-    {
-        if ( node.getParent() == null || node.getParent() == node )
-        {
+    public boolean endVisit(DependencyNode node) {
+        if (node.getParent() == null || node.getParent() == node) {
             // dump edges on last node endVisit
-            writer.println( "#" );
-            for ( EdgeAppender edge : edges )
-            {
-                writer.println( edge.toString() );
+            writer.println("#");
+            for (EdgeAppender edge : edges) {
+                writer.println(edge.toString());
             }
-        }
-        else
-        {
+        } else {
             DependencyNode p = node.getParent();
             // using scope as edge label.
-            edges.add( new EdgeAppender( p, node, node.getArtifact().getScope() ) );
+            edges.add(new EdgeAppender(p, node, node.getArtifact().getScope()));
         }
         return true;
     }
@@ -135,12 +119,11 @@ public class TGFDependencyNodeVisitor
      * {@inheritDoc}
      */
     @Override
-    public boolean visit( DependencyNode node )
-    {
+    public boolean visit(DependencyNode node) {
         // write node
-        writer.write( generateId( node ) );
-        writer.write( " " );
-        writer.println( node.toNodeString() );
+        writer.write(generateId(node));
+        writer.write(" ");
+        writer.println(node.toNodeString());
         return true;
     }
 
@@ -153,8 +136,7 @@ public class TGFDependencyNodeVisitor
      * @param node the DependencyNode to use.
      * @return the unique id.
      */
-    private static String generateId( DependencyNode node )
-    {
-        return String.valueOf( node.hashCode() );
+    private static String generateId(DependencyNode node) {
+        return String.valueOf(node.hashCode());
     }
 }

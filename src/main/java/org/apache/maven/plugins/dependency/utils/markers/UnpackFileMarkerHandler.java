@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.utils.markers;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.utils.markers;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,18 +16,16 @@ package org.apache.maven.plugins.dependency.utils.markers;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
-import org.codehaus.plexus.util.StringUtils;
+package org.apache.maven.plugins.dependency.utils.markers;
 
 import java.io.File;
+import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
+import org.codehaus.plexus.util.StringUtils;
 
 /**
  * @author <a href="mailto:dbradicich@comcast.net">Damian Bradicich</a>
  */
-public class UnpackFileMarkerHandler
-    extends DefaultFileMarkerHandler
-{
+public class UnpackFileMarkerHandler extends DefaultFileMarkerHandler {
     /**
      * The ArtifactItem.
      */
@@ -38,51 +34,44 @@ public class UnpackFileMarkerHandler
     /**
      * @param markerFilesDirectory The marker files directory.
      */
-    public UnpackFileMarkerHandler( File markerFilesDirectory )
-    {
-        super( markerFilesDirectory );
+    public UnpackFileMarkerHandler(File markerFilesDirectory) {
+        super(markerFilesDirectory);
     }
 
     /**
      * @param artifactItem {@link ArtifactItem}
      * @param markerFilesDirectory the marker files directory.
      */
-    public UnpackFileMarkerHandler( ArtifactItem artifactItem, File markerFilesDirectory )
-    {
-        this( markerFilesDirectory );
-        setArtifactItem( artifactItem );
+    public UnpackFileMarkerHandler(ArtifactItem artifactItem, File markerFilesDirectory) {
+        this(markerFilesDirectory);
+        setArtifactItem(artifactItem);
     }
 
     @Override
-    protected File getMarkerFile()
-    {
+    protected File getMarkerFile() {
         /**
          * Build a hash of all include/exclude strings, to determine if an artifactItem has been unpacked using the
          * include/exclude parameters, this will allow an artifact to be included multiple times with different
          * include/exclude parameters
          */
         File markerFile;
-        if ( this.artifactItem == null || ( StringUtils.isEmpty( this.artifactItem.getIncludes() )
-            && StringUtils.isEmpty( this.artifactItem.getExcludes() ) ) )
-        {
+        if (this.artifactItem == null
+                || (StringUtils.isEmpty(this.artifactItem.getIncludes())
+                        && StringUtils.isEmpty(this.artifactItem.getExcludes()))) {
             markerFile = super.getMarkerFile();
-        }
-        else
-        {
+        } else {
             int includeExcludeHash = 0;
 
-            if ( StringUtils.isNotEmpty( this.artifactItem.getIncludes() ) )
-            {
+            if (StringUtils.isNotEmpty(this.artifactItem.getIncludes())) {
                 includeExcludeHash += this.artifactItem.getIncludes().hashCode();
             }
 
-            if ( StringUtils.isNotEmpty( this.artifactItem.getExcludes() ) )
-            {
+            if (StringUtils.isNotEmpty(this.artifactItem.getExcludes())) {
                 includeExcludeHash += this.artifactItem.getExcludes().hashCode();
             }
 
             markerFile =
-                new File( this.markerFilesDirectory, this.artifact.getId().replace( ':', '-' ) + includeExcludeHash );
+                    new File(this.markerFilesDirectory, this.artifact.getId().replace(':', '-') + includeExcludeHash);
         }
 
         return markerFile;
@@ -91,21 +80,18 @@ public class UnpackFileMarkerHandler
     /**
      * @param artifactItem {@link #artifactItem}
      */
-    public void setArtifactItem( ArtifactItem artifactItem )
-    {
+    public void setArtifactItem(ArtifactItem artifactItem) {
         this.artifactItem = artifactItem;
 
-        if ( this.artifactItem != null )
-        {
-            setArtifact( this.artifactItem.getArtifact() );
+        if (this.artifactItem != null) {
+            setArtifact(this.artifactItem.getArtifact());
         }
     }
 
     /**
      * @return {@link #artifactItem}
      */
-    public ArtifactItem getArtifactItem()
-    {
+    public ArtifactItem getArtifactItem() {
         return this.artifactItem;
     }
 }
