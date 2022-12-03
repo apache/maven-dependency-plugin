@@ -28,7 +28,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
@@ -40,6 +39,7 @@ import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilt
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerException;
+import org.apache.maven.shared.utils.StringUtils;
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.context.Context;
@@ -512,7 +512,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo implements Contex
                 writer.endElement();
                 writer.startElement("version");
                 writer.writeText(artifact.getBaseVersion());
-                if (!StringUtils.isBlank(artifact.getClassifier())) {
+                String classifier = artifact.getClassifier();
+                if (StringUtils.isNotBlank(classifier)) {
                     writer.startElement("classifier");
                     writer.writeText(artifact.getClassifier());
                     writer.endElement();
@@ -541,7 +542,6 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo implements Contex
                 // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
                 artifact.isSnapshot();
 
-                // CHECKSTYLE_OFF: LineLength
                 buf.append(scriptableFlag)
                         .append(":")
                         .append(pomFile)
@@ -554,7 +554,6 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo implements Contex
                         .append(":")
                         .append(artifact.getScope())
                         .append(System.lineSeparator());
-                // CHECKSTYLE_ON: LineLength
             }
             getLog().info(System.lineSeparator() + buf);
         }

@@ -21,7 +21,6 @@ package org.apache.maven.plugins.dependency;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -53,7 +52,7 @@ public class DisplayAncestorsMojo extends AbstractMojo {
         if (ancestors.isEmpty()) {
             getLog().info("No Ancestor POMs!");
         } else {
-            getLog().info(String.format(Locale.US, "Ancestor POMs: %s", StringUtils.join(ancestors, " <- ")));
+            getLog().info("Ancestor POMs: " + String.join(" <- ", ancestors));
         }
     }
 
