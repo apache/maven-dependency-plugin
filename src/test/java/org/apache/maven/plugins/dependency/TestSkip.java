@@ -21,7 +21,11 @@ package org.apache.maven.plugins.dependency;
 import java.io.File;
 
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.Mojo;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.descriptor.MojoDescriptor;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
@@ -56,7 +60,7 @@ public class TestSkip extends AbstractDependencyMojoTestCase {
     }
 
     public void testSkipAnalyzeReport() throws Exception {
-        doSpecialTest("analyze-report");
+        doSpecialTest("analyze-report", true);
     }
 
     public void testSkipAnalyzeDuplicate() throws Exception {
@@ -124,19 +128,55 @@ public class TestSkip extends AbstractDependencyMojoTestCase {
     }
 
     protected void doSpecialTest(String mojoName) throws Exception {
-        doConfigTest(mojoName, "plugin-" + mojoName + "-config.xml");
+        doConfigTest(mojoName, "plugin-" + mojoName + "-config.xml", false);
+    }
+
+    protected void doSpecialTest(String mojoName, boolean addMojoExecution) throws Exception {
+        doConfigTest(mojoName, "plugin-" + mojoName + "-config.xml", addMojoExecution);
     }
 
     private void doConfigTest(String mojoName, String configFile) throws Exception {
+        doConfigTest(mojoName, configFile, false);
+    }
+
+    private void doConfigTest(String mojoName, String configFile, boolean addMojoExecution) throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/skip-test/" + configFile);
         Mojo mojo = lookupMojo(mojoName, testPom);
-        assertNotNull(mojo);
+        assertNotNull("Mojo not found.", mojo);
+
+        if (addMojoExecution) {
+            setVariableValueToObject(mojo, "mojoExecution", getMockMojoExecution(mojoName));
+        }
         Log log = mock(Log.class);
         mojo.setLog(log);
         mojo.execute();
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(log, atLeastOnce()).info(captor.capture());
-        assertTrue(captor.getValue().contains("Skipping plugin execution"));
+        String skipMessage;
+        if (addMojoExecution) {
+            MojoExecution me = getMockMojoExecution(mojoName);
+            String reportMojoInfo = me.getPlugin().getId() + ":" + me.getGoal();
+            skipMessage = "Skipping " + reportMojoInfo + " report goal";
+        } else {
+            skipMessage = "Skipping plugin execution";
+        }
+        assertTrue(captor.getValue().contains(skipMessage));
+    }
+
+    private MojoExecution getMockMojoExecution(String goal) {
+        MojoDescriptor md = new MojoDescriptor();
+        md.setGoal(goal);
+
+        MojoExecution me = new MojoExecution(md);
+
+        PluginDescriptor pd = new PluginDescriptor();
+        Plugin p = new Plugin();
+        p.setGroupId("org.apache.maven.plugins");
+        p.setArtifactId("maven-dependency-plugin");
+        pd.setPlugin(p);
+        md.setPluginDescriptor(pd);
+
+        return me;
     }
 }

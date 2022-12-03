@@ -87,29 +87,16 @@ under the License.
   </distributionManagement>
 
   <properties>
-    <mavenVersion>3.6.3</mavenVersion>
     <javaVersion>8</javaVersion>
-
+    <mavenVersion>3.6.3</mavenVersion>
+    <resolverVersion>1.4.1</resolverVersion>
+    <slf4jVersion>1.7.36</slf4jVersion>
     <jettyVersion>9.4.55.v20240627</jettyVersion>
     <mockito.version>4.11.0</mockito.version>
     <plexus-archiver.version>4.10.0</plexus-archiver.version>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
-    <resolverVersion>1.4.1</resolverVersion>
-    <slf4jVersion>1.7.36</slf4jVersion>
-
     <project.build.outputTimestamp>2024-06-18T07:04:19Z</project.build.outputTimestamp>
   </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <!-- override the version from maven-reporting-impl -->
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-text</artifactId>
-        <version>1.12.0</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <dependencies>
     <!-- maven -->
@@ -156,49 +143,23 @@ under the License.
       <scope>provided</scope>
     </dependency>
 
-    <!-- reporting -->
+    <!-- doxia -->
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>
       <artifactId>doxia-sink-api</artifactId>
-      <version>1.12.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-container-default</artifactId>
-        </exclusion>
-      </exclusions>
+      <version>2.0.0-M12</version>
     </dependency>
+
+    <!-- reporting -->
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>
       <artifactId>maven-reporting-api</artifactId>
-      <version>3.1.1</version>
+      <version>4.0.0-M12</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>
       <artifactId>maven-reporting-impl</artifactId>
-      <version>3.2.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-container-default</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-artifact</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-model</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-plugin-api</artifactId>
-        </exclusion>
-      </exclusions>
+      <version>4.0.0-M15</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
