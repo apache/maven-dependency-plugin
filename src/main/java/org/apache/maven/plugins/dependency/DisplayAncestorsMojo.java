@@ -61,7 +61,7 @@ public class DisplayAncestorsMojo
         }
         else
         {
-            getLog().info( String.format( Locale.US, "Ancestor POMs: %s", String.join( " <- " ), ancestors ) );
+            getLog().info( "Ancestor POMs: " + String.join( " <- ", ancestors ) );
         }
 
     }
