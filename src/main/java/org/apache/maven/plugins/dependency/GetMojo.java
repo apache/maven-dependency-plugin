@@ -85,38 +85,6 @@ public class GetMojo extends AbstractMojo {
     private DefaultDependableCoordinate coordinate = new DefaultDependableCoordinate();
 
     /**
-     * The groupId of the artifact to download. Ignored if {@link #artifact} is used.
-     */
-    @Parameter(property = "groupId")
-    private String groupId;
-
-    /**
-     * The artifactId of the artifact to download. Ignored if {@link #artifact} is used.
-     */
-    @Parameter(property = "artifactId")
-    private String artifactId;
-
-    /**
-     * The version of the artifact to download. Ignored if {@link #artifact} is used.
-     */
-    @Parameter(property = "version")
-    private String version;
-
-    /**
-     * The classifier of the artifact to download. Ignored if {@link #artifact} is used.
-     *
-     * @since 2.3
-     */
-    @Parameter(property = "classifier")
-    private String classifier;
-
-    /**
-     * The packaging of the artifact to download. Ignored if {@link #artifact} is used.
-     */
-    @Parameter(property = "packaging", defaultValue = "jar")
-    private String packaging = "jar";
-
-    /**
      * Repositories in the format id::[layout]::url or just url, separated by comma. ie.
      * central::default::https://repo.maven.apache.org/maven2,myrepo::::https://repo.acme.com,https://repo.acme2.com
      */
@@ -271,36 +239,53 @@ public class GetMojo extends AbstractMojo {
     }
 
     /**
+     * The groupId of the artifact to download. Ignored if {@link #artifact} is used.
+     *
      * @param groupId The groupId.
      */
+    @Parameter(property = "groupId")
     public void setGroupId(String groupId) {
         this.coordinate.setGroupId(groupId);
     }
 
     /**
+     * The artifactId of the artifact to download. Ignored if {@link #artifact} is used.
+     *
      * @param artifactId The artifactId.
      */
+    @Parameter(property = "artifactId")
     public void setArtifactId(String artifactId) {
         this.coordinate.setArtifactId(artifactId);
     }
 
     /**
+     * The version of the artifact to download. Ignored if {@link #artifact} is used.
+     *
      * @param version The version.
      */
+    @Parameter(property = "version")
     public void setVersion(String version) {
         this.coordinate.setVersion(version);
     }
 
     /**
+     * The classifier of the artifact to download. Ignored if {@link #artifact} is used.
+     *
      * @param classifier The classifier to be used.
+     *
+     * @since 2.3
      */
+    @Parameter(property = "classifier")
     public void setClassifier(String classifier) {
         this.coordinate.setClassifier(classifier);
     }
 
     /**
+     * The packaging of the artifact to download. Ignored if {@link #artifact} is used.
+     *
      * @param type packaging.
      */
+    @Parameter(property = "packaging", defaultValue = "jar")
     public void setPackaging(String type) {
         this.coordinate.setType(type);
     }
