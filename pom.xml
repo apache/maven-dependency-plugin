@@ -24,7 +24,7 @@ under the License.
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-plugins</artifactId>
     <version>38</version>
-    <relativePath />
+    <relativePath/>
   </parent>
 
   <artifactId>maven-dependency-plugin</artifactId>
@@ -430,7 +430,7 @@ under the License.
                 <localRepo>
                   <source>${project.build.directory}/local-repo</source>
                 </localRepo>
-                <proxyRepo />
+                <proxyRepo/>
               </repositories>
             </configuration>
             <executions>
