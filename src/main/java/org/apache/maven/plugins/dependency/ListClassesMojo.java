@@ -141,12 +141,6 @@ public class ListClassesMojo extends AbstractMojo {
     @Parameter(property = "transitive", defaultValue = "false")
     private boolean transitive = false;
 
-    /**
-     * Skip plugin execution completely.
-     */
-    @Parameter(property = "mdep.skip", defaultValue = "false")
-    private boolean skip;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         ProjectBuildingRequest buildingRequest = makeBuildingRequest();
