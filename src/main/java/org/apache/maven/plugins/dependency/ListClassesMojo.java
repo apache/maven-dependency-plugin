@@ -192,13 +192,24 @@ public class ListClassesMojo extends AbstractMojo {
         }
     }
 
+    boolean hasGAVSpecified() {
+        return artifact != null || (groupId != null && artifactId != null && version != null);
+    }
+
     private ProjectBuildingRequest makeBuildingRequest() throws MojoExecutionException, MojoFailureException {
-        if (artifact == null) {
-            throw new MojoFailureException("You must specify an artifact, "
-                    + "e.g. -Dartifact=org.apache.maven.plugins:maven-downloader-plugin:1.0");
+        if (!hasGAVSpecified()) {
+            throw new MojoFailureException("You must specify an artifact OR GAV separately, "
+                    + "e.g. -Dartifact=org.apache.maven.plugins:maven-downloader-plugin:1.0 OR "
+                    + "-DgroupId=org.apache.maven.plugins -DartifactId=maven-downloader-plugin -Dversion=1.0");
         }
 
-        String[] tokens = artifact.split(":");
+        String[] tokens = artifact != null
+                ? artifact.split(":")
+                : classifier != null
+                        ? new String[] {groupId, artifactId, version, packaging, classifier}
+                        : packaging != null
+                                ? new String[] {groupId, artifactId, version, packaging}
+                                : new String[] {groupId, artifactId, version};
         if (tokens.length < 3 || tokens.length > 5) {
             throw new MojoFailureException("Invalid artifact, you must specify "
                     + "groupId:artifactId:version[:packaging[:classifier]] " + artifact);

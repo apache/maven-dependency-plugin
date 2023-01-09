@@ -82,6 +82,30 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         Assert.assertEquals(expectedLogArgs, infoArgsCaptor.getAllValues());
     }
 
+    public void testListClassesNotTransitiveByGAV() throws Exception {
+        Path path = Paths.get("src/test/resources/unit/list-test/testListClassesNotTransitive.txt");
+        List<String> expectedLogArgs = Files.readAllLines(path);
+        ArgumentCaptor<String> infoArgsCaptor = ArgumentCaptor.forClass(String.class);
+
+        setVariableValueToObject(
+                mojo,
+                "remoteRepositories",
+                "central::default::https://repo.maven.apache.org/maven2,"
+                        + "central::::https://repo.maven.apache.org/maven2," + "https://repo.maven.apache.org/maven2");
+        setVariableValueToObject(mojo, "groupId", "org.apache.commons");
+        setVariableValueToObject(mojo, "artifactId", "commons-lang3");
+        setVariableValueToObject(mojo, "version", "3.6");
+        setVariableValueToObject(mojo, "transitive", Boolean.FALSE);
+
+        Log log = Mockito.mock(Log.class);
+        mojo.setLog(log);
+
+        mojo.execute();
+
+        Mockito.verify(log, Mockito.times(expectedLogArgs.size())).info(infoArgsCaptor.capture());
+        Assert.assertEquals(expectedLogArgs, infoArgsCaptor.getAllValues());
+    }
+
     public void testListClassesTransitive() throws Exception {
         Path path = Paths.get("src/test/resources/unit/list-test/testListClassesTransitive.txt");
         List<String> expectedLogArgs = Files.readAllLines(path);
@@ -93,6 +117,30 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
                 "central::default::https://repo.maven.apache.org/maven2,"
                         + "central::::https://repo.maven.apache.org/maven2," + "https://repo.maven.apache.org/maven2");
         setVariableValueToObject(mojo, "artifact", "org.apache.commons:commons-lang3:3.6");
+        setVariableValueToObject(mojo, "transitive", Boolean.TRUE);
+
+        Log log = Mockito.mock(Log.class);
+        mojo.setLog(log);
+
+        mojo.execute();
+
+        Mockito.verify(log, Mockito.times(expectedLogArgs.size())).info(infoArgsCaptor.capture());
+        Assert.assertEquals(expectedLogArgs, infoArgsCaptor.getAllValues());
+    }
+
+    public void testListClassesTransitiveByGAV() throws Exception {
+        Path path = Paths.get("src/test/resources/unit/list-test/testListClassesTransitive.txt");
+        List<String> expectedLogArgs = Files.readAllLines(path);
+        ArgumentCaptor<String> infoArgsCaptor = ArgumentCaptor.forClass(String.class);
+
+        setVariableValueToObject(
+                mojo,
+                "remoteRepositories",
+                "central::default::https://repo.maven.apache.org/maven2,"
+                        + "central::::https://repo.maven.apache.org/maven2," + "https://repo.maven.apache.org/maven2");
+        setVariableValueToObject(mojo, "groupId", "org.apache.commons");
+        setVariableValueToObject(mojo, "artifactId", "commons-lang3");
+        setVariableValueToObject(mojo, "version", "3.6");
         setVariableValueToObject(mojo, "transitive", Boolean.TRUE);
 
         Log log = Mockito.mock(Log.class);
