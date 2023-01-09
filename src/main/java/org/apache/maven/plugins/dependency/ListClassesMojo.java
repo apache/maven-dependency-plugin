@@ -149,6 +149,11 @@ public class ListClassesMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (skip) {
+            getLog().info("Skipping plugin execution");
+            return;
+        }
+
         ProjectBuildingRequest buildingRequest = makeBuildingRequest();
 
         try {
