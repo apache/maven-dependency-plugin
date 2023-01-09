@@ -88,38 +88,6 @@ public class ListClassesMojo extends AbstractMojo {
     private DefaultDependableCoordinate coordinate = new DefaultDependableCoordinate();
 
     /**
-     * The group ID of the artifact to download. Ignored if {@link #artifact} is used.
-     */
-    @Parameter(property = "groupId")
-    private String groupId;
-
-    /**
-     * The artifact ID of the artifact to download. Ignored if {@link #artifact} is used.
-     */
-    @Parameter(property = "artifactId")
-    private String artifactId;
-
-    /**
-     * The version of the artifact to download. Ignored if {@link #artifact} is used.
-     */
-    @Parameter(property = "version")
-    private String version;
-
-    /**
-     * The classifier of the artifact to download. Ignored if {@link #artifact} is used.
-     *
-     * @since 2.3
-     */
-    @Parameter(property = "classifier")
-    private String classifier;
-
-    /**
-     * The packaging of the artifact to download. Ignored if {@link #artifact} is used.
-     */
-    @Parameter(property = "packaging", defaultValue = "jar")
-    private String packaging = "jar";
-
-    /**
      * Repositories in the format id::[layout]::url or just URLs, separated by comma. That is,
      * central::default::https://repo.maven.apache.org/maven2,myrepo::::https://repo.acme.com,https://repo.acme2.com
      */

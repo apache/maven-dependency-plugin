@@ -38,7 +38,7 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
 
     protected void setUp() throws Exception {
         super.setUp("markers", false);
-        File testPom = new File(getBasedir(), "target/test-classes/unit/get-test/plugin-config.xml");
+        File testPom = new File(getBasedir(), "target/test-classes/unit/list-test/plugin-config.xml");
 
         assertTrue(testPom.exists());
         mojo = (ListClassesMojo) lookupMojo("list-classes", testPom);
