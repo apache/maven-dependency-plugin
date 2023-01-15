@@ -86,7 +86,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     private String prefix;
 
     /**
-     * A property to set to the content of the classpath string.
+     * If defined, the name of a property to which the classpath string will be written.
      */
     @Parameter(property = "mdep.outputProperty")
     private String outputProperty;
