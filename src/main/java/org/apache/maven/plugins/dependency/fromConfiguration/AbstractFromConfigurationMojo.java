@@ -80,7 +80,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      *
      * @since 2.0
      */
-    @Parameter(property = "mdep.overIfNewer", defaultValue = "true")
+    @Parameter(property = "mdep.overWriteIfNewer", defaultValue = "true")
     private boolean overWriteIfNewer;
 
     /**
