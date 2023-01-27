@@ -79,8 +79,18 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * Overwrite if newer
      *
      * @since 2.0
+     * @deprecated Use 'overWriteIfNewer' or 'mdep.overWriteIfNewer' as this does nothing now.
      */
+    @Deprecated
     @Parameter(property = "mdep.overIfNewer", defaultValue = "true")
+    private boolean overIfNewer;
+
+    /**
+     * Overwrite if newer
+     *
+     * @since 3.7.0
+     */
+    @Parameter(property = "mdep.overWriteIfNewer", defaultValue = "true")
     private boolean overWriteIfNewer;
 
     /**
