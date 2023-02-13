@@ -348,10 +348,10 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     private MavenProject buildProjectFromArtifact(Artifact artifact) throws MojoExecutionException {
         try {
             return projectBuilder
-                    .build(artifact, session.getProjectBuildingRequest())
+                    .build(artifact, session.getProjectBuildingRequest().setProcessPlugins(false))
                     .getProject();
         } catch (ProjectBuildingException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
+            throw new MojoExecutionException("Coud not build project for " + artifact.getId(), e);
         }
     }
 
