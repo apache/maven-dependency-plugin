@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import junit.framework.TestCase;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
@@ -30,7 +31,6 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugin.testing.stubs.DefaultArtifactHandlerStub;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  * @author brianf

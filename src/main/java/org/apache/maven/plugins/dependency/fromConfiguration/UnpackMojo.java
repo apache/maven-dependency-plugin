@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
 
 import java.io.File;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -30,7 +31,6 @@ import org.apache.maven.plugins.dependency.utils.filters.MarkerFileFilter;
 import org.apache.maven.plugins.dependency.utils.markers.MarkerHandler;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Goal that retrieves a list of artifacts from the repository and unpacks them in a defined location.

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -48,7 +49,6 @@ import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Resolves a single artifact, eventually transitively, from the specified remote repositories. Caveat: will always

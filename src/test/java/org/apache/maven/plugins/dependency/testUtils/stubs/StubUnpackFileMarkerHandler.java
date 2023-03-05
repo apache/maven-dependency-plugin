@@ -19,9 +19,9 @@
 package org.apache.maven.plugins.dependency.testUtils.stubs;
 
 import java.io.File;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
-import org.codehaus.plexus.util.StringUtils;
 
 public class StubUnpackFileMarkerHandler extends UnpackFileMarkerHandler {
     public StubUnpackFileMarkerHandler(ArtifactItem artifactItem, File markerFilesDirectory) {
