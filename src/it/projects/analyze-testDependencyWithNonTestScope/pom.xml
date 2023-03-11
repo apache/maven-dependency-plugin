@@ -28,8 +28,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.release>1.7</maven.compiler.release>
-    <maven.compiler.sources>1.7</maven.compiler.sources>
+    <maven.compiler.release>1.8</maven.compiler.release>
+    <maven.compiler.sources>1.8</maven.compiler.sources>
   </properties>
 
   <build>
@@ -51,13 +51,12 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.13.1</version>
+      <version>4.13.2</version>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <!-- use 2.9.1 for Java 7 projects -->
-      <version>2.9.1</version>
+      <version>3.24.2</version>
       <scope>runtime</scope>
     </dependency>
     <!-- Integration test for scope analysis -->
