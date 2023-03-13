@@ -72,6 +72,14 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
     protected boolean outputScope;
 
     /**
+     * If the output file shouldn't contain color markers.
+     *
+     * @since 3.5.1
+     */
+    @Parameter(property = "mdep.skipColors", defaultValue = "true")
+    protected boolean skipColors;
+
+    /**
      * Only used to store results for integration test validation
      */
     DependencyStatusSets results;
@@ -168,7 +176,13 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
         }
         sb.append(System.lineSeparator());
 
-        return sb.toString();
+        String output = sb.toString();
+
+        if (skipColors) {
+            output = MessageUtils.stripAnsiCodes(output);
+        }
+
+        return output;
     }
 
     private StringBuilder buildArtifactListOutput(
