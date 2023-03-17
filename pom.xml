@@ -185,7 +185,7 @@ under the License.
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-io</artifactId>
-      <version>3.4.0</version>
+      <version>3.4.1</version>
     </dependency>
 
     <!-- shared -->
