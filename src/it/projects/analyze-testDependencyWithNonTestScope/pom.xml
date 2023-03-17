@@ -28,7 +28,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.sources>8</maven.compiler.sources>
+    <maven.compiler.sources>1.7</maven.compiler.sources>
   </properties>
 
   <build>
