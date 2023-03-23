@@ -19,8 +19,8 @@
 package org.apache.maven.plugins.dependency.utils.markers;
 
 import java.io.File;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  * @author <a href="mailto:dbradicich@comcast.net">Damian Bradicich</a>

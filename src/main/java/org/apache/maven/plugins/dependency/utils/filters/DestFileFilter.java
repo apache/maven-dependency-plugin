@@ -23,12 +23,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.shared.artifact.filter.collection.AbstractArtifactsFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
