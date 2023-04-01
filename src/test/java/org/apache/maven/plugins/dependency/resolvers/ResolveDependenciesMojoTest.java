@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.resolvers;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;

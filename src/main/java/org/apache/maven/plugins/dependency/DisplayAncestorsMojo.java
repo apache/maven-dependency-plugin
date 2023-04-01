@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;

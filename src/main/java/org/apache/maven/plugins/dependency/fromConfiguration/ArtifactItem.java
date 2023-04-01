@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
 
 import java.io.File;
 import java.util.Objects;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;

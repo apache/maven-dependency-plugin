@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.shared.dependency.graph.DependencyNode;

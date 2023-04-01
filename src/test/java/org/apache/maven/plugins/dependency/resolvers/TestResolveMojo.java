@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency.resolvers;
 
 import java.io.File;
 import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;

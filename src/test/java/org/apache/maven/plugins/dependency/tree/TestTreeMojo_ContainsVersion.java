@@ -18,15 +18,16 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
-import static org.apache.maven.plugins.dependency.tree.TreeMojo.containsVersion;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.util.Collections;
+
 import junit.framework.TestCase;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.Restriction;
 import org.apache.maven.artifact.versioning.VersionRange;
+
+import static org.apache.maven.plugins.dependency.tree.TreeMojo.containsVersion;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests <code>TreeMojo.containsVersion</code>.

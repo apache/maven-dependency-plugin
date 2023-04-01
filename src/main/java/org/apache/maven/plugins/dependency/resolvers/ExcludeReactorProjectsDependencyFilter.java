@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.resolvers;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.logging.Log;

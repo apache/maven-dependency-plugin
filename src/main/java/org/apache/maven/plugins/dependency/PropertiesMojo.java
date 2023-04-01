@@ -19,6 +19,7 @@
 package org.apache.maven.plugins.dependency;
 
 import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;

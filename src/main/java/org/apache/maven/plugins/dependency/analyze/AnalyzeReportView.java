@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency.analyze;
 
 import java.util.Iterator;
 import java.util.ResourceBundle;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;

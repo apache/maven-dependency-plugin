@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.plugin.MojoExecutionException;

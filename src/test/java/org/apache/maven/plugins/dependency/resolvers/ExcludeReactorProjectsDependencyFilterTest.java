@@ -18,14 +18,10 @@
  */
 package org.apache.maven.plugins.dependency.resolvers;
 
-import static java.util.Collections.singletonList;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.logging.Log;
@@ -35,6 +31,11 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.resolve.Node;
 import org.mockito.ArgumentCaptor;
+
+import static java.util.Collections.singletonList;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ExcludeReactorProjectsDependencyFilterTest extends AbstractDependencyMojoTestCase {
     public void testReject() {

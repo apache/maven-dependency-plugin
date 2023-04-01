@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency.analyze;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
+
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Execute;
