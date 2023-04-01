@@ -19,6 +19,7 @@
 package org.apache.maven.plugins.dependency.tree;
 
 import java.io.Writer;
+
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 

@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;

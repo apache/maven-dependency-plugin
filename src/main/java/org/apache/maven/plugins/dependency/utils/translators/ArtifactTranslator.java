@@ -19,6 +19,7 @@
 package org.apache.maven.plugins.dependency.utils.translators;
 
 import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;

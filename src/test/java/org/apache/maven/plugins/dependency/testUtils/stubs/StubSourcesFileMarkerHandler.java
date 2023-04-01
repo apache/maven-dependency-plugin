@@ -19,6 +19,7 @@
 package org.apache.maven.plugins.dependency.testUtils.stubs;
 
 import java.io.File;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.utils.markers.SourcesFileMarkerHandler;
 

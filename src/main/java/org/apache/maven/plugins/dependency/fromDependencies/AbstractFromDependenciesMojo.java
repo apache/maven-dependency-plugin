@@ -19,6 +19,7 @@
 package org.apache.maven.plugins.dependency.fromDependencies;
 
 import java.io.File;
+
 import org.apache.maven.plugins.annotations.Parameter;
 
 /**

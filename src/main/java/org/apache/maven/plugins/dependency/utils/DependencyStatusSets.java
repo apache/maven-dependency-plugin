@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency.utils;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
 
 /**
