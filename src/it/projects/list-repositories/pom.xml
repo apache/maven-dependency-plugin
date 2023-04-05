@@ -36,11 +36,18 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>fake-remote-repository</id>
+      <url>http://localhost:2345</url>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
-      <version>2.0.6</version>
+      <artifactId>maven-core</artifactId>
+      <version>3.2.5</version>
     </dependency>
   </dependencies>
 
