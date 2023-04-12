@@ -96,12 +96,6 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      * <i>not used in this goal</i>
      */
     @Parameter
-    protected boolean useJvmChmod = true;
-
-    /**
-     * <i>not used in this goal</i>
-     */
-    @Parameter
     protected boolean ignorePermissions;
 
     /**

@@ -78,12 +78,6 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
      * <i>not used in this goal</i>
      */
     @Parameter
-    protected boolean useJvmChmod = true;
-
-    /**
-     * <i>not used in this goal</i>
-     */
-    @Parameter
     protected boolean ignorePermissions;
 
     /**

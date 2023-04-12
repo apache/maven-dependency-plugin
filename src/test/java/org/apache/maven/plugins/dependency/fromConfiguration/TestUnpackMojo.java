@@ -61,8 +61,6 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         stubFactory.setSrcFile(new File(
                 getBasedir() + File.separatorChar + "target/test-classes/unit/unpack-dependencies-test/test.txt"));
 
-        mojo.setUseJvmChmod(true);
-
         MavenSession session = newMavenSession(mojo.getProject());
         setVariableValueToObject(mojo, "session", session);
 
