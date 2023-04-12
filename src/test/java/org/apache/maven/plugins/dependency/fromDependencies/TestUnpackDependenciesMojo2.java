@@ -46,7 +46,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         File testPom = new File(getBasedir(), "target/test-classes/unit/unpack-dependencies-test/plugin-config.xml");
         mojo = (UnpackDependenciesMojo) lookupMojo("unpack-dependencies", testPom);
         mojo.outputDirectory = new File(this.testDir, "outputDirectory");
-        mojo.setUseJvmChmod(true);
         // mojo.silent = true;
 
         // it needs to get the archivermanager

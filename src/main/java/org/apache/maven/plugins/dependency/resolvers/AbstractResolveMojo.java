@@ -70,12 +70,6 @@ public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
      * <i>not used in this goal</i>
      */
     @Parameter
-    protected boolean useJvmChmod = true;
-
-    /**
-     * <i>not used in this goal</i>
-     */
-    @Parameter
     protected boolean ignorePermissions;
 
     /**

@@ -73,17 +73,6 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     private boolean skipDuringIncrementalBuild;
 
     /**
-     * <p>
-     * will use the jvm chmod, this is available for user and all level group level will be ignored
-     * </p>
-     * <b>since 2.6 is on by default</b>
-     *
-     * @since 2.5.1
-     */
-    @Parameter(property = "dependency.useJvmChmod", defaultValue = "true")
-    private boolean useJvmChmod = true;
-
-    /**
      * ignore to set file permissions when unpacking a dependency
      *
      * @since 2.7
@@ -375,20 +364,6 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
      */
     public void setArchiverManager(ArchiverManager archiverManager) {
         this.archiverManager = archiverManager;
-    }
-
-    /**
-     * @return {@link #useJvmChmod}
-     */
-    public boolean isUseJvmChmod() {
-        return useJvmChmod;
-    }
-
-    /**
-     * @param useJvmChmod {@link #useJvmChmod}
-     */
-    public void setUseJvmChmod(boolean useJvmChmod) {
-        this.useJvmChmod = useJvmChmod;
     }
 
     /**
