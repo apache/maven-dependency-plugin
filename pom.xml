@@ -111,6 +111,12 @@ under the License.
         <artifactId>org.eclipse.sisu.plexus</artifactId>
         <version>0.3.0.M1</version>
       </dependency>
+      <!-- override the version from maven-reporting-impl -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-text</artifactId>
+        <version>1.10.0</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
