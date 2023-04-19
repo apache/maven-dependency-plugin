@@ -30,6 +30,7 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.archiver.manager.ArchiverManager;
 
 public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase {
 
@@ -49,7 +50,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         // mojo.silent = true;
 
         // it needs to get the archivermanager
-        stubFactory.setUnpackableFile(mojo.getArchiverManager());
+        stubFactory.setUnpackableFile(lookup(ArchiverManager.class));
         // i'm using one file repeatedly to archive so I can test the name
         // programmatically.
         stubFactory.setSrcFile(new File(getBasedir() + File.separatorChar + UNPACKABLE_FILE_PATH));

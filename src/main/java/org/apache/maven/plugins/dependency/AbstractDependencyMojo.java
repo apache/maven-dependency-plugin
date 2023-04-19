@@ -20,11 +20,8 @@ package org.apache.maven.plugins.dependency;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -36,26 +33,13 @@ import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
-import org.codehaus.plexus.archiver.ArchiverException;
-import org.codehaus.plexus.archiver.UnArchiver;
-import org.codehaus.plexus.archiver.manager.ArchiverManager;
-import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
-import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
-import org.codehaus.plexus.components.io.filemappers.FileMapper;
-import org.codehaus.plexus.components.io.fileselectors.IncludeExcludeFileSelector;
 import org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.ReflectionUtils;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  */
 public abstract class AbstractDependencyMojo extends AbstractMojo {
-    /**
-     * To look up Archiver/UnArchiver implementations
-     */
-    @Component
-    private ArchiverManager archiverManager;
 
     /**
      * For IDE build support
@@ -71,14 +55,6 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "false")
     private boolean skipDuringIncrementalBuild;
-
-    /**
-     * ignore to set file permissions when unpacking a dependency
-     *
-     * @since 2.7
-     */
-    @Parameter(property = "dependency.ignorePermissions", defaultValue = "false")
-    private boolean ignorePermissions;
 
     /**
      * POM
@@ -156,13 +132,6 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     protected abstract void doExecute() throws MojoExecutionException, MojoFailureException;
 
     /**
-     * @return Returns the archiverManager.
-     */
-    public ArchiverManager getArchiverManager() {
-        return this.archiverManager;
-    }
-
-    /**
      * Does the actual copy of the file and logging.
      *
      * @param artifact represents the file to copy.
@@ -185,146 +154,6 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
             buildContext.refresh(destFile);
         } catch (IOException e) {
             throw new MojoExecutionException("Error copying artifact from " + artifact + " to " + destFile, e);
-        }
-    }
-
-    /**
-     * @param artifact {@link Artifact}
-     * @param location The location.
-     * @param encoding The encoding.
-     * @param fileMappers {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting
-     *                    shall happen.
-     * @throws MojoExecutionException in case of an error.
-     */
-    protected void unpack(Artifact artifact, File location, String encoding, FileMapper[] fileMappers)
-            throws MojoExecutionException {
-        unpack(artifact, location, null, null, encoding, fileMappers);
-    }
-
-    /**
-     * Unpacks the archive file.
-     *
-     * @param artifact File to be unpacked.
-     * @param location Location where to put the unpacked files.
-     * @param includes Comma separated list of file patterns to include i.e. <code>**&#47;.xml,
-     *                 **&#47;*.properties</code>
-     * @param excludes Comma separated list of file patterns to exclude i.e. <code>**&#47;*.xml,
-     *                 **&#47;*.properties</code>
-     * @param encoding Encoding of artifact. Set {@code null} for default encoding.
-     * @param fileMappers {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting
-     *                    shall happen.
-     * @throws MojoExecutionException In case of errors.
-     */
-    protected void unpack(
-            Artifact artifact,
-            File location,
-            String includes,
-            String excludes,
-            String encoding,
-            FileMapper[] fileMappers)
-            throws MojoExecutionException {
-        unpack(artifact, artifact.getType(), location, includes, excludes, encoding, fileMappers);
-    }
-
-    /**
-     * @param artifact {@link Artifact}
-     * @param type The type.
-     * @param location The location.
-     * @param includes includes list.
-     * @param excludes excludes list.
-     * @param encoding the encoding.
-     * @param fileMappers {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting
-     *                    shall happen.
-     * @throws MojoExecutionException in case of an error.
-     */
-    protected void unpack(
-            Artifact artifact,
-            String type,
-            File location,
-            String includes,
-            String excludes,
-            String encoding,
-            FileMapper[] fileMappers)
-            throws MojoExecutionException {
-        File file = artifact.getFile();
-        try {
-            logUnpack(file, location, includes, excludes);
-
-            location.mkdirs();
-            if (!location.exists()) {
-                throw new MojoExecutionException(
-                        "Location to write unpacked files to could not be created: " + location);
-            }
-
-            if (file.isDirectory()) {
-                // usual case is a future jar packaging, but there are special cases: classifier and other packaging
-                throw new MojoExecutionException("Artifact has not been packaged yet. When used on reactor artifact, "
-                        + "unpack should be executed after packaging: see MDEP-98.");
-            }
-
-            UnArchiver unArchiver;
-
-            try {
-                unArchiver = archiverManager.getUnArchiver(type);
-                getLog().debug("Found unArchiver by type: " + unArchiver);
-            } catch (NoSuchArchiverException e) {
-                unArchiver = archiverManager.getUnArchiver(file);
-                getLog().debug("Found unArchiver by extension: " + unArchiver);
-            }
-
-            if (encoding != null && unArchiver instanceof ZipUnArchiver) {
-                ((ZipUnArchiver) unArchiver).setEncoding(encoding);
-                getLog().info("Unpacks '" + type + "' with encoding '" + encoding + "'.");
-            }
-
-            unArchiver.setIgnorePermissions(ignorePermissions);
-
-            unArchiver.setSourceFile(file);
-
-            unArchiver.setDestDirectory(location);
-
-            if (StringUtils.isNotEmpty(excludes) || StringUtils.isNotEmpty(includes)) {
-                // Create the selectors that will filter
-                // based on include/exclude parameters
-                // MDEP-47
-                IncludeExcludeFileSelector[] selectors =
-                        new IncludeExcludeFileSelector[] {new IncludeExcludeFileSelector()};
-
-                if (StringUtils.isNotEmpty(excludes)) {
-                    selectors[0].setExcludes(excludes.split(","));
-                }
-
-                if (StringUtils.isNotEmpty(includes)) {
-                    selectors[0].setIncludes(includes.split(","));
-                }
-
-                unArchiver.setFileSelectors(selectors);
-            }
-            if (this.silent) {
-                silenceUnarchiver(unArchiver);
-            }
-
-            unArchiver.setFileMappers(fileMappers);
-
-            unArchiver.extract();
-        } catch (NoSuchArchiverException e) {
-            throw new MojoExecutionException("Unknown archiver type", e);
-        } catch (ArchiverException e) {
-            throw new MojoExecutionException("Error unpacking file: " + file + " to: " + location, e);
-        }
-        buildContext.refresh(location);
-    }
-
-    private void silenceUnarchiver(UnArchiver unArchiver) {
-        // dangerous but handle any errors. It's the only way to silence the unArchiver.
-        try {
-            Field field = ReflectionUtils.getFieldByNameIncludingSuperclasses("logger", unArchiver.getClass());
-
-            field.setAccessible(true);
-
-            field.set(unArchiver, this.getLog());
-        } catch (Exception e) {
-            // was a nice try. Don't bother logging because the log is silent.
         }
     }
 
@@ -360,13 +189,6 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     }
 
     /**
-     * @param archiverManager The archiverManager to set.
-     */
-    public void setArchiverManager(ArchiverManager archiverManager) {
-        this.archiverManager = archiverManager;
-    }
-
-    /**
      * @return {@link #skip}
      */
     public boolean isSkip() {
@@ -398,35 +220,5 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
         if (silent) {
             setLog(new DependencySilentLog());
         }
-    }
-
-    private void logUnpack(File file, File location, String includes, String excludes) {
-        if (!getLog().isInfoEnabled()) {
-            return;
-        }
-
-        StringBuilder msg = new StringBuilder();
-        msg.append("Unpacking ");
-        msg.append(file);
-        msg.append(" to ");
-        msg.append(location);
-
-        if (includes != null && excludes != null) {
-            msg.append(" with includes \"");
-            msg.append(includes);
-            msg.append("\" and excludes \"");
-            msg.append(excludes);
-            msg.append("\"");
-        } else if (includes != null) {
-            msg.append(" with includes \"");
-            msg.append(includes);
-            msg.append("\"");
-        } else if (excludes != null) {
-            msg.append(" with excludes \"");
-            msg.append(excludes);
-            msg.append("\"");
-        }
-
-        getLog().info(msg.toString());
     }
 }

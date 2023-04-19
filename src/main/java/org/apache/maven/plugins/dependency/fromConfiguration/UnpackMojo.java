@@ -24,9 +24,11 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.dependency.utils.UnpackUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.plugins.dependency.utils.filters.MarkerFileFilter;
 import org.apache.maven.plugins.dependency.utils.markers.MarkerHandler;
@@ -41,6 +43,9 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
  */
 @Mojo(name = "unpack", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresProject = false, threadSafe = true)
 public class UnpackMojo extends AbstractFromConfigurationMojo {
+
+    @Component
+    UnpackUtil unpackUtil;
 
     /**
      * Directory to store flag files after unpack
@@ -67,6 +72,14 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
      */
     @Parameter(property = "mdep.unpack.excludes")
     private String excludes;
+
+    /**
+     * ignore to set file permissions when unpacking a dependency
+     *
+     * @since 2.7
+     */
+    @Parameter(property = "dependency.ignorePermissions", defaultValue = "false")
+    private boolean ignorePermissions;
 
     /**
      * {@link FileMapper} to be used for rewriting each target path, or {@code null} if no rewriting shall happen.
@@ -122,14 +135,16 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     private void unpackArtifact(ArtifactItem artifactItem) throws MojoExecutionException {
         MarkerHandler handler = new UnpackFileMarkerHandler(artifactItem, this.markersDirectory);
 
-        unpack(
-                artifactItem.getArtifact(),
+        unpackUtil.unpack(
+                artifactItem.getArtifact().getFile(),
                 artifactItem.getType(),
                 artifactItem.getOutputDirectory(),
                 artifactItem.getIncludes(),
                 artifactItem.getExcludes(),
                 artifactItem.getEncoding(),
-                artifactItem.getFileMappers());
+                ignorePermissions,
+                artifactItem.getFileMappers(),
+                getLog());
         handler.setMarker();
     }
 

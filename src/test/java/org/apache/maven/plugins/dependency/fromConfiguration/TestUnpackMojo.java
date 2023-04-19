@@ -36,6 +36,7 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.archiver.manager.ArchiverManager;
 
 public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
 
@@ -55,7 +56,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         // MavenProject project = mojo.getProject();
         // init classifier things
         // it needs to get the archivermanager
-        stubFactory.setUnpackableFile(mojo.getArchiverManager());
+        stubFactory.setUnpackableFile(lookup(ArchiverManager.class));
         // i'm using one file repeatedly to archive so I can test the name
         // programmatically.
         stubFactory.setSrcFile(new File(

@@ -29,7 +29,6 @@ import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
-import org.codehaus.plexus.archiver.manager.ArchiverManager;
 
 public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase {
     private final String PACKED_FILE = "test.zip";
@@ -51,8 +50,6 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
         mojo.setOutputDirectory(new File(this.testDir, "outputDirectory"));
         // mojo.silent = true;
 
-        // it needs to get the archivermanager
-        // stubFactory.setUnpackableFile( mojo.getArchiverManager() );
         // i'm using one file repeatedly to archive so I can test the name
         // programmatically.
         stubFactory.setSrcFile(new File(getBasedir() + File.separatorChar + PACKED_FILE_PATH));
@@ -62,8 +59,6 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
         list.add(item);
         assertNotNull(mojo);
         assertNotNull(mojo.getProject());
-
-        mojo.setArchiverManager(lookup(ArchiverManager.class));
 
         mojo.setMarkersDirectory(new File(this.testDir, "markers"));
         mojo.setArtifactItems(list);

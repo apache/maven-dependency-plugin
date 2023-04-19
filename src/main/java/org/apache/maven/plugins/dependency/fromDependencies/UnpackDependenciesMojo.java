@@ -22,12 +22,14 @@ import java.io.File;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.UnpackUtil;
 import org.apache.maven.plugins.dependency.utils.filters.MarkerFileFilter;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
@@ -47,6 +49,10 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
         threadSafe = true)
 // CHECKSTYLE_ON: LineLength
 public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
+
+    @Component
+    UnpackUtil unpackUtil;
+
     /**
      * A comma separated list of file patterns to include when unpacking the artifact. i.e.
      * <code>**&#47;*.xml,**&#47;*.properties</code> NOTE: Excludes patterns override the includes. (component code =
@@ -66,6 +72,14 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     @Parameter(property = "mdep.unpack.excludes")
     private String excludes;
+
+    /**
+     * ignore to set file permissions when unpacking a dependency
+     *
+     * @since 2.7
+     */
+    @Parameter(property = "dependency.ignorePermissions", defaultValue = "false")
+    private boolean ignorePermissions;
 
     /**
      * Encoding of artifacts.
@@ -89,7 +103,6 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
      *
      * @throws MojoExecutionException with a message if an error occurs.
      * @see #getDependencySets(boolean)
-     * @see #unpack(Artifact, File, String, FileMapper[])
      */
     @Override
     protected void doExecute() throws MojoExecutionException {
@@ -105,7 +118,16 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
                     stripType,
                     outputDirectory,
                     artifact);
-            unpack(artifact, destDir, getIncludes(), getExcludes(), getEncoding(), getFileMappers());
+            unpackUtil.unpack(
+                    artifact.getFile(),
+                    artifact.getType(),
+                    destDir,
+                    getIncludes(),
+                    getExcludes(),
+                    getEncoding(),
+                    ignorePermissions,
+                    getFileMappers(),
+                    getLog());
             DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler(artifact, this.markersDirectory);
             handler.setMarker();
         }
