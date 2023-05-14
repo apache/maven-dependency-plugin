@@ -24,7 +24,6 @@ import javax.inject.Singleton;
 
 import java.io.File;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.archiver.ArchiverException;
@@ -127,18 +126,18 @@ public class UnpackUtil {
 
             unArchiver.setDestDirectory(location);
 
-            if (StringUtils.isNotEmpty(excludes) || StringUtils.isNotEmpty(includes)) {
+            if ((excludes != null && !excludes.isEmpty()) || (includes != null && !includes.isEmpty())) {
                 // Create the selectors that will filter
                 // based on include/exclude parameters
                 // MDEP-47
                 IncludeExcludeFileSelector[] selectors =
                         new IncludeExcludeFileSelector[] {new IncludeExcludeFileSelector()};
 
-                if (StringUtils.isNotEmpty(excludes)) {
+                if (excludes != null && !excludes.isEmpty()) {
                     selectors[0].setExcludes(excludes.split(","));
                 }
 
-                if (StringUtils.isNotEmpty(includes)) {
+                if (includes != null && !includes.isEmpty()) {
                     selectors[0].setIncludes(includes.split(","));
                 }
 

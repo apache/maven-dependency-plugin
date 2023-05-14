@@ -27,7 +27,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
@@ -298,7 +297,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
             return;
         }
 
-        if (!StringUtils.isEmpty(manualInclude)) {
+        if (!(manualInclude == null || manualInclude.isEmpty())) {
             manualIncludes = this.parseIncludes(manualInclude);
         }
         // If it's a manual purge, the only step is to delete from the local repo
@@ -382,13 +381,13 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
                 .toString());
 
         for (String gavPattern : theIncludes) {
-            if (StringUtils.isEmpty(gavPattern)) {
+            if (gavPattern == null || gavPattern.isEmpty()) {
                 getLog().debug("Skipping empty gav pattern");
                 continue;
             }
 
             String relativePath = gavToPath(gavPattern);
-            if (StringUtils.isEmpty(relativePath)) {
+            if (relativePath == null || relativePath.isEmpty()) {
                 getLog().debug("Skipping empty relative path for gav pattern: " + gavPattern);
                 continue;
             }
@@ -414,7 +413,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
      * @return the corresponding path
      */
     private String gavToPath(String gav) {
-        if (StringUtils.isEmpty(gav)) {
+        if (gav == null || gav.isEmpty()) {
             return null;
         }
 
@@ -450,14 +449,14 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
         }
 
         // The CLI includes/excludes overrides configuration in the pom
-        if (!StringUtils.isEmpty(this.include)) {
+        if (!(this.include == null || this.include.isEmpty())) {
             this.includes = parseIncludes(this.include);
         }
         if (this.includes != null) {
             subFilters.add(new PatternInclusionsFilter(includes));
         }
 
-        if (!StringUtils.isEmpty(this.exclude)) {
+        if (!(this.exclude == null || this.exclude.isEmpty())) {
             this.excludes = parseIncludes(this.exclude);
         }
         if (this.excludes != null) {

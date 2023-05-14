@@ -178,11 +178,11 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     @Override
     protected void doExecute() throws MojoExecutionException {
         // initialize the separators.
-        boolean isFileSepSet = StringUtils.isNotEmpty(fileSeparator);
-        boolean isPathSepSet = StringUtils.isNotEmpty(pathSeparator);
+        boolean isFileSepSet = fileSeparator != null && !fileSeparator.isEmpty();
+        boolean isPathSepSet = pathSeparator != null && !pathSeparator.isEmpty();
 
         // don't allow them to have absolute paths when they attach.
-        if (attach && StringUtils.isEmpty(localRepoProperty)) {
+        if (attach && (localRepoProperty == null || localRepoProperty.isEmpty())) {
             localRepoProperty = "${M2_REPO}";
         }
 
@@ -264,7 +264,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
         if (prefix == null) {
             String file = art.getFile().getPath();
             // substitute the property for the local repo path to make the classpath file portable.
-            if (StringUtils.isNotEmpty(localRepoProperty)) {
+            if (localRepoProperty != null && !localRepoProperty.isEmpty()) {
                 ProjectBuildingRequest projectBuildingRequest = session.getProjectBuildingRequest();
                 File localBasedir = repositoryManager.getLocalRepositoryBasedir(projectBuildingRequest);
 
