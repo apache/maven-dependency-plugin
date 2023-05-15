@@ -21,7 +21,6 @@ package org.apache.maven.plugins.dependency.utils.translators;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
@@ -67,7 +66,7 @@ public class ClassifierTypeTranslator implements ArtifactTranslator {
             // will use the
             // base artifact value if null comes in
             final String useType;
-            if (StringUtils.isNotEmpty(this.type)) {
+            if (this.type != null && !this.type.isEmpty()) {
                 useType = this.type;
             } else {
                 useType = artifact.getType();
@@ -83,7 +82,7 @@ public class ClassifierTypeTranslator implements ArtifactTranslator {
             }
 
             String useClassifier;
-            if (StringUtils.isNotEmpty(this.classifier)) {
+            if (this.classifier != null && !this.classifier.isEmpty()) {
                 useClassifier = this.classifier;
             } else {
                 useClassifier = artifact.getClassifier();

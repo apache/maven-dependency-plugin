@@ -271,7 +271,7 @@ public final class DependencyUtil {
      */
     public static String cleanToBeTokenizedString(String str) {
         String ret = "";
-        if (!StringUtils.isEmpty(str)) {
+        if (!(str == null || str.isEmpty())) {
             // remove initial and ending spaces, plus all spaces next to commas
             ret = str.trim().replaceAll("[\\s]*,[\\s]*", ",");
         }

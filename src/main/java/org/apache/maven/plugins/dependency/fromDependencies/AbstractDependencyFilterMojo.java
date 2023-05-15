@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -337,7 +336,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
         // transform artifacts if classifier is set
         DependencyStatusSets status;
-        if (StringUtils.isNotEmpty(classifier)) {
+        if (classifier != null && !classifier.isEmpty()) {
             status = getClassifierTranslatedDependencies(artifacts, stopOnFailure);
         } else {
             status = filterMarkedDependencies(artifacts);
@@ -395,7 +394,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
         // possibly translate artifacts into a new set of artifacts based on the
         // classifier and type
         // if this did something, we need to resolve the new artifacts
-        if (StringUtils.isNotEmpty(classifier)) {
+        if (classifier != null && !classifier.isEmpty()) {
             ArtifactTranslator translator =
                     new ClassifierTypeTranslator(artifactHandlerManager, this.classifier, this.type);
             Collection<ArtifactCoordinate> coordinates = translator.translate(artifacts, getLog());

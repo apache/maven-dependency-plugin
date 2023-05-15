@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
@@ -465,10 +464,10 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
             String useClassifier = artifact.getClassifier();
             String useType = artifact.getType();
 
-            if (StringUtils.isNotEmpty(testClassifier)) {
+            if (testClassifier != null && !testClassifier.isEmpty()) {
                 useClassifier = testClassifier;
                 // type is only used if classifier is used.
-                if (StringUtils.isNotEmpty(testType)) {
+                if (testType != null && !testType.isEmpty()) {
                     useType = testType;
                 }
             }
