@@ -19,9 +19,7 @@
 package org.apache.maven.plugins.dependency.analyze;
 
 import java.util.Locale;
-import java.util.ResourceBundle;
 
-import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -33,6 +31,7 @@ import org.apache.maven.reporting.MavenReportException;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerException;
+import org.codehaus.plexus.i18n.I18N;
 
 /**
  * Analyzes the dependencies of this project and produces a report that summarizes which are: used and declared; used
@@ -76,6 +75,12 @@ public class AnalyzeReportMojo extends AbstractMavenReport {
     @Parameter(property = "mdep.analyze.skip", defaultValue = "false")
     private boolean skip;
 
+    /**
+     * Internationalization component
+     */
+    @Component
+    private I18N i18n;
+
     // Mojo methods -----------------------------------------------------------
 
     /*
@@ -100,13 +105,9 @@ public class AnalyzeReportMojo extends AbstractMavenReport {
             analysis = analysis.ignoreNonCompile();
         }
 
-        // Step 2: Create sink and bundle
-        Sink sink = getSink();
-        ResourceBundle bundle = getBundle(locale);
-
         // Step 3: Generate the report
-        AnalyzeReportView analyzethis = new AnalyzeReportView();
-        analyzethis.generateReport(analysis, sink, bundle);
+        AnalyzeReportRenderer r = new AnalyzeReportRenderer(getSink(), i18n, locale, analysis);
+        r.render();
     }
 
     // MavenReport methods ----------------------------------------------------
@@ -127,38 +128,30 @@ public class AnalyzeReportMojo extends AbstractMavenReport {
         return true;
     }
 
-    /*
-     * @see org.apache.maven.reporting.AbstractMavenReport#getOutputName()
-     */
+    /** {@inheritDoc} */
     @Override
     public String getOutputName() {
         return "dependency-analysis";
     }
 
-    /*
-     * @see org.apache.maven.reporting.AbstractMavenReport#getName(java.util.Locale)
-     */
-    @Override
+    /** {@inheritDoc} */
     public String getName(Locale locale) {
-        return getBundle(locale).getString("analyze.report.name");
+        return getI18nString(locale, "name");
     }
 
-    /*
-     * @see org.apache.maven.reporting.AbstractMavenReport#getDescription(java.util.Locale)
-     */
-    @Override
+    /** {@inheritDoc} */
     public String getDescription(Locale locale) {
-        return getBundle(locale).getString("analyze.report.description");
+        return getI18nString(locale, "description");
     }
 
     // protected methods ------------------------------------------------------
 
     /**
-     * @param locale the current locale
-     * @return The resource bundle {@link ResourceBundle}
+     * @param locale The locale
+     * @param key The key to search for
+     * @return The text appropriate for the locale.
      */
-    protected ResourceBundle getBundle(Locale locale) {
-        return ResourceBundle.getBundle(
-                "analyze-report", locale, this.getClass().getClassLoader());
+    protected String getI18nString(Locale locale, String key) {
+        return i18n.getString("analyze-report", locale, "report.analyze." + key);
     }
 }
