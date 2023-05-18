@@ -35,16 +35,15 @@ import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerException;
-import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.context.Context;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 
 /**
@@ -54,14 +53,15 @@ import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @since 2.0-alpha-5
  */
-public abstract class AbstractAnalyzeMojo extends AbstractMojo implements Contextualizable {
+public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     // fields -----------------------------------------------------------------
 
     /**
-     * The plexus context to look-up the right {@link ProjectDependencyAnalyzer} implementation depending on the mojo
+     * The plexusContainer to look-up the right {@link ProjectDependencyAnalyzer} implementation depending on the mojo
      * configuration.
      */
-    private Context context;
+    @Component
+    private PlexusContainer plexusContainer;
 
     /**
      * The Maven project to analyze.
@@ -300,18 +300,13 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo implements Contex
      * @throws MojoExecutionException in case of an error.
      */
     protected ProjectDependencyAnalyzer createProjectDependencyAnalyzer() throws MojoExecutionException {
+
         try {
-            final PlexusContainer container = (PlexusContainer) context.get(PlexusConstants.PLEXUS_KEY);
-            return container.lookup(ProjectDependencyAnalyzer.class, analyzer);
-        } catch (Exception exception) {
+            return plexusContainer.lookup(ProjectDependencyAnalyzer.class, analyzer);
+        } catch (ComponentLookupException exception) {
             throw new MojoExecutionException(
                     "Failed to instantiate ProjectDependencyAnalyser" + " / role-hint " + analyzer, exception);
         }
-    }
-
-    @Override
-    public void contextualize(Context theContext) {
-        this.context = theContext;
     }
 
     /**
