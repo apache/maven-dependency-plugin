@@ -42,6 +42,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>@compilerPluginVersion@</version>
         <configuration>
           <source>8</source>
           <target>8</target>

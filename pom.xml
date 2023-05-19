@@ -455,6 +455,7 @@ under the License.
               <settingsFile>src/it/mrm/settings.xml</settingsFile>
               <filterProperties>
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
+                <compilerPluginVersion>3.11.0</compilerPluginVersion>
               </filterProperties>
             </configuration>
             <dependencies>
