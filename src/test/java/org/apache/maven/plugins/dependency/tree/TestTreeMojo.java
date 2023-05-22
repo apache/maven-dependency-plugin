@@ -138,6 +138,15 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     }
 
     /**
+     * Test the JSON format serialization
+     */
+    public void testTreeJsonSerialzing() throws Exception {
+        File testPom = new File(getBasedir(), "target/test-classes/unit/json-test/pom.xml");
+        TreeMojo mojo = (TreeMojo) lookupMojo("tree", testPom);
+        setVariableValueToObject(mojo, "outputType", "json");
+        setVariableValueToObject(mojo, "outputFile", new File("foo.json"));
+    }
+    /**
      * Help finding content in the given list of string
      *
      * @param outputFile the outputFile.

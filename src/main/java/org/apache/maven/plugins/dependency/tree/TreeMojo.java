@@ -377,6 +377,8 @@ public class TreeMojo extends AbstractMojo {
             return new TGFDependencyNodeVisitor(writer);
         } else if ("dot".equals(outputType)) {
             return new DOTDependencyNodeVisitor(writer);
+        } else if ("json".equals(outputType)) {
+            return new JsonDependencyNodeVisitor(writer);
         } else {
             return new SerializingDependencyNodeVisitor(writer, toGraphTokens(tokens));
         }
