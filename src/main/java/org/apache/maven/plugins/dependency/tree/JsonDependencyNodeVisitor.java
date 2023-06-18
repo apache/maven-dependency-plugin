@@ -31,7 +31,6 @@ import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
  */
 public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implements DependencyNodeVisitor {
 
-    private static final String LINE_SEPARATOR = "\n";
     private String indentChar = " ";
 
     /**
@@ -58,9 +57,9 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
     private void writeRootNode(DependencyNode node, Writer writer) {
         int indent = 2;
         StringBuilder sb = new StringBuilder();
-        sb.append("{").append(LINE_SEPARATOR);
+        sb.append("{").append("\n");
         writeNode(indent, node, sb);
-        sb.append("}").append(LINE_SEPARATOR);
+        sb.append("}").append("\n");
         try {
             writer.write(sb.toString());
         } catch (IOException e) {
@@ -69,7 +68,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
         }
     }
     /**
-     * Appends the node and it's children to the string builder.
+     * Appends the node and its children to the string builder.
      * @param indent  the current indent level
      * @param node  the node to write
      * @param sb  the string builder to append to
@@ -87,21 +86,21 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param sb  the string builder to append to
      */
     private void writeChildren(int indent, DependencyNode node, StringBuilder sb) {
-        sb.append(indent(indent)).append("\"children\": [").append(LINE_SEPARATOR);
+        sb.append(indent(indent)).append("\"children\": [").append("\n");
         indent += 2;
         for (int i = 0; i < node.getChildren().size(); i++) {
             DependencyNode child = node.getChildren().get(i);
             sb.append(indent(indent));
-            sb.append("{").append(LINE_SEPARATOR);
+            sb.append("{").append("\n");
             writeNode(indent + 2, child, sb);
             sb.append(indent(indent)).append("}");
             // we skip the comma for the last child
             if (i != node.getChildren().size() - 1) {
                 sb.append(",");
             }
-            sb.append(LINE_SEPARATOR);
+            sb.append("\n");
         }
-        sb.append(indent(indent)).append("]").append(LINE_SEPARATOR);
+        sb.append(indent(indent)).append("]").append("\n");
     }
 
     @Override
@@ -116,14 +115,14 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param hasChildren  true if the artifact has children
      */
     private void appendNodeValues(StringBuilder sb, int indent, Artifact artifact, boolean hasChildren) {
-        appendKey(sb, indent, "groupId", StringUtils.defaultString(artifact.getGroupId()));
-        appendKey(sb, indent, "artifactId", StringUtils.defaultString(artifact.getArtifactId()));
-        appendKey(sb, indent, "version", StringUtils.defaultString(artifact.getVersion()));
-        appendKey(sb, indent, "type", StringUtils.defaultString(artifact.getType()));
-        appendKey(sb, indent, "scope", StringUtils.defaultString(artifact.getScope()));
-        appendKey(sb, indent, "classifier", StringUtils.defaultString(artifact.getClassifier()));
+        appendKeyValue(sb, indent, "groupId", StringUtils.defaultString(artifact.getGroupId()));
+        appendKeyValue(sb, indent, "artifactId", StringUtils.defaultString(artifact.getArtifactId()));
+        appendKeyValue(sb, indent, "version", StringUtils.defaultString(artifact.getVersion()));
+        appendKeyValue(sb, indent, "type", StringUtils.defaultString(artifact.getType()));
+        appendKeyValue(sb, indent, "scope", StringUtils.defaultString(artifact.getScope()));
+        appendKeyValue(sb, indent, "classifier", StringUtils.defaultString(artifact.getClassifier()));
         if (hasChildren) {
-            appendKey(sb, indent, "optional", StringUtils.defaultString(String.valueOf(artifact.isOptional())));
+            appendKeyValue(sb, indent, "optional", StringUtils.defaultString(String.valueOf(artifact.isOptional())));
         } else {
             appendKeyWithoutComma(
                     sb, indent, "optional", StringUtils.defaultString(String.valueOf(artifact.isOptional())));
@@ -136,7 +135,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param key  the key used as json key
      * @param value  the value used as json value
      */
-    private void appendKey(StringBuilder sb, int indent, String key, String value) {
+    private void appendKeyValue(StringBuilder sb, int indent, String key, String value) {
         sb.append(indent(indent))
                 .append("\"")
                 .append(key)
@@ -147,7 +146,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
                 .append(value)
                 .append("\"")
                 .append(",")
-                .append(LINE_SEPARATOR);
+                .append("\n");
     }
     /**
      * Appends a key value pair to the string builder without a comma at the end. This is used for the last children of a node.
@@ -166,7 +165,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
                 .append("\"")
                 .append(value)
                 .append("\"")
-                .append(LINE_SEPARATOR);
+                .append("\n");
     }
 
     /**
