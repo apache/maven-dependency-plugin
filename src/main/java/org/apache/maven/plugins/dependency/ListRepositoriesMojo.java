@@ -98,14 +98,21 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
                 }
             }));
 
+            if (repositories.isEmpty()) {
+                getLog().info("No remote repository is used by this build." + System.lineSeparator());
+                return;
+            }
+
             StringBuilder message = new StringBuilder();
 
             Map<Boolean, List<RemoteRepository>> repoGroupByMirrors = repositories.stream()
                     .collect(Collectors.groupingBy(
                             repo -> repo.getMirroredRepositories().isEmpty()));
 
-            prepareRemoteRepositoriesList(message, repoGroupByMirrors.get(Boolean.TRUE));
-            prepareRemoteMirrorRepositoriesList(message, repoGroupByMirrors.get(Boolean.FALSE));
+            prepareRemoteRepositoriesList(
+                    message, repoGroupByMirrors.getOrDefault(Boolean.TRUE, Collections.emptyList()));
+            prepareRemoteMirrorRepositoriesList(
+                    message, repoGroupByMirrors.getOrDefault(Boolean.FALSE, Collections.emptyList()));
 
             getLog().info(message);
 
