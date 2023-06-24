@@ -41,7 +41,7 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverE
 /**
  * Goal that resolves all project dependencies, including plugins and reports and their dependencies.
  *
- * <a href="mailto:brianf@apache.org">Brian Fox</a>
+ * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @author Maarten Mulders
  * @since 2.0
  */
