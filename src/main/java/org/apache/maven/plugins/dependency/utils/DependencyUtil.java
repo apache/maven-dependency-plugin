@@ -20,11 +20,11 @@ package org.apache.maven.plugins.dependency.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Objects;
 
 import org.apache.maven.artifact.Artifact;
@@ -105,15 +105,13 @@ public final class DependencyUtil {
             destFileName.append(artifact.getGroupId()).append(".");
         }
 
-        String versionString;
+        String versionString = "";
         if (!removeVersion) {
             if (useBaseVersion) {
                 versionString = "-" + ArtifactUtils.toSnapshotVersion(artifact.getVersion());
             } else {
                 versionString = "-" + artifact.getVersion();
             }
-        } else {
-            versionString = "";
         }
 
         String classifierString = "";
@@ -226,9 +224,9 @@ public final class DependencyUtil {
      */
     public static synchronized void write(String string, File file, boolean append, String encoding)
             throws IOException {
-        file.getParentFile().mkdirs();
+        Files.createDirectories(file.getParentFile().toPath());
 
-        try (Writer writer = new OutputStreamWriter(new FileOutputStream(file, append), encoding)) {
+        try (Writer writer = Files.newBufferedWriter(file.toPath(), Charset.forName(encoding))) {
             writer.write(string);
         }
     }
@@ -241,15 +239,9 @@ public final class DependencyUtil {
      * @throws IOException if an I/O error occurs
      */
     public static synchronized void log(String string, Log log) throws IOException {
-        BufferedReader reader = new BufferedReader(new StringReader(string));
-
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            log.info(line);
+        try (BufferedReader reader = new BufferedReader(new StringReader(string))) {
+            reader.lines().forEach(log::info);
         }
-
-        reader.close();
     }
 
     /**
@@ -276,7 +268,7 @@ public final class DependencyUtil {
         String ret = "";
         if (!(str == null || str.isEmpty())) {
             // remove initial and ending spaces, plus all spaces next to commas
-            ret = str.trim().replaceAll("[\\s]*,[\\s]*", ",");
+            ret = str.trim().replaceAll("\\s*,\\s*", ",");
         }
 
         return ret;

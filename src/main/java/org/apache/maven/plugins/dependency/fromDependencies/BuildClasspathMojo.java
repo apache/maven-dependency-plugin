@@ -18,15 +18,12 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -35,6 +32,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -306,9 +305,8 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
         // make sure the parent path exists.
         out.getParentFile().mkdirs();
 
-        String encoding = Objects.toString(outputEncoding, "UTF-8");
-
-        try (Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(out), encoding))) {
+        String encoding = Objects.toString(outputEncoding, StandardCharsets.UTF_8.name());
+        try (Writer w = Files.newBufferedWriter(out.toPath(), Charset.forName(encoding))) {
             w.write(cpString);
             getLog().info("Wrote classpath file '" + out + "'.");
         } catch (IOException ex) {
@@ -332,15 +330,11 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
         if (!outputFile.isFile()) {
             return null;
         }
-        StringBuilder sb = new StringBuilder();
-        String encoding = Objects.toString(outputEncoding, "UTF-8");
 
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(outputFile), encoding))) {
-            for (String line = r.readLine(); line != null; line = r.readLine()) {
-                sb.append(line);
-            }
+        String encoding = Objects.toString(outputEncoding, StandardCharsets.UTF_8.name());
 
-            return sb.toString();
+        try (Stream<String> lines = Files.lines(outputFile.toPath(), Charset.forName(encoding))) {
+            return lines.collect(Collectors.joining());
         }
     }
 
