@@ -45,7 +45,7 @@ public class ResolveDependenciesMojoTest extends AbstractDependencyMojoTestCase 
     }
 
     public void testDependencyStatusEmptySet() {
-        doTestDependencyStatusLog(new HashSet<Artifact>());
+        doTestDependencyStatusLog(new HashSet<>());
     }
 
     public void testOptionalDependencyFormatting() throws IOException {
