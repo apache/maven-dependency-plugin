@@ -190,14 +190,14 @@ public abstract class AbstractAnalyzeMojo
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard. *
      * <p>
-     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
-     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
+     * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
+     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
      * </p>
      *
      * @since 2.10
      */
     @Parameter
-    private final String[] ignoredDependencies = new String[0];
+    final String[] ignoredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are used but undeclared. The filter syntax is:
@@ -209,8 +209,8 @@ public abstract class AbstractAnalyzeMojo
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard. *
      * <p>
-     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
-     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
+     * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
+     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
      * </p>
      *
      * @since 2.10
@@ -228,14 +228,14 @@ public abstract class AbstractAnalyzeMojo
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard. *
      * <p>
-     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
-     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
+     * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
+     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
      * </p>
      *
      * @since 2.10
      */
     @Parameter
-    private final String[] ignoredUnusedDeclaredDependencies = new String[0];
+    final String[] ignoredUnusedDeclaredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are in not test scope but are only used in test classes.
@@ -248,14 +248,14 @@ public abstract class AbstractAnalyzeMojo
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard. *
      * <p>
-     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
-     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
+     * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
+     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
      * </p>
      *
      * @since 3.3.0
      */
     @Parameter
-    private final String[] ignoredNonTestScopedDependencies = new String[0];
+    final String[] ignoredNonTestScopedDependencies = new String[0];
 
     /**
      * List of project packaging that will be ignored.
@@ -267,11 +267,16 @@ public abstract class AbstractAnalyzeMojo
     // defaultValue value on @Parameter - not work with Maven 3.2.5
     // When is set defaultValue always win, and there is no possibility to override by plugin configuration.
     @Parameter
-    private final List<String> ignoredPackagings = Arrays.asList( "pom", "ear" );
+    final List<String> ignoredPackagings = Arrays.asList( "pom", "ear" );
 
 
     /**
-     * List of dependencies to be included. The result of this list is then applied to the ignore parameters.
+     * List of dependencies to be included. When not set includes all dependencies (default).
+     *
+     * <p>The ignore parameters are then applied to the result of the include parameter.</p>
+     *
+     * <p>If an artifact matches on both include then ignore, that artifact won't result
+     * in a dependency problem.</p>
      *
      * The filter syntax is:
      *
@@ -282,15 +287,14 @@ public abstract class AbstractAnalyzeMojo
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard. *
      * <p>
-     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
-     * <code>org.apache.</code>, and <code>:maven-dependency-plugin</code> will result in the analysis being applied
-     * where <code>maven-dependency-plugin</code> is a dependency.
+     * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
+     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
      * </p>
      *
-     * @since 3.3.1-SNAPSHOT
+     * @since 3.6.1-SNAPSHOT
      */
     @Parameter
-    private final String[] includeDependencies = new String[0];
+    final String[] includeDependencies = new String[0];
 
     // Mojo methods -----------------------------------------------------------
 
@@ -400,19 +404,24 @@ public abstract class AbstractAnalyzeMojo
         Set<Artifact> ignoredUnusedDeclared = new LinkedHashSet<>();
         Set<Artifact> ignoredNonTestScope = new LinkedHashSet<>();
 
-        if ( ignoreUnusedRuntime )
-        {
-            filterArtifactsByScope( unusedDeclared, Artifact.SCOPE_RUNTIME );
-        }
+        // Used declared handling
+        notIncludedUsedDeclared.addAll( filterDependencies( usedDeclared,
+          includeDependencies ) );
 
-        notIncludedUsedDeclared.addAll( filterDependencies( usedDeclared, includeDependencies ) );
-
+        // Used undeclared handling
         notIncludedUsedUndeclared.addAll( filterDependencies( usedUndeclaredWithClasses.keySet(),
           includeDependencies ) );
+
         ignoredUsedUndeclared.addAll( filterDependenciesNotMatching( usedUndeclaredWithClasses.keySet(),
           ignoredDependencies ) );
         ignoredUsedUndeclared.addAll( filterDependenciesNotMatching( usedUndeclaredWithClasses.keySet(),
           ignoredUsedUndeclaredDependencies ) );
+
+        // Unused declared handling
+        if ( ignoreUnusedRuntime )
+        {
+          filterArtifactsByScope( unusedDeclared, Artifact.SCOPE_RUNTIME );
+        }
 
         notIncludedUnusedDeclared.addAll( filterDependencies( unusedDeclared, includeDependencies ) );
         ignoredUnusedDeclared.addAll( filterDependenciesNotMatching( unusedDeclared,
@@ -420,7 +429,7 @@ public abstract class AbstractAnalyzeMojo
         ignoredUnusedDeclared.addAll( filterDependenciesNotMatching( unusedDeclared,
           ignoredUnusedDeclaredDependencies ) );
 
-
+        // Non-test scope handling
         notIncludedNonTestScope.addAll( filterDependencies ( nonTestScope, includeDependencies ) );
         if ( ignoreAllNonTestScoped )
         {
@@ -697,7 +706,7 @@ public abstract class AbstractAnalyzeMojo
 
 
     /**
-     * Filter for artifacts that don't match the <code>exclude</code> criteria.
+     * Filter for artifacts that don't match the <code>excludes</code> criteria.
      *
      * @param artifacts filtered by elements that don't match the <code>excludes</code> argument
      * @param excludes the filter to be applied
@@ -723,7 +732,7 @@ public abstract class AbstractAnalyzeMojo
 
 
     /**
-     * Filter for artifacts that match the <code>include</code> criteria.
+     * Filter for artifacts that match the <code>includes</code> criteria.
      * No filtering is applied if the criteria is empty.
      *
      * @param artifacts filtered for elements that do match the criteria
