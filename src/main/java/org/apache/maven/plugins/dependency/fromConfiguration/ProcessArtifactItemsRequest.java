@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.fromConfiguration;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,13 +16,13 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency.fromConfiguration;
 
 /**
  * @author Olivier Lamy
  * @since 2.7
  */
-public class ProcessArtifactItemsRequest
-{
+public class ProcessArtifactItemsRequest {
     /**
      * remove the version from the filename.
      */
@@ -48,8 +46,7 @@ public class ProcessArtifactItemsRequest
     /**
      * Default ctor.
      */
-    public ProcessArtifactItemsRequest()
-    {
+    public ProcessArtifactItemsRequest() {
         // no op
     }
 
@@ -59,9 +56,8 @@ public class ProcessArtifactItemsRequest
      * @param useBaseVersion {@link #useBaseVersion}
      * @param removeClassifier {@link #removeClassifier}
      */
-    public ProcessArtifactItemsRequest( boolean removeVersion, boolean prependGroupId, boolean useBaseVersion,
-                                        boolean removeClassifier )
-    {
+    public ProcessArtifactItemsRequest(
+            boolean removeVersion, boolean prependGroupId, boolean useBaseVersion, boolean removeClassifier) {
         this.removeVersion = removeVersion;
         this.prependGroupId = prependGroupId;
         this.useBaseVersion = useBaseVersion;
@@ -71,32 +67,28 @@ public class ProcessArtifactItemsRequest
     /**
      * @return {@link #removeVersion}
      */
-    public boolean isRemoveVersion()
-    {
+    public boolean isRemoveVersion() {
         return removeVersion;
     }
 
     /**
      * @param removeVersion {@link #removeVersion}
      */
-    public void setRemoveVersion( boolean removeVersion )
-    {
+    public void setRemoveVersion(boolean removeVersion) {
         this.removeVersion = removeVersion;
     }
 
     /**
      * @return {@link #removeClassifier}
      */
-    public boolean isRemoveClassifier()
-    {
+    public boolean isRemoveClassifier() {
         return removeClassifier;
     }
 
     /**
      * @param removeClassifier {@link #removeClassifier}
      */
-    public void setRemoveClassifier( boolean removeClassifier )
-    {
+    public void setRemoveClassifier(boolean removeClassifier) {
         this.removeClassifier = removeClassifier;
     }
 
@@ -104,8 +96,7 @@ public class ProcessArtifactItemsRequest
      * @param theRemoveVersion {@link #removeVersion}
      * @return {@link ProcessArtifactItemsRequest}
      */
-    public ProcessArtifactItemsRequest removeVersion( boolean theRemoveVersion )
-    {
+    public ProcessArtifactItemsRequest removeVersion(boolean theRemoveVersion) {
         this.removeVersion = theRemoveVersion;
         return this;
     }
@@ -113,16 +104,14 @@ public class ProcessArtifactItemsRequest
     /**
      * @return {@link #prependGroupId}
      */
-    public boolean isPrependGroupId()
-    {
+    public boolean isPrependGroupId() {
         return prependGroupId;
     }
 
     /**
      * @param prependGroupId {@link #prependGroupId}
      */
-    public void setPrependGroupId( boolean prependGroupId )
-    {
+    public void setPrependGroupId(boolean prependGroupId) {
         this.prependGroupId = prependGroupId;
     }
 
@@ -130,8 +119,7 @@ public class ProcessArtifactItemsRequest
      * @param thePrependGroupId {@link #prependGroupId}
      * @return {@link ProcessArtifactItemsRequest}
      */
-    public ProcessArtifactItemsRequest prependGroupId( boolean thePrependGroupId )
-    {
+    public ProcessArtifactItemsRequest prependGroupId(boolean thePrependGroupId) {
         this.prependGroupId = thePrependGroupId;
         return this;
     }
@@ -139,16 +127,14 @@ public class ProcessArtifactItemsRequest
     /**
      * @return {@link #useBaseVersion}
      */
-    public boolean isUseBaseVersion()
-    {
+    public boolean isUseBaseVersion() {
         return useBaseVersion;
     }
 
     /**
      * @param useBaseVersion {@link #useBaseVersion}
      */
-    public void setUseBaseVersion( boolean useBaseVersion )
-    {
+    public void setUseBaseVersion(boolean useBaseVersion) {
         this.useBaseVersion = useBaseVersion;
     }
 
@@ -156,8 +142,7 @@ public class ProcessArtifactItemsRequest
      * @param theUseBaseVersion {@link #useBaseVersion}
      * @return {@link ProcessArtifactItemsRequest}
      */
-    public ProcessArtifactItemsRequest useBaseVersion( boolean theUseBaseVersion )
-    {
+    public ProcessArtifactItemsRequest useBaseVersion(boolean theUseBaseVersion) {
         this.useBaseVersion = theUseBaseVersion;
         return this;
     }

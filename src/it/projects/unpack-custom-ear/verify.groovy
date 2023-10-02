@@ -19,4 +19,4 @@
 def buildLog = new File( basedir, 'build.log' )
 assert buildLog.exists()
 assert buildLog.length() != 0
-assert buildLog.text.contains( "[DEBUG] Found unArchiver by type: " )
+assert buildLog.text.contains( "[DEBUG] Found unArchiver: org.apache.maven.archiver.LogUnArchiver by type: custom-ear" )

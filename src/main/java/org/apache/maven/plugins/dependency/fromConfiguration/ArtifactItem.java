@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.fromConfiguration;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency.fromConfiguration;
 
 import java.io.File;
 import java.util.Objects;
@@ -34,9 +33,7 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
  * @since 1.0
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  */
-public class ArtifactItem
-    implements DependableCoordinate
-{
+public class ArtifactItem implements DependableCoordinate {
     /**
      * Group Id of Artifact
      *
@@ -133,28 +130,24 @@ public class ArtifactItem
     /**
      * Default ctor.
      */
-    public ArtifactItem()
-    {
+    public ArtifactItem() {
         // default constructor
     }
 
     /**
      * @param artifact {@link Artifact}
      */
-    public ArtifactItem( Artifact artifact )
-    {
-        this.setArtifact( artifact );
-        this.setArtifactId( artifact.getArtifactId() );
-        this.setClassifier( artifact.getClassifier() );
-        this.setGroupId( artifact.getGroupId() );
-        this.setType( artifact.getType() );
-        this.setVersion( artifact.getVersion() );
+    public ArtifactItem(Artifact artifact) {
+        this.setArtifact(artifact);
+        this.setArtifactId(artifact.getArtifactId());
+        this.setClassifier(artifact.getClassifier());
+        this.setGroupId(artifact.getGroupId());
+        this.setType(artifact.getType());
+        this.setVersion(artifact.getVersion());
     }
 
-    private String filterEmptyString( String in )
-    {
-        if ( "".equals( in ) )
-        {
+    private String filterEmptyString(String in) {
+        if ("".equals(in)) {
             return null;
         }
         return in;
@@ -163,166 +156,142 @@ public class ArtifactItem
     /**
      * @return Returns the artifactId.
      */
-    public String getArtifactId()
-    {
+    public String getArtifactId() {
         return artifactId;
     }
 
     /**
      * @param theArtifact The artifactId to set.
      */
-    public void setArtifactId( String theArtifact )
-    {
-        this.artifactId = filterEmptyString( theArtifact );
+    public void setArtifactId(String theArtifact) {
+        this.artifactId = filterEmptyString(theArtifact);
     }
 
     /**
      * @return Returns the groupId.
      */
-    public String getGroupId()
-    {
+    public String getGroupId() {
         return groupId;
     }
 
     /**
      * @param groupId The groupId to set.
      */
-    public void setGroupId( String groupId )
-    {
-        this.groupId = filterEmptyString( groupId );
+    public void setGroupId(String groupId) {
+        this.groupId = filterEmptyString(groupId);
     }
 
     /**
      * @return Returns the type.
      */
-    public String getType()
-    {
+    public String getType() {
         return type;
     }
 
     /**
      * @param type The type to set.
      */
-    public void setType( String type )
-    {
-        this.type = filterEmptyString( type );
+    public void setType(String type) {
+        this.type = filterEmptyString(type);
     }
 
     /**
      * @return Returns the version.
      */
-    public String getVersion()
-    {
+    public String getVersion() {
         return version;
     }
 
     /**
      * @param version The version to set.
      */
-    public void setVersion( String version )
-    {
-        this.version = filterEmptyString( version );
+    public void setVersion(String version) {
+        this.version = filterEmptyString(version);
     }
 
     /**
      * @return Returns the base version.
      */
-    public String getBaseVersion()
-    {
-        return ArtifactUtils.toSnapshotVersion( version );
+    public String getBaseVersion() {
+        return ArtifactUtils.toSnapshotVersion(version);
     }
 
     /**
      * @return Classifier.
      */
-    public String getClassifier()
-    {
+    public String getClassifier() {
         return classifier;
     }
 
     /**
      * @param classifier Classifier.
      */
-    public void setClassifier( String classifier )
-    {
-        this.classifier = filterEmptyString( classifier );
+    public void setClassifier(String classifier) {
+        this.classifier = filterEmptyString(classifier);
     }
 
     @Override
-    public String toString()
-    {
-        if ( this.classifier == null )
-        {
-            return groupId + ":" + artifactId + ":" + Objects.toString( version, "?" ) + ":" + type;
-        }
-        else
-        {
-            return groupId + ":" + artifactId + ":" + classifier + ":" + Objects.toString( version, "?" ) + ":"
-                + type;
+    public String toString() {
+        if (this.classifier == null) {
+            return groupId + ":" + artifactId + ":" + Objects.toString(version, "?") + ":" + type;
+        } else {
+            return groupId + ":" + artifactId + ":" + classifier + ":" + Objects.toString(version, "?") + ":" + type;
         }
     }
 
     /**
      * @return Returns the location.
      */
-    public File getOutputDirectory()
-    {
+    public File getOutputDirectory() {
         return outputDirectory;
     }
 
     /**
      * @param outputDirectory The outputDirectory to set.
      */
-    public void setOutputDirectory( File outputDirectory )
-    {
+    public void setOutputDirectory(File outputDirectory) {
         this.outputDirectory = outputDirectory;
     }
 
     /**
      * @return Returns the location.
      */
-    public String getDestFileName()
-    {
+    public String getDestFileName() {
         return destFileName;
     }
 
     /**
      * @param destFileName The destFileName to set.
      */
-    public void setDestFileName( String destFileName )
-    {
-        this.destFileName = filterEmptyString( destFileName );
+    public void setDestFileName(String destFileName) {
+        this.destFileName = filterEmptyString(destFileName);
     }
 
     /**
      * @return Returns the needsProcessing.
      */
-    public boolean isNeedsProcessing()
-    {
+    public boolean isNeedsProcessing() {
         return this.needsProcessing;
     }
 
     /**
      * @param needsProcessing The needsProcessing to set.
      */
-    public void setNeedsProcessing( boolean needsProcessing )
-    {
+    public void setNeedsProcessing(boolean needsProcessing) {
         this.needsProcessing = needsProcessing;
     }
 
     /**
      * @return Returns the overWriteSnapshots.
      */
-    public String getOverWrite()
-    {
+    public String getOverWrite() {
         return this.overWrite;
     }
 
     /**
      * @param overWrite The overWrite to set.
      */
-    public void setOverWrite( String overWrite )
-    {
+    public void setOverWrite(String overWrite) {
         this.overWrite = overWrite;
     }
 
@@ -330,8 +299,7 @@ public class ArtifactItem
      * @return Returns the encoding.
      * @since 3.0
      */
-    public String getEncoding()
-    {
+    public String getEncoding() {
         return this.encoding;
     }
 
@@ -339,56 +307,49 @@ public class ArtifactItem
      * @param encoding The encoding to set.
      * @since 3.0
      */
-    public void setEncoding( String encoding )
-    {
+    public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
 
     /**
      * @return Returns the artifact.
      */
-    public Artifact getArtifact()
-    {
+    public Artifact getArtifact() {
         return this.artifact;
     }
 
     /**
      * @param artifact The artifact to set.
      */
-    public void setArtifact( Artifact artifact )
-    {
+    public void setArtifact(Artifact artifact) {
         this.artifact = artifact;
     }
 
     /**
      * @return Returns a comma separated list of excluded items
      */
-    public String getExcludes()
-    {
-        return DependencyUtil.cleanToBeTokenizedString( this.excludes );
+    public String getExcludes() {
+        return DependencyUtil.cleanToBeTokenizedString(this.excludes);
     }
 
     /**
      * @param excludes A comma separated list of items to exclude i.e. <code>**\/*.xml, **\/*.properties</code>
      */
-    public void setExcludes( String excludes )
-    {
+    public void setExcludes(String excludes) {
         this.excludes = excludes;
     }
 
     /**
      * @return Returns a comma separated list of included items
      */
-    public String getIncludes()
-    {
-        return DependencyUtil.cleanToBeTokenizedString( this.includes );
+    public String getIncludes() {
+        return DependencyUtil.cleanToBeTokenizedString(this.includes);
     }
 
     /**
      * @param includes A comma separated list of items to include i.e. <code>**\/*.xml, **\/*.properties</code>
      */
-    public void setIncludes( String includes )
-    {
+    public void setIncludes(String includes) {
         this.includes = includes;
     }
 
@@ -398,8 +359,7 @@ public class ArtifactItem
      *
      * @since 3.1.2
      */
-    public FileMapper[] getFileMappers()
-    {
+    public FileMapper[] getFileMappers() {
         return this.fileMappers;
     }
 
@@ -409,8 +369,7 @@ public class ArtifactItem
      *
      * @since 3.1.2
      */
-    public void setFileMappers( FileMapper[] fileMappers )
-    {
+    public void setFileMappers(FileMapper[] fileMappers) {
         this.fileMappers = fileMappers;
     }
 }

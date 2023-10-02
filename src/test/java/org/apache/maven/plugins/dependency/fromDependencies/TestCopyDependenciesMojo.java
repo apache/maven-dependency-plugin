@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.fromDependencies;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.fromDependencies;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugins.dependency.fromDependencies;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency.fromDependencies;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,66 +34,58 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.StringUtils;
 
-public class TestCopyDependenciesMojo
-    extends AbstractDependencyMojoTestCase
-{
+public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     CopyDependenciesMojo mojo;
 
     @Override
-    protected void setUp()
-        throws Exception
-    {
+    protected void setUp() throws Exception {
         // required for mojo lookups to work
-        super.setUp( "copy-dependencies", true, false );
+        super.setUp("copy-dependencies", true, false);
 
-        File testPom = new File( getBasedir(), "target/test-classes/unit/copy-dependencies-test/plugin-config.xml" );
-        mojo = (CopyDependenciesMojo) lookupMojo( "copy-dependencies", testPom );
-        mojo.outputDirectory = new File( this.testDir, "outputDirectory" );
+        File testPom = new File(getBasedir(), "target/test-classes/unit/copy-dependencies-test/plugin-config.xml");
+        mojo = (CopyDependenciesMojo) lookupMojo("copy-dependencies", testPom);
+        mojo.outputDirectory = new File(this.testDir, "outputDirectory");
         // mojo.silent = true;
 
-        assertNotNull( mojo );
-        assertNotNull( mojo.getProject() );
+        assertNotNull(mojo);
+        assertNotNull(mojo.getProject());
         MavenProject project = mojo.getProject();
 
-        MavenSession session = newMavenSession( project );
-        setVariableValueToObject( mojo, "session", session );
+        MavenSession session = newMavenSession(project);
+        setVariableValueToObject(mojo, "session", session);
 
-        LegacySupport legacySupport = lookup( LegacySupport.class );
-        legacySupport.setSession( session );
-        installLocalRepository( legacySupport );
+        LegacySupport legacySupport = lookup(LegacySupport.class);
+        legacySupport.setSession(session);
+        installLocalRepository(legacySupport);
 
         Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
         Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
-        artifacts.addAll( directArtifacts );
+        artifacts.addAll(directArtifacts);
 
-        project.setArtifacts( artifacts );
-        project.setDependencyArtifacts( directArtifacts );
-        mojo.markersDirectory = new File( this.testDir, "markers" );
+        project.setArtifacts(artifacts);
+        project.setDependencyArtifacts(directArtifacts);
+        mojo.markersDirectory = new File(this.testDir, "markers");
 
-        ArtifactHandlerManager manager = lookup( ArtifactHandlerManager.class );
-        setVariableValueToObject( mojo, "artifactHandlerManager", manager );
+        ArtifactHandlerManager manager = lookup(ArtifactHandlerManager.class);
+        setVariableValueToObject(mojo, "artifactHandlerManager", manager);
     }
 
-    public void assertNoMarkerFile( Artifact artifact ) throws MojoExecutionException
-    {
-        DefaultFileMarkerHandler handle = new DefaultFileMarkerHandler( artifact, mojo.markersDirectory );
-        assertFalse( handle.isMarkerSet() );
+    public void assertNoMarkerFile(Artifact artifact) throws MojoExecutionException {
+        DefaultFileMarkerHandler handle = new DefaultFileMarkerHandler(artifact, mojo.markersDirectory);
+        assertFalse(handle.isMarkerSet());
     }
 
-    public void testCopyFile()
-        throws MojoExecutionException, IOException
-    {
-        File src = File.createTempFile( "copy", null );
+    public void testCopyFile() throws MojoExecutionException, IOException {
+        File src = File.createTempFile("copy", null);
 
-        File dest = new File( mojo.outputDirectory, "toMe.jar" );
+        File dest = new File(mojo.outputDirectory, "toMe.jar");
 
-        assertFalse( dest.exists() );
+        assertFalse(dest.exists());
 
-        copyFile( mojo, src, dest );
-        assertTrue( dest.exists() );
+        copyFile(mojo, src, dest);
+        assertTrue(dest.exists());
     }
 
     /**
@@ -102,104 +93,84 @@ public class TestCopyDependenciesMojo
      *
      * @throws Exception in case of an error
      */
-    public void testMojo()
-        throws Exception
-    {
+    public void testMojo() throws Exception {
         mojo.execute();
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertTrue( file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertTrue(file.exists());
 
             // there should be no markers for the copy mojo
-            assertNoMarkerFile( artifact );
+            assertNoMarkerFile(artifact);
         }
     }
 
-    public void testStripVersion()
-        throws Exception
-    {
+    public void testStripVersion() throws Exception {
         mojo.stripVersion = true;
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, true );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertTrue( file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, true);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertTrue(file.exists());
         }
     }
 
-    public void testStripClassifier()
-        throws Exception
-    {
+    public void testStripClassifier() throws Exception {
         mojo.stripClassifier = true;
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false, false, false, true );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertTrue( file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false, false, false, true);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertTrue(file.exists());
         }
     }
 
-    public void testUseBaseVersion()
-        throws Exception
-    {
+    public void testUseBaseVersion() throws Exception {
         mojo.useBaseVersion = true;
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false, false, true );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertTrue( file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false, false, true);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertTrue(file.exists());
         }
     }
 
-    public void testNoTransitive()
-        throws Exception
-    {
+    public void testNoTransitive() throws Exception {
         mojo.excludeTransitive = true;
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getDependencyArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertTrue( file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertTrue(file.exists());
         }
     }
 
-    public void testExcludeType()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getTypedArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testExcludeType() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getTypedArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeTypes = "jar";
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertEquals( artifact.getType().equalsIgnoreCase( "jar" ), !file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertEquals(artifact.getType().equalsIgnoreCase("jar"), !file.exists());
         }
     }
 
-    public void testIncludeType()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getTypedArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testIncludeType() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getTypedArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
 
         mojo.includeTypes = "jar";
         mojo.excludeTypes = "jar";
@@ -208,47 +179,40 @@ public class TestCopyDependenciesMojo
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertFalse( file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertFalse(file.exists());
         }
 
         mojo.excludeTypes = "";
         mojo.execute();
 
         artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertEquals( artifact.getType().equalsIgnoreCase( "jar" ), file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertEquals(artifact.getType().equalsIgnoreCase("jar"), file.exists());
         }
     }
 
-    public void testExcludeArtifactId()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getArtifactArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testExcludeArtifactId() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getArtifactArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeArtifactIds = "one";
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertEquals( artifact.getArtifactId().equals( "one" ), !file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertEquals(artifact.getArtifactId().equals("one"), !file.exists());
         }
     }
 
-    public void testIncludeArtifactId()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getArtifactArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testIncludeArtifactId() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getArtifactArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
 
         mojo.includeArtifactIds = "one";
         mojo.excludeArtifactIds = "one";
@@ -257,30 +221,26 @@ public class TestCopyDependenciesMojo
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertFalse( file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertFalse(file.exists());
         }
 
         mojo.excludeArtifactIds = "";
         mojo.execute();
 
         artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertEquals( artifact.getArtifactId().equals( "one" ), file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertEquals(artifact.getArtifactId().equals("one"), file.exists());
         }
     }
 
-    public void testIncludeGroupId()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getGroupIdArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testIncludeGroupId() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getGroupIdArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.includeGroupIds = "one";
         mojo.excludeGroupIds = "one";
         // shouldn't get anything
@@ -288,85 +248,71 @@ public class TestCopyDependenciesMojo
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertFalse( file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertFalse(file.exists());
         }
 
         mojo.excludeGroupIds = "";
         mojo.execute();
 
         artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertEquals( artifact.getGroupId().equals( "one" ), file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertEquals(artifact.getGroupId().equals("one"), file.exists());
         }
-
     }
 
-    public void testExcludeGroupId()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getGroupIdArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testExcludeGroupId() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getGroupIdArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeGroupIds = "one";
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
 
-            assertEquals( artifact.getGroupId().equals( "one" ), !file.exists() );
+            assertEquals(artifact.getGroupId().equals("one"), !file.exists());
         }
     }
 
-    public void testExcludeMultipleGroupIds()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getGroupIdArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testExcludeMultipleGroupIds() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getGroupIdArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeGroupIds = "one,two";
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
 
-            assertEquals( artifact.getGroupId().equals( "one" ) || artifact.getGroupId().equals( "two" ),
-                          !file.exists() );
+            assertEquals(
+                    artifact.getGroupId().equals("one") || artifact.getGroupId().equals("two"), !file.exists());
         }
     }
 
-    public void testExcludeClassifier()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getClassifiedArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testExcludeClassifier() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getClassifiedArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeClassifiers = "one";
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertEquals( artifact.getClassifier().equals( "one" ), !file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertEquals(artifact.getClassifier().equals("one"), !file.exists());
         }
     }
 
-    public void testIncludeClassifier()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getClassifiedArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testIncludeClassifier() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getClassifiedArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
 
         mojo.includeClassifiers = "one";
         mojo.excludeClassifiers = "one";
@@ -375,127 +321,105 @@ public class TestCopyDependenciesMojo
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertFalse( file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertFalse(file.exists());
         }
 
         mojo.excludeClassifiers = "";
         mojo.execute();
 
         artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertEquals( artifact.getClassifier().equals( "one" ), file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertEquals(artifact.getClassifier().equals("one"), file.exists());
         }
-
     }
 
-    public void testSubPerType()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getTypedArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testSubPerType() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getTypedArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.useSubDirectoryPerType = true;
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File folder = DependencyUtil.getFormattedOutputDirectory( false, true, false, false, false,
-                                                                      mojo.outputDirectory, artifact );
-            File file = new File( folder, fileName );
-            assertTrue( file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File folder = DependencyUtil.getFormattedOutputDirectory(
+                    false, true, false, false, false, false, mojo.outputDirectory, artifact);
+            File file = new File(folder, fileName);
+            assertTrue(file.exists());
         }
     }
 
-    public void testCDMClassifier()
-        throws Exception
-    {
-        dotestClassifierType( "jdk14", null );
+    public void testCDMClassifier() throws Exception {
+        dotestClassifierType("jdk14", null);
     }
 
-    public void testCDMType()
-        throws Exception
-    {
-        dotestClassifierType( null, "sources" );
+    public void testCDMType() throws Exception {
+        dotestClassifierType(null, "sources");
     }
 
-    public void testCDMClassifierType()
-        throws Exception
-    {
-        dotestClassifierType( "jdk14", "sources" );
+    public void testCDMClassifierType() throws Exception {
+        dotestClassifierType("jdk14", "sources");
     }
 
-    public void dotestClassifierType( String testClassifier, String testType )
-        throws Exception
-    {
+    public void dotestClassifierType(String testClassifier, String testType) throws Exception {
         mojo.classifier = testClassifier;
         mojo.type = testType;
 
-        for ( Artifact artifact : mojo.getProject().getArtifacts() )
-        {
+        for (Artifact artifact : mojo.getProject().getArtifacts()) {
             String type = testType != null ? testType : artifact.getType();
 
-            stubFactory.createArtifact( artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
-                                        artifact.getScope(), type, testClassifier );
-
+            stubFactory.createArtifact(
+                    artifact.getGroupId(),
+                    artifact.getArtifactId(),
+                    artifact.getVersion(),
+                    artifact.getScope(),
+                    type,
+                    testClassifier);
         }
 
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
+        for (Artifact artifact : artifacts) {
             String useClassifier = artifact.getClassifier();
             String useType = artifact.getType();
 
-            if ( StringUtils.isNotEmpty( testClassifier ) )
-            {
+            if (testClassifier != null && !testClassifier.isEmpty()) {
                 useClassifier = "-" + testClassifier;
                 // type is only used if classifier is used.
-                if ( StringUtils.isNotEmpty( testType ) )
-                {
+                if (testType != null && !testType.isEmpty()) {
                     useType = testType;
                 }
             }
             String fileName = artifact.getArtifactId() + "-" + artifact.getVersion() + useClassifier + "." + useType;
-            File file = new File( mojo.outputDirectory, fileName );
+            File file = new File(mojo.outputDirectory, fileName);
 
-            if ( !file.exists() )
-            {
-                fail( "Can't find:" + file.getAbsolutePath() );
+            if (!file.exists()) {
+                fail("Can't find:" + file.getAbsolutePath());
             }
 
             // there should be no markers for the copy mojo
-            assertNoMarkerFile( artifact );
+            assertNoMarkerFile(artifact);
         }
     }
 
-    public void testArtifactResolutionException()
-        throws MojoFailureException
-    {
+    public void testArtifactResolutionException() throws MojoFailureException {
         dotestArtifactExceptions();
     }
 
-    public void dotestArtifactExceptions()
-        throws MojoFailureException
-    {
+    public void dotestArtifactExceptions() throws MojoFailureException {
         mojo.classifier = "jdk";
         mojo.type = "java-sources";
 
-        try
-        {
+        try {
             mojo.execute();
-            fail( "ExpectedException" );
-        }
-        catch ( MojoExecutionException e )
-        {
+            fail("ExpectedException");
+        } catch (MojoExecutionException e) {
 
         }
     }
@@ -507,81 +431,75 @@ public class TestCopyDependenciesMojo
      */
 
     public void testDontOverWriteRelease()
-        throws MojoExecutionException, InterruptedException, IOException, MojoFailureException
-    {
+            throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact release = stubFactory.getReleaseArtifact();
-        assertTrue( release.getFile().setLastModified( System.currentTimeMillis() - 2000 ) );
+        assertTrue(release.getFile().setLastModified(System.currentTimeMillis() - 2000));
 
-        artifacts.add( release );
+        artifacts.add(release);
 
-        mojo.getProject().setArtifacts( artifacts );
-        mojo.getProject().setDependencyArtifacts( artifacts );
+        mojo.getProject().setArtifacts(artifacts);
+        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteIfNewer = false;
 
         mojo.execute();
 
-        File copiedFile = new File( mojo.outputDirectory, DependencyUtil.getFormattedFileName( release, false ) );
+        File copiedFile = new File(mojo.outputDirectory, DependencyUtil.getFormattedFileName(release, false));
 
-        Thread.sleep( 100 );
+        Thread.sleep(100);
         // round up to the next second
         long time = System.currentTimeMillis() + 1000;
-        time = time - ( time % 1000 );
-        assertTrue( copiedFile.setLastModified( time ) );
-        Thread.sleep( 100 );
+        time = time - (time % 1000);
+        assertTrue(copiedFile.setLastModified(time));
+        Thread.sleep(100);
 
         mojo.execute();
 
-        assertEquals( time, copiedFile.lastModified() );
+        assertEquals(time, copiedFile.lastModified());
     }
 
-    public void testOverWriteRelease()
-        throws MojoExecutionException, IOException, MojoFailureException
-    {
+    public void testOverWriteRelease() throws MojoExecutionException, IOException, MojoFailureException {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact release = stubFactory.getReleaseArtifact();
 
-        assertTrue( release.getFile().setLastModified( 1000L ) );
-        assertEquals( 1000L, release.getFile().lastModified() );
-        
-        artifacts.add( release );
+        assertTrue(release.getFile().setLastModified(1000L));
+        assertEquals(1000L, release.getFile().lastModified());
 
-        mojo.getProject().setArtifacts( artifacts );
-        mojo.getProject().setDependencyArtifacts( artifacts );
+        artifacts.add(release);
+
+        mojo.getProject().setArtifacts(artifacts);
+        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = true;
         mojo.overWriteIfNewer = false;
 
         mojo.execute();
 
-        File copiedFile = new File( mojo.outputDirectory, DependencyUtil.getFormattedFileName( release, false ) );
+        File copiedFile = new File(mojo.outputDirectory, DependencyUtil.getFormattedFileName(release, false));
 
-        assertTrue( copiedFile.setLastModified( 2000L ) );
-        assertEquals( 2000L, copiedFile.lastModified() );
+        assertTrue(copiedFile.setLastModified(2000L));
+        assertEquals(2000L, copiedFile.lastModified());
 
         mojo.execute();
 
         long timeCopyNow = copiedFile.lastModified();
-        assertEquals( 1000L, timeCopyNow );
-
+        assertEquals(1000L, timeCopyNow);
     }
 
-    public void testDontOverWriteSnap()
-        throws MojoExecutionException, IOException, MojoFailureException
-    {
+    public void testDontOverWriteSnap() throws MojoExecutionException, IOException, MojoFailureException {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact snap = stubFactory.getSnapshotArtifact();
-        assertTrue( snap.getFile().setLastModified( 1000L ) );
-        assertEquals( 1000L, snap.getFile().lastModified() );         
+        assertTrue(snap.getFile().setLastModified(1000L));
+        assertEquals(1000L, snap.getFile().lastModified());
 
-        artifacts.add( snap );
+        artifacts.add(snap);
 
-        mojo.getProject().setArtifacts( artifacts );
-        mojo.getProject().setDependencyArtifacts( artifacts );
+        mojo.getProject().setArtifacts(artifacts);
+        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = false;
         mojo.overWriteSnapshots = false;
@@ -589,30 +507,28 @@ public class TestCopyDependenciesMojo
 
         mojo.execute();
 
-        File copiedFile = new File( mojo.outputDirectory, DependencyUtil.getFormattedFileName( snap, false ) );
+        File copiedFile = new File(mojo.outputDirectory, DependencyUtil.getFormattedFileName(snap, false));
 
-        assertTrue( copiedFile.setLastModified( 2000L ) );
-        assertEquals( 2000L, copiedFile.lastModified() );
+        assertTrue(copiedFile.setLastModified(2000L));
+        assertEquals(2000L, copiedFile.lastModified());
 
         mojo.execute();
 
         long timeCopyNow = copiedFile.lastModified();
-        assertEquals( 2000L, timeCopyNow );
+        assertEquals(2000L, timeCopyNow);
     }
 
-    public void testOverWriteSnap()
-        throws MojoExecutionException, IOException, MojoFailureException
-    {
+    public void testOverWriteSnap() throws MojoExecutionException, IOException, MojoFailureException {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact snap = stubFactory.getSnapshotArtifact();
-        assertTrue( snap.getFile().setLastModified( 1000L ) );
-        assertEquals( 1000L, snap.getFile().lastModified() );
+        assertTrue(snap.getFile().setLastModified(1000L));
+        assertEquals(1000L, snap.getFile().lastModified());
 
-        artifacts.add( snap );
+        artifacts.add(snap);
 
-        mojo.getProject().setArtifacts( artifacts );
-        mojo.getProject().setDependencyArtifacts( artifacts );
+        mojo.getProject().setArtifacts(artifacts);
+        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = false;
         mojo.overWriteSnapshots = true;
@@ -620,158 +536,130 @@ public class TestCopyDependenciesMojo
 
         mojo.execute();
 
-        File copiedFile = new File( mojo.outputDirectory, DependencyUtil.getFormattedFileName( snap, false ) );
+        File copiedFile = new File(mojo.outputDirectory, DependencyUtil.getFormattedFileName(snap, false));
 
-        assertTrue( copiedFile.setLastModified( 2000L ) );
-        assertEquals( 2000L, copiedFile.lastModified() );
+        assertTrue(copiedFile.setLastModified(2000L));
+        assertEquals(2000L, copiedFile.lastModified());
 
         mojo.execute();
 
         long timeCopyNow = copiedFile.lastModified();
-        assertEquals( 1000L, timeCopyNow );
+        assertEquals(1000L, timeCopyNow);
     }
 
-    public void testGetDependencies()
-        throws MojoExecutionException
-    {
-        assertEquals( mojo.getResolvedDependencies( true ).toString(),
-                      mojo.getDependencySets( true ).getResolvedDependencies().toString() );
+    public void testGetDependencies() throws MojoExecutionException {
+        assertEquals(
+                mojo.getResolvedDependencies(true).toString(),
+                mojo.getDependencySets(true).getResolvedDependencies().toString());
     }
 
-    public void testExcludeProvidedScope()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getScopedArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testExcludeProvidedScope() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeScope = "provided";
         // mojo.silent = false;
 
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertEquals( artifact.getScope().equals( "provided" ), !file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertEquals(artifact.getScope().equals("provided"), !file.exists());
             file.delete();
-            assertFalse( file.exists() );
+            assertFalse(file.exists());
         }
-
     }
 
-    public void testExcludeSystemScope()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getScopedArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testExcludeSystemScope() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeScope = "system";
         // mojo.silent = false;
 
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertEquals( artifact.getScope().equals( "system" ), !file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertEquals(artifact.getScope().equals("system"), !file.exists());
             file.delete();
-            assertFalse( file.exists() );
+            assertFalse(file.exists());
         }
-
     }
 
-    public void testExcludeCompileScope()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getScopedArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testExcludeCompileScope() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeScope = "compile";
         mojo.execute();
-        ScopeArtifactFilter saf = new ScopeArtifactFilter( mojo.excludeScope );
+        ScopeArtifactFilter saf = new ScopeArtifactFilter(mojo.excludeScope);
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
 
-            assertEquals( !saf.include( artifact ), file.exists() );
+            assertEquals(!saf.include(artifact), file.exists());
         }
     }
 
-    public void testExcludeTestScope()
-        throws IOException, MojoFailureException
-    {
-        mojo.getProject().setArtifacts( stubFactory.getScopedArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testExcludeTestScope() throws IOException, MojoFailureException {
+        mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeScope = "test";
 
-        try
-        {
+        try {
             mojo.execute();
-            fail( "expected an exception" );
-        }
-        catch ( MojoExecutionException e )
-        {
+            fail("expected an exception");
+        } catch (MojoExecutionException e) {
 
         }
-
     }
 
-    public void testExcludeRuntimeScope()
-        throws Exception
-    {
-        mojo.getProject().setArtifacts( stubFactory.getScopedArtifacts() );
-        mojo.getProject().setDependencyArtifacts( new HashSet<Artifact>() );
+    public void testExcludeRuntimeScope() throws Exception {
+        mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
+        mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeScope = "runtime";
         mojo.execute();
-        ScopeArtifactFilter saf = new ScopeArtifactFilter( mojo.excludeScope );
+        ScopeArtifactFilter saf = new ScopeArtifactFilter(mojo.excludeScope);
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
 
-            assertEquals( !saf.include( artifact ), file.exists() );
+            assertEquals(!saf.include(artifact), file.exists());
         }
     }
 
-    public void testCopyPom()
-        throws Exception
-    {
-        mojo.setCopyPom( true );
+    public void testCopyPom() throws Exception {
+        mojo.setCopyPom(true);
 
         Set<Artifact> set = new HashSet<>();
-        set.add( stubFactory.createArtifact( "org.apache.maven", "maven-artifact", "2.0.7", Artifact.SCOPE_COMPILE ) );
-        stubFactory.createArtifact( "org.apache.maven", "maven-artifact", "2.0.7", Artifact.SCOPE_COMPILE, "pom",
-                                    null );
-        mojo.getProject().setArtifacts( set );
+        set.add(stubFactory.createArtifact("org.apache.maven", "maven-artifact", "2.0.7", Artifact.SCOPE_COMPILE));
+        stubFactory.createArtifact("org.apache.maven", "maven-artifact", "2.0.7", Artifact.SCOPE_COMPILE, "pom", null);
+        mojo.getProject().setArtifacts(set);
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false );
-            File file = new File( mojo.outputDirectory, fileName.substring( 0, fileName.length() - 4 ) + ".pom" );
-            assertTrue( file + " doesn't exist", file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName.substring(0, fileName.length() - 4) + ".pom");
+            assertTrue(file + " doesn't exist", file.exists());
         }
     }
 
-    public void testPrependGroupId()
-        throws Exception
-    {
+    public void testPrependGroupId() throws Exception {
         mojo.prependGroupId = true;
         mojo.execute();
 
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
-        for ( Artifact artifact : artifacts )
-        {
-            String fileName = DependencyUtil.getFormattedFileName( artifact, false, true );
-            File file = new File( mojo.outputDirectory, fileName );
-            assertTrue( file.exists() );
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false, true);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertTrue(file.exists());
         }
     }
 }

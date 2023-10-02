@@ -333,7 +333,7 @@ mvn dependency:unpack
    
    Also included is the ability to include or exclude by type (war, jar etc), scope (runtime, test, etc), classifier (jdk14, sources, etc), groupId, artifactId, or a combination of them. 
 
-   <<Note:>> As of 2.0-alpha-5, you may mix includes and excludes of the same category (ie scope). Includes are processed before excludes.
+   <<Note:>> You can mix includes and excludes of the same category (i.e. scope). Includes are processed before excludes.
 
    See the {{{#Overwrite_Rules}Overwrite Rules}} section for rules about how overwriting is handled.
                                       
@@ -643,7 +643,7 @@ java -cp `cat resultFile` MyClass
 mvn dependency:build-classpath
 +---+
 
-  or to write the classpath to cp.txt.:
+  or to write the classpath to cp.txt:
 
 +---+
 mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
@@ -682,13 +682,13 @@ mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 
 * <<<dependency:list-repositories>>>
 
-  This goal is used to list all the repositories that this build depends upon. It will show repositories defined in your settings, 
-  poms and declared in transitive dependency poms.
+  This goal lists all the repositories that this build depends upon. It shows repositories defined in your settings, 
+  poms, and declared in transitive dependency poms.
 
 
 * <<<dependency:get>>>
 
-  This goal is used to fetch an artifact and (optionally) its dependencies from remote repositories using its Maven coordinates.
+  This goal fetches an artifact and (optionally) its dependencies from remote repositories using its Maven coordinates.
 
 +-----+
 mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources -DremoteRepositories=central::default::https://repo.maven.apache.org/maven2,myrepo::::http://myrepo.com/maven2
