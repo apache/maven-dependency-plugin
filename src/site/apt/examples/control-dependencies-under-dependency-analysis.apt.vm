@@ -16,14 +16,14 @@
 ~~ under the License.    
  
   ------
-  Exclude dependencies from dependency analysis
+  Control dependencies under dependency analysis
   ------
   Henning Schmiedehausen
   ------
   2015-01-01
   ------
 
-Exclude dependencies from dependency analysis
+Control dependencies under dependency analysis
 
   A project's dependencies can be analyzed as part of the build process by binding the <<<dependency:analyze-only>>>
   goal to the lifecycle.  By default, the analysis will be performed during the <<<verify>>> lifecycle phase.  
@@ -37,6 +37,11 @@ Exclude dependencies from dependency analysis
   The plugin can then be configured to ignore dependencies that are
   "declared but unused", "undeclared but used", and "non-test scoped"
   in selected list or in all simultaneously.
+  
+  Another case is when mature projects have accumulated superfluous dependencies or
+  relied upon transitivity for their dependencies. Where fixing all the dependency 
+  problems up-front is not viable the plugin can be configured to only raise
+  warnings for dependencies meeting "include" criteria.
 
   See the following POM configuration for an example:
 
@@ -57,6 +62,11 @@ Exclude dependencies from dependency analysis
             </goals>
             <configuration>
               <failOnWarning>true</failOnWarning>
+              
+              <!-- limit warnings to dependencies for group com.google.code.findbugs -->
+              <includeDependencies>
+                <includeDependency>com.google.code.findbugs</includeDependency>
+              </includeDependencies>              
 
               <!-- ignore jsr305 for "used but undeclared", "declared but unused", and "non-test scoped" -->
               <ignoredDependencies>
