@@ -195,7 +195,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * @since 2.10
      */
     @Parameter
-    private final String[] ignoredDependencies = new String[0];
+    private String[] ignoredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are used but undeclared. The filter syntax is:
@@ -214,7 +214,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * @since 2.10
      */
     @Parameter
-    private final String[] ignoredUsedUndeclaredDependencies = new String[0];
+    private String[] ignoredUsedUndeclaredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are declared but unused. The filter syntax is:
@@ -233,7 +233,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * @since 2.10
      */
     @Parameter
-    private final String[] ignoredUnusedDeclaredDependencies = new String[0];
+    private String[] ignoredUnusedDeclaredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are in not test scope but are only used in test classes.
@@ -253,7 +253,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * @since 3.3.0
      */
     @Parameter
-    private final String[] ignoredNonTestScopedDependencies = new String[0];
+    private String[] ignoredNonTestScopedDependencies = new String[0];
 
     /**
      * List of project packaging that will be ignored.
@@ -265,7 +265,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     // defaultValue value on @Parameter - not work with Maven 3.2.5
     // When is set defaultValue always win, and there is no possibility to override by plugin configuration.
     @Parameter
-    private final List<String> ignoredPackagings = Arrays.asList( "pom", "ear" );
+    private List<String> ignoredPackagings = Arrays.asList( "pom", "ear" );
 
 
     /**
@@ -292,7 +292,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * @since 3.6.1-SNAPSHOT
      */
     @Parameter
-    private final String[] includeDependencies = new String[0];
+    private String[] includeDependencies = new String[0];
 
     // Mojo methods -----------------------------------------------------------
 
