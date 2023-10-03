@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.resolvers;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.resolvers;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,8 +16,8 @@ package org.apache.maven.plugins.dependency.resolvers;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency.resolvers;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -31,12 +29,12 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 2.0-alpha2
  */
-//CHECKSTYLE_OFF: LineLength
-@Mojo( name = "sources", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true )
-//CHECKSTYLE_ON: LineLength
-public class ResolveDependencySourcesMojo
-    extends ResolveDependenciesMojo
-{
+@Mojo(
+        name = "sources",
+        defaultPhase = LifecyclePhase.GENERATE_SOURCES,
+        requiresDependencyResolution = ResolutionScope.TEST,
+        threadSafe = true)
+public class ResolveDependencySourcesMojo extends ResolveDependenciesMojo {
 
     private static final String SOURCE_CLASSIFIER = "sources";
 
@@ -46,11 +44,8 @@ public class ResolveDependencySourcesMojo
      * @throws MojoExecutionException with a message if an error occurs.
      */
     @Override
-    protected void doExecute()
-        throws MojoExecutionException
-    {
-        if ( StringUtils.isEmpty( this.classifier ) )
-        {
+    protected void doExecute() throws MojoExecutionException {
+        if (this.classifier == null || this.classifier.isEmpty()) {
             this.classifier = SOURCE_CLASSIFIER;
         }
 

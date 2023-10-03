@@ -74,7 +74,8 @@ ${project.name}
 
   *{{{./list-classes-mojo.html}dependency:list-classes}} displays the fully package-qualified names of all classes found in a specified artifact.
 
-  *{{{./list-repositories-mojo.html}dependency:list-repositories}} displays all project dependencies and then lists the repositories used.
+  *{{{./list-repositories-mojo.html}dependency:list-repositories}} collect all project dependencies and then lists the repositories
+  used by the build and by the transitive dependencies.
 
   *{{{./properties-mojo.html}dependency:properties}} set a property for each project dependency containing the
   to the artifact on the file system.

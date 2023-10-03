@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.tree;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.tree;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugins.dependency.tree;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency.tree;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +33,7 @@ import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
  *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  */
-public class BuildingDependencyNodeVisitor
-        implements DependencyNodeVisitor
-{
+public class BuildingDependencyNodeVisitor implements DependencyNodeVisitor {
     // fields -----------------------------------------------------------------
 
     /**
@@ -59,9 +56,8 @@ public class BuildingDependencyNodeVisitor
     /**
      * Creates a dependency node visitor that clones visited nodes into a new dependency tree.
      */
-    public BuildingDependencyNodeVisitor()
-    {
-        this( null );
+    public BuildingDependencyNodeVisitor() {
+        this(null);
     }
 
     /**
@@ -71,11 +67,10 @@ public class BuildingDependencyNodeVisitor
      * @param visitor the dependency node visitor to apply on the resultant dependency tree, or <code>null</code> for
      *            none
      */
-    public BuildingDependencyNodeVisitor( DependencyNodeVisitor visitor )
-    {
+    public BuildingDependencyNodeVisitor(DependencyNodeVisitor visitor) {
         this.visitor = visitor;
 
-        parentNodes = new Stack<DependencyNode>();
+        parentNodes = new Stack<>();
     }
 
     // DependencyNodeVisitor methods ------------------------------------------
@@ -84,8 +79,7 @@ public class BuildingDependencyNodeVisitor
      * {@inheritDoc}
      */
     @Override
-    public boolean visit( DependencyNode node )
-    {
+    public boolean visit(DependencyNode node) {
         // clone the node
         WrapperNode newNode = new WrapperNode(
                 parentNodes.isEmpty() ? null : parentNodes.peek(),
@@ -95,21 +89,17 @@ public class BuildingDependencyNodeVisitor
                 node.getVersionConstraint(),
                 node.getOptional(),
                 node.getExclusions(),
-                node.toNodeString()
-        );
-        newNode.setChildren( new ArrayList<DependencyNode>() );
+                node.toNodeString());
+        newNode.setChildren(new ArrayList<>());
 
-        if ( parentNodes.empty() )
-        {
+        if (parentNodes.empty()) {
             rootNode = newNode;
-        }
-        else
-        {
+        } else {
             DependencyNode parentNode = parentNodes.peek();
-            parentNode.getChildren().add( newNode );
+            parentNode.getChildren().add(newNode);
         }
 
-        parentNodes.push( newNode );
+        parentNodes.push(newNode);
 
         return true;
     }
@@ -118,14 +108,12 @@ public class BuildingDependencyNodeVisitor
      * {@inheritDoc}
      */
     @Override
-    public boolean endVisit( DependencyNode node )
-    {
+    public boolean endVisit(DependencyNode node) {
         parentNodes.pop();
 
         // apply the visitor to the resultant tree on the last visit
-        if ( parentNodes.empty() && visitor != null )
-        {
-            rootNode.accept( visitor );
+        if (parentNodes.empty() && visitor != null) {
+            rootNode.accept(visitor);
         }
 
         return true;
@@ -138,8 +126,7 @@ public class BuildingDependencyNodeVisitor
      *
      * @return the dependency node visitor, or <code>null</code> for none
      */
-    public DependencyNodeVisitor getDependencyNodeVisitor()
-    {
+    public DependencyNodeVisitor getDependencyNodeVisitor() {
         return visitor;
     }
 
@@ -148,13 +135,11 @@ public class BuildingDependencyNodeVisitor
      *
      * @return the root node, or <code>null</code> if the source tree has not yet been visited
      */
-    public DependencyNode getDependencyTree()
-    {
+    public DependencyNode getDependencyTree() {
         return rootNode;
     }
 
-    private static class WrapperNode implements DependencyNode
-    {
+    private static class WrapperNode implements DependencyNode {
 
         private final Artifact artifact;
 
@@ -174,15 +159,15 @@ public class BuildingDependencyNodeVisitor
 
         private final String nodeString;
 
-        private WrapperNode( DependencyNode parent,
-                             Artifact artifact,
-                             String premanagedVersion,
-                             String premanagedScope,
-                             String versionConstraint,
-                             Boolean optional,
-                             List<Exclusion> exclusions,
-                             String nodeString )
-        {
+        private WrapperNode(
+                DependencyNode parent,
+                Artifact artifact,
+                String premanagedVersion,
+                String premanagedScope,
+                String versionConstraint,
+                Boolean optional,
+                List<Exclusion> exclusions,
+                String nodeString) {
             this.artifact = artifact;
             this.parent = parent;
             this.premanagedVersion = premanagedVersion;
@@ -194,78 +179,64 @@ public class BuildingDependencyNodeVisitor
         }
 
         @Override
-        public Artifact getArtifact()
-        {
+        public Artifact getArtifact() {
             return artifact;
         }
 
         @Override
-        public List<DependencyNode> getChildren()
-        {
+        public List<DependencyNode> getChildren() {
             return children;
         }
 
         @Override
-        public boolean accept( DependencyNodeVisitor visitor )
-        {
-            if ( visitor.visit( this ) )
-            {
-                for ( DependencyNode child : getChildren() )
-                {
-                    if ( !child.accept( visitor ) )
-                    {
+        public boolean accept(DependencyNodeVisitor visitor) {
+            if (visitor.visit(this)) {
+                for (DependencyNode child : getChildren()) {
+                    if (!child.accept(visitor)) {
                         break;
                     }
                 }
             }
 
-            return visitor.endVisit( this );
+            return visitor.endVisit(this);
         }
 
         @Override
-        public DependencyNode getParent()
-        {
+        public DependencyNode getParent() {
             return parent;
         }
 
         @Override
-        public String getPremanagedVersion()
-        {
+        public String getPremanagedVersion() {
             return premanagedVersion;
         }
 
         @Override
-        public String getPremanagedScope()
-        {
+        public String getPremanagedScope() {
             return premanagedScope;
         }
 
         @Override
-        public String getVersionConstraint()
-        {
+        public String getVersionConstraint() {
             return versionConstraint;
         }
 
         @Override
-        public String toNodeString()
-        {
+        public String toNodeString() {
             return nodeString;
         }
 
         @Override
-        public Boolean getOptional()
-        {
+        public Boolean getOptional() {
             return optional;
         }
 
         @Override
-        public List<Exclusion> getExclusions()
-        {
+        public List<Exclusion> getExclusions() {
             return exclusions;
         }
 
-        public void setChildren( List<DependencyNode> children )
-        {
+        public void setChildren(List<DependencyNode> children) {
             this.children = children;
         }
     }

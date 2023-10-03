@@ -1,6 +1,4 @@
-package org.apache.maven.plugins.dependency.testUtils.stubs;
-
-/* 
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -9,15 +7,16 @@ package org.apache.maven.plugins.dependency.testUtils.stubs;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.    
+ * under the License.
  */
+package org.apache.maven.plugins.dependency.testUtils.stubs;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,9 +66,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 /**
  * very simple stub of maven project, going to take a lot of work to make it useful as a stub though
  */
-public class DependencyProjectStub
-    extends MavenProject
-{
+public class DependencyProjectStub extends MavenProject {
     private String groupId;
 
     private String artifactId;
@@ -148,860 +145,618 @@ public class DependencyProjectStub
 
     private Properties properties;
 
-    public DependencyProjectStub()
-    {
-        super( (Model) null );
+    public DependencyProjectStub() {
+        super((Model) null);
     }
 
     // kinda dangerous...
-    public DependencyProjectStub( Model model )
-    {
+    public DependencyProjectStub(Model model) {
         // super(model);
-        super( (Model) null );
+        super((Model) null);
     }
 
     // kinda dangerous...
-    public DependencyProjectStub( MavenProject project )
-    {
+    public DependencyProjectStub(MavenProject project) {
         // super(project);
-        super( (Model) null );
+        super((Model) null);
     }
 
-    public String getModulePathAdjustment( MavenProject mavenProject )
-        throws IOException
-    {
+    public String getModulePathAdjustment(MavenProject mavenProject) throws IOException {
         return "";
     }
 
-    public Artifact getArtifact()
-    {
-        if ( artifact == null )
-        {
-            ArtifactHandler ah = new DefaultArtifactHandlerStub( "jar", null );
+    public Artifact getArtifact() {
+        if (artifact == null) {
+            ArtifactHandler ah = new DefaultArtifactHandlerStub("jar", null);
 
-            VersionRange vr = VersionRange.createFromVersion( "1.0" );
-            Artifact art =
-                new DefaultArtifact( "group", "artifact", vr, Artifact.SCOPE_COMPILE, "jar", null, ah, false );
-            setArtifact( art );
+            VersionRange vr = VersionRange.createFromVersion("1.0");
+            Artifact art = new DefaultArtifact("group", "artifact", vr, Artifact.SCOPE_COMPILE, "jar", null, ah, false);
+            setArtifact(art);
         }
         return artifact;
     }
 
-    public void setArtifact( Artifact artifact )
-    {
+    public void setArtifact(Artifact artifact) {
         this.artifact = artifact;
     }
 
-    public Model getModel()
-    {
+    public Model getModel() {
         return model;
     }
 
-    public MavenProject getParent()
-    {
+    public MavenProject getParent() {
         return parent;
     }
 
-    public void setParent( MavenProject mavenProject )
-    {
+    public void setParent(MavenProject mavenProject) {
         this.parent = mavenProject;
     }
 
-    public void setRemoteArtifactRepositories( List<ArtifactRepository> list )
-    {
+    public void setRemoteArtifactRepositories(List<ArtifactRepository> list) {}
 
-    }
-
-    public List<ArtifactRepository> getRemoteArtifactRepositories()
-    {
+    public List<ArtifactRepository> getRemoteArtifactRepositories() {
         return Collections.emptyList();
     }
 
-    public boolean hasParent()
-    {
-        return ( parent != null );
+    public boolean hasParent() {
+        return (parent != null);
     }
 
-    public File getFile()
-    {
+    public File getFile() {
         return file;
     }
 
-    public void setFile( File file )
-    {
+    public void setFile(File file) {
         this.file = file;
     }
 
-    public File getBasedir()
-    {
-        return new File( PlexusTestCase.getBasedir() );
+    public File getBasedir() {
+        return new File(PlexusTestCase.getBasedir());
     }
 
-    public void setDependencies( List<Dependency> list )
-    {
+    public void setDependencies(List<Dependency> list) {
         dependencies = list;
     }
 
-    public List<Dependency> getDependencies()
-    {
-        if ( dependencies == null )
-        {
+    public List<Dependency> getDependencies() {
+        if (dependencies == null) {
             dependencies = Collections.emptyList();
         }
         return dependencies;
     }
 
-    public void setDependencyManagement( DependencyManagement depMgt )
-    {
+    public void setDependencyManagement(DependencyManagement depMgt) {
         this.dependencyManagement = depMgt;
     }
 
-    public DependencyManagement getDependencyManagement()
-    {
-        if ( dependencyManagement == null )
-        {
+    public DependencyManagement getDependencyManagement() {
+        if (dependencyManagement == null) {
             dependencyManagement = new DependencyManagement();
         }
 
         return dependencyManagement;
     }
 
-    public void addCompileSourceRoot( String string )
-    {
-        if ( compileSourceRoots == null )
-        {
-            compileSourceRoots = Collections.singletonList( string );
-        }
-        else
-        {
-            compileSourceRoots.add( string );
+    public void addCompileSourceRoot(String string) {
+        if (compileSourceRoots == null) {
+            compileSourceRoots = Collections.singletonList(string);
+        } else {
+            compileSourceRoots.add(string);
         }
     }
 
-    public void addScriptSourceRoot( String string )
-    {
-        if ( scriptSourceRoots == null )
-        {
-            scriptSourceRoots = Collections.singletonList( string );
-        }
-        else
-        {
-            scriptSourceRoots.add( string );
+    public void addScriptSourceRoot(String string) {
+        if (scriptSourceRoots == null) {
+            scriptSourceRoots = Collections.singletonList(string);
+        } else {
+            scriptSourceRoots.add(string);
         }
     }
 
-    public void addTestCompileSourceRoot( String string )
-    {
-        if ( testCompileSourceRoots == null )
-        {
-            testCompileSourceRoots = Collections.singletonList( string );
-        }
-        else
-        {
-            testCompileSourceRoots.add( string );
+    public void addTestCompileSourceRoot(String string) {
+        if (testCompileSourceRoots == null) {
+            testCompileSourceRoots = Collections.singletonList(string);
+        } else {
+            testCompileSourceRoots.add(string);
         }
     }
 
-    public List<String> getCompileSourceRoots()
-    {
+    public List<String> getCompileSourceRoots() {
         return compileSourceRoots;
     }
 
-    public List<String> getScriptSourceRoots()
-    {
+    public List<String> getScriptSourceRoots() {
         return scriptSourceRoots;
     }
 
-    public List<String> getTestCompileSourceRoots()
-    {
+    public List<String> getTestCompileSourceRoots() {
         return testCompileSourceRoots;
     }
 
-    public List<String> getCompileClasspathElements()
-        throws DependencyResolutionRequiredException
-    {
+    public List<String> getCompileClasspathElements() throws DependencyResolutionRequiredException {
         return compileSourceRoots;
     }
 
-    public void setCompileArtifacts( List<Artifact> compileArtifacts )
-    {
+    public void setCompileArtifacts(List<Artifact> compileArtifacts) {
         this.compileArtifacts = compileArtifacts;
     }
 
-    public List<Artifact> getCompileArtifacts()
-    {
+    public List<Artifact> getCompileArtifacts() {
         return compileArtifacts;
     }
 
-    public List<Dependency> getCompileDependencies()
-    {
+    public List<Dependency> getCompileDependencies() {
         return compileDependencies;
     }
 
-    public List<String> getTestClasspathElements()
-        throws DependencyResolutionRequiredException
-    {
+    public List<String> getTestClasspathElements() throws DependencyResolutionRequiredException {
         return testClasspathElements;
     }
 
-    public List<Artifact> getTestArtifacts()
-    {
+    public List<Artifact> getTestArtifacts() {
         return testArtifacts;
     }
 
-    public List<Dependency> getTestDependencies()
-    {
+    public List<Dependency> getTestDependencies() {
         return testDependencies;
     }
 
-    public List<String> getRuntimeClasspathElements()
-        throws DependencyResolutionRequiredException
-    {
+    public List<String> getRuntimeClasspathElements() throws DependencyResolutionRequiredException {
         return runtimeClasspathElements;
     }
 
-    public List<Artifact> getRuntimeArtifacts()
-    {
+    public List<Artifact> getRuntimeArtifacts() {
         return runtimeArtifacts;
     }
 
-    public List<Dependency> getRuntimeDependencies()
-    {
+    public List<Dependency> getRuntimeDependencies() {
         return runtimeDependencies;
     }
 
-    public List<String> getSystemClasspathElements()
-        throws DependencyResolutionRequiredException
-    {
+    public List<String> getSystemClasspathElements() throws DependencyResolutionRequiredException {
         return systemClasspathElements;
     }
 
-    public List<Artifact> getSystemArtifacts()
-    {
+    public List<Artifact> getSystemArtifacts() {
         return systemArtifacts;
     }
 
-    public void setRuntimeClasspathElements( List<String> runtimeClasspathElements )
-    {
+    public void setRuntimeClasspathElements(List<String> runtimeClasspathElements) {
         this.runtimeClasspathElements = runtimeClasspathElements;
     }
 
-    public void setAttachedArtifacts( List<Artifact> attachedArtifacts )
-    {
+    public void setAttachedArtifacts(List<Artifact> attachedArtifacts) {
         this.attachedArtifacts = attachedArtifacts;
     }
 
-    public void setCompileSourceRoots( List<String> compileSourceRoots )
-    {
+    public void setCompileSourceRoots(List<String> compileSourceRoots) {
         this.compileSourceRoots = compileSourceRoots;
     }
 
-    public void setTestCompileSourceRoots( List<String> testCompileSourceRoots )
-    {
+    public void setTestCompileSourceRoots(List<String> testCompileSourceRoots) {
         this.testCompileSourceRoots = testCompileSourceRoots;
     }
 
-    public void setScriptSourceRoots( List<String> scriptSourceRoots )
-    {
+    public void setScriptSourceRoots(List<String> scriptSourceRoots) {
         this.scriptSourceRoots = scriptSourceRoots;
     }
 
-    public void setCompileDependencies( List<Dependency> compileDependencies )
-    {
+    public void setCompileDependencies(List<Dependency> compileDependencies) {
         this.compileDependencies = compileDependencies;
     }
 
-    public void setSystemDependencies( List<Dependency> systemDependencies )
-    {
+    public void setSystemDependencies(List<Dependency> systemDependencies) {
         this.systemDependencies = systemDependencies;
     }
 
-    public void setTestClasspathElements( List<String> testClasspathElements )
-    {
+    public void setTestClasspathElements(List<String> testClasspathElements) {
         this.testClasspathElements = testClasspathElements;
     }
 
-    public void setTestDependencies( List<Dependency> testDependencies )
-    {
+    public void setTestDependencies(List<Dependency> testDependencies) {
         this.testDependencies = testDependencies;
     }
 
-    public void setSystemClasspathElements( List<String> systemClasspathElements )
-    {
+    public void setSystemClasspathElements(List<String> systemClasspathElements) {
         this.systemClasspathElements = systemClasspathElements;
     }
 
-    public void setSystemArtifacts( List<Artifact> systemArtifacts )
-    {
+    public void setSystemArtifacts(List<Artifact> systemArtifacts) {
         this.systemArtifacts = systemArtifacts;
     }
 
-    public void setTestArtifacts( List<Artifact> testArtifacts )
-    {
+    public void setTestArtifacts(List<Artifact> testArtifacts) {
         this.testArtifacts = testArtifacts;
     }
 
-    public void setRuntimeArtifacts( List<Artifact> runtimeArtifacts )
-    {
+    public void setRuntimeArtifacts(List<Artifact> runtimeArtifacts) {
         this.runtimeArtifacts = runtimeArtifacts;
     }
 
-    public void setRuntimeDependencies( List<Dependency> runtimeDependencies )
-    {
+    public void setRuntimeDependencies(List<Dependency> runtimeDependencies) {
         this.runtimeDependencies = runtimeDependencies;
     }
 
-    public void setModel( Model model )
-    {
+    public void setModel(Model model) {
         this.model = model;
     }
 
-    public List<Dependency> getSystemDependencies()
-    {
+    public List<Dependency> getSystemDependencies() {
         return systemDependencies;
     }
 
-    public void setModelVersion( String string )
-    {
+    public void setModelVersion(String string) {
         this.modelVersion = string;
     }
 
-    public String getModelVersion()
-    {
+    public String getModelVersion() {
         return modelVersion;
     }
 
-    public String getId()
-    {
+    public String getId() {
         return "";
     }
 
-    public void setGroupId( String string )
-    {
+    public void setGroupId(String string) {
         this.groupId = string;
     }
 
-    public String getGroupId()
-    {
+    public String getGroupId() {
         return groupId;
     }
 
-    public void setArtifactId( String string )
-    {
+    public void setArtifactId(String string) {
         this.artifactId = string;
     }
 
-    public String getArtifactId()
-    {
+    public String getArtifactId() {
         return artifactId;
     }
 
-    public void setName( String string )
-    {
+    public void setName(String string) {
         this.name = string;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setVersion( String string )
-    {
+    public void setVersion(String string) {
         this.version = string;
     }
 
-    public String getVersion()
-    {
+    public String getVersion() {
         return version;
     }
 
-    public String getPackaging()
-    {
+    public String getPackaging() {
         return packaging;
     }
 
-    public void setPackaging( String string )
-    {
+    public void setPackaging(String string) {
         this.packaging = string;
     }
 
-    public void setInceptionYear( String string )
-    {
+    public void setInceptionYear(String string) {
         this.inceptionYear = string;
     }
 
-    public String getInceptionYear()
-    {
+    public String getInceptionYear() {
         return inceptionYear;
     }
 
-    public void setUrl( String string )
-    {
+    public void setUrl(String string) {
         this.url = string;
     }
 
-    public String getUrl()
-    {
+    public String getUrl() {
         return url;
     }
 
-    public Prerequisites getPrerequisites()
-    {
+    public Prerequisites getPrerequisites() {
         return null;
     }
 
-    public void setIssueManagement( IssueManagement issueManagement )
-    {
+    public void setIssueManagement(IssueManagement issueManagement) {}
 
-    }
-
-    public CiManagement getCiManagement()
-    {
+    public CiManagement getCiManagement() {
         return null;
     }
 
-    public void setCiManagement( CiManagement ciManagement )
-    {
+    public void setCiManagement(CiManagement ciManagement) {}
 
-    }
-
-    public IssueManagement getIssueManagement()
-    {
+    public IssueManagement getIssueManagement() {
         return null;
     }
 
-    public void setDistributionManagement( DistributionManagement distributionManagement )
-    {
+    public void setDistributionManagement(DistributionManagement distributionManagement) {}
 
-    }
-
-    public DistributionManagement getDistributionManagement()
-    {
+    public DistributionManagement getDistributionManagement() {
         return null;
     }
 
-    public void setDescription( String string )
-    {
+    public void setDescription(String string) {
         this.description = string;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public void setOrganization( Organization organization )
-    {
+    public void setOrganization(Organization organization) {}
 
-    }
-
-    public Organization getOrganization()
-    {
+    public Organization getOrganization() {
         return null;
     }
 
-    public void setScm( Scm scm )
-    {
+    public void setScm(Scm scm) {}
 
-    }
-
-    public Scm getScm()
-    {
+    public Scm getScm() {
         return null;
     }
 
     @Override
-    public void setMailingLists( List<MailingList> list )
-    {
+    public void setMailingLists(List<MailingList> list) {}
 
-    }
-
-    public List<MailingList> getMailingLists()
-    {
+    public List<MailingList> getMailingLists() {
         return Collections.emptyList();
     }
 
-    public void addMailingList( MailingList mailingList )
-    {
-
-    }
+    public void addMailingList(MailingList mailingList) {}
 
     @Override
-    public void setDevelopers( List<Developer> list )
-    {
+    public void setDevelopers(List<Developer> list) {}
 
-    }
-
-    public List<Developer> getDevelopers()
-    {
+    public List<Developer> getDevelopers() {
         return Collections.emptyList();
     }
 
-    public void addDeveloper( Developer developer )
-    {
+    public void addDeveloper(Developer developer) {}
 
-    }
+    public void setContributors(List<Contributor> list) {}
 
-    public void setContributors( List<Contributor> list )
-    {
-
-    }
-
-    public List<Contributor> getContributors()
-    {
+    public List<Contributor> getContributors() {
         return Collections.emptyList();
     }
 
-    public void addContributor( Contributor contributor )
-    {
+    public void addContributor(Contributor contributor) {}
 
-    }
+    public void setBuild(Build build) {}
 
-    public void setBuild( Build build )
-    {
-
-    }
-
-    public Build getBuild()
-    {
+    public Build getBuild() {
         return null;
     }
 
-    public List<Resource> getResources()
-    {
+    public List<Resource> getResources() {
         return Collections.emptyList();
     }
 
-    public List<Resource> getTestResources()
-    {
+    public List<Resource> getTestResources() {
         return Collections.emptyList();
     }
 
-    public void addResource( Resource resource )
-    {
+    public void addResource(Resource resource) {}
 
-    }
+    public void addTestResource(Resource resource) {}
 
-    public void addTestResource( Resource resource )
-    {
+    public void setReporting(Reporting reporting) {}
 
-    }
-
-    public void setReporting( Reporting reporting )
-    {
-
-    }
-
-    public Reporting getReporting()
-    {
+    public Reporting getReporting() {
         return null;
     }
 
-    public void setLicenses( List<License> list )
-    {
+    public void setLicenses(List<License> list) {}
 
-    }
-
-    public List<License> getLicenses()
-    {
+    public List<License> getLicenses() {
         return Collections.emptyList();
     }
 
-    public void addLicense( License license )
-    {
+    public void addLicense(License license) {}
 
-    }
-
-    public void setArtifacts( Set<Artifact> set )
-    {
+    public void setArtifacts(Set<Artifact> set) {
         this.artifacts = set;
     }
 
-    public Set<Artifact> getArtifacts()
-    {
-        if ( artifacts == null )
-        {
+    public Set<Artifact> getArtifacts() {
+        if (artifacts == null) {
             return Collections.emptySet();
-        }
-        else
-        {
+        } else {
             return artifacts;
         }
     }
 
-    public Map<String, Artifact> getArtifactMap()
-    {
+    public Map<String, Artifact> getArtifactMap() {
         return Collections.emptyMap();
     }
 
-    public void setPluginArtifacts( Set<Artifact> set )
-    {
+    public void setPluginArtifacts(Set<Artifact> set) {}
 
-    }
-
-    public Set<Artifact> getPluginArtifacts()
-    {
+    public Set<Artifact> getPluginArtifacts() {
         return Collections.emptySet();
     }
 
-    public Map<String, Artifact> getPluginArtifactMap()
-    {
+    public Map<String, Artifact> getPluginArtifactMap() {
         return Collections.emptyMap();
     }
 
-    public void setReportArtifacts( Set<Artifact> set )
-    {
+    public void setReportArtifacts(Set<Artifact> set) {}
 
-    }
-
-    public Set<Artifact> getReportArtifacts()
-    {
+    public Set<Artifact> getReportArtifacts() {
         return Collections.emptySet();
     }
 
-    public Map<String, Artifact> getReportArtifactMap()
-    {
+    public Map<String, Artifact> getReportArtifactMap() {
         return Collections.emptyMap();
     }
 
-    public void setExtensionArtifacts( Set<Artifact> set )
-    {
+    public void setExtensionArtifacts(Set<Artifact> set) {}
 
-    }
-
-    public Set<Artifact> getExtensionArtifacts()
-    {
+    public Set<Artifact> getExtensionArtifacts() {
         return Collections.emptySet();
     }
 
-    public Map<String, Artifact> getExtensionArtifactMap()
-    {
+    public Map<String, Artifact> getExtensionArtifactMap() {
         return Collections.emptyMap();
     }
 
-    public void setParentArtifact( Artifact artifact )
-    {
+    public void setParentArtifact(Artifact artifact) {}
 
-    }
-
-    public Artifact getParentArtifact()
-    {
+    public Artifact getParentArtifact() {
         return null;
     }
 
-    public List<Repository> getRepositories()
-    {
+    public List<Repository> getRepositories() {
         return Collections.emptyList();
     }
 
-    public List<ReportPlugin> getReportPlugins()
-    {
+    public List<ReportPlugin> getReportPlugins() {
         return Collections.emptyList();
     }
 
-    public List<Plugin> getBuildPlugins()
-    {
+    public List<Plugin> getBuildPlugins() {
         return Collections.emptyList();
     }
 
-    public List<String> getModules()
-    {
-        return Collections.singletonList( "" );
+    public List<String> getModules() {
+        return Collections.singletonList("");
     }
 
-    public PluginManagement getPluginManagement()
-    {
+    public PluginManagement getPluginManagement() {
         return null;
     }
 
-    public void addPlugin( Plugin plugin )
-    {
+    public void addPlugin(Plugin plugin) {}
 
-    }
+    public void injectPluginManagementInfo(Plugin plugin) {}
 
-    public void injectPluginManagementInfo( Plugin plugin )
-    {
-
-    }
-
-    public List<MavenProject> getCollectedProjects()
-    {
+    public List<MavenProject> getCollectedProjects() {
         return collectedProjects;
     }
 
-    public void setCollectedProjects( List<MavenProject> list )
-    {
+    public void setCollectedProjects(List<MavenProject> list) {
         this.collectedProjects = list;
     }
 
-    public void setPluginArtifactRepositories( List<ArtifactRepository> list )
-    {
+    public void setPluginArtifactRepositories(List<ArtifactRepository> list) {
         this.pluginArtifactRepositories = list;
     }
 
-    public List<ArtifactRepository> getPluginArtifactRepositories()
-    {
+    public List<ArtifactRepository> getPluginArtifactRepositories() {
         return pluginArtifactRepositories;
     }
 
-    public ArtifactRepository getDistributionManagementArtifactRepository()
-    {
+    public ArtifactRepository getDistributionManagementArtifactRepository() {
         return null;
     }
 
-    public List<Repository> getPluginRepositories()
-    {
+    public List<Repository> getPluginRepositories() {
         return Collections.emptyList();
     }
 
-    public void setActiveProfiles( List<Profile> list )
-    {
+    public void setActiveProfiles(List<Profile> list) {
         activeProfiles = list;
     }
 
-    public List<Profile> getActiveProfiles()
-    {
+    public List<Profile> getActiveProfiles() {
         return activeProfiles;
     }
 
-    public void addAttachedArtifact( Artifact theArtifact )
-    {
-        if ( attachedArtifacts == null )
-        {
-            this.attachedArtifacts = Collections.singletonList( theArtifact );
-        }
-        else
-        {
-            attachedArtifacts.add( theArtifact );
+    public void addAttachedArtifact(Artifact theArtifact) {
+        if (attachedArtifacts == null) {
+            this.attachedArtifacts = Collections.singletonList(theArtifact);
+        } else {
+            attachedArtifacts.add(theArtifact);
         }
     }
 
-    public List<Artifact> getAttachedArtifacts()
-    {
+    public List<Artifact> getAttachedArtifacts() {
         return attachedArtifacts;
     }
 
-    public Xpp3Dom getGoalConfiguration( String string, String string1, String string2, String string3 )
-    {
+    public Xpp3Dom getGoalConfiguration(String string, String string1, String string2, String string3) {
         return null;
     }
 
-    public Xpp3Dom getReportConfiguration( String string, String string1, String string2 )
-    {
+    public Xpp3Dom getReportConfiguration(String string, String string1, String string2) {
         return null;
     }
 
-    public MavenProject getExecutionProject()
-    {
+    public MavenProject getExecutionProject() {
         return null;
     }
 
-    public void setExecutionProject( MavenProject mavenProject )
-    {
+    public void setExecutionProject(MavenProject mavenProject) {}
 
-    }
+    public void writeModel(Writer writer) throws IOException {}
 
-    public void writeModel( Writer writer )
-        throws IOException
-    {
+    public void writeOriginalModel(Writer writer) throws IOException {}
 
-    }
-
-    public void writeOriginalModel( Writer writer )
-        throws IOException
-    {
-
-    }
-
-    public Set<Artifact> getDependencyArtifacts()
-    {
+    public Set<Artifact> getDependencyArtifacts() {
         return dependencyArtifacts;
     }
 
-    public void setDependencyArtifacts( Set<Artifact> set )
-    {
+    public void setDependencyArtifacts(Set<Artifact> set) {
         this.dependencyArtifacts = set;
     }
 
-    public void setReleaseArtifactRepository( ArtifactRepository artifactRepository )
-    {
+    public void setReleaseArtifactRepository(ArtifactRepository artifactRepository) {
         // this.releaseArtifactRepository = artifactRepository;
     }
 
-    public void setSnapshotArtifactRepository( ArtifactRepository artifactRepository )
-    {
+    public void setSnapshotArtifactRepository(ArtifactRepository artifactRepository) {
         // this.snapshotArtifactRepository = artifactRepository;
     }
 
-    public void setOriginalModel( Model model )
-    {
+    public void setOriginalModel(Model model) {
         this.originalModel = model;
     }
 
-    public Model getOriginalModel()
-    {
+    public Model getOriginalModel() {
         return originalModel;
     }
 
-    public List<Extension> getBuildExtensions()
-    {
+    public List<Extension> getBuildExtensions() {
         return Collections.emptyList();
     }
 
     @Override
-    public Set<Artifact> createArtifacts( ArtifactFactory artifactFactory, String string, ArtifactFilter artifactFilter )
-        throws InvalidDependencyVersionException
-    {
+    public Set<Artifact> createArtifacts(ArtifactFactory artifactFactory, String string, ArtifactFilter artifactFilter)
+            throws InvalidDependencyVersionException {
         return Collections.emptySet();
     }
 
-    public void addProjectReference( MavenProject mavenProject )
-    {
+    public void addProjectReference(MavenProject mavenProject) {}
 
-    }
+    public void attachArtifact(String string, String string1, File theFile) {}
 
-    public void attachArtifact( String string, String string1, File theFile )
-    {
-
-    }
-
-    public Properties getProperties()
-    {
-        if ( properties == null )
-        {
+    public Properties getProperties() {
+        if (properties == null) {
             properties = new Properties();
         }
         return properties;
     }
 
-    public List<String> getFilters()
-    {
-        return Collections.singletonList( "" );
+    public List<String> getFilters() {
+        return Collections.singletonList("");
     }
 
-    public Map<String, MavenProject> getProjectReferences()
-    {
+    public Map<String, MavenProject> getProjectReferences() {
         return Collections.emptyMap();
     }
 
-    public boolean isExecutionRoot()
-    {
+    public boolean isExecutionRoot() {
         return executionRoot;
     }
 
-    public void setExecutionRoot( boolean b )
-    {
+    public void setExecutionRoot(boolean b) {
         this.executionRoot = b;
     }
 
-    public String getDefaultGoal()
-    {
+    public String getDefaultGoal() {
         return defaultGoal;
     }
 
-    public Artifact replaceWithActiveArtifact( Artifact theArtifact )
-    {
+    public Artifact replaceWithActiveArtifact(Artifact theArtifact) {
         return null;
     }
 }

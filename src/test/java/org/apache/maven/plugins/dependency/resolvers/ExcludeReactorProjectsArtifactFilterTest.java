@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.resolvers;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.resolvers;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,10 @@ package org.apache.maven.plugins.dependency.resolvers;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency.resolvers;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.logging.Log;
@@ -28,9 +30,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.mockito.ArgumentCaptor;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
@@ -39,13 +38,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ExcludeReactorProjectsArtifactFilterTest
-        extends AbstractDependencyMojoTestCase
-{
+public class ExcludeReactorProjectsArtifactFilterTest extends AbstractDependencyMojoTestCase {
 
-    public void testFilter()
-            throws ArtifactFilterException
-    {
+    public void testFilter() throws ArtifactFilterException {
         Artifact artifact1 = new ArtifactStub();
         artifact1.setGroupId("org.apache.maven.plugins");
         artifact1.setArtifactId("maven-dependency-plugin-dummy");
@@ -57,27 +52,25 @@ public class ExcludeReactorProjectsArtifactFilterTest
         artifact2.setVersion("1.0");
 
         Set<Artifact> artifacts = new HashSet<>();
-        artifacts.add( artifact1 );
-        artifacts.add( artifact2 );
+        artifacts.add(artifact1);
+        artifacts.add(artifact2);
 
         MavenProject project = new MavenProjectStub();
         project.setArtifact(artifact1);
 
-        Log log = mock( Log.class );
-        when( log.isDebugEnabled() ).thenReturn( false );
+        Log log = mock(Log.class);
+        when(log.isDebugEnabled()).thenReturn(false);
 
-        ExcludeReactorProjectsArtifactFilter filter = new ExcludeReactorProjectsArtifactFilter(
-                singletonList( project ), log );
+        ExcludeReactorProjectsArtifactFilter filter =
+                new ExcludeReactorProjectsArtifactFilter(singletonList(project), log);
 
-        Set<Artifact> result = filter.filter( artifacts );
+        Set<Artifact> result = filter.filter(artifacts);
 
-        assertEquals( 1, result.size() );
-        verify( log, never() ).debug( any( String.class ) );
+        assertEquals(1, result.size());
+        verify(log, never()).debug(any(String.class));
     }
 
-    public void testFilterWithLogging()
-            throws ArtifactFilterException
-    {
+    public void testFilterWithLogging() throws ArtifactFilterException {
         Artifact artifact = new ArtifactStub();
         artifact.setGroupId("org.apache.maven.plugins");
         artifact.setArtifactId("maven-dependency-plugin-dummy");
@@ -86,16 +79,16 @@ public class ExcludeReactorProjectsArtifactFilterTest
         MavenProject project = new MavenProjectStub();
         project.setArtifact(artifact);
 
-        Log log = mock( Log.class );
-        when( log.isDebugEnabled() ).thenReturn( true );
+        Log log = mock(Log.class);
+        when(log.isDebugEnabled()).thenReturn(true);
 
-        ExcludeReactorProjectsArtifactFilter filter = new ExcludeReactorProjectsArtifactFilter(
-                singletonList( project ), log );
+        ExcludeReactorProjectsArtifactFilter filter =
+                new ExcludeReactorProjectsArtifactFilter(singletonList(project), log);
 
-        filter.filter( singleton( artifact ) );
+        filter.filter(singleton(artifact));
 
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass( String.class );
-        verify( log ).debug( captor.capture() );
-        assertTrue( captor.getValue().contains( "Skipped artifact" ) );
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(log).debug(captor.capture());
+        assertTrue(captor.getValue().contains("Skipped artifact"));
     }
 }

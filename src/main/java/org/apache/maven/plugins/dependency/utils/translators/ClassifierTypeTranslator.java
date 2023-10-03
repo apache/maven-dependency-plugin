@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.dependency.utils.translators;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugins.dependency.utils.translators;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugins.dependency.utils.translators;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.dependency.utils.translators;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -28,14 +27,11 @@ import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
 import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  */
-public class ClassifierTypeTranslator
-    implements ArtifactTranslator
-{
+public class ClassifierTypeTranslator implements ArtifactTranslator {
     private final ArtifactHandlerManager artifactHandlerManager;
 
     private String classifier;
@@ -47,9 +43,8 @@ public class ClassifierTypeTranslator
      * @param theClassifier The classifier to use.
      * @param theType The type.
      */
-    public ClassifierTypeTranslator( ArtifactHandlerManager artifactHanderManager, String theClassifier,
-                                     String theType )
-    {
+    public ClassifierTypeTranslator(
+            ArtifactHandlerManager artifactHanderManager, String theClassifier, String theType) {
         this.artifactHandlerManager = artifactHanderManager;
         this.classifier = theClassifier;
         this.type = theType;
@@ -61,55 +56,44 @@ public class ClassifierTypeTranslator
      * org.apache.maven.plugin.logging.Log)
      */
     @Override
-    public Set<ArtifactCoordinate> translate( Set<Artifact> artifacts, Log log )
-    {
+    public Set<ArtifactCoordinate> translate(Set<Artifact> artifacts, Log log) {
         Set<ArtifactCoordinate> results;
 
-        log.debug( "Translating Artifacts using Classifier: " + this.classifier + " and Type: " + this.type );
+        log.debug("Translating Artifacts using Classifier: " + this.classifier + " and Type: " + this.type);
         results = new LinkedHashSet<>();
-        for ( Artifact artifact : artifacts )
-        {
+        for (Artifact artifact : artifacts) {
             // this translator must pass both type and classifier here so we
             // will use the
             // base artifact value if null comes in
             final String useType;
-            if ( StringUtils.isNotEmpty( this.type ) )
-            {
+            if (this.type != null && !this.type.isEmpty()) {
                 useType = this.type;
-            }
-            else
-            {
+            } else {
                 useType = artifact.getType();
             }
 
-            ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler( useType );
+            ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(useType);
 
             final String extension;
-            if ( artifactHandler != null )
-            {
+            if (artifactHandler != null) {
                 extension = artifactHandler.getExtension();
-            }
-            else
-            {
+            } else {
                 extension = this.type;
             }
 
             String useClassifier;
-            if ( StringUtils.isNotEmpty( this.classifier ) )
-            {
+            if (this.classifier != null && !this.classifier.isEmpty()) {
                 useClassifier = this.classifier;
-            }
-            else
-            {
+            } else {
                 useClassifier = artifact.getClassifier();
             }
 
             DefaultArtifactCoordinate coordinate = new DefaultArtifactCoordinate();
-            coordinate.setGroupId( artifact.getGroupId() );
-            coordinate.setArtifactId( artifact.getArtifactId() );
-            coordinate.setVersion( artifact.getVersion() );
-            coordinate.setClassifier( useClassifier );
-            coordinate.setExtension( extension );
+            coordinate.setGroupId(artifact.getGroupId());
+            coordinate.setArtifactId(artifact.getArtifactId());
+            coordinate.setVersion(artifact.getVersion());
+            coordinate.setClassifier(useClassifier);
+            coordinate.setExtension(extension);
 
             // // Create a new artifact
             // Artifact newArtifact = factory.createArtifactWithClassifier( artifact.getGroupId(), artifact
@@ -127,7 +111,7 @@ public class ClassifierTypeTranslator
             // newArtifact.setFile( new File( baseDir, path ) );
             // }
 
-            results.add( coordinate );
+            results.add(coordinate);
         }
 
         return results;
@@ -136,33 +120,28 @@ public class ClassifierTypeTranslator
     /**
      * @return Returns the type.
      */
-    public String getType()
-    {
+    public String getType() {
         return this.type;
     }
 
     /**
      * @param theType The type to set.
      */
-    public void setType( String theType )
-    {
+    public void setType(String theType) {
         this.type = theType;
     }
 
     /**
      * @return Returns the classifier.
      */
-    public String getClassifier()
-    {
+    public String getClassifier() {
         return this.classifier;
     }
 
     /**
      * @param theClassifier The classifier to set.
      */
-    public void setClassifier( String theClassifier )
-    {
+    public void setClassifier(String theClassifier) {
         this.classifier = theClassifier;
     }
-
 }
