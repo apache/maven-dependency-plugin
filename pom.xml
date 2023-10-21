@@ -199,6 +199,12 @@ under the License.
       <version>2.13.0</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
 
     <!-- plexus -->
     <dependency>
