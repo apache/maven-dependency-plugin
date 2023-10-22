@@ -140,8 +140,6 @@ ${project.name}
 
   * {{{./examples/filtering-the-dependency-tree.html}Filtering the Dependency Tree}}
 
-  * {{{./examples/resolving-conflicts-using-the-dependency-tree.html}Resolving Conflicts Using the Dependency Tree}}
-
   * {{{./examples/purging-local-repository.html}Purging the local repository}}
 
   []
