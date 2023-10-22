@@ -37,7 +37,7 @@ ${project.name}
   *{{{./analyze-mojo.html}dependency:analyze}} analyzes the dependencies of this project and determines which are: used
   and declared; used and undeclared; unused and declared.
 
-  *{{{./analyze-dep-mgt-mojo.html}dependency:analyze-dep-mgt}} analyzes your projects dependencies and lists mismatches
+  *{{{./analyze-dep-mgt-mojo.html}dependency:analyze-dep-mgt}} analyzes the project's dependencies and lists mismatches
   between resolved dependencies and those listed in your dependencyManagement section.
 
   *{{{./analyze-only-mojo.html}dependency:analyze-only}} is the same as analyze, but is meant to be bound in a pom. It
@@ -74,11 +74,11 @@ ${project.name}
 
   *{{{./list-classes-mojo.html}dependency:list-classes}} displays the fully package-qualified names of all classes found in a specified artifact.
 
-  *{{{./list-repositories-mojo.html}dependency:list-repositories}} collect all project dependencies and then lists the repositories
+  *{{{./list-repositories-mojo.html}dependency:list-repositories}} collects all project dependencies and then lists the repositories
   used by the build and by the transitive dependencies.
 
-  *{{{./properties-mojo.html}dependency:properties}} set a property for each project dependency containing the
-  to the artifact on the file system.
+  *{{{./properties-mojo.html}dependency:properties}} sets a property for each project dependency containing the
+  the artifact on the file system.
 
   *{{{./purge-local-repository-mojo.html}dependency:purge-local-repository}} tells Maven to clear dependency artifact
   files out of the local repository, and optionally re-resolve them.
@@ -103,14 +103,14 @@ ${project.name}
 * Usage
 
   General instructions on how to use the Dependency Plugin can be found on the {{{./usage.html}usage page}}. Some more
-  specific use cases are described in the examples given below.
+  specific use cases are described in the following examples.
 
-  In case you still have questions regarding the plugin's usage, please have a look at the {{{./faq.html}FAQ}} and feel
+  If you have questions regarding the plugin's usage, please have a look at the {{{./faq.html}FAQ}} and feel
   free to contact the {{{./mailing-lists.html}user mailing list}}. The posts to the mailing list are archived and could
   already contain the answer to your question as part of an older thread. Hence, it is also worth browsing/searching
   the {{{./mailing-lists.html}mail archive}}.
 
-  If you feel like the plugin is missing a feature or has a defect, you can file a feature request or bug report in our
+  If you think the plugin is missing a feature or has a defect, you can file a feature request or bug report in the
   {{{./issue-management.html}issue tracker}}. When creating a new issue, please provide a comprehensive description of your
   concern. Especially for fixing bugs it is crucial that the developers can reproduce your problem. For this reason,
   entire debug logs, POMs or most preferably little demo projects attached to the issue are very much appreciated.
