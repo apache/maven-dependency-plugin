@@ -408,6 +408,19 @@ under the License.
           </configuration>
         </plugin>
         <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>2.40.0</version>
+          <!-- is this merged with parent config? -->
+          <configuration>
+            <java>
+              <palantirJavaFormat>
+                <version>2.38.0</version>
+              </palantirJavaFormat>
+            </java>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <configuration>
