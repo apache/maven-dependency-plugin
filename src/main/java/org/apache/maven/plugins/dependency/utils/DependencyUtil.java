@@ -27,7 +27,6 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.plugin.logging.Log;
@@ -260,7 +259,11 @@ public final class DependencyUtil {
      * @return the result items
      */
     public static String[] tokenizer(String str) {
-        return StringUtils.split(cleanToBeTokenizedString(str), ",");
+        String s = cleanToBeTokenizedString(str);
+        if (s.isEmpty()) {
+            return new String[0];
+        }
+        return cleanToBeTokenizedString(str).split(",");
     }
 
     /**

@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -38,6 +37,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.dependency.utils.StringUtils;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.RepositorySystem;
@@ -130,7 +130,7 @@ public class GetMojo extends AbstractMojo {
                     + "e.g. -Dartifact=org.apache.maven.plugins:maven-downloader-plugin:1.0");
         }
         if (artifact != null) {
-            String[] tokens = StringUtils.split(artifact, ":");
+            String[] tokens = artifact.split("\\s*:+\\s*");
             if (tokens.length < 3 || tokens.length > 5) {
                 throw new MojoFailureException("Invalid artifact, you must specify "
                         + "groupId:artifactId:version[:packaging[:classifier]] " + artifact);
@@ -157,7 +157,7 @@ public class GetMojo extends AbstractMojo {
 
         if (remoteRepositories != null) {
             // Use the same format as in the deploy plugin id::layout::url
-            String[] repos = StringUtils.split(remoteRepositories, ",");
+            String[] repos = remoteRepositories.split("\\s*,+\\s*");
             for (String repo : repos) {
                 repoList.add(parseRepository(repo, always));
             }
@@ -214,6 +214,7 @@ public class GetMojo extends AbstractMojo {
             }
 
             id = matcher.group(1).trim();
+
             if (!StringUtils.isEmpty(matcher.group(2))) {
                 layout = getLayout(matcher.group(2).trim());
             }

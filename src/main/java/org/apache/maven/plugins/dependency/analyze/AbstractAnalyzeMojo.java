@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
@@ -37,6 +36,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.dependency.utils.StringUtils;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
@@ -509,9 +509,9 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                 writer.startElement("version");
                 writer.writeText(artifact.getBaseVersion());
                 String classifier = artifact.getClassifier();
-                if (StringUtils.isNotBlank(classifier)) {
+                if (!StringUtils.isEmpty(classifier)) {
                     writer.startElement("classifier");
-                    writer.writeText(artifact.getClassifier());
+                    writer.writeText(classifier);
                     writer.endElement();
                 }
                 writer.endElement();

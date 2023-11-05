@@ -24,12 +24,13 @@ import java.nio.file.Files;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.shared.artifact.filter.collection.AbstractArtifactsFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
+
+import static org.apache.maven.plugins.dependency.utils.StringUtils.isEmpty;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
@@ -284,7 +285,8 @@ public class DestFileFilter extends AbstractArtifactsFilter implements ArtifactI
         }
 
         File destFile;
-        if (StringUtils.isEmpty(item.getDestFileName())) {
+
+        if (isEmpty(item.getDestFileName())) {
             String formattedFileName = DependencyUtil.getFormattedFileName(
                     artifact, removeVersion, prependGroupId, useBaseVersion, removeClassifier);
             destFile = new File(destFolder, formattedFileName);

@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadata;
@@ -276,7 +275,7 @@ public class TestCopyDependenciesMojo2 extends AbstractDependencyMojoTestCase {
         snapshot.setBuildNumber(1);
         RepositoryMetadata metadata = new SnapshotArtifactRepositoryMetadata(expandedSnapshot, snapshot);
         String newVersion = snapshot.getTimestamp() + "-" + snapshot.getBuildNumber();
-        expandedSnapshot.setResolvedVersion(StringUtils.replace(baseVersion, Artifact.SNAPSHOT_VERSION, newVersion));
+        expandedSnapshot.setResolvedVersion(baseVersion.replace(Artifact.SNAPSHOT_VERSION, newVersion));
         expandedSnapshot.addMetadata(metadata);
         return expandedSnapshot;
     }
