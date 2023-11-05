@@ -80,10 +80,10 @@ public class TreeMojo extends AbstractMojo {
     /**
      * The Maven project.
      */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    @Component
     private MavenProject project;
 
-    @Parameter(defaultValue = "${session}", readonly = true, required = true)
+    @Component
     private MavenSession session;
 
     @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")

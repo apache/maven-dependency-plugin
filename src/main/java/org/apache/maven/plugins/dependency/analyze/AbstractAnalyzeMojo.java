@@ -66,7 +66,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     /**
      * The Maven project to analyze.
      */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    @Component
     private MavenProject project;
 
     /**

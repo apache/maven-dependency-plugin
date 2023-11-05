@@ -51,7 +51,7 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
 public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
 
     @Component
-    UnpackUtil unpackUtil;
+    private UnpackUtil unpackUtil;
 
     /**
      * A comma separated list of file patterns to include when unpacking the artifact. i.e.

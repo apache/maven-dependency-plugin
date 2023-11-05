@@ -88,10 +88,10 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     /**
      * The current Maven project.
      */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    @Component
     private MavenProject project;
 
-    @Parameter(defaultValue = "${session}", readonly = true, required = true)
+    @Component
     private MavenSession session;
 
     /**

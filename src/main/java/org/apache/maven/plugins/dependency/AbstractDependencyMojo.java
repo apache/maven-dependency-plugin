@@ -59,7 +59,7 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     /**
      * POM
      */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    @Component
     private MavenProject project;
 
     /**
@@ -83,7 +83,7 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     /**
      * The Maven session
      */
-    @Parameter(defaultValue = "${session}", readonly = true, required = true)
+    @Component
     protected MavenSession session;
 
     /**

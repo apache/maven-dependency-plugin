@@ -54,7 +54,7 @@ import org.eclipse.aether.util.graph.visitor.TreeDependencyVisitor;
 public class ListRepositoriesMojo extends AbstractDependencyMojo {
 
     @Component
-    RepositorySystem repositorySystem;
+    private RepositorySystem repositorySystem;
 
     /**
      * Displays a list of the repositories used by this build.
