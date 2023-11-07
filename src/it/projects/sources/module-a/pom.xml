@@ -23,23 +23,26 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.apache.maven.its.dependency</groupId>
-  <artifactId>tree-multimodule</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+  <parent>
+    <groupId>org.apache.maven.its.dependency</groupId>
+    <artifactId>tree-multimodule</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
 
-  <name>MultimoduleTest</name>
-  <description>
-    Test dependency:tree on multimodule project
-  </description>
+  <name>MultimoduleTest Module A</name>
+
+  <artifactId>tree-multimodule-module-a</artifactId>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
-  <modules>
-    <module>module-a</module>
-    <module>module-b</module>
-  </modules>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-project</artifactId>
+      <version>2.0.6</version>
+    </dependency>
+  </dependencies>
 
 </project>
