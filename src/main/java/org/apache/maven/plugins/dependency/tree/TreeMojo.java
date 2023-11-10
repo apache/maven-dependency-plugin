@@ -437,6 +437,4 @@ public class TreeMojo extends AbstractMojo {
         return filters.isEmpty() ? null : new AndDependencyNodeFilter(filters);
     }
 
-    // following is required because the version handling in maven code
-    // doesn't work properly. I ripped it out of the enforcer rules.
 }
