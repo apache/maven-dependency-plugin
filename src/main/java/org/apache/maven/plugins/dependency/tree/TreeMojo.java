@@ -29,9 +29,6 @@ import java.util.Objects;
 
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.Restriction;
-import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -442,31 +439,4 @@ public class TreeMojo extends AbstractMojo {
 
     // following is required because the version handling in maven code
     // doesn't work properly. I ripped it out of the enforcer rules.
-
-    /**
-     * Copied from Artifact.VersionRange. This is tweaked to handle singular ranges properly. Currently the default
-     * containsVersion method assumes a singular version means allow everything. This method assumes that "2.0.4" ==
-     * "[2.0.4,)"
-     *
-     * @param allowedRange range of allowed versions.
-     * @param theVersion the version to be checked.
-     * @return true if the version is contained by the range.
-     * @deprecated This method is unused in this project and will be removed in the future.
-     */
-    @Deprecated
-    public static boolean containsVersion(VersionRange allowedRange, ArtifactVersion theVersion) {
-        ArtifactVersion recommendedVersion = allowedRange.getRecommendedVersion();
-        if (recommendedVersion == null) {
-            List<Restriction> restrictions = allowedRange.getRestrictions();
-            for (Restriction restriction : restrictions) {
-                if (restriction.containsVersion(theVersion)) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            // only singular versions ever have a recommendedVersion
-            return recommendedVersion.compareTo(theVersion) <= 0;
-        }
-    }
 }
