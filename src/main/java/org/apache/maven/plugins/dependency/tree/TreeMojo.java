@@ -436,5 +436,4 @@ public class TreeMojo extends AbstractMojo {
 
         return filters.isEmpty() ? null : new AndDependencyNodeFilter(filters);
     }
-
 }
