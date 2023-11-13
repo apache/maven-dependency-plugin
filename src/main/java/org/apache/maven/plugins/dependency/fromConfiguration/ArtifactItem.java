@@ -23,6 +23,7 @@ import java.util.Objects;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
@@ -37,53 +38,45 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * Group Id of Artifact
      *
-     * @parameter
-     * @required
      */
+    @Parameter(required = true)
     private String groupId;
 
     /**
      * Name of Artifact
-     *
-     * @parameter
-     * @required
      */
+    @Parameter(required = true)
     private String artifactId;
 
     /**
      * Version of Artifact
-     *
-     * @parameter
      */
+    @Parameter
     private String version = null;
 
     /**
      * Type of Artifact (War,Jar,etc)
      *
-     * @parameter
-     * @required
      */
+    @Parameter(required = true)
     private String type = "jar";
 
     /**
      * Classifier for Artifact (tests,sources,etc)
-     *
-     * @parameter
      */
+    @Parameter
     private String classifier;
 
     /**
      * Location to use for this Artifact. Overrides default location.
-     *
-     * @parameter
      */
+    @Parameter
     private File outputDirectory;
 
     /**
      * Provides ability to change destination file name
-     *
-     * @parameter
      */
+    @Parameter
     private String destFileName;
 
     /**
@@ -93,9 +86,8 @@ public class ArtifactItem implements DependableCoordinate {
 
     /**
      * Encoding of artifact. Overrides default encoding.
-     *
-     * @parameter
      */
+    @Parameter
     private String encoding;
 
     /**
@@ -122,9 +114,8 @@ public class ArtifactItem implements DependableCoordinate {
      * {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting shall happen.
      *
      * @since 3.1.2
-     *
-     * @parameter
      */
+    @Parameter
     private FileMapper[] fileMappers;
 
     /**
