@@ -409,7 +409,7 @@ under the License.
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <!-- Need more heap space in order to run the unit tests !-->
-          <argLine>-Xmx384m</argLine>
+          <argLine>-Xmx512m</argLine>
           <systemPropertyVariables>
             <maven.home>${maven.home}</maven.home>
           </systemPropertyVariables>
