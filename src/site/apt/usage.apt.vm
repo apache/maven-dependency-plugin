@@ -695,3 +695,24 @@ mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=
 mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources -DremoteRepositories=https://repo.maven.apache.org/maven2 
 mvn dependency:get -Dartifact=org.apache.maven:maven-core:2.2.1:jar:sources -DremoteRepositories=https://repo.maven.apache.org/maven2 -Ddest=/tmp/myfile.jar
 +-----+
+
+
+* <<<dependency:analyze-exclusions>>>
+
+  This goal checks exclusions on dependencies and checks if the artifact actually brings in the given dependency.
+  For instance given dependency a:b:1.0 transitively includes x:y:1.0 which you do not want for some reason and exclude it.
+  Later a:b:2.0 has removed the unwanted dependency and you upgrade. This goal will inform you that the exclusion is no
+  longer required.
+
++---+
+mvn dependency:analyze-exclusions
++---+
+
+  Sample output:
+
++---+
+[WARNING] The following dependencies defines unnecessary excludes
+[WARNING]     org.apache.maven:maven-artifact:
+[WARNING]         - javax.annotation:javax.annotation-api
+[WARNING]         - javax.activation:javax.activation-api
++---+

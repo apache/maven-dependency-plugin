@@ -326,6 +326,13 @@ under the License.
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.24.2</version>
+      <scope>test</scope>
+    </dependency>
+
     <!-- Remove once deprecated code has been replaced/removed  -->
     <dependency>
       <groupId>org.apache.maven</groupId>
