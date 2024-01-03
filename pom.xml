@@ -94,7 +94,7 @@ under the License.
     <javaVersion>8</javaVersion>
     <project.build.outputTimestamp>2023-10-20T21:21:50Z</project.build.outputTimestamp>
     <slf4j.version>1.7.36</slf4j.version>
-    <plexus-archiver.version>4.9.0</plexus-archiver.version>
+    <plexus-archiver.version>4.9.1</plexus-archiver.version>
   </properties>
 
   <dependencyManagement>
