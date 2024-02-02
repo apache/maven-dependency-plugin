@@ -48,15 +48,15 @@ Unpacking project dependencies
             <goals>
               <goal>unpack-dependencies</goal>
             </goals>
-            <configuration>
-              <includes>**/*.class</includes>
-              <excludes>**/*.properties</excludes>
-              <outputDirectory>\${project.build.directory}/alternateLocation</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <includes>**/*.class</includes>
+          <excludes>**/*.properties</excludes>
+          <outputDirectory>\${project.build.directory}/alternateLocation</outputDirectory>
+          <overWriteReleases>false</overWriteReleases>
+          <overWriteSnapshots>true</overWriteSnapshots>
+        </configuration>
       </plugin>
     </plugins>
   </build>

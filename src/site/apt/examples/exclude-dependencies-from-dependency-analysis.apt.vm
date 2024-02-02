@@ -55,31 +55,31 @@ Exclude dependencies from dependency analysis
             <goals>
               <goal>analyze-only</goal>
             </goals>
-            <configuration>
-              <failOnWarning>true</failOnWarning>
-
-              <!-- ignore jsr305 for "used but undeclared", "declared but unused", and "non-test scoped" -->
-              <ignoredDependencies>
-                <ignoredDependency>com.google.code.findbugs:jsr305</ignoredDependency>
-              </ignoredDependencies>
-
-              <!-- ignore annotations for "used but undeclared" warnings -->
-              <ignoredUsedUndeclaredDependencies>
-                <ignoredUsedUndeclaredDependency>com.google.code.findbugs:annotations</ignoredUsedUndeclaredDependency>
-              </ignoredUsedUndeclaredDependencies>
-
-              <!-- ignore annotations for "unused but declared" warnings -->
-              <ignoredUnusedDeclaredDependencies>
-                <ignoredUnusedDeclaredDependency>com.google.code.findbugs:annotations</ignoredUnusedDeclaredDependency>
-              </ignoredUnusedDeclaredDependencies>
-
-              <!-- ignore annotations for "non-test scoped" warnings -->
-              <ignoredNonTestScopedDependencies>
-                <ignoredNonTestScopedDependency>com.google.code.findbugs:annotations</ignoredNonTestScopedDependency>
-              </ignoredNonTestScopedDependencies>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <failOnWarning>true</failOnWarning>
+
+          <!-- ignore jsr305 for "used but undeclared", "declared but unused", and "non-test scoped" -->
+          <ignoredDependencies>
+            <ignoredDependency>com.google.code.findbugs:jsr305</ignoredDependency>
+          </ignoredDependencies>
+
+          <!-- ignore annotations for "used but undeclared" warnings -->
+          <ignoredUsedUndeclaredDependencies>
+            <ignoredUsedUndeclaredDependency>com.google.code.findbugs:annotations</ignoredUsedUndeclaredDependency>
+          </ignoredUsedUndeclaredDependencies>
+
+          <!-- ignore annotations for "unused but declared" warnings -->
+          <ignoredUnusedDeclaredDependencies>
+            <ignoredUnusedDeclaredDependency>com.google.code.findbugs:annotations</ignoredUnusedDeclaredDependency>
+          </ignoredUnusedDeclaredDependencies>
+
+          <!-- ignore annotations for "non-test scoped" warnings -->
+          <ignoredNonTestScopedDependencies>
+            <ignoredNonTestScopedDependency>com.google.code.findbugs:annotations</ignoredNonTestScopedDependency>
+          </ignoredNonTestScopedDependencies>
+        </configuration>
       </plugin>
     </plugins>
   </build>

@@ -41,34 +41,34 @@ Unpacking specific artifacts
          <artifactId>maven-dependency-plugin</artifactId>
          <version>${project.version}</version>
          <executions>
-           <execution>
-             <id>unpack</id>
-             <phase>package</phase>
-             <goals>
-               <goal>unpack</goal>
-             </goals>
-             <configuration>
-               <artifactItems>
-                 <artifactItem>
-                   <groupId>junit</groupId>
-                   <artifactId>junit</artifactId>
-                   <version>3.8.1</version>
-                   <type>jar</type>
-                   <overWrite>false</overWrite>
-                   <outputDirectory>\${project.build.directory}/alternateLocation</outputDirectory>
-                   <destFileName>optional-new-name.jar</destFileName>
-                   <includes>**/*.class,**/*.xml</includes>
-                   <excludes>**/*test.class</excludes>
-                 </artifactItem>
-               </artifactItems>
-               <includes>**/*.java</includes>
-               <excludes>**/*.properties</excludes>
-               <outputDirectory>\${project.build.directory}/wars</outputDirectory>
-               <overWriteReleases>false</overWriteReleases>
-               <overWriteSnapshots>true</overWriteSnapshots>
-             </configuration>
-           </execution>
-         </executions>
+            <execution>
+              <id>unpack</id>
+              <phase>package</phase>
+              <goals>
+                <goal>unpack</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <artifactItems>
+              <artifactItem>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>3.8.1</version>
+                <type>jar</type>
+                <overWrite>false</overWrite>
+                <outputDirectory>\${project.build.directory}/alternateLocation</outputDirectory>
+                <destFileName>optional-new-name.jar</destFileName>
+                <includes>**/*.class,**/*.xml</includes>
+                <excludes>**/*test.class</excludes>
+              </artifactItem>
+            </artifactItems>
+            <includes>**/*.java</includes>
+            <excludes>**/*.properties</excludes>
+            <outputDirectory>\${project.build.directory}/wars</outputDirectory>
+            <overWriteReleases>false</overWriteReleases>
+            <overWriteSnapshots>true</overWriteSnapshots>
+          </configuration>
        </plugin>
      </plugins>
    </build>

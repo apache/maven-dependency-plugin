@@ -34,34 +34,34 @@ Rewriting target path and file name
    <build>
      <plugins>
        <plugin>
-         <groupId>org.apache.maven.plugins</groupId>
-         <artifactId>maven-dependency-plugin</artifactId>
-         <version>${project.version}</version>
-         <executions>
-           <execution>
-             <id>unpack</id>
-             <phase>package</phase>
-             <goals>
-               <goal>unpack</goal>
-             </goals>
-             <configuration>
-               [...]
-               <artifactItems>
-                 <artifactItem>
-                   [...]
-                   <fileMappers>
-                     <org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-                       <pattern>^\Qx.y/z/\E</pattern>
-                       <replacement>./</replacement>
-                     </org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-                   </fileMappers>
-                   [...]
-                 </artifactItem>
-               </artifactItems>
-               [...]
-             </configuration>
-           </execution>
-         </executions>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>${project.version}</version>
+          <executions>
+            <execution>
+              <id>unpack</id>
+              <phase>package</phase>
+              <goals>
+                <goal>unpack</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            [...]
+            <artifactItems>
+              <artifactItem>
+                [...]
+                <fileMappers>
+                  <org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+                    <pattern>^\Qx.y/z/\E</pattern>
+                    <replacement>./</replacement>
+                  </org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+                </fileMappers>
+                [...]
+              </artifactItem>
+            </artifactItems>
+            [...]
+          </configuration>
        </plugin>
      </plugins>
    </build>

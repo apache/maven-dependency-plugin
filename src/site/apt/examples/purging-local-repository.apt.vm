@@ -78,14 +78,14 @@ mvn dependency:purge-local-repository -DactTransitively=false
             <goals>
               <goal>purge-local-repository</goal>
             </goals>
-            <configuration>
-              <excludes>
-                <exclude>[groupId1]:[artifactId1]</exclude>
-                <exclude>[groupId2]:[artifactId2]</exclude>
-              </excludes>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <excludes>
+            <exclude>[groupId1]:[artifactId1]</exclude>
+            <exclude>[groupId2]:[artifactId2]</exclude>
+          </excludes>
+        </configuration>
       </plugin>
     </plugins>
   </build>

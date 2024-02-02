@@ -45,11 +45,11 @@ Failing the build on dependency analysis warnings
             <goals>
               <goal>analyze-only</goal>
             </goals>
-            <configuration>
-              <failOnWarning>true</failOnWarning>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <failOnWarning>true</failOnWarning>
+        </configuration>
       </plugin>
     </plugins>
   </build>

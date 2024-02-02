@@ -51,13 +51,13 @@ Using project dependencies' sources
               <!-- use copy-dependencies instead if you don't want to explode the sources -->
               <goal>unpack-dependencies</goal>
             </goals>
-            <configuration>
-              <classifier>sources</classifier>
-              <failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
-              <outputDirectory>\${project.build.directory}/sources</outputDirectory>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <classifier>sources</classifier>
+          <failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+          <outputDirectory>\${project.build.directory}/sources</outputDirectory>
+        </configuration>
       </plugin>
     </plugins>
   </build>

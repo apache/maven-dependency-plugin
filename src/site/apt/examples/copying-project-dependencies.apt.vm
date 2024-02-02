@@ -46,14 +46,14 @@ Copying project dependencies
             <goals>
               <goal>copy-dependencies</goal>
             </goals>
-            <configuration>
-              <outputDirectory>\${project.build.directory}/alternateLocation</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <outputDirectory>\${project.build.directory}/alternateLocation</outputDirectory>
+          <overWriteReleases>false</overWriteReleases>
+          <overWriteSnapshots>false</overWriteSnapshots>
+          <overWriteIfNewer>true</overWriteIfNewer>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -83,14 +83,14 @@ Copying project dependencies
             <goals>
               <goal>copy-dependencies</goal>
             </goals>
-            <configuration>
-              <outputDirectory>\${project.build.directory}/alternateLocation</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-              <excludeTransitive>true</excludeTransitive>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <outputDirectory>\${project.build.directory}/alternateLocation</outputDirectory>
+          <overWriteReleases>false</overWriteReleases>
+          <overWriteSnapshots>true</overWriteSnapshots>
+          <excludeTransitive>true</excludeTransitive>
+        </configuration>
       </plugin>
     </plugins>
   </build>
