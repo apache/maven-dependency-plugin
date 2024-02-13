@@ -88,7 +88,7 @@ under the License.
 
   <properties>
     <mavenVersion>3.2.5</mavenVersion>
-    <jettyVersion>9.4.53.v20231009</jettyVersion>
+    <jettyVersion>9.4.54.v20240208</jettyVersion>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
     <resolverVersion>1.0.2.v20150114</resolverVersion>
     <javaVersion>8</javaVersion>
