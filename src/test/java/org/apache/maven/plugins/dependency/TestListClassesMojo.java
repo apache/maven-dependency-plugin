@@ -27,7 +27,8 @@ import java.util.List;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.junit.Assert;
@@ -39,6 +40,13 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
 
     protected void setUp() throws Exception {
         super.setUp("markers", false);
+
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
+
         File testPom = new File(getBasedir(), "target/test-classes/unit/get-test/plugin-config.xml");
 
         assertTrue(testPom.exists());
@@ -47,7 +55,6 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         assertNotNull(mojo);
 
         LegacySupport legacySupport = lookup(LegacySupport.class);
-        MavenSession session = newMavenSession(new MavenProjectStub());
         Settings settings = session.getSettings();
         Server server = new Server();
         server.setId("myserver");
@@ -57,8 +64,6 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         legacySupport.setSession(session);
 
         installLocalRepository(legacySupport);
-
-        setVariableValueToObject(mojo, "session", legacySupport.getSession());
     }
 
     public void testListClassesNotTransitive() throws Exception {

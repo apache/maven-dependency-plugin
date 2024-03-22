@@ -30,7 +30,8 @@ import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.eclipse.jetty.security.ConstraintMapping;
@@ -49,6 +50,11 @@ public class TestGetMojo extends AbstractDependencyMojoTestCase {
     protected void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp("markers", false);
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
 
         File testPom = new File(getBasedir(), "target/test-classes/unit/get-test/plugin-config.xml");
         mojo = (GetMojo) lookupMojo("get", testPom);
@@ -56,14 +62,13 @@ public class TestGetMojo extends AbstractDependencyMojoTestCase {
         assertNotNull(mojo);
 
         LegacySupport legacySupport = lookup(LegacySupport.class);
-        MavenSession mavenSession = newMavenSession(new MavenProjectStub());
-        Settings settings = mavenSession.getSettings();
+        Settings settings = session.getSettings();
         Server server = new Server();
         server.setId("myserver");
         server.setUsername("foo");
         server.setPassword("bar");
         settings.addServer(server);
-        legacySupport.setSession(mavenSession);
+        legacySupport.setSession(session);
 
         installLocalRepository(legacySupport);
 

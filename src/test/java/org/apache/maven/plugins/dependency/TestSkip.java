@@ -20,8 +20,11 @@ package org.apache.maven.plugins.dependency;
 
 import java.io.File;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
+import org.apache.maven.project.MavenProject;
 import org.mockito.ArgumentCaptor;
 
 import static org.mockito.Mockito.atLeastOnce;
@@ -29,6 +32,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class TestSkip extends AbstractDependencyMojoTestCase {
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
+    }
+
     public void testSkipAnalyze() throws Exception {
         doTest("analyze");
     }

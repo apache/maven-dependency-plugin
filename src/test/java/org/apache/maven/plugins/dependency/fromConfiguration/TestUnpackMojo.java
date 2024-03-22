@@ -34,6 +34,7 @@ import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
@@ -44,6 +45,12 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
 
     protected void setUp() throws Exception {
         super.setUp("unpack", true, false);
+
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
 
         File testPom = new File(getBasedir(), "target/test-classes/unit/unpack-test/plugin-config.xml");
         mojo = (UnpackMojo) lookupMojo("unpack", testPom);
@@ -61,9 +68,6 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         // programmatically.
         stubFactory.setSrcFile(new File(
                 getBasedir() + File.separatorChar + "target/test-classes/unit/unpack-dependencies-test/test.txt"));
-
-        MavenSession session = newMavenSession(mojo.getProject());
-        setVariableValueToObject(mojo, "session", session);
 
         LegacySupport legacySupport = lookup(LegacySupport.class);
 
