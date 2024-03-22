@@ -138,6 +138,24 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     }
 
     /**
+     * Test the JSON format serialization
+     */
+    public void _testTreeJsonSerialzing() throws Exception {
+        List<String> contents = runTreeMojo("tree1.json", "json");
+        assertTrue(findString(contents, "\"testGroupId\": \"project\""));
+        assertTrue(findString(contents, "\"type: \"jar\""));
+        assertTrue(findString(contents, "\"version\": \"1.0\""));
+        assertTrue(findString(contents, "\"scope\": \"compile\""));
+        assertTrue(findString(contents, "\"testGroupId\": \"snapshot\""));
+        assertTrue(findString(contents, "\"type: \"jar\""));
+        assertTrue(findString(contents, "\"version\": \"2.0-SNAPSHOT\""));
+        assertTrue(findString(contents, "\"scope\": \"compile\""));
+        assertTrue(findString(contents, "\"testGroupId\": \"release\""));
+        assertTrue(findString(contents, "\"type: \"jar\""));
+        assertTrue(findString(contents, "\"version\": \"1.0\""));
+        assertTrue(findString(contents, "\"scope\": \"compile\""));
+    }
+    /**
      * Help finding content in the given list of string
      *
      * @param outputFile the outputFile.
