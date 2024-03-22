@@ -95,6 +95,7 @@ under the License.
     <project.build.outputTimestamp>2023-10-20T21:21:50Z</project.build.outputTimestamp>
     <slf4j.version>1.7.36</slf4j.version>
     <plexus-archiver.version>4.9.2</plexus-archiver.version>
+    <!-- TODO remove with next parent version -->
     <version.maven-plugin-tools>3.11.0</version.maven-plugin-tools>
   </properties>
 
