@@ -39,7 +39,7 @@ under the License.
       <item name="Rewriting target path and file name" href="examples/unpacking-filemapper.html"/>
       <item name="Using project dependencies' sources" href="examples/using-dependencies-sources.html"/>
       <item name="Failing the build on dependency analysis warnings" href="examples/failing-the-build-on-dependency-analysis-warnings.html"/>
-      <item name="Exclude Dependencies from Dependency Analysis" href="examples/exclude-dependencies-from-dependency-analysis.html"/>
+      <item name="Control Dependencies under Dependency Analysis" href="examples/control-dependencies-under-dependency-analysis.html"/>
       <item name="Filtering the dependency tree" href="examples/filtering-the-dependency-tree.html"/>
       <item name="Purging local repository dependencies" href="examples/purging-local-repository.html"/>
     </menu>
