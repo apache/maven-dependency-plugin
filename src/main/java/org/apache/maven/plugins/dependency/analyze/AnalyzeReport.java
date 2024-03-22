@@ -41,7 +41,7 @@ import org.codehaus.plexus.i18n.I18N;
  */
 @Mojo(name = "analyze-report", requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 @Execute(phase = LifecyclePhase.TEST_COMPILE)
-public class AnalyzeReportMojo extends AbstractMavenReport {
+public class AnalyzeReport extends AbstractMavenReport {
     // fields -----------------------------------------------------------------
 
     /**
@@ -115,13 +115,11 @@ public class AnalyzeReportMojo extends AbstractMavenReport {
     @Override
     public boolean canGenerateReport() {
         if (skip) {
-            getLog().info("Skipping plugin execution");
             return false;
         }
 
         // Step 0: Checking pom availability
         if ("pom".equals(project.getPackaging())) {
-            getLog().info("Skipping pom project");
             return false;
         }
 
