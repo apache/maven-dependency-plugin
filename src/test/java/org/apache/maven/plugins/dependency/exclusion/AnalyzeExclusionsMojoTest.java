@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
@@ -36,8 +38,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingResult;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -70,14 +70,14 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         mojo.setLog(testLog);
     }
 
-    public void test_shall_throw_exception_when_fail_on_warning() throws Exception {
+    public void testShallThrowExceptionWhenFailOnWarning() throws Exception {
         List<Dependency> projectDependencies = new ArrayList<>();
         Dependency withInvalidExclusion = dependency("a", "b");
         withInvalidExclusion.addExclusion(exclusion("invalid", "invalid"));
         projectDependencies.add(withInvalidExclusion);
         project.setDependencies(projectDependencies);
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(newHashSet(artifact));
+        project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
         setVariableValueToObject(mojo, "failOnWarning", true);
 
         assertThatThrownBy(() -> mojo.execute())
@@ -85,14 +85,14 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
                 .hasMessageContaining("Invalid exclusions found");
     }
 
-    public void test_shall_log_error_when_failOnWarning_is_true() throws Exception {
+    public void testShallLogErrorWhenFailOnWarningIsTrue() throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency withInvalidExclusion = dependency("a", "b");
         withInvalidExclusion.addExclusion(exclusion("invalid", "invalid"));
         dependencies.add(withInvalidExclusion);
         project.setDependencies(dependencies);
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(newHashSet(artifact));
+        project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
         setVariableValueToObject(mojo, "failOnWarning", true);
 
         try {
@@ -104,14 +104,14 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         assertThat(testLog.getContent()).startsWith("[error]");
     }
 
-    public void test_shall_log_warning_when_failOnWarning_is_false() throws Exception {
+    public void testShallLogWarningWhenFailOnWarningIsFalse() throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency withInvalidExclusion = dependency("a", "b");
         withInvalidExclusion.addExclusion(exclusion("invalid", "invalid"));
         dependencies.add(withInvalidExclusion);
         project.setDependencies(dependencies);
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(newHashSet(artifact));
+        project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
         setVariableValueToObject(mojo, "failOnWarning", false);
 
         mojo.execute();
@@ -119,7 +119,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         assertThat(testLog.getContent()).startsWith("[warn]");
     }
 
-    public void test_shall_exit_without_analyze_when_no_dependency_has_exclusion() throws Exception {
+    public void testShallExitWithoutAnalyzeWhenNoDependencyHasExclusion() throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         dependencies.add(dependency("a", "c"));
         project.setDependencies(dependencies);
@@ -127,16 +127,16 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         assertThat(testLog.getContent()).startsWith("[debug] No dependencies defined with exclusions - exiting");
     }
 
-    public void test_shall_not_report_invalid_exclusion_for_wildcard_groupId_and_artifactId() throws Exception {
+    public void testShallNotReportInvalidExclusionForWildcardGroupIdAndArtifactId() throws Exception {
         Dependency dependencyWithWildcardExclusion = dependency("a", "b");
         dependencyWithWildcardExclusion.addExclusion(exclusion("*", "*"));
-        project.setDependencies(newArrayList(dependencyWithWildcardExclusion));
+        project.setDependencies(Arrays.asList(dependencyWithWildcardExclusion));
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(newHashSet(artifact));
+        project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
 
         ProjectBuilder projectBuilder = mock(ProjectBuilder.class);
         MavenProject mavenProject = new MavenProject();
-        mavenProject.setArtifacts(newHashSet(stubFactory.createArtifact("whatever", "ok", "1.0")));
+        mavenProject.setArtifacts(new HashSet<>(Arrays.asList(stubFactory.createArtifact("whatever", "ok", "1.0"))));
 
         ProjectBuildingResult pbr = mock(ProjectBuildingResult.class);
         when(pbr.getProject()).thenReturn(mavenProject);
@@ -152,20 +152,20 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
                         "[warn]         - *:*");
     }
 
-    public void test_can_resolve_multiple_artifacts_with_equal_groupId_and_artifact_id() throws Exception {
+    public void testCanResolveMultipleArtifactsWithEqualGroupIdAndArtifactId() throws Exception {
         Dependency dependency1 = dependency("a", "b");
         Dependency dependency2 = dependency("a", "b", "compile", "native");
         dependency1.addExclusion(exclusion("c", "d"));
         dependency2.addExclusion(exclusion("c", "d"));
-        project.setDependencies(newArrayList(dependency1, dependency2));
+        project.setDependencies(Arrays.asList(dependency1, dependency2));
         Artifact artifact1 = stubFactory.createArtifact("a", "b", "1.0");
         Artifact artifact2 = stubFactory.createArtifact("a", "b", "1.0", "compile", "jar", "native");
-        project.setArtifacts(newHashSet(artifact1, artifact2));
+        project.setArtifacts(new HashSet<>(Arrays.asList(artifact1, artifact2)));
 
         assertThatCode(() -> mojo.execute()).doesNotThrowAnyException();
     }
 
-    public void test_shall_not_log_when_exclusion_is_valid() throws Exception {
+    public void testShallNotLogWhenExclusionIsValid() throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency dependency = dependency("a", "b");
         dependency.addExclusion(exclusion("ok", "ok"));
@@ -173,12 +173,12 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         project.setDependencies(dependencies);
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
 
-        project.setArtifacts(newHashSet(artifact));
+        project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
         setVariableValueToObject(mojo, "failOnWarning", true);
 
         ProjectBuilder projectBuilder = mock(ProjectBuilder.class);
         MavenProject mavenProject = new MavenProject();
-        mavenProject.setArtifacts(newHashSet(stubFactory.createArtifact("ok", "ok", "1.0")));
+        mavenProject.setArtifacts(new HashSet<>(Arrays.asList(stubFactory.createArtifact("ok", "ok", "1.0"))));
 
         ProjectBuildingResult pbr = mock(ProjectBuildingResult.class);
         when(pbr.getProject()).thenReturn(mavenProject);

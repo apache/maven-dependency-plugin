@@ -18,14 +18,13 @@
  */
 package org.apache.maven.plugins.dependency.exclusion;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
 import static org.apache.maven.plugins.dependency.exclusion.Coordinates.coordinates;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,45 +38,46 @@ public class ExclusionCheckerTest {
     }
 
     @Test
-    public void shall_report_invalid_exclusions() {
+    public void shallReportInvalidExclusions() {
         Coordinates artifact = coordinates("com.current", "artifact");
-        Set<Coordinates> excludes = newHashSet(
+        Set<Coordinates> excludes = new HashSet<>(Arrays.asList(
                 coordinates("com.example", "one"),
                 coordinates("com.example", "two"),
                 coordinates("com.example", "three"),
-                coordinates("com.example", "four"));
+                coordinates("com.example", "four")));
 
         Set<Coordinates> actualDependencies =
-                newHashSet(coordinates("com.example", "one"), coordinates("com.example", "four"));
+                new HashSet<>(Arrays.asList(coordinates("com.example", "one"), coordinates("com.example", "four")));
 
         checker.check(artifact, excludes, actualDependencies);
 
         assertThat(checker.getViolations())
                 .containsEntry(
-                        artifact, newArrayList(coordinates("com.example", "two"), coordinates("com.example", "three")));
+                        artifact,
+                        Arrays.asList(coordinates("com.example", "two"), coordinates("com.example", "three")));
     }
 
     @Test
-    public void no_violations_when_empty_exclusions() {
+    public void noViolationsWhenEmptyExclusions() {
         checker.check(coordinates("a", "b"), new HashSet<>(), new HashSet<>());
         assertThat(checker.getViolations()).isEmpty();
     }
 
     @Test
-    public void shall_report_invalid_exclusions_when_no_dependencies() {
+    public void shallReportInvalidExclusionsWhenNoDependencies() {
         Coordinates artifact = coordinates("a", "b");
         HashSet<Coordinates> actualDependencies = new HashSet<>();
-        checker.check(artifact, newHashSet(coordinates("p", "m")), actualDependencies);
-        assertThat(checker.getViolations()).containsEntry(artifact, newArrayList(coordinates("p", "m")));
+        checker.check(artifact, new HashSet<>(Arrays.asList(coordinates("p", "m"))), actualDependencies);
+        assertThat(checker.getViolations()).containsEntry(artifact, Arrays.asList(coordinates("p", "m")));
     }
 
     @Test
-    public void shall_handle_wildcard_exclusions() {
+    public void shallHandleWildcardExclusions() {
         Coordinates artifact = coordinates("com.current", "artifact");
-        Set<Coordinates> excludes = newHashSet(coordinates("*", "*"));
+        Set<Coordinates> excludes = new HashSet<>(Arrays.asList(coordinates("*", "*")));
 
         Set<Coordinates> actualDependencies =
-                newHashSet(coordinates("com.example", "one"), coordinates("com.example", "four"));
+                new HashSet<>(Arrays.asList(coordinates("com.example", "one"), coordinates("com.example", "four")));
 
         checker.check(artifact, excludes, actualDependencies);
 
@@ -85,14 +85,14 @@ public class ExclusionCheckerTest {
     }
 
     @Test
-    public void shall_handle_wildcard_groupId_exclusion() {
+    public void shallHandleWildcardGroupIdExclusion() {
         Coordinates artifact = coordinates("com.current", "artifact");
-        Set<Coordinates> excludes = newHashSet(coordinates("javax", "*"));
+        Set<Coordinates> excludes = new HashSet<>(Arrays.asList(coordinates("javax", "*")));
 
-        Set<Coordinates> actualDependencies = newHashSet(
+        Set<Coordinates> actualDependencies = new HashSet<>(Arrays.asList(
                 coordinates("com.example", "one"),
                 coordinates("com.example", "four"),
-                coordinates("javax", "whatever"));
+                coordinates("javax", "whatever")));
 
         checker.check(artifact, excludes, actualDependencies);
 

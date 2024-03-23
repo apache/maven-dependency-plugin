@@ -33,7 +33,7 @@ class ExclusionChecker {
         return violations;
     }
 
-    void check(Coordinates artifact, final Set<Coordinates> excludes, final Set<Coordinates> actualDependencies) {
+    void check(Coordinates artifact, Set<Coordinates> excludes, Set<Coordinates> actualDependencies) {
         List<Coordinates> invalidExclusions = excludes.stream()
                 .filter(exclude -> actualDependencies.stream().noneMatch(exclude.getExclusionPattern()))
                 .collect(toList());

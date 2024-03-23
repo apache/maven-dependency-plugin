@@ -25,7 +25,7 @@ assert buildLog.contains( '[WARNING] The following dependencies defines unnecess
 assert buildLog.contains( '[WARNING]     org.apache.maven:maven-artifact:');
 assert buildLog.contains( '[WARNING]         - javax.annotation:javax.annotation-api');
 assert buildLog.contains( '[WARNING]         - javax.activation:javax.activation-api');
-assert buildLog.contains( '[WARNING]     org.apache.maven:maven-project:');
-assert buildLog.contains( '[WARNING]         - javax.inject:javax.inject');
+assert buildLog.contains( '[WARNING]     org.apache.maven:maven-core:');
+assert buildLog.contains( '[WARNING]         - javax.servlet:javax.servlet-api');
 
 return true;
