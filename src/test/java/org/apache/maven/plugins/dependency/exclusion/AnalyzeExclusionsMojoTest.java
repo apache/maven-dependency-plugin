@@ -34,6 +34,7 @@ import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingResult;
@@ -55,12 +56,16 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp("analyze-exclusions", true, false);
+
+        project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
+
         File testPom = new File(getBasedir(), "target/test-classes/unit/analyze-exclusions/plugin-config.xml");
         mojo = (AnalyzeExclusionsMojo) lookupMojo("analyze-exclusions", testPom);
         assertNotNull(mojo);
-        project = (MavenProject) getVariableValueFromObject(mojo, "project");
-        MavenSession session = newMavenSession(project);
-        setVariableValueToObject(mojo, "session", session);
 
         LegacySupport legacySupport = lookup(LegacySupport.class);
         legacySupport.setSession(session);
