@@ -25,6 +25,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
 
@@ -35,6 +36,12 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
     protected void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp("build-classpath", true);
+
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
 
         File testPom = new File(getBasedir(), "target/test-classes/unit/build-classpath-test/plugin-config.xml");
         mojo = (BuildClasspathMojo) lookupMojo("build-classpath", testPom);
@@ -101,11 +108,9 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
     }
 
     public void testPath() throws Exception {
-        MavenSession session = newMavenSession(mojo.getProject());
-        setVariableValueToObject(mojo, "session", session);
 
         LegacySupport legacySupport = lookup(LegacySupport.class);
-        legacySupport.setSession(session);
+        legacySupport.setSession(lookup(MavenSession.class));
         installLocalRepository(legacySupport);
 
         Artifact artifact = stubFactory.getReleaseArtifact();

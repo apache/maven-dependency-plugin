@@ -23,7 +23,6 @@
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
           <configuration>
-            <project implementation="org.apache.maven.plugin.testing.stubs.MavenProjectStub"/>
           </configuration>
       </plugin>
     </plugins>

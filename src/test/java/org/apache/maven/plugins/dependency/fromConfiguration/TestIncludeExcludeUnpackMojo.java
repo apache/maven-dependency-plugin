@@ -28,7 +28,9 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
+import org.apache.maven.project.MavenProject;
 
 public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase {
     private final String PACKED_FILE = "test.zip";
@@ -44,6 +46,12 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
     protected void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp("unpack", true, false);
+
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
 
         File testPom = new File(getBasedir(), "target/test-classes/unit/unpack-test/plugin-config.xml");
         mojo = (UnpackMojo) lookupMojo("unpack", testPom);
@@ -62,9 +70,6 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
 
         mojo.setMarkersDirectory(new File(this.testDir, "markers"));
         mojo.setArtifactItems(list);
-
-        MavenSession session = newMavenSession(mojo.getProject());
-        setVariableValueToObject(mojo, "session", session);
 
         LegacySupport legacySupport = lookup(LegacySupport.class);
         legacySupport.setSession(session);

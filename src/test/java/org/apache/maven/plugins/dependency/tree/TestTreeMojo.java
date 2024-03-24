@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.LegacySupport;
+import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
@@ -46,16 +49,23 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     protected void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp("tree", false);
+
+        MavenProject project = new MavenProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
+
+        LegacySupport legacySupport = lookup(LegacySupport.class);
+        legacySupport.setSession(session);
+        installLocalRepository(legacySupport);
     }
 
     // tests ------------------------------------------------------------------
 
-    public void testVoid() {
-        // TODO: tests disabled during MDEP-339 work, to be reactivated
-    }
-
     /**
      * Tests the proper discovery and configuration of the mojo.
+     * // TODO: tests disabled during MDEP-339 work, to be reactivated
      *
      * @throws Exception in case of an error.
      */
@@ -89,7 +99,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of an error.
      */
-    public void _testTreeDotSerializing() throws Exception {
+    public void testTreeDotSerializing() throws Exception {
         List<String> contents = runTreeMojo("tree1.dot", "dot");
         assertTrue(findString(contents, "digraph \"testGroupId:project:jar:1.0:compile\" {"));
         assertTrue(findString(
@@ -104,7 +114,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of an error.
      */
-    public void _testTreeGraphMLSerializing() throws Exception {
+    public void testTreeGraphMLSerializing() throws Exception {
         List<String> contents = runTreeMojo("tree1.graphml", "graphml");
 
         assertTrue(findString(contents, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
@@ -120,7 +130,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of an error.
      */
-    public void _testTreeTGFSerializing() throws Exception {
+    public void testTreeTGFSerializing() throws Exception {
         List<String> contents = runTreeMojo("tree1.tgf", "tgf");
         assertTrue(findString(contents, "testGroupId:project:jar:1.0:compile"));
         assertTrue(findString(contents, "testGroupId:snapshot:jar:2.0-SNAPSHOT:compile"));

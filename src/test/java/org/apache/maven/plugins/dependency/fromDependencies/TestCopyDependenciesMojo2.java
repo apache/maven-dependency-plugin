@@ -43,6 +43,7 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
 
@@ -53,6 +54,11 @@ public class TestCopyDependenciesMojo2 extends AbstractDependencyMojoTestCase {
     protected void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp("copy-dependencies", true);
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
 
         File testPom = new File(getBasedir(), "target/test-classes/unit/copy-dependencies-test/plugin-config.xml");
         mojo = (CopyDependenciesMojo) lookupMojo("copy-dependencies", testPom);
@@ -61,7 +67,6 @@ public class TestCopyDependenciesMojo2 extends AbstractDependencyMojoTestCase {
 
         assertNotNull(mojo);
         assertNotNull(mojo.getProject());
-        MavenProject project = mojo.getProject();
 
         Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
         Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
@@ -72,9 +77,6 @@ public class TestCopyDependenciesMojo2 extends AbstractDependencyMojoTestCase {
         mojo.markersDirectory = new File(this.testDir, "markers");
 
         LegacySupport legacySupport = lookup(LegacySupport.class);
-        MavenSession session = newMavenSession(project);
-        setVariableValueToObject(mojo, "session", session);
-
         legacySupport.setSession(session);
         installLocalRepository(legacySupport);
     }
