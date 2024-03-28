@@ -31,8 +31,6 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.Execute;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -59,7 +57,6 @@ import static org.apache.maven.plugins.dependency.exclusion.Coordinates.coordina
  * @since 3.6.2
  */
 @Mojo(name = "analyze-exclusions", requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
-@Execute(phase = LifecyclePhase.TEST_COMPILE)
 public class AnalyzeExclusionsMojo extends AbstractMojo {
 
     @Component
