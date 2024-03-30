@@ -58,6 +58,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         super.setUp("analyze-exclusions", true, false);
 
         project = new DependencyProjectStub();
+        project.setName("projectName");
         getContainer().addComponent(project, MavenProject.class.getName());
 
         MavenSession session = newMavenSession(project);
@@ -150,11 +151,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
 
         mojo.execute();
 
-        assertThat(testLog.getContent())
-                .doesNotContain(
-                        "[warn] The following dependencies defines unnecessary excludes",
-                        "[warn]     a:b:",
-                        "[warn]         - *:*");
+        assertThat(testLog.getContent()).doesNotContain("[warn]     a:b:", "[warn]         - *:*");
     }
 
     public void testCanResolveMultipleArtifactsWithEqualGroupIdAndArtifactId() throws Exception {
@@ -193,6 +190,20 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         assertThatCode(() -> mojo.execute()).doesNotThrowAnyException();
     }
 
+    public void testThatLogContainProjectName() throws Exception {
+        List<Dependency> dependencies = new ArrayList<>();
+        Dependency withInvalidExclusion = dependency("a", "b");
+        withInvalidExclusion.addExclusion(exclusion("invalid", "invalid"));
+        dependencies.add(withInvalidExclusion);
+        project.setDependencies(dependencies);
+        Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
+        project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
+
+        mojo.execute();
+
+        assertThat(testLog.getContent()).contains("[warn] projectName defines following unnecessary excludes");
+    }
+
     private Dependency dependency(String groupId, String artifactId) {
         Dependency dependency = new Dependency();
         dependency.setGroupId(groupId);
@@ -225,57 +236,79 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
     static class TestLog implements Log {
         StringBuilder sb = new StringBuilder();
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void debug(CharSequence content) {
             print("debug", content);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void debug(CharSequence content, Throwable error) {
             print("debug", content, error);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void debug(Throwable error) {
             print("debug", error);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void info(CharSequence content) {
             print("info", content);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void info(CharSequence content, Throwable error) {
             print("info", content, error);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void info(Throwable error) {
             print("info", error);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void warn(CharSequence content) {
             print("warn", content);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void warn(CharSequence content, Throwable error) {
             print("warn", content, error);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void warn(Throwable error) {
             print("warn", error);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void error(CharSequence content) {
             print("error", content);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void error(CharSequence content, Throwable error) {
             StringWriter sWriter = new StringWriter();
             PrintWriter pWriter = new PrintWriter(sWriter);

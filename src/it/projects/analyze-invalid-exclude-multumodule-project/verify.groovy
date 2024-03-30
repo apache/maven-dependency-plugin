@@ -21,11 +21,10 @@ File file = new File( basedir, "build.log" );
 assert file.exists();
 
 String buildLog = file.getText( "UTF-8" );
-assert buildLog.contains( '[WARNING] test-module defines following unnecessary excludes');
-assert buildLog.contains( '[WARNING]     org.apache.maven:maven-artifact:');
-assert buildLog.contains( '[WARNING]         - javax.annotation:javax.annotation-api');
-assert buildLog.contains( '[WARNING]         - javax.activation:javax.activation-api');
+assert buildLog.contains( '[WARNING] test-module1 defines following unnecessary excludes');
 assert buildLog.contains( '[WARNING]     org.apache.maven:maven-core:');
 assert buildLog.contains( '[WARNING]         - javax.servlet:javax.servlet-api');
+
+assert !buildLog.contains( '[WARNING] test-module2 defines following unnecessary excludes');
 
 return true;

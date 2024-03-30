@@ -120,10 +120,10 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
 
         if (!checker.getViolations().isEmpty()) {
             if (failOnWarning) {
-                logViolations(checker.getViolations(), (value) -> getLog().error(value));
+                logViolations(project.getName(), checker.getViolations(), (value) -> getLog().error(value));
                 throw new MojoExecutionException("Invalid exclusions found");
             } else {
-                logViolations(checker.getViolations(), (value) -> getLog().warn(value));
+                logViolations(project.getName(), checker.getViolations(), (value) -> getLog().warn(value));
             }
         }
     }
@@ -135,8 +135,8 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
                 && Objects.equals(stripToEmpty(artifact.getClassifier()), stripToEmpty(dependency.getClassifier()));
     }
 
-    private void logViolations(Map<Coordinates, List<Coordinates>> violations, final Consumer<String> logger) {
-        logger.accept("The following dependencies defines unnecessary excludes");
+    private void logViolations(String name, Map<Coordinates, List<Coordinates>> violations, Consumer<String> logger) {
+        logger.accept(name + " defines following unnecessary excludes");
         violations.forEach((dependency, invalidExclusions) -> {
             logger.accept("    " + dependency + ":");
             invalidExclusions.forEach(invalidExclusion -> {

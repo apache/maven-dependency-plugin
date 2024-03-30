@@ -16,16 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package foo;
 
-File file = new File( basedir, "build.log" );
-assert file.exists();
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.metadata.Metadata;
+import org.apache.maven.model.Model;
 
-String buildLog = file.getText( "UTF-8" );
-assert buildLog.contains( '[WARNING] test-module defines following unnecessary excludes');
-assert buildLog.contains( '[WARNING]     org.apache.maven:maven-artifact:');
-assert buildLog.contains( '[WARNING]         - javax.annotation:javax.annotation-api');
-assert buildLog.contains( '[WARNING]         - javax.activation:javax.activation-api');
-assert buildLog.contains( '[WARNING]     org.apache.maven:maven-core:');
-assert buildLog.contains( '[WARNING]         - javax.servlet:javax.servlet-api');
+public class Main
+{
+    public static final String SCOPE_COMPILE = Artifact.SCOPE_COMPILE;
 
-return true;
+    public Model model = null;
+
+    public Metadata metadata = null;
+}
