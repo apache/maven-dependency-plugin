@@ -77,12 +77,12 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
     /**
      * Skip plugin execution completely.
      */
-    @Parameter(property = "mdep.skip", defaultValue = "false")
-    private boolean skip;
+    @Parameter(property = "mdep.exclusion.fail", defaultValue = "false")
+    private boolean exclusionFail;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        if (skip) {
+        if (exclusionFail) {
             getLog().debug("Skipping execution");
             return;
         }
