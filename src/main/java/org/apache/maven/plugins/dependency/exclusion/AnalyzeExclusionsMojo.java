@@ -71,18 +71,18 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
     /**
      * Whether to fail the build if invalid exclusions is found.
      */
-    @Parameter(property = "failOnWarning", defaultValue = "false")
-    private boolean failOnWarning;
+    @Parameter(property = "mdep.exclusion.fail", defaultValue = "false")
+    private boolean exclusionFail;
 
     /**
      * Skip plugin execution completely.
      */
-    @Parameter(property = "mdep.exclusion.fail", defaultValue = "false")
-    private boolean exclusionFail;
+    @Parameter(property = "mdep.skip", defaultValue = "false")
+    private boolean skip;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        if (exclusionFail) {
+        if (skip) {
             getLog().debug("Skipping execution");
             return;
         }
@@ -119,7 +119,7 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
         }
 
         if (!checker.getViolations().isEmpty()) {
-            if (failOnWarning) {
+            if (exclusionFail) {
                 logViolations(project.getName(), checker.getViolations(), (value) -> getLog().error(value));
                 throw new MojoExecutionException("Invalid exclusions found");
             } else {

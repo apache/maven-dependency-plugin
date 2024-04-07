@@ -84,7 +84,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         project.setDependencies(projectDependencies);
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
         project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
-        setVariableValueToObject(mojo, "failOnWarning", true);
+        setVariableValueToObject(mojo, "exclusionFail", true);
 
         assertThatThrownBy(() -> mojo.execute())
                 .isInstanceOf(MojoExecutionException.class)
@@ -99,7 +99,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         project.setDependencies(dependencies);
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
         project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
-        setVariableValueToObject(mojo, "failOnWarning", true);
+        setVariableValueToObject(mojo, "exclusionFail", true);
 
         try {
             mojo.execute();
@@ -118,7 +118,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         project.setDependencies(dependencies);
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
         project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
-        setVariableValueToObject(mojo, "failOnWarning", false);
+        setVariableValueToObject(mojo, "exclusionFail", false);
 
         mojo.execute();
 
@@ -176,7 +176,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
 
         project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
-        setVariableValueToObject(mojo, "failOnWarning", true);
+        setVariableValueToObject(mojo, "exclusionFail", true);
 
         ProjectBuilder projectBuilder = mock(ProjectBuilder.class);
         MavenProject mavenProject = new MavenProject();
