@@ -98,6 +98,8 @@ ${project.name}
   *{{{./unpack-dependencies-mojo.html}dependency:unpack-dependencies}} like
   copy-dependencies but unpacks.
 
+  *{{{./analyze-exclusions-mojo.html}dependency:analyze-exclusions}} displays invalid exclusions for this project.
+
   []
 
 * Usage
