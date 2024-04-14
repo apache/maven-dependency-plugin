@@ -42,6 +42,9 @@
     <repository>
       <id>fake-remote-repository</id>
       <url>file:///${basedir}/repo/</url>
+      <releases>
+        <checksumPolicy>ignore</checksumPolicy>
+      </releases>
     </repository>
   </repositories>
   
