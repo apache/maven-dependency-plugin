@@ -38,12 +38,10 @@ under the License.
           <releases>
             <enabled>true</enabled>
             <checksumPolicy>ignore</checksumPolicy>
-            <updatePolicy>never</updatePolicy>
           </releases>
           <snapshots>
             <enabled>true</enabled>
             <checksumPolicy>ignore</checksumPolicy>
-            <updatePolicy>always</updatePolicy>
           </snapshots>
         </repository>
       </repositories>
@@ -54,12 +52,10 @@ under the License.
           <releases>
             <enabled>true</enabled>
             <checksumPolicy>ignore</checksumPolicy>
-            <updatePolicy>never</updatePolicy>
           </releases>
           <snapshots>
             <enabled>true</enabled>
             <checksumPolicy>ignore</checksumPolicy>
-            <updatePolicy>always</updatePolicy>
           </snapshots>
         </pluginRepository>
       </pluginRepositories>
