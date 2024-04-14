@@ -54,7 +54,7 @@ import static org.apache.maven.plugins.dependency.exclusion.Coordinates.coordina
  * longer valid.
  * </p>
  *
- * @since 3.6.2
+ * @since 3.7.0
  */
 @Mojo(name = "analyze-exclusions", requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class AnalyzeExclusionsMojo extends AbstractMojo {
@@ -70,12 +70,16 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
 
     /**
      * Whether to fail the build if invalid exclusions is found.
+     *
+     * @since 3.7.0
      */
     @Parameter(property = "mdep.exclusion.fail", defaultValue = "false")
     private boolean exclusionFail;
 
     /**
      * Skip plugin execution completely.
+     *
+     * @since 3.7.0
      */
     @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
