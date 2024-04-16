@@ -23,9 +23,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
@@ -35,23 +37,25 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuilder;
-import org.apache.maven.project.ProjectBuildingResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
 
-    AnalyzeExclusionsMojo mojo;
-    MavenProject project;
+    private AnalyzeExclusionsMojo mojo;
+
+    private MavenProject project;
+
     private TestLog testLog;
+
+    private ResolverUtil resolverUtil;
 
     @Override
     public void setUp() throws Exception {
@@ -63,6 +67,9 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
 
         MavenSession session = newMavenSession(project);
         getContainer().addComponent(session, MavenSession.class.getName());
+
+        resolverUtil = mock(ResolverUtil.class);
+        getContainer().addComponent(resolverUtil, ResolverUtil.class.getName());
 
         File testPom = new File(getBasedir(), "target/test-classes/unit/analyze-exclusions/plugin-config.xml");
         mojo = (AnalyzeExclusionsMojo) lookupMojo("analyze-exclusions", testPom);
@@ -77,35 +84,18 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
     }
 
     public void testShallThrowExceptionWhenFailOnWarning() throws Exception {
-        List<Dependency> projectDependencies = new ArrayList<>();
-        Dependency withInvalidExclusion = dependency("a", "b");
-        withInvalidExclusion.addExclusion(exclusion("invalid", "invalid"));
-        projectDependencies.add(withInvalidExclusion);
-        project.setDependencies(projectDependencies);
-        Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
-        setVariableValueToObject(mojo, "exclusionFail", true);
-
-        assertThatThrownBy(() -> mojo.execute())
-                .isInstanceOf(MojoExecutionException.class)
-                .hasMessageContaining("Invalid exclusions found");
-    }
-
-    public void testShallLogErrorWhenFailOnWarningIsTrue() throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency withInvalidExclusion = dependency("a", "b");
         withInvalidExclusion.addExclusion(exclusion("invalid", "invalid"));
         dependencies.add(withInvalidExclusion);
         project.setDependencies(dependencies);
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
+        project.setArtifacts(new HashSet<>(Collections.singletonList(artifact)));
         setVariableValueToObject(mojo, "exclusionFail", true);
 
-        try {
-            mojo.execute();
-        } catch (MojoExecutionException ignored) {
-            // ignored
-        }
+        assertThatThrownBy(() -> mojo.execute())
+                .isInstanceOf(MojoExecutionException.class)
+                .hasMessageContaining("Invalid exclusions found");
 
         assertThat(testLog.getContent()).startsWith("[error]");
     }
@@ -117,7 +107,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         dependencies.add(withInvalidExclusion);
         project.setDependencies(dependencies);
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
+        project.setArtifacts(new HashSet<>(Collections.singletonList(artifact)));
         setVariableValueToObject(mojo, "exclusionFail", false);
 
         mojo.execute();
@@ -140,14 +130,9 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
         project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
 
-        ProjectBuilder projectBuilder = mock(ProjectBuilder.class);
-        MavenProject mavenProject = new MavenProject();
-        mavenProject.setArtifacts(new HashSet<>(Arrays.asList(stubFactory.createArtifact("whatever", "ok", "1.0"))));
-
-        ProjectBuildingResult pbr = mock(ProjectBuildingResult.class);
-        when(pbr.getProject()).thenReturn(mavenProject);
-        when(projectBuilder.build(any(Artifact.class), anyBoolean(), any())).thenReturn(pbr);
-        setVariableValueToObject(mojo, "projectBuilder", projectBuilder);
+        when(resolverUtil.collectDependencies(any()))
+                .thenReturn(Collections.singletonList(new org.eclipse.aether.graph.Dependency(
+                        RepositoryUtils.toArtifact(stubFactory.createArtifact("whatever", "ok", "1.0")), "")));
 
         mojo.execute();
 
@@ -175,18 +160,13 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         project.setDependencies(dependencies);
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
 
-        project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
+        project.setArtifacts(new HashSet<>(Collections.singletonList(artifact)));
         setVariableValueToObject(mojo, "exclusionFail", true);
 
-        ProjectBuilder projectBuilder = mock(ProjectBuilder.class);
-        MavenProject mavenProject = new MavenProject();
-        mavenProject.setArtifacts(new HashSet<>(Arrays.asList(stubFactory.createArtifact("ok", "ok", "1.0"))));
+        when(resolverUtil.collectDependencies(any()))
+                .thenReturn(Collections.singletonList(new org.eclipse.aether.graph.Dependency(
+                        RepositoryUtils.toArtifact(stubFactory.createArtifact("ok", "ok", "1.0")), "")));
 
-        ProjectBuildingResult pbr = mock(ProjectBuildingResult.class);
-        when(pbr.getProject()).thenReturn(mavenProject);
-        when(projectBuilder.build(any(Artifact.class), anyBoolean(), any())).thenReturn(pbr);
-
-        setVariableValueToObject(mojo, "projectBuilder", projectBuilder);
         assertThatCode(() -> mojo.execute()).doesNotThrowAnyException();
     }
 
@@ -197,7 +177,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         dependencies.add(withInvalidExclusion);
         project.setDependencies(dependencies);
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
+        project.setArtifacts(new HashSet<>(Collections.singletonList(artifact)));
 
         mojo.execute();
 

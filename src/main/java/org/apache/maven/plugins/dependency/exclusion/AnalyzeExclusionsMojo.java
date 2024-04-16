@@ -18,33 +18,28 @@
  */
 package org.apache.maven.plugins.dependency.exclusion;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.apache.maven.artifact.Artifact;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuilder;
-import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.project.ProjectBuildingResult;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.collection.DependencyCollectionException;
 
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.stripToEmpty;
 import static org.apache.maven.plugins.dependency.exclusion.Coordinates.coordinates;
 
 /**
@@ -56,14 +51,14 @@ import static org.apache.maven.plugins.dependency.exclusion.Coordinates.coordina
  *
  * @since 3.7.0
  */
-@Mojo(name = "analyze-exclusions", requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
+@Mojo(name = "analyze-exclusions", requiresDependencyCollection = ResolutionScope.TEST, threadSafe = true)
 public class AnalyzeExclusionsMojo extends AbstractMojo {
 
     @Component
     private MavenProject project;
 
     @Component
-    private ProjectBuilder projectBuilder;
+    private ResolverUtil resolverUtil;
 
     @Component
     private MavenSession session;
@@ -85,12 +80,12 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
     private boolean skip;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         if (skip) {
             getLog().debug("Skipping execution");
             return;
         }
-        List<Dependency> dependenciesWithExclusions = project.getDependencies().stream()
+        Collection<Dependency> dependenciesWithExclusions = project.getDependencies().stream()
                 .filter(dep -> !dep.getExclusions().isEmpty())
                 .collect(toList());
 
@@ -101,17 +96,23 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
 
         ExclusionChecker checker = new ExclusionChecker();
 
+        ArtifactTypeRegistry artifactTypeRegistry =
+                session.getRepositorySession().getArtifactTypeRegistry();
         for (final Dependency dependency : dependenciesWithExclusions) {
+
             Coordinates currentCoordinates = coordinates(dependency.getGroupId(), dependency.getArtifactId());
-            Artifact matchingArtifact = project.getArtifacts().stream()
-                    .filter(artifact -> matchesDependency(artifact, dependency))
-                    .findFirst()
-                    .orElseThrow(() -> new MojoExecutionException(
-                            format("Error finding Artifact for given Dependency [%s]", dependency)));
 
-            ProjectBuildingResult result = buildProject(matchingArtifact);
+            Collection<org.eclipse.aether.graph.Dependency> actualDependencies = null;
+            try {
+                actualDependencies =
+                        resolverUtil.collectDependencies(RepositoryUtils.toDependency(dependency, artifactTypeRegistry)
+                                .setExclusions(null));
+            } catch (DependencyCollectionException e) {
+                throw new MojoExecutionException(e.getMessage(), e);
+            }
 
-            Set<Coordinates> actualDependencies = result.getProject().getArtifacts().stream()
+            Set<Coordinates> actualCoordinates = actualDependencies.stream()
+                    .map(org.eclipse.aether.graph.Dependency::getArtifact)
                     .map(a -> coordinates(a.getGroupId(), a.getArtifactId()))
                     .collect(toSet());
 
@@ -119,45 +120,24 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
                     .map(e -> coordinates(e.getGroupId(), e.getArtifactId()))
                     .collect(toSet());
 
-            checker.check(currentCoordinates, exclusions, actualDependencies);
+            checker.check(currentCoordinates, exclusions, actualCoordinates);
         }
 
         if (!checker.getViolations().isEmpty()) {
             if (exclusionFail) {
-                logViolations(project.getName(), checker.getViolations(), (value) -> getLog().error(value));
+                logViolations(project.getName(), checker.getViolations(), value -> getLog().error(value));
                 throw new MojoExecutionException("Invalid exclusions found");
             } else {
-                logViolations(project.getName(), checker.getViolations(), (value) -> getLog().warn(value));
+                logViolations(project.getName(), checker.getViolations(), value -> getLog().warn(value));
             }
         }
-    }
-
-    private boolean matchesDependency(Artifact artifact, Dependency dependency) {
-        return Objects.equals(artifact.getGroupId(), dependency.getGroupId())
-                && Objects.equals(artifact.getArtifactId(), dependency.getArtifactId())
-                && Objects.equals(artifact.getType(), dependency.getType())
-                && Objects.equals(stripToEmpty(artifact.getClassifier()), stripToEmpty(dependency.getClassifier()));
     }
 
     private void logViolations(String name, Map<Coordinates, List<Coordinates>> violations, Consumer<String> logger) {
         logger.accept(name + " defines following unnecessary excludes");
         violations.forEach((dependency, invalidExclusions) -> {
             logger.accept("    " + dependency + ":");
-            invalidExclusions.forEach(invalidExclusion -> {
-                logger.accept("        - " + invalidExclusion);
-            });
+            invalidExclusions.forEach(invalidExclusion -> logger.accept("        - " + invalidExclusion));
         });
-    }
-
-    private ProjectBuildingResult buildProject(Artifact artifact) throws MojoExecutionException {
-        try {
-            ProjectBuildingRequest projectBuildingRequest =
-                    new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-            projectBuildingRequest.setResolveDependencies(true);
-            return projectBuilder.build(artifact, true, projectBuildingRequest);
-        } catch (ProjectBuildingException e) {
-            throw new MojoExecutionException(
-                    format("Failed to build project for %s:%s", artifact.getGroupId(), artifact.getArtifactId()), e);
-        }
     }
 }
