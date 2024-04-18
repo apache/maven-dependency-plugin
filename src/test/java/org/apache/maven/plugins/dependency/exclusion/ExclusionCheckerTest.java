@@ -54,7 +54,7 @@ public class ExclusionCheckerTest {
         assertThat(checker.getViolations())
                 .containsEntry(
                         artifact,
-                        Arrays.asList(coordinates("com.example", "two"), coordinates("com.example", "three")));
+                        Arrays.asList(coordinates("com.example", "three"), coordinates("com.example", "two")));
     }
 
     @Test

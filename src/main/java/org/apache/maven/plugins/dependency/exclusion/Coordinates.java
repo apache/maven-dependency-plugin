@@ -25,23 +25,43 @@ import java.nio.file.PathMatcher;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Exclusion;
+import org.apache.maven.model.InputLocation;
+
 /**
  * Simple "record" to hold the coordinates of the dependency which is excluded.
  * <p>
  * When dealing with exclusions the version is not important. Only groupId and artifactId is used.
  * </p>
  */
-class Coordinates {
+class Coordinates implements Comparable<Coordinates> {
+
     private final String groupId;
+
     private final String artifactId;
 
-    private Coordinates(String groupId, String artifactId) {
+    private final Dependency dependency;
+
+    private final InputLocation location;
+
+    private Coordinates(String groupId, String artifactId, Dependency dependency, InputLocation location) {
         this.groupId = groupId;
         this.artifactId = artifactId;
+        this.dependency = dependency;
+        this.location = location;
     }
 
     public static Coordinates coordinates(String groupId, String artifactId) {
-        return new Coordinates(groupId, artifactId);
+        return new Coordinates(groupId, artifactId, null, null);
+    }
+
+    public static Coordinates coordinates(Dependency dependency) {
+        return new Coordinates(dependency.getGroupId(), dependency.getArtifactId(), dependency, null);
+    }
+
+    public static Coordinates coordinates(Exclusion exclusion) {
+        return new Coordinates(exclusion.getGroupId(), exclusion.getArtifactId(), null, exclusion.getLocation(""));
     }
 
     public String getGroupId() {
@@ -50,6 +70,10 @@ class Coordinates {
 
     public String getArtifactId() {
         return artifactId;
+    }
+
+    public Dependency getDependency() {
+        return dependency;
     }
 
     Predicate<Coordinates> getExclusionPattern() {
@@ -86,16 +110,36 @@ class Coordinates {
             return false;
         }
         Coordinates that = (Coordinates) o;
-        return Objects.equals(groupId, that.groupId) && Objects.equals(artifactId, that.artifactId);
+        return Objects.equals(groupId, that.groupId)
+                && Objects.equals(artifactId, that.artifactId)
+                && Objects.equals(location, that.location);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(groupId, artifactId);
+        return Objects.hash(groupId, artifactId, location);
+    }
+
+    @Override
+    public int compareTo(Coordinates that) {
+
+        if (location != null && that.location != null) {
+            return location.getLineNumber() - that.location.getLineNumber();
+        }
+
+        return toString().compareTo(that.toString());
     }
 
     @Override
     public String toString() {
-        return groupId + ":" + artifactId;
+        String version = "";
+        if (dependency != null) {
+            version = ":" + dependency.getVersion();
+        }
+        String line = "";
+        if (location != null) {
+            line = " @ line: " + location.getLineNumber();
+        }
+        return groupId + ":" + artifactId + version + line;
     }
 }

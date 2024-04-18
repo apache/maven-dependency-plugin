@@ -17,15 +17,23 @@
  * under the License.
  */
 
-File file = new File( basedir, "build.log" );
+def file = new File(basedir, "build.log");
 assert file.exists();
 
-String buildLog = file.getText( "UTF-8" );
-assert buildLog.contains( '[WARNING] test-module defines following unnecessary excludes');
-assert buildLog.contains( '[WARNING]     org.apache.maven:maven-artifact:');
-assert buildLog.contains( '[WARNING]         - javax.annotation:javax.annotation-api');
-assert buildLog.contains( '[WARNING]         - javax.activation:javax.activation-api');
-assert buildLog.contains( '[WARNING]     org.apache.maven:maven-core:');
-assert buildLog.contains( '[WARNING]         - javax.servlet:javax.servlet-api');
+def logLines = buildLog = file.readLines()
 
-return true;
+def index = logLines.indexOf('[WARNING] test-module defines following unnecessary excludes')
+assert index > 0: "no messages in log"
+
+def messages = logLines[index..index + 5];
+
+assert messages == [
+        '[WARNING] test-module defines following unnecessary excludes',
+        '[WARNING]     org.apache.maven.its.dependency:a-with-dep:1.0.0',
+        '[WARNING]         - org.apache.maven.its.dependency:invalid-exclusion1 @ line: 46',
+        '[WARNING]         - org.apache.maven.its.dependency:invalid-exclusion2 @ line: 75',
+        '[WARNING]     org.apache.maven.its.dependency:b-with-dep:1.0.0',
+        '[WARNING]         - org.apache.maven.its.dependency:invalid-exclusion3 @ line: 65'
+]
+
+

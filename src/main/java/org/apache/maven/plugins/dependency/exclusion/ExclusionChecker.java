@@ -18,16 +18,16 @@
  */
 package org.apache.maven.plugins.dependency.exclusion;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import static java.util.stream.Collectors.toList;
 
 class ExclusionChecker {
 
-    private final Map<Coordinates, List<Coordinates>> violations = new HashMap<>();
+    private final Map<Coordinates, List<Coordinates>> violations = new TreeMap<>();
 
     Map<Coordinates, List<Coordinates>> getViolations() {
         return violations;
@@ -36,6 +36,7 @@ class ExclusionChecker {
     void check(Coordinates artifact, Set<Coordinates> excludes, Set<Coordinates> actualDependencies) {
         List<Coordinates> invalidExclusions = excludes.stream()
                 .filter(exclude -> actualDependencies.stream().noneMatch(exclude.getExclusionPattern()))
+                .sorted()
                 .collect(toList());
 
         if (!invalidExclusions.isEmpty()) {
