@@ -18,7 +18,9 @@
  */
 package org.apache.maven.plugins.dependency.exclusion;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +29,7 @@ import java.util.function.Consumer;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -79,15 +82,39 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
     @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
 
+    /**
+     * Current project modelId.
+     */
+    private String projectModelId;
+
     @Override
     public void execute() throws MojoExecutionException {
         if (skip) {
             getLog().debug("Skipping execution");
             return;
         }
-        Collection<Dependency> dependenciesWithExclusions = project.getDependencies().stream()
-                .filter(dep -> !dep.getExclusions().isEmpty())
-                .collect(toList());
+
+        projectModelId = project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion();
+
+        Map<Coordinates, Collection<Exclusion>> dependenciesWithExclusions = new HashMap<>();
+
+        project.getDependencyManagement().getDependencies().forEach(dependency -> {
+            Collection<Exclusion> exclusions = getExclusionsForDependency(dependency);
+            if (!exclusions.isEmpty()) {
+                dependenciesWithExclusions
+                        .computeIfAbsent(coordinates(dependency), d -> new ArrayList<>())
+                        .addAll(exclusions);
+            }
+        });
+
+        project.getDependencies().forEach(dependency -> {
+            Collection<Exclusion> exclusions = getExclusionsForDependency(dependency);
+            if (!exclusions.isEmpty()) {
+                dependenciesWithExclusions
+                        .computeIfAbsent(coordinates(dependency), d -> new ArrayList<>())
+                        .addAll(exclusions);
+            }
+        });
 
         if (dependenciesWithExclusions.isEmpty()) {
             getLog().debug("No dependencies defined with exclusions - exiting");
@@ -98,14 +125,14 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
 
         ArtifactTypeRegistry artifactTypeRegistry =
                 session.getRepositorySession().getArtifactTypeRegistry();
-        for (final Dependency dependency : dependenciesWithExclusions) {
+        for (Map.Entry<Coordinates, Collection<Exclusion>> entry : dependenciesWithExclusions.entrySet()) {
 
-            Coordinates currentCoordinates = coordinates(dependency.getGroupId(), dependency.getArtifactId());
+            Coordinates currentCoordinates = entry.getKey();
 
             Collection<org.eclipse.aether.graph.Dependency> actualDependencies = null;
             try {
-                actualDependencies =
-                        resolverUtil.collectDependencies(RepositoryUtils.toDependency(dependency, artifactTypeRegistry)
+                actualDependencies = resolverUtil.collectDependencies(
+                        RepositoryUtils.toDependency(currentCoordinates.getDependency(), artifactTypeRegistry)
                                 .setExclusions(null));
             } catch (DependencyCollectionException e) {
                 throw new MojoExecutionException(e.getMessage(), e);
@@ -116,9 +143,8 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
                     .map(a -> coordinates(a.getGroupId(), a.getArtifactId()))
                     .collect(toSet());
 
-            Set<Coordinates> exclusions = dependency.getExclusions().stream()
-                    .map(e -> coordinates(e.getGroupId(), e.getArtifactId()))
-                    .collect(toSet());
+            Set<Coordinates> exclusions =
+                    entry.getValue().stream().map(Coordinates::coordinates).collect(toSet());
 
             checker.check(currentCoordinates, exclusions, actualCoordinates);
         }
@@ -130,13 +156,26 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
             } else {
                 logViolations(project.getName(), checker.getViolations(), value -> getLog().warn(value));
             }
+        } else {
+            getLog().info("No problems with dependencies exclusions");
         }
+    }
+
+    private Collection<Exclusion> getExclusionsForDependency(Dependency dependency) {
+        return dependency.getExclusions().stream()
+                .filter(this::isExclusionInProject)
+                .collect(toList());
+    }
+
+    private boolean isExclusionInProject(Exclusion exclusion) {
+        String modelId = exclusion.getLocation("").getSource().getModelId();
+        return projectModelId.equals(modelId);
     }
 
     private void logViolations(String name, Map<Coordinates, List<Coordinates>> violations, Consumer<String> logger) {
         logger.accept(name + " defines following unnecessary excludes");
         violations.forEach((dependency, invalidExclusions) -> {
-            logger.accept("    " + dependency + ":");
+            logger.accept("    " + dependency);
             invalidExclusions.forEach(invalidExclusion -> logger.accept("        - " + invalidExclusion));
         });
     }

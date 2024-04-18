@@ -32,6 +32,8 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
+import org.apache.maven.model.InputLocation;
+import org.apache.maven.model.InputSource;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -63,6 +65,10 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
 
         project = new DependencyProjectStub();
         project.setName("projectName");
+        project.setGroupId("testGroupId");
+        project.setArtifactId("testArtifactId");
+        project.setVersion("1.0.0");
+
         getContainer().addComponent(project, MavenProject.class.getName());
 
         MavenSession session = newMavenSession(project);
@@ -192,6 +198,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         dependency.setScope("compile");
         dependency.setType("jar");
         dependency.setClassifier("");
+        dependency.setLocation("", new InputLocation(1, 1));
         return dependency;
     }
 
@@ -203,6 +210,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         dependency.setScope(scope);
         dependency.setType("jar");
         dependency.setClassifier(classifier);
+        dependency.setLocation("", new InputLocation(1, 1));
         return dependency;
     }
 
@@ -210,6 +218,9 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         Exclusion exclusion = new Exclusion();
         exclusion.setGroupId(groupId);
         exclusion.setArtifactId(artifactId);
+        InputSource inputSource = new InputSource();
+        inputSource.setModelId("testGroupId:testArtifactId:1.0.0");
+        exclusion.setLocation("", new InputLocation(1, 1, inputSource));
         return exclusion;
     }
 

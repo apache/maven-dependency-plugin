@@ -36,52 +36,58 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-artifact</artifactId>
-      <version>3.9.6</version>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.annotation</groupId>
-          <artifactId>javax.annotation-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.activation</groupId>
-          <artifactId>javax.activation-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-model</artifactId>
-      <version>3.9.6</version>
-    </dependency>
-  </dependencies>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-core</artifactId>
-        <version>3.9.6</version>
+        <groupId>org.apache.maven.its.dependency</groupId>
+        <artifactId>a-with-dep</artifactId>
+        <version>1.0.0</version>
         <exclusions>
           <exclusion>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>*</artifactId>
+            <groupId>org.apache.maven.its.dependency</groupId>
+            <artifactId>invalid-exclusion1</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven.its.dependency</groupId>
+      <artifactId>b-with-dep</artifactId>
+      <version>1.0.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.maven.its.dependency</groupId>
+          <artifactId>c-without-dep</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.maven.its.dependency</groupId>
+          <artifactId>invalid-exclusion3</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.its.dependency</groupId>
+      <artifactId>a-with-dep</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.maven.its.dependency</groupId>
+          <artifactId>invalid-exclusion2</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.maven.its.dependency</groupId>
+          <artifactId>c-without-dep</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.its.dependency</groupId>
+      <artifactId>c-without-dep</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+  </dependencies>
 
   <build>
     <pluginManagement>
