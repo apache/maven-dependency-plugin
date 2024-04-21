@@ -94,7 +94,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
     /**
      * Ignore Runtime/Provided/Test/System scopes for unused dependency analysis.
-     *
+     * <p>
      * <code><b>Non-test scoped</b></code> list will be not affected.
      */
     @Parameter(property = "ignoreNonCompile", defaultValue = "false")

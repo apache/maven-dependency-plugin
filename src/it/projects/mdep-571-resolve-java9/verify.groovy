@@ -17,10 +17,10 @@
  * under the License.
  */
 
-File file = new File( basedir, "build.log" );
-assert file.exists();
+File file = new File( basedir, "build.log" )
+assert file.exists()
 
-String buildLog = file.getText( "UTF-8" );
-assert buildLog.contains( 'org.slf4j:slf4j-api:jar:1.7.6:compile -- module' );
+String buildLog = file.getText( "UTF-8" )
+assert buildLog.contains( 'org.slf4j:slf4j-api:jar:1.7.6:compile -- module' )
 
-return true;
+return true

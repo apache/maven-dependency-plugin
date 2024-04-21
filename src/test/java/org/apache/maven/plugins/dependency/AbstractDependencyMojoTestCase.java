@@ -60,7 +60,7 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
                 FileUtils.deleteDirectory(testDir);
             } catch (IOException e) {
                 e.printStackTrace();
-                fail("Trying to remove directory:" + testDir + System.lineSeparator() + e.toString());
+                fail("Trying to remove directory:" + testDir + System.lineSeparator() + e);
             }
             assertFalse(testDir.exists());
         }

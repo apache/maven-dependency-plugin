@@ -72,7 +72,7 @@ public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
         assertTrue(log.getContent().contains("junit:junit:jar"));
     }
 
-    class DuplicateLog implements Log {
+    static class DuplicateLog implements Log {
         StringBuilder sb = new StringBuilder();
 
         /** {@inheritDoc} */
@@ -132,8 +132,8 @@ public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
 
             error.printStackTrace(pWriter);
 
-            System.err.println("[error] " + content.toString() + System.lineSeparator() + System.lineSeparator()
-                    + sWriter.toString());
+            System.err.println(
+                    "[error] " + content.toString() + System.lineSeparator() + System.lineSeparator() + sWriter);
         }
 
         /**
@@ -145,7 +145,7 @@ public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
 
             error.printStackTrace(pWriter);
 
-            System.err.println("[error] " + sWriter.toString());
+            System.err.println("[error] " + sWriter);
         }
 
         /**
@@ -191,11 +191,7 @@ public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
 
             error.printStackTrace(pWriter);
 
-            sb.append("[")
-                    .append(prefix)
-                    .append("] ")
-                    .append(sWriter.toString())
-                    .append(System.lineSeparator());
+            sb.append("[").append(prefix).append("] ").append(sWriter).append(System.lineSeparator());
         }
 
         private void print(String prefix, CharSequence content, Throwable error) {
@@ -210,7 +206,7 @@ public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
                     .append(content.toString())
                     .append(System.lineSeparator())
                     .append(System.lineSeparator());
-            sb.append(sWriter.toString()).append(System.lineSeparator());
+            sb.append(sWriter).append(System.lineSeparator());
         }
 
         protected String getContent() {

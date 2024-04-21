@@ -52,6 +52,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
+        <version>@project.version@</version>
         <executions>
           <execution>
             <id>test</id>

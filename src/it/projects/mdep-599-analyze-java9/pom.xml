@@ -37,7 +37,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>@compilerPluginVersion@</version>
+          <version>@version.maven-compiler-plugin@</version>
         </plugin>
       </plugins>
     </pluginManagement>

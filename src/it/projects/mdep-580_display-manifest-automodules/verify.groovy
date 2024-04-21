@@ -17,11 +17,11 @@
  * under the License.
  */
 
-File file = new File( basedir, "build.log" );
-assert file.exists();
+File file = new File( basedir, "build.log" )
+assert file.exists()
 
-String buildLog = file.getText( "UTF-8" );
+String buildLog = file.getText( "UTF-8" )
 
-assert buildLog.contains( "org.apache.maven.resolver:maven-resolver-api:jar:1.1.0:compile -- module org.apache.maven.resolver [auto]" );
+assert buildLog.contains( "org.apache.maven.resolver:maven-resolver-api:jar:1.1.0:compile -- module org.apache.maven.resolver [auto]" )
 
-return true;
+return true

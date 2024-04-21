@@ -129,7 +129,7 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
 
             Coordinates currentCoordinates = entry.getKey();
 
-            Collection<org.eclipse.aether.graph.Dependency> actualDependencies = null;
+            Collection<org.eclipse.aether.graph.Dependency> actualDependencies;
             try {
                 actualDependencies = resolverUtil.collectDependencies(
                         RepositoryUtils.toDependency(currentCoordinates.getDependency(), artifactTypeRegistry)

@@ -78,7 +78,7 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
 
         String file = mojo.readClasspathFile();
         assertNotNull(file);
-        assertTrue(file.length() > 0);
+        assertFalse(file.isEmpty());
 
         assertTrue(file.contains(File.pathSeparator));
         assertTrue(file.contains(File.separator));
@@ -92,7 +92,7 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
 
         file = mojo.readClasspathFile();
         assertNotNull(file);
-        assertTrue(file.length() > 0);
+        assertFalse(file.isEmpty());
 
         assertFalse(file.contains(File.pathSeparator));
         assertFalse(file.contains(File.separator));

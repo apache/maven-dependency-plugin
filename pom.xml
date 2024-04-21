@@ -95,8 +95,6 @@ under the License.
     <project.build.outputTimestamp>2023-10-20T21:21:50Z</project.build.outputTimestamp>
     <slf4j.version>1.7.36</slf4j.version>
     <plexus-archiver.version>4.9.2</plexus-archiver.version>
-    <!-- TODO remove with next parent version -->
-    <version.maven-plugin-tools>3.11.0</version.maven-plugin-tools>
   </properties>
 
   <dependencyManagement>
@@ -181,6 +179,10 @@ under the License.
           <groupId>org.codehaus.plexus</groupId>
           <artifactId>plexus-container-default</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.maven</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -226,11 +228,23 @@ under the License.
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-analyzer</artifactId>
       <version>1.13.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.maven</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-tree</artifactId>
       <version>3.2.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.maven</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -241,6 +255,12 @@ under the License.
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-artifact-transfer</artifactId>
       <version>0.13.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.maven</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -258,6 +278,7 @@ under the License.
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>
       <version>1</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -402,13 +423,6 @@ under the License.
             </excludes>
           </configuration>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-checkstyle-plugin</artifactId>
-          <configuration>
-            <configLocation>config/maven_checks_nocodestyle.xml</configLocation>
-          </configuration>
-        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -418,9 +432,6 @@ under the License.
         <configuration>
           <!-- Need more heap space in order to run the unit tests !-->
           <argLine>-Xmx512m</argLine>
-          <systemPropertyVariables>
-            <maven.home>${maven.home}</maven.home>
-          </systemPropertyVariables>
         </configuration>
       </plugin>
       <plugin>
@@ -454,7 +465,6 @@ under the License.
               <!-- for mrm -->
               <settingsFile>src/it/mrm/settings.xml</settingsFile>
               <filterProperties>
-                <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
                 <compilerPluginVersion>3.11.0</compilerPluginVersion>
               </filterProperties>
             </configuration>
@@ -476,6 +486,7 @@ under the License.
               <repositories>
                 <mockRepo>
                   <source>src/it/mrm/repository</source>
+                  <cloneTo>${project.build.directory}/mock-repo</cloneTo>
                 </mockRepo>
                 <localRepo>
                   <source>${project.build.directory}/local-repo</source>
