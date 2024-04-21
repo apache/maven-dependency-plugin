@@ -278,7 +278,7 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
         } catch (ClassNotFoundException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
             // do nothing
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
+            getLog().warn(e);
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
             while (cause.getCause() != null) {
@@ -289,7 +289,7 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
         return moduleDescriptor;
     }
 
-    private class ModuleDescriptor {
+    private static class ModuleDescriptor {
         String name;
 
         boolean automatic = true;

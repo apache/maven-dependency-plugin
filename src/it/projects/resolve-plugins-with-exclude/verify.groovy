@@ -26,4 +26,4 @@ new File(basedir, "target/resolved.txt").eachLine { line ->
   }
 }
 
-return true;
+return true

@@ -301,7 +301,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
             manualIncludes = this.parseIncludes(manualInclude);
         }
         // If it's a manual purge, the only step is to delete from the local repo
-        if (manualIncludes != null && manualIncludes.size() > 0) {
+        if (manualIncludes != null && !manualIncludes.isEmpty()) {
             manualPurge(manualIncludes);
             return;
         }
@@ -378,7 +378,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
                 .a(theIncludes.size() != 1 ? "dependencies" : "dependency")
                 .a(" from ")
                 .strong(localRepository.getBasedir())
-                .toString());
+                .build());
 
         for (String gavPattern : theIncludes) {
             if (gavPattern == null || gavPattern.isEmpty()) {
@@ -569,7 +569,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
                 .a(" with artifact ")
                 .strong(resolutionFuzziness)
                 .a(" resolution fuzziness")
-                .toString());
+                .build());
 
         for (Artifact artifact : artifacts) {
             verbose("Purging artifact: " + artifact.getId());
@@ -622,7 +622,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
             }
         }
 
-        if (missingArtifacts.size() > 0) {
+        if (!missingArtifacts.isEmpty()) {
             StringBuilder message = new StringBuilder("required artifacts missing:");
             message.append(System.lineSeparator());
             for (Artifact missingArtifact : missingArtifacts) {

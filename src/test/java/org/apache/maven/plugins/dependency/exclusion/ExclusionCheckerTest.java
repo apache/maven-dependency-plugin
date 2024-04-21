@@ -19,6 +19,7 @@
 package org.apache.maven.plugins.dependency.exclusion;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -67,14 +68,14 @@ public class ExclusionCheckerTest {
     public void shallReportInvalidExclusionsWhenNoDependencies() {
         Coordinates artifact = coordinates("a", "b");
         HashSet<Coordinates> actualDependencies = new HashSet<>();
-        checker.check(artifact, new HashSet<>(Arrays.asList(coordinates("p", "m"))), actualDependencies);
-        assertThat(checker.getViolations()).containsEntry(artifact, Arrays.asList(coordinates("p", "m")));
+        checker.check(artifact, new HashSet<>(Collections.singletonList(coordinates("p", "m"))), actualDependencies);
+        assertThat(checker.getViolations()).containsEntry(artifact, Collections.singletonList(coordinates("p", "m")));
     }
 
     @Test
     public void shallHandleWildcardExclusions() {
         Coordinates artifact = coordinates("com.current", "artifact");
-        Set<Coordinates> excludes = new HashSet<>(Arrays.asList(coordinates("*", "*")));
+        Set<Coordinates> excludes = new HashSet<>(Collections.singletonList(coordinates("*", "*")));
 
         Set<Coordinates> actualDependencies =
                 new HashSet<>(Arrays.asList(coordinates("com.example", "one"), coordinates("com.example", "four")));
@@ -87,7 +88,7 @@ public class ExclusionCheckerTest {
     @Test
     public void shallHandleWildcardGroupIdExclusion() {
         Coordinates artifact = coordinates("com.current", "artifact");
-        Set<Coordinates> excludes = new HashSet<>(Arrays.asList(coordinates("javax", "*")));
+        Set<Coordinates> excludes = new HashSet<>(Collections.singletonList(coordinates("javax", "*")));
 
         Set<Coordinates> actualDependencies = new HashSet<>(Arrays.asList(
                 coordinates("com.example", "one"),

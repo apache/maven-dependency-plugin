@@ -53,8 +53,7 @@ public class DependencyArtifactStubFactory extends ArtifactStubFactory {
     }
 
     public ArtifactItem getArtifactItem(Artifact artifact) {
-        ArtifactItem item = new ArtifactItem(artifact);
-        return item;
+        return new ArtifactItem(artifact);
     }
 
     public List<ArtifactItem> getArtifactItems(Collection<Artifact> artifacts) {
@@ -120,9 +119,7 @@ public class DependencyArtifactStubFactory extends ArtifactStubFactory {
 
         if (archiver instanceof WarArchiver) {
             WarArchiver war = (WarArchiver) archiver;
-            // the use of this is counter-intuitive:
-            // http://jira.codehaus.org/browse/PLX-286
-            war.setIgnoreWebxml(false);
+            war.setExpectWebXml(false);
         }
         archiver.createArchive();
     }

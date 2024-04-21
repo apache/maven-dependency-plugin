@@ -132,9 +132,9 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
     public void testShallNotReportInvalidExclusionForWildcardGroupIdAndArtifactId() throws Exception {
         Dependency dependencyWithWildcardExclusion = dependency("a", "b");
         dependencyWithWildcardExclusion.addExclusion(exclusion("*", "*"));
-        project.setDependencies(Arrays.asList(dependencyWithWildcardExclusion));
+        project.setDependencies(Collections.singletonList(dependencyWithWildcardExclusion));
         Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(new HashSet<>(Arrays.asList(artifact)));
+        project.setArtifacts(new HashSet<>(Collections.singletonList(artifact)));
 
         when(resolverUtil.collectDependencies(any()))
                 .thenReturn(Collections.singletonList(new org.eclipse.aether.graph.Dependency(
@@ -306,8 +306,8 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
 
             error.printStackTrace(pWriter);
 
-            System.err.println("[error] " + content.toString() + System.lineSeparator() + System.lineSeparator()
-                    + sWriter.toString());
+            System.err.println(
+                    "[error] " + content.toString() + System.lineSeparator() + System.lineSeparator() + sWriter);
         }
 
         /**
@@ -319,7 +319,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
 
             error.printStackTrace(pWriter);
 
-            System.err.println("[error] " + sWriter.toString());
+            System.err.println("[error] " + sWriter);
         }
 
         /**
@@ -365,11 +365,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
 
             error.printStackTrace(pWriter);
 
-            sb.append("[")
-                    .append(prefix)
-                    .append("] ")
-                    .append(sWriter.toString())
-                    .append(System.lineSeparator());
+            sb.append("[").append(prefix).append("] ").append(sWriter).append(System.lineSeparator());
         }
 
         private void print(String prefix, CharSequence content, Throwable error) {
@@ -384,7 +380,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
                     .append(content.toString())
                     .append(System.lineSeparator())
                     .append(System.lineSeparator());
-            sb.append(sWriter.toString()).append(System.lineSeparator());
+            sb.append(sWriter).append(System.lineSeparator());
         }
 
         protected String getContent() {

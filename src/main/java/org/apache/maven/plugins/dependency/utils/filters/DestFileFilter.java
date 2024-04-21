@@ -301,7 +301,7 @@ public class DestFileFilter extends AbstractArtifactsFilter implements ArtifactI
 
     /**
      * Using simply {@code File.getLastModified} will return sometimes a wrong value see JDK bug for details.
-     *
+     * <p>
      * https://bugs.openjdk.java.net/browse/JDK-8177809
      *
      * @param file {@link File}

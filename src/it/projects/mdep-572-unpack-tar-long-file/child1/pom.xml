@@ -32,7 +32,7 @@ under the License.
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>@version.maven-assembly-plugin@</version>
         <executions>
           <execution>
             <goals>

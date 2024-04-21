@@ -19,19 +19,19 @@
 
 void checkFilePresence( String path )
 {
-    File depJar = new File( localRepositoryPath, path );
+    File depJar = new File( localRepositoryPath, path )
     if ( !depJar.exists() )
     {
-        throw new Exception( "Direct dependency jar was not re-resolved: " + depJar );
+        throw new Exception( "Direct dependency jar was not re-resolved: " + depJar )
     }
 }
 
-checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository/1.0/purge-local-repository-1.0.jar" );
-checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository/1.0/purge-local-repository-1.0.pom" );
+checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository/1.0/purge-local-repository-1.0.jar" )
+checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository/1.0/purge-local-repository-1.0.pom" )
 
-String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" );
-assert buildLog.contains( 'Unable to resolve artifact: org.apache.maven.its.dependency:i-do-not-exist:jar:1.0' );
-assert buildLog.contains( 'Purging artifact: org.apache.maven.its.dependency:purge-local-repository:jar:1.0' );
-assert buildLog.contains( 'Resolving artifact: org.apache.maven.its.dependency:purge-local-repository:jar:1.0' );
+String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" )
+assert buildLog.contains( 'Unable to resolve artifact: org.apache.maven.its.dependency:i-do-not-exist:jar:1.0' )
+assert buildLog.contains( 'Purging artifact: org.apache.maven.its.dependency:purge-local-repository:jar:1.0' )
+assert buildLog.contains( 'Resolving artifact: org.apache.maven.its.dependency:purge-local-repository:jar:1.0' )
 
-return true;
+return true

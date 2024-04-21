@@ -17,11 +17,11 @@
  * under the License.
  */
 
-File file = new File( basedir, "build.log" );
-assert file.exists();
+File file = new File( basedir, "build.log" )
+assert file.exists()
 
-String buildLog = file.getText( "UTF-8" );
-assert buildLog.contains( '[INFO] Skipping pom project' );
-assert buildLog.contains( '[INFO] Skipping ear project' );
+String buildLog = file.getText( "UTF-8" )
+assert buildLog.contains( '[INFO] Skipping pom project' )
+assert buildLog.contains( '[INFO] Skipping ear project' )
 
-return true;
+return true

@@ -1,5 +1,3 @@
-import java.lang.reflect.Array
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -30,8 +28,8 @@ static void checkMessagedInLogs(logLines, messages) {
 
 }
 
-def file = new File(basedir, "build.log");
-assert file.exists();
+def file = new File(basedir, "build.log")
+assert file.exists()
 
 def logLines = buildLog = file.readLines()
 

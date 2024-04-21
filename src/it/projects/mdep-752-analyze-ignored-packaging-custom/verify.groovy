@@ -17,14 +17,14 @@
  * under the License.
  */
 
-File file = new File( basedir, "build.log" );
-assert file.exists();
+File file = new File( basedir, "build.log" )
+assert file.exists()
 
-String buildLog = file.getText( "UTF-8" );
+String buildLog = file.getText( "UTF-8" )
 // custom configuration for ignoredPackagings should be applied to Mojo
-assert buildLog.contains( 'ignoredPackagings = [pom, ear, ejb]' );
-assert buildLog.contains( '[INFO] Skipping pom project' );
-assert buildLog.contains( '[INFO] Skipping ear project' );
-assert buildLog.contains( '[INFO] Skipping ejb project' );
+assert buildLog.contains( 'ignoredPackagings = [pom, ear, ejb]' )
+assert buildLog.contains( '[INFO] Skipping pom project' )
+assert buildLog.contains( '[INFO] Skipping ear project' )
+assert buildLog.contains( '[INFO] Skipping ejb project' )
 
-return true;
+return true

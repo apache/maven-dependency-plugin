@@ -125,9 +125,8 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
             StringBuilder message, Collection<RemoteRepository> remoteProjectRepositories) {
 
         Map<RemoteRepository, RemoteRepository> mirrorMap = new HashMap<>();
-        remoteProjectRepositories.forEach(repo -> {
-            repo.getMirroredRepositories().forEach(mrepo -> mirrorMap.put(mrepo, repo));
-        });
+        remoteProjectRepositories.forEach(
+                repo -> repo.getMirroredRepositories().forEach(mrepo -> mirrorMap.put(mrepo, repo)));
 
         mirrorMap.forEach((repo, mirror) -> message.append(" * ")
                 .append(repo)

@@ -60,8 +60,8 @@ public class TestDestFileFilter extends TestCase {
         FileUtils.deleteDirectory(outputFolder);
     }
 
-    public File createFile(Artifact artifact) throws IOException {
-        return createFile(artifact, false, false, false);
+    public void createFile(Artifact artifact) throws IOException {
+        createFile(artifact, false, false, false);
     }
 
     public File createFile(

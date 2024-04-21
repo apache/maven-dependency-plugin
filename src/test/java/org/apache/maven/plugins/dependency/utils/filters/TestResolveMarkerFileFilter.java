@@ -18,9 +18,6 @@
  */
 package org.apache.maven.plugins.dependency.utils.filters;
 
-/**
- *
- */
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
