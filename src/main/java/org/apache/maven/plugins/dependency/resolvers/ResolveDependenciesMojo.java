@@ -52,13 +52,11 @@ import org.apache.maven.shared.utils.logging.MessageUtils;
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 2.0
  */
-// CHECKSTYLE_OFF: LineLength
 @Mojo(
         name = "resolve",
         requiresDependencyResolution = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.GENERATE_SOURCES,
         threadSafe = true)
-// CHECKSTYLE_ON: LineLength
 public class ResolveDependenciesMojo extends AbstractResolveMojo {
 
     @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
