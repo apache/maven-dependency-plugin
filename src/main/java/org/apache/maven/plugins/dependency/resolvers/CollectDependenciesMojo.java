@@ -32,19 +32,17 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
  * This is very useful when full dependency resolution might fail due to projects which haven't been built yet.
  * </p>
  * <p>
- * It is identical to {@link ResolveDependenciesMojo} except for using the requiresDependencyCollection annotation
- * attribute instead of requiresDependencyResolution.
+ * It is identical to <a href="https://maven.apache.org/plugins/maven-dependency-plugin/resolve-mojo.html">resolve</a>
+ * except for using the requiresDependencyCollection annotation attribute instead of requiresDependencyResolution.
  * </p>
  *
  * @author <a href="mailto:epabst@gmail.com">Eric Pabst</a>
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 3.0
  */
-// CHECKSTYLE_OFF: LineLength
 @Mojo(
         name = "collect",
         requiresDependencyCollection = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.GENERATE_SOURCES,
         threadSafe = true)
-// CHECKSTYLE_ON: LineLength
 public class CollectDependenciesMojo extends ResolveDependenciesMojo {}
