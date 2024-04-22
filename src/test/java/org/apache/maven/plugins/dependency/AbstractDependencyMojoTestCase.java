@@ -29,6 +29,7 @@ import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFacto
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.LocalRepositoryManager;
 
@@ -78,5 +79,13 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
         LocalRepository localRepository = new LocalRepository(directory);
         LocalRepositoryManager manager = system.newLocalRepositoryManager(repoSession, localRepository);
         repoSession.setLocalRepositoryManager(manager);
+    }
+
+    protected void installLocalRepository(RepositorySystemSession repoSession) throws ComponentLookupException {
+        RepositorySystem system = lookup(RepositorySystem.class);
+        String directory = stubFactory.getWorkingDir().toString();
+        LocalRepository localRepository = new LocalRepository(directory);
+        LocalRepositoryManager manager = system.newLocalRepositoryManager(repoSession, localRepository);
+        ((DefaultRepositorySystemSession) repoSession).setLocalRepositoryManager(manager);
     }
 }

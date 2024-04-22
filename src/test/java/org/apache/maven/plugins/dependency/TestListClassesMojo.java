@@ -22,15 +22,15 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.settings.Server;
-import org.apache.maven.settings.Settings;
+import org.eclipse.aether.RepositorySystem;
 import org.junit.Assert;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -45,6 +45,11 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         getContainer().addComponent(project, MavenProject.class.getName());
 
         MavenSession session = newMavenSession(project);
+
+        RepositorySystem repositorySystem = lookup(RepositorySystem.class);
+        ResolverUtil resolverUtil = new ResolverUtil(repositorySystem, () -> session);
+        getContainer().addComponent(resolverUtil, ResolverUtil.class.getName());
+
         getContainer().addComponent(session, MavenSession.class.getName());
 
         File testPom = new File(getBasedir(), "target/test-classes/unit/get-test/plugin-config.xml");
@@ -54,16 +59,7 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
 
         assertNotNull(mojo);
 
-        LegacySupport legacySupport = lookup(LegacySupport.class);
-        Settings settings = session.getSettings();
-        Server server = new Server();
-        server.setId("myserver");
-        server.setUsername("foo");
-        server.setPassword("bar");
-        settings.addServer(server);
-        legacySupport.setSession(session);
-
-        installLocalRepository(legacySupport);
+        installLocalRepository(session.getRepositorySession());
     }
 
     public void testListClassesNotTransitive() throws Exception {
@@ -74,9 +70,11 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         setVariableValueToObject(
                 mojo,
                 "remoteRepositories",
-                "central::default::https://repo.maven.apache.org/maven2,"
-                        + "central::::https://repo.maven.apache.org/maven2," + "https://repo.maven.apache.org/maven2");
-        setVariableValueToObject(mojo, "artifact", "org.apache.commons:commons-lang3:3.6");
+                Arrays.asList(
+                        "central::default::https://repo.maven.apache.org/maven2",
+                        "central::::https://repo.maven.apache.org/maven2",
+                        "https://repo.maven.apache.org/maven2"));
+        mojo.setArtifact("org.apache.commons:commons-lang3:3.6");
         setVariableValueToObject(mojo, "transitive", Boolean.FALSE);
 
         Log log = Mockito.mock(Log.class);
@@ -96,11 +94,15 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         setVariableValueToObject(
                 mojo,
                 "remoteRepositories",
-                "central::default::https://repo.maven.apache.org/maven2,"
-                        + "central::::https://repo.maven.apache.org/maven2," + "https://repo.maven.apache.org/maven2");
-        setVariableValueToObject(mojo, "groupId", "org.apache.commons");
-        setVariableValueToObject(mojo, "artifactId", "commons-lang3");
-        setVariableValueToObject(mojo, "version", "3.6");
+                Arrays.asList(
+                        "central1::default::https://repo.maven.apache.org/maven2",
+                        "central2::::https://repo.maven.apache.org/maven2",
+                        "https://repo.maven.apache.org/maven2"));
+
+        mojo.setGroupId("org.apache.commons");
+        mojo.setArtifactId("commons-lang3");
+        mojo.setVersion("3.6");
+
         setVariableValueToObject(mojo, "transitive", Boolean.FALSE);
 
         Log log = Mockito.mock(Log.class);
@@ -120,9 +122,12 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         setVariableValueToObject(
                 mojo,
                 "remoteRepositories",
-                "central::default::https://repo.maven.apache.org/maven2,"
-                        + "central::::https://repo.maven.apache.org/maven2," + "https://repo.maven.apache.org/maven2");
-        setVariableValueToObject(mojo, "artifact", "org.apache.commons:commons-lang3:3.6");
+                Arrays.asList(
+                        "central::default::https://repo.maven.apache.org/maven2",
+                        "central::::https://repo.maven.apache.org/maven2",
+                        "https://repo.maven.apache.org/maven2"));
+
+        mojo.setArtifact("org.apache.commons:commons-lang3:3.6");
         setVariableValueToObject(mojo, "transitive", Boolean.TRUE);
 
         Log log = Mockito.mock(Log.class);
@@ -142,11 +147,13 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         setVariableValueToObject(
                 mojo,
                 "remoteRepositories",
-                "central::default::https://repo.maven.apache.org/maven2,"
-                        + "central::::https://repo.maven.apache.org/maven2," + "https://repo.maven.apache.org/maven2");
-        setVariableValueToObject(mojo, "groupId", "org.apache.commons");
-        setVariableValueToObject(mojo, "artifactId", "commons-lang3");
-        setVariableValueToObject(mojo, "version", "3.6");
+                Arrays.asList(
+                        "central::default::https://repo.maven.apache.org/maven2",
+                        "central::::https://repo.maven.apache.org/maven2",
+                        "https://repo.maven.apache.org/maven2"));
+        mojo.setGroupId("org.apache.commons");
+        mojo.setArtifactId("commons-lang3");
+        mojo.setVersion("3.6");
         setVariableValueToObject(mojo, "transitive", Boolean.TRUE);
 
         Log log = Mockito.mock(Log.class);
