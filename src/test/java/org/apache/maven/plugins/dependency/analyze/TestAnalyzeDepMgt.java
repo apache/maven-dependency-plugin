@@ -111,32 +111,41 @@ public class TestAnalyzeDepMgt extends TestCase {
         // sure it's ok before
         // testing the next one
         dep.setType("t");
+        dep.clearManagementKey();
         assertNotEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setType("type");
+        dep.clearManagementKey();
         assertEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setArtifactId("a");
+        dep.clearManagementKey();
         assertNotEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setArtifactId("artifact");
+        dep.clearManagementKey();
         assertEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setClassifier("c");
+        dep.clearManagementKey();
         assertNotEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setClassifier("class");
+        dep.clearManagementKey();
         assertEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setGroupId("g");
+        dep.clearManagementKey();
         assertNotEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setGroupId("group");
         dep.setClassifier(null);
+        dep.clearManagementKey();
         artifact = stubFactory.createArtifact("group", "artifact", "1.0", Artifact.SCOPE_COMPILE, "type", null);
         assertEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setClassifier("");
+        dep.clearManagementKey();
         artifact = stubFactory.createArtifact("group", "artifact", "1.0", Artifact.SCOPE_COMPILE, "type", "");
         assertEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
     }

@@ -81,6 +81,7 @@ public class AbstractDependencyMojoTest extends TestCase {
         artifactRepos.add(newRepositoryWithId("ar-snapshots"));
         artifactRepos.add(newRepositoryWithId("ar-staging"));
 
+        when(buildingRequest.getRepositoryMerging()).thenReturn(ProjectBuildingRequest.RepositoryMerging.POM_DOMINANT);
         when(session.getProjectBuildingRequest()).thenReturn(buildingRequest);
     }
 
