@@ -59,6 +59,7 @@ import org.apache.maven.plugin.testing.stubs.DefaultArtifactHandlerStub;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.eclipse.aether.repository.RemoteRepository;
 
 /**
  * very simple stub of maven project, going to take a lot of work to make it useful as a stub though
@@ -201,6 +202,11 @@ public class DependencyProjectStub extends MavenProject {
 
     @Override
     public List<ArtifactRepository> getRemoteArtifactRepositories() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<RemoteRepository> getRemoteProjectRepositories() {
         return Collections.emptyList();
     }
 

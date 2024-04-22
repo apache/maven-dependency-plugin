@@ -88,13 +88,16 @@ under the License.
 
   <properties>
     <mavenVersion>3.6.3</mavenVersion>
+    <javaVersion>8</javaVersion>
+
     <jettyVersion>9.4.54.v20240208</jettyVersion>
+    <mockito.version>4.11.0</mockito.version>
+    <plexus-archiver.version>4.9.2</plexus-archiver.version>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
     <resolverVersion>1.4.1</resolverVersion>
-    <javaVersion>8</javaVersion>
-    <project.build.outputTimestamp>2023-10-20T21:21:50Z</project.build.outputTimestamp>
     <slf4j.version>1.7.36</slf4j.version>
-    <plexus-archiver.version>4.9.2</plexus-archiver.version>
+
+    <project.build.outputTimestamp>2023-10-20T21:21:50Z</project.build.outputTimestamp>
   </properties>
 
   <dependencyManagement>
@@ -325,6 +328,22 @@ under the License.
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- support for JUnit 4 -->
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.13.2</version>
@@ -345,7 +364,13 @@ under the License.
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>4.11.0</version>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
 
