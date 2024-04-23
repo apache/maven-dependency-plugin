@@ -18,12 +18,12 @@
  */
 package org.apache.maven.plugins.dependency.utils;
 
-import junit.framework.TestCase;
 import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.logging.Logger;
+import org.junit.Test;
 
-public class TestSilentLog extends TestCase {
+public class TestSilentLog {
 
+    @Test
     public void testLog() {
         Log log = new DependencySilentLog();
         String text = "Text";
@@ -44,31 +44,5 @@ public class TestSilentLog extends TestCase {
         log.isErrorEnabled();
         log.isWarnEnabled();
         log.isInfoEnabled();
-    }
-
-    public void testLogger() {
-        Logger log = new DependencySilentLog();
-        String text = "Text";
-        Throwable e = new RuntimeException();
-
-        log.debug(text);
-        log.debug(text, e);
-        log.error(text);
-        log.error(text, e);
-        log.warn(text);
-        log.warn(text, e);
-        log.info(text);
-        log.info(text, e);
-
-        log.fatalError(text);
-        log.fatalError(text, e);
-        log.getChildLogger(text);
-        log.getName();
-        log.getThreshold();
-        log.isDebugEnabled();
-        log.isErrorEnabled();
-        log.isFatalErrorEnabled();
-        log.isInfoEnabled();
-        log.isWarnEnabled();
     }
 }

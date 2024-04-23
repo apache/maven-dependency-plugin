@@ -19,14 +19,13 @@
 package org.apache.maven.plugins.dependency.utils;
 
 import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.logging.Logger;
 
 /**
  * This logger implements both types of logs currently in use and turns off logs.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  */
-public class DependencySilentLog implements Log, Logger {
+public class DependencySilentLog implements Log {
     /**
      * @return <code>false</code>
      * @see org.apache.maven.plugin.logging.Log#isDebugEnabled()
@@ -183,149 +182,5 @@ public class DependencySilentLog implements Log, Logger {
     @Override
     public void error(Throwable error) {
         // nop
-    }
-
-    /**
-     * By default, do nothing.
-     *
-     * @see org.codehaus.plexus.logging.Logger#debug(java.lang.String)
-     */
-    @Override
-    public void debug(String message) {
-        // nop
-    }
-
-    /**
-     * By default, do nothing.
-     *
-     * @see org.codehaus.plexus.logging.Logger#debug(java.lang.String, java.lang.Throwable)
-     */
-    @Override
-    public void debug(String message, Throwable throwable) {
-        // nop
-    }
-
-    /**
-     * By default, do nothing.
-     *
-     * @see org.codehaus.plexus.logging.Logger#info(java.lang.String)
-     */
-    @Override
-    public void info(String message) {
-        // nop
-    }
-
-    /**
-     * By default, do nothing.
-     *
-     * @see org.codehaus.plexus.logging.Logger#info(java.lang.String, java.lang.Throwable)
-     */
-    @Override
-    public void info(String message, Throwable throwable) {
-        // nop
-    }
-
-    /**
-     * By default, do nothing.
-     *
-     * @see org.codehaus.plexus.logging.Logger#warn(java.lang.String)
-     */
-    @Override
-    public void warn(String message) {
-        // nop
-    }
-
-    /**
-     * By default, do nothing.
-     *
-     * @see org.codehaus.plexus.logging.Logger#warn(java.lang.String, java.lang.Throwable)
-     */
-    @Override
-    public void warn(String message, Throwable throwable) {
-        // nop
-    }
-
-    /**
-     * By default, do nothing.
-     *
-     * @see org.codehaus.plexus.logging.Logger#error(java.lang.String)
-     */
-    @Override
-    public void error(String message) {
-        // nop
-    }
-
-    /**
-     * By default, do nothing.
-     *
-     * @see org.codehaus.plexus.logging.Logger#error(java.lang.String, java.lang.Throwable)
-     */
-    @Override
-    public void error(String message, Throwable throwable) {
-        // nop
-    }
-
-    /**
-     * By default, do nothing.
-     *
-     * @see org.codehaus.plexus.logging.Logger#fatalError(java.lang.String)
-     */
-    @Override
-    public void fatalError(String message) {
-        // nop
-    }
-
-    /**
-     * By default, do nothing.
-     *
-     * @see org.codehaus.plexus.logging.Logger#fatalError(java.lang.String, java.lang.Throwable)
-     */
-    @Override
-    public void fatalError(String message, Throwable throwable) {
-        // nop
-    }
-
-    /**
-     * @return <code>false</code>
-     * @see org.codehaus.plexus.logging.Logger#isFatalErrorEnabled()
-     */
-    @Override
-    public boolean isFatalErrorEnabled() {
-        return false;
-    }
-
-    /**
-     * @return <code>null</code>
-     * @see org.codehaus.plexus.logging.Logger#getChildLogger(java.lang.String)
-     */
-    @Override
-    public Logger getChildLogger(String name) {
-        return null;
-    }
-
-    /**
-     * @return <code>0</code>
-     * @see org.codehaus.plexus.logging.Logger#getThreshold()
-     */
-    @Override
-    public int getThreshold() {
-        return 0;
-    }
-
-    /**
-     * By default, do nothing
-     */
-    @Override
-    public void setThreshold(int threshold) {
-        // nop
-    }
-
-    /**
-     * @return <code>null</code>
-     * @see org.codehaus.plexus.logging.Logger#getName()
-     */
-    @Override
-    public String getName() {
-        return null;
     }
 }
