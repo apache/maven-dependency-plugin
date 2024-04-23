@@ -90,7 +90,7 @@ under the License.
     <mavenVersion>3.6.3</mavenVersion>
     <jettyVersion>9.4.54.v20240208</jettyVersion>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
-    <resolverVersion>1.4.1</resolverVersion>
+    <resolverVersion>1.9.19</resolverVersion>
     <javaVersion>8</javaVersion>
     <project.build.outputTimestamp>2023-10-20T21:21:50Z</project.build.outputTimestamp>
     <slf4j.version>1.7.36</slf4j.version>
