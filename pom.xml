@@ -91,7 +91,7 @@ under the License.
     <javaVersion>8</javaVersion>
 
     <jettyVersion>9.4.54.v20240208</jettyVersion>
-    <mockito.version>4.11.0</mockito.version>
+    <mockito.version>5.11.0</mockito.version>
     <plexus-archiver.version>4.9.2</plexus-archiver.version>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
     <resolverVersion>1.4.1</resolverVersion>
