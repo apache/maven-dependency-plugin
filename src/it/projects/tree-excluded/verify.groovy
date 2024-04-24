@@ -19,7 +19,10 @@
 
 import static org.assertj.core.api.Assertions.assertThat
 
+// Maven 4 use transitive dependency manager
+def expected = mavenVersion.startsWith('4.') ? "expected-v4.txt" : "expected.txt"
+
 assertThat(new File(basedir, "target/tree.txt"))
-        .hasSameTextualContentAs(new File(basedir, "expected.txt"))
+        .hasSameTextualContentAs(new File(basedir, expected))
 
 return true
