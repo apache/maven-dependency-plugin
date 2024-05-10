@@ -23,9 +23,12 @@ import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.dependency.utils.CopyUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
 
@@ -38,6 +41,8 @@ import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
 @Mojo(name = "copy", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresProject = false, threadSafe = true)
 public class CopyMojo extends AbstractFromConfigurationMojo {
 
+    @Component
+    private CopyUtil copyUtil;
     /**
      * Strip artifact version during copy
      */
@@ -109,12 +114,12 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
      *
      * @param artifactItem containing the information about the Artifact to copy.
      * @throws MojoExecutionException with a message if an error occurs.
-     * @see #copyFile(File, File)
+     * @see CopyUtil#copyFile(Log, File, File)
      */
     protected void copyArtifact(ArtifactItem artifactItem) throws MojoExecutionException {
         File destFile = new File(artifactItem.getOutputDirectory(), artifactItem.getDestFileName());
 
-        copyFile(artifactItem.getArtifact().getFile(), destFile);
+        copyUtil.copyFile(getLog(), artifactItem.getArtifact().getFile(), destFile);
     }
 
     @Override

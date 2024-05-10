@@ -26,12 +26,14 @@ import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
+import org.apache.maven.plugins.dependency.utils.CopyUtil;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.LocalRepositoryManager;
+import org.sonatype.plexus.build.incremental.DefaultBuildContext;
 
 public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCase {
 
@@ -68,7 +70,7 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
     }
 
     protected void copyFile(AbstractDependencyMojo mojo, File artifact, File destFile) throws MojoExecutionException {
-        mojo.copyFile(artifact, destFile);
+        new CopyUtil(new DefaultBuildContext()).copyFile(mojo.getLog(), artifact, destFile);
     }
 
     protected void installLocalRepository(LegacySupport legacySupport) throws ComponentLookupException {

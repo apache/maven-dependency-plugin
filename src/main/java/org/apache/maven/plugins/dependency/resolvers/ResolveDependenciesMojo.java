@@ -71,6 +71,14 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
     protected boolean outputScope;
 
     /**
+     * Output absolute filename for resolved artifacts
+     *
+     * @since 2.0
+     */
+    @Parameter(property = "outputAbsoluteArtifactFilename", defaultValue = "false")
+    private boolean outputAbsoluteArtifactFilename;
+
+    /**
      * Only used to store results for integration test validation
      */
     DependencyStatusSets results;

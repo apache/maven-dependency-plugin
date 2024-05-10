@@ -50,6 +50,14 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
     private String outputEncoding;
 
     /**
+     * Output absolute filename for resolved artifacts
+     *
+     * @since 2.0
+     */
+    @Parameter(property = "outputAbsoluteArtifactFilename", defaultValue = "false")
+    private boolean outputAbsoluteArtifactFilename;
+
+    /**
      * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.
      *
      * @throws MojoExecutionException with a message if an error occurs.
