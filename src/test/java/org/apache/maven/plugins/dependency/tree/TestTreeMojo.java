@@ -140,7 +140,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     /**
      * Test the JSON format serialization
      */
-    public void _testTreeJsonSerialzing() throws Exception {
+    public void testTreeJsonSerializing() throws Exception {
         List<String> contents = runTreeMojo("tree1.json", "json");
         assertTrue(findString(contents, "\"testGroupId\": \"project\""));
         assertTrue(findString(contents, "\"type: \"jar\""));
