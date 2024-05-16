@@ -18,7 +18,6 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
-import java.io.IOException;
 import java.io.Writer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +43,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
     @Override
     public boolean visit(DependencyNode node) {
         if (node.getParent() == null || node.getParent() == node) {
-            writeRootNode(node, writer);
+            writeRootNode(node);
         }
         return true;
     }
@@ -52,20 +51,14 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
     /**
      * Writes the node to the writer. This method is recursive and will write all children nodes.
      * @param node  the node to write
-     * @param writer  the writer to write to
      */
-    private void writeRootNode(DependencyNode node, Writer writer) {
+    private void writeRootNode(DependencyNode node) {
         int indent = 2;
         StringBuilder sb = new StringBuilder();
         sb.append("{").append("\n");
         writeNode(indent, node, sb);
         sb.append("}").append("\n");
-        try {
-            writer.write(sb.toString());
-        } catch (IOException e) {
-            throw new RuntimeException("Error while writing json output", e);
-            // TODO: handle exception maybe throw runtime exception or mojo exception?
-        }
+        writer.write(sb.toString());
     }
     /**
      * Appends the node and its children to the string builder.
