@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.tree;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
 
 /**
  * Tests <code>TreeMojo</code>.
@@ -155,6 +157,30 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
         assertTrue(findString(contents, "\"version\": \"1.0\""));
         assertTrue(findString(contents, "\"scope\": \"compile\""));
     }
+
+    /**
+     * Test the JSON format serialization on DependencyNodes with circular dependence
+     */
+    public void testTreeJsonCircularDependency() throws Exception {
+        String outputFileName = testDir.getAbsolutePath() + "tree2.json";
+
+        Artifact artifact1 = this.stubFactory.createArtifact("testGroupId", "project1", "1.0");
+        Artifact artifact2 = this.stubFactory.createArtifact("testGroupId", "project2", "1.0");
+        DefaultDependencyNode node1 = new DefaultDependencyNode(artifact1);
+        DefaultDependencyNode node2 = new DefaultDependencyNode(artifact2);
+
+        node1.setChildren(new ArrayList<DependencyNode>());
+        node2.setChildren(new ArrayList<DependencyNode>());
+
+        node1.getChildren().add(node2);
+        node2.getChildren().add(node1);
+
+        JsonDependencyNodeVisitor jsonDependencyNodeVisitor =
+                new JsonDependencyNodeVisitor(new PrintWriter(new File(outputFileName)));
+
+        jsonDependencyNodeVisitor.visit(node1);
+    }
+
     /**
      * Help finding content in the given list of string
      *
