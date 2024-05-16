@@ -19,6 +19,8 @@
 package org.apache.maven.plugins.dependency.tree;
 
 import java.io.Writer;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
@@ -53,10 +55,11 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param node  the node to write
      */
     private void writeRootNode(DependencyNode node) {
+        Set<DependencyNode> visited = new HashSet<DependencyNode>();
         int indent = 2;
         StringBuilder sb = new StringBuilder();
         sb.append("{").append("\n");
-        writeNode(indent, node, sb);
+        writeNode(indent, node, sb, visited);
         sb.append("}").append("\n");
         writer.write(sb.toString());
     }
@@ -66,10 +69,16 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param node  the node to write
      * @param sb  the string builder to append to
      */
-    private void writeNode(int indent, DependencyNode node, StringBuilder sb) {
+    private void writeNode(int indent, DependencyNode node, StringBuilder sb, Set<DependencyNode> visited) {
+        if (visited.contains(node)) {
+            // Circular dependency detected
+            // Should an exception be thrown?
+            return;
+        }
+        visited.add(node);
         appendNodeValues(sb, indent, node.getArtifact(), !node.getChildren().isEmpty());
         if (!node.getChildren().isEmpty()) {
-            writeChildren(indent, node, sb);
+            writeChildren(indent, node, sb, visited);
         }
     }
     /**
@@ -78,14 +87,14 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param node  the node to write
      * @param sb  the string builder to append to
      */
-    private void writeChildren(int indent, DependencyNode node, StringBuilder sb) {
+    private void writeChildren(int indent, DependencyNode node, StringBuilder sb, Set<DependencyNode> visited) {
         sb.append(indent(indent)).append("\"children\": [").append("\n");
         indent += 2;
         for (int i = 0; i < node.getChildren().size(); i++) {
             DependencyNode child = node.getChildren().get(i);
             sb.append(indent(indent));
             sb.append("{").append("\n");
-            writeNode(indent + 2, child, sb);
+            writeNode(indent + 2, child, sb, visited);
             sb.append(indent(indent)).append("}");
             // we skip the comma for the last child
             if (i != node.getChildren().size() - 1) {
