@@ -22,7 +22,6 @@ import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
@@ -176,6 +175,6 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @return  the string of indent characters
      */
     private String indent(int indent) {
-        return StringUtils.repeat(indentChar, indent);
+        return indentChar.repeat(indent);
     }
 }
