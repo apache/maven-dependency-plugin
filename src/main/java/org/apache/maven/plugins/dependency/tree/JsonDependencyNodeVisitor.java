@@ -35,6 +35,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
 
     /**
      * Creates a new instance of {@link JsonDependencyNodeVisitor}. The writer will be used to write the output.
+     *
      * @param writer  the writer to write to
      */
     public JsonDependencyNodeVisitor(Writer writer) {
@@ -51,6 +52,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
 
     /**
      * Writes the node to the writer. This method is recursive and will write all children nodes.
+     *
      * @param node  the node to write
      */
     private void writeRootNode(DependencyNode node) {
@@ -64,6 +66,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
     }
     /**
      * Appends the node and its children to the string builder.
+     *
      * @param indent  the current indent level
      * @param node  the node to write
      * @param sb  the string builder to append to
@@ -82,6 +85,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
     }
     /**
      * Writes the children of the node to the string builder. And each children of each node will be written recursively.
+     *
      * @param indent  the current indent level
      * @param node  the node to write
      * @param sb  the string builder to append to
@@ -110,6 +114,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
     }
     /**
      * Appends the artifact values to the string builder.
+     *
      * @param sb  the string builder to append to
      * @param indent  the current indent level
      * @param artifact  the artifact to write
@@ -131,6 +136,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
     }
     /**
      * Appends a key value pair to the string builder.
+     *
      * @param sb  the string builder to append to
      * @param indent  the current indent level
      * @param key  the key used as json key
@@ -151,6 +157,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
     }
     /**
      * Appends a key value pair to the string builder without a comma at the end. This is used for the last children of a node.
+     *
      * @param sb  the string builder to append to
      * @param indent  the current indent level
      * @param key  the key used as json key
