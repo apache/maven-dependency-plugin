@@ -176,7 +176,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
         node2.getChildren().add(node1);
 
         JsonDependencyNodeVisitor jsonDependencyNodeVisitor =
-                new JsonDependencyNodeVisitor(new PrintWriter(new File(outputFileName)));
+                new JsonDependencyNodeVisitor(new PrintWriter(outputFileName));
 
         jsonDependencyNodeVisitor.visit(node1);
     }
