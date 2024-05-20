@@ -185,6 +185,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
 
     /**
      * Returns a string of {@link #indentChar} for the indent level.
+     *
      * @param indent  the number of indent levels
      * @return  the string of indent characters
      */
