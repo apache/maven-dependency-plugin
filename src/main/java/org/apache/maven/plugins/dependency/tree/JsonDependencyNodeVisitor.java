@@ -121,17 +121,16 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param hasChildren  true if the artifact has children
      */
     private void appendNodeValues(StringBuilder sb, int indent, Artifact artifact, boolean hasChildren) {
-        appendKeyValue(sb, indent, "groupId", StringUtils.defaultString(artifact.getGroupId()));
-        appendKeyValue(sb, indent, "artifactId", StringUtils.defaultString(artifact.getArtifactId()));
-        appendKeyValue(sb, indent, "version", StringUtils.defaultString(artifact.getVersion()));
-        appendKeyValue(sb, indent, "type", StringUtils.defaultString(artifact.getType()));
-        appendKeyValue(sb, indent, "scope", StringUtils.defaultString(artifact.getScope()));
-        appendKeyValue(sb, indent, "classifier", StringUtils.defaultString(artifact.getClassifier()));
+        appendKeyValue(sb, indent, "groupId", artifact.getGroupId());
+        appendKeyValue(sb, indent, "artifactId", artifact.getArtifactId());
+        appendKeyValue(sb, indent, "version", artifact.getVersion());
+        appendKeyValue(sb, indent, "type", artifact.getType());
+        appendKeyValue(sb, indent, "scope", artifact.getScope());
+        appendKeyValue(sb, indent, "classifier", artifact.getClassifier());
         if (hasChildren) {
-            appendKeyValue(sb, indent, "optional", StringUtils.defaultString(String.valueOf(artifact.isOptional())));
+            appendKeyValue(sb, indent, "optional", String.valueOf(artifact.isOptional()));
         } else {
-            appendKeyWithoutComma(
-                    sb, indent, "optional", StringUtils.defaultString(String.valueOf(artifact.isOptional())));
+            appendKeyWithoutComma(sb, indent, "optional", String.valueOf(artifact.isOptional()));
         }
     }
     /**
@@ -143,6 +142,10 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param value  the value used as json value
      */
     private void appendKeyValue(StringBuilder sb, int indent, String key, String value) {
+        if (value == null) {
+            value = "";
+        }
+
         sb.append(indent(indent))
                 .append("\"")
                 .append(key)
@@ -164,6 +167,10 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param value  the value used as json value
      */
     private void appendKeyWithoutComma(StringBuilder sb, int indent, String key, String value) {
+        if (value == null) {
+            value = "";
+        }
+
         sb.append(indent(indent))
                 .append("\"")
                 .append(key)
@@ -182,6 +189,15 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @return  the string of indent characters
      */
     private String indent(int indent) {
-        return indentChar.repeat(indent);
+        if (indent < 1) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < indent; i++) {
+            sb.append(indentChar);
+        }
+
+        return sb.toString();
     }
 }
