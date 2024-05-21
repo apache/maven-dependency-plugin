@@ -266,6 +266,14 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     @Parameter
     private List<String> ignoredPackagings = Arrays.asList("pom", "ear");
 
+    /**
+     * List Excluded classes patterns from analyze. Java regular expression pattern is applied to full class name.
+     *
+     * @since 3.7.0
+     */
+    @Parameter(property = "mdep.analyze.excludedClasses")
+    private Set<String> excludedClasses;
+
     // Mojo methods -----------------------------------------------------------
 
     /*
@@ -321,7 +329,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean checkDependencies() throws MojoExecutionException {
         ProjectDependencyAnalysis analysis;
         try {
-            analysis = createProjectDependencyAnalyzer().analyze(project);
+            analysis = createProjectDependencyAnalyzer().analyze(project, excludedClasses);
 
             if (usedDependencies != null) {
                 analysis = analysis.forceDeclaredDependenciesUsage(usedDependencies);

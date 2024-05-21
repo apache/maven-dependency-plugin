@@ -19,6 +19,7 @@
 package org.apache.maven.plugins.dependency.analyze;
 
 import java.util.Locale;
+import java.util.Set;
 
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Execute;
@@ -76,6 +77,14 @@ public class AnalyzeReportMojo extends AbstractMavenReport {
     private boolean skip;
 
     /**
+     * List Excluded classes patterns from analyze. Java regular expression pattern is applied to full class name.
+     *
+     * @since 3.7.0
+     */
+    @Parameter(property = "mdep.analyze.excludedClasses")
+    private Set<String> excludedClasses;
+
+    /**
      * Internationalization component
      */
     @Component
@@ -91,7 +100,7 @@ public class AnalyzeReportMojo extends AbstractMavenReport {
         // Step 1: Analyze the project
         ProjectDependencyAnalysis analysis;
         try {
-            analysis = analyzer.analyze(project);
+            analysis = analyzer.analyze(project, excludedClasses);
 
             if (usedDependencies != null) {
                 analysis = analysis.forceDeclaredDependenciesUsage(usedDependencies);
