@@ -164,6 +164,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     public void testTreeJsonCircularDependency() throws Exception {
         String outputFileName = testDir.getAbsolutePath() + "tree2.json";
         File outputFile = new File(outputFileName);
+        outputFile.createNewFile();
 
         Artifact artifact1 = this.stubFactory.createArtifact("testGroupId", "project1", "1.0");
         Artifact artifact2 = this.stubFactory.createArtifact("testGroupId", "project2", "1.0");
