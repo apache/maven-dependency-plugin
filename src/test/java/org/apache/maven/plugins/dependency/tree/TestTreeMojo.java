@@ -25,8 +25,9 @@ import javax.json.JsonReader;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -167,7 +168,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
         node2.getChildren().add(node1);
 
         JsonDependencyNodeVisitor jsonDependencyNodeVisitor =
-                new JsonDependencyNodeVisitor(new PrintWriter(outputFile));
+                new JsonDependencyNodeVisitor(new OutputStreamWriter(new FileOutputStream(outputFile)));
 
         jsonDependencyNodeVisitor.visit(node1);
     }
