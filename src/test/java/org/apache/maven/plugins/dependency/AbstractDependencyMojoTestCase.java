@@ -69,7 +69,8 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
         }
     }
 
-    protected void copyFile(AbstractDependencyMojo mojo, File artifact, File destFile) throws MojoExecutionException {
+    protected void copyFile(AbstractDependencyMojo mojo, File artifact, File destFile)
+            throws MojoExecutionException, IOException {
         new CopyUtil(new DefaultBuildContext()).copyFile(mojo.getLog(), artifact, destFile);
     }
 

@@ -19,6 +19,7 @@
 package org.apache.maven.plugins.dependency.fromConfiguration;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -119,7 +120,12 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     protected void copyArtifact(ArtifactItem artifactItem) throws MojoExecutionException {
         File destFile = new File(artifactItem.getOutputDirectory(), artifactItem.getDestFileName());
 
-        copyUtil.copyFile(getLog(), artifactItem.getArtifact().getFile(), destFile);
+        try {
+            copyUtil.copyFile(getLog(), artifactItem.getArtifact().getFile(), destFile);
+        } catch (IOException e) {
+            throw new MojoExecutionException(
+                    "Failed copy " + artifactItem.getArtifact().getFile() + " to " + destFile, e);
+        }
     }
 
     @Override

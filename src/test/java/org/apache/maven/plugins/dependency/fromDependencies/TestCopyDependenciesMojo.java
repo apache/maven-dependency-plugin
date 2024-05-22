@@ -80,7 +80,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         assertFalse(handle.isMarkerSet());
     }
 
-    public void testCopyFile() throws MojoExecutionException, IOException {
+    public void testCopyFile() throws Exception {
         File src = File.createTempFile("copy", null);
 
         File dest = new File(mojo.outputDirectory, "toMe.jar");

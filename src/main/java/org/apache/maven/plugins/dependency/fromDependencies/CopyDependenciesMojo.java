@@ -19,6 +19,7 @@
 package org.apache.maven.plugins.dependency.fromDependencies;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -232,7 +233,11 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                 artifact);
         File destFile = new File(destDir, destFileName);
 
-        copyUtil.copyFile(getLog(), artifact.getFile(), destFile);
+        try {
+            copyUtil.copyFile(getLog(), artifact.getFile(), destFile);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed copy " + artifact.getFile() + " to " + destFile, e);
+        }
     }
 
     /**
@@ -272,7 +277,12 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                         DependencyUtil.getFormattedFileName(
                                 pomArtifact, removeVersion, prependGroupId, useBaseVersion, removeClassifier));
                 if (!pomDestFile.exists()) {
-                    copyUtil.copyFile(getLog(), pomArtifact.getFile(), pomDestFile);
+                    try {
+                        copyUtil.copyFile(getLog(), pomArtifact.getFile(), pomDestFile);
+                    } catch (IOException e) {
+                        throw new MojoExecutionException(
+                                "Failed copy " + pomArtifact.getFile() + " to " + pomDestFile, e);
+                    }
                 }
             }
         }

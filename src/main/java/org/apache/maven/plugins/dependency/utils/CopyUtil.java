@@ -49,22 +49,18 @@ public class CopyUtil {
      *
      * @param source represents the file to copy.
      * @param destination file name of destination file.
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws IOException with a message if an error occurs.
      */
-    public void copyFile(Log log, File source, File destination) throws MojoExecutionException {
-        try {
-            log.info("Copying " + source + " to " + destination);
+    public void copyFile(Log log, File source, File destination) throws IOException, MojoExecutionException {
+        log.info("Copying " + source + " to " + destination);
 
-            if (source.isDirectory()) {
-                // usual case is a future jar packaging, but there are special cases: classifier and other packaging
-                throw new MojoExecutionException("Artifact has not been packaged yet. When used on reactor artifact, "
-                        + "copy should be executed after packaging: see MDEP-187.");
-            }
-
-            FileUtils.copyFile(source, destination);
-            buildContext.refresh(destination);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error copying artifact from " + source + " to " + destination, e);
+        if (source.isDirectory()) {
+            // usual case is a future jar packaging, but there are special cases: classifier and other packaging
+            throw new MojoExecutionException("Artifact has not been packaged yet. When used on reactor artifact, "
+                    + "copy should be executed after packaging: see MDEP-187.");
         }
+
+        FileUtils.copyFile(source, destination);
+        buildContext.refresh(destination);
     }
 }
