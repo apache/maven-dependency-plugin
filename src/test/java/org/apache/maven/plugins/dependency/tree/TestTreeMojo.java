@@ -147,29 +147,10 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     }
 
     /**
-     * Test the JSON format serialization
-     */
-    public void testTreeJsonSerializing() throws Exception {
-        List<String> contents = runTreeMojo("tree1.json", "json");
-        assertTrue(findString(contents, "\"groupId\": \"testGroupId\""));
-
-        assertTrue(findString(contents, "\"artifactId\": \"project\""));
-        assertTrue(findString(contents, "\"artifactId\": \"release\""));
-        assertTrue(findString(contents, "\"artifactId\": \"snapshot\""));
-
-        assertTrue(findString(contents, "\"version\": \"1.0\""));
-        assertTrue(findString(contents, "\"version\": \"2.0-SNAPSHOT\""));
-
-        assertTrue(findString(contents, "\"type\": \"jar\""));
-
-        assertTrue(findString(contents, "\"scope\": \"compile\""));
-    }
-
-    /**
      * Test the JSON format serialization on DependencyNodes with circular dependence
      */
     public void testTreeJsonCircularDependency() throws Exception {
-        String outputFileName = testDir.getAbsolutePath() + "tree2.json";
+        String outputFileName = testDir.getAbsolutePath() + "tree1.json";
         File outputFile = new File(outputFileName);
         Files.createDirectories(outputFile.getParentFile().toPath());
         outputFile.createNewFile();
@@ -195,7 +176,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      * Test parsing of Json output and verify all key-value pairs
      */
     public void testTreeJsonParsing() throws Exception {
-        List<String> contents = runTreeMojo("tree3.json", "json");
+        List<String> contents = runTreeMojo("tree2.json", "json");
 
         JsonReader reader = Json.createReader(new StringReader(String.join("\n", contents)));
         JsonObject root = reader.readObject();
