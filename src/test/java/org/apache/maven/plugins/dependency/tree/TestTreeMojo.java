@@ -151,17 +151,17 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      */
     public void testTreeJsonSerializing() throws Exception {
         List<String> contents = runTreeMojo("tree1.json", "json");
-        assertTrue(findString(contents, "\"testGroupId\": \"project\""));
-        assertTrue(findString(contents, "\"type: \"jar\""));
+        assertTrue(findString(contents, "\"groupId\": \"testGroupId\""));
+
+        assertTrue(findString(contents, "\"artifactId: \"project\""));
+        assertTrue(findString(contents, "\"artifactId: \"release\""));
+        assertTrue(findString(contents, "\"artifactId: \"snapshot\""));
+
         assertTrue(findString(contents, "\"version\": \"1.0\""));
-        assertTrue(findString(contents, "\"scope\": \"compile\""));
-        assertTrue(findString(contents, "\"testGroupId\": \"snapshot\""));
-        assertTrue(findString(contents, "\"type: \"jar\""));
         assertTrue(findString(contents, "\"version\": \"2.0-SNAPSHOT\""));
-        assertTrue(findString(contents, "\"scope\": \"compile\""));
-        assertTrue(findString(contents, "\"testGroupId\": \"release\""));
-        assertTrue(findString(contents, "\"type: \"jar\""));
-        assertTrue(findString(contents, "\"version\": \"1.0\""));
+
+        assertTrue(findString(contents, "\"type\": \"jar\""));
+
         assertTrue(findString(contents, "\"scope\": \"compile\""));
     }
 
