@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
@@ -150,7 +151,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     /**
      * Test the JSON format serialization on DependencyNodes with circular dependence
      */
-    public void testTreeJsonCircularDependency() throws Exception {
+    public void testTreeJsonCircularDependency() throws IOException {
         String outputFileName = testDir.getAbsolutePath() + "tree1.json";
         File outputFile = new File(outputFileName);
         Files.createDirectories(outputFile.getParentFile().toPath());
