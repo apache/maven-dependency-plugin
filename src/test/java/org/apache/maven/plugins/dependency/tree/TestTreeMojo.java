@@ -153,9 +153,9 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
         List<String> contents = runTreeMojo("tree1.json", "json");
         assertTrue(findString(contents, "\"groupId\": \"testGroupId\""));
 
-        assertTrue(findString(contents, "\"artifactId: \"project\""));
-        assertTrue(findString(contents, "\"artifactId: \"release\""));
-        assertTrue(findString(contents, "\"artifactId: \"snapshot\""));
+        assertTrue(findString(contents, "\"artifactId\": \"project\""));
+        assertTrue(findString(contents, "\"artifactId\": \"release\""));
+        assertTrue(findString(contents, "\"artifactId\": \"snapshot\""));
 
         assertTrue(findString(contents, "\"version\": \"1.0\""));
         assertTrue(findString(contents, "\"version\": \"2.0-SNAPSHOT\""));
