@@ -180,40 +180,40 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     public void testTreeJsonParsing() throws Exception {
         List<String> contents = runTreeMojo("tree2.json", "json");
 
-        JsonReader reader = Json.createReader(new StringReader(String.join("\n", contents)));
-        JsonObject root = reader.readObject();
-        reader.close();
+        try (JsonReader reader = Json.createReader(new StringReader(String.join("\n", contents)))) {
+            JsonObject root = reader.readObject();
 
-        assertEquals(root.getString("groupId"), "testGroupId");
-        assertEquals(root.getString("artifactId"), "project");
-        assertEquals(root.getString("version"), "1.0");
-        assertEquals(root.getString("type"), "jar");
-        assertEquals(root.getString("scope"), "compile");
-        assertEquals(root.getString("classifier"), "");
-        assertEquals(root.getString("optional"), "false");
+            assertEquals(root.getString("groupId"), "testGroupId");
+            assertEquals(root.getString("artifactId"), "project");
+            assertEquals(root.getString("version"), "1.0");
+            assertEquals(root.getString("type"), "jar");
+            assertEquals(root.getString("scope"), "compile");
+            assertEquals(root.getString("classifier"), "");
+            assertEquals(root.getString("optional"), "false");
 
-        JsonArray children = root.getJsonArray("children");
-        assertEquals(children.size(), 2);
+            JsonArray children = root.getJsonArray("children");
+            assertEquals(children.size(), 2);
 
-        JsonObject child0 = children.getJsonObject(0);
+            JsonObject child0 = children.getJsonObject(0);
 
-        assertEquals(child0.getString("groupId"), "testGroupId");
-        assertEquals(child0.getString("artifactId"), "release");
-        assertEquals(child0.getString("version"), "1.0");
-        assertEquals(child0.getString("type"), "jar");
-        assertEquals(child0.getString("scope"), "compile");
-        assertEquals(child0.getString("classifier"), "");
-        assertEquals(child0.getString("optional"), "false");
+            assertEquals(child0.getString("groupId"), "testGroupId");
+            assertEquals(child0.getString("artifactId"), "release");
+            assertEquals(child0.getString("version"), "1.0");
+            assertEquals(child0.getString("type"), "jar");
+            assertEquals(child0.getString("scope"), "compile");
+            assertEquals(child0.getString("classifier"), "");
+            assertEquals(child0.getString("optional"), "false");
 
-        JsonObject child1 = children.getJsonObject(1);
+            JsonObject child1 = children.getJsonObject(1);
 
-        assertEquals(child1.getString("groupId"), "testGroupId");
-        assertEquals(child1.getString("artifactId"), "snapshot");
-        assertEquals(child1.getString("version"), "2.0-SNAPSHOT");
-        assertEquals(child1.getString("type"), "jar");
-        assertEquals(child1.getString("scope"), "compile");
-        assertEquals(child1.getString("classifier"), "");
-        assertEquals(child1.getString("optional"), "false");
+            assertEquals(child1.getString("groupId"), "testGroupId");
+            assertEquals(child1.getString("artifactId"), "snapshot");
+            assertEquals(child1.getString("version"), "2.0-SNAPSHOT");
+            assertEquals(child1.getString("type"), "jar");
+            assertEquals(child1.getString("scope"), "compile");
+            assertEquals(child1.getString("classifier"), "");
+            assertEquals(child1.getString("optional"), "false");
+        }
     }
 
     /**
