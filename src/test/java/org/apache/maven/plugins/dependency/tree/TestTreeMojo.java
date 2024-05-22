@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -164,6 +165,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     public void testTreeJsonCircularDependency() throws Exception {
         String outputFileName = testDir.getAbsolutePath() + "tree2.json";
         File outputFile = new File(outputFileName);
+        Files.createDirectories(outputFile.getParentFile().toPath());
         outputFile.createNewFile();
 
         Artifact artifact1 = this.stubFactory.createArtifact("testGroupId", "project1", "1.0");
