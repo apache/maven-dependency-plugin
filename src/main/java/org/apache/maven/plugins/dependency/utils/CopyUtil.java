@@ -26,8 +26,9 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -36,6 +37,8 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 @Named
 @Singleton
 public class CopyUtil {
+
+    private final Logger logger = LoggerFactory.getLogger(CopyUtil.class);
 
     private final BuildContext buildContext;
 
@@ -51,8 +54,8 @@ public class CopyUtil {
      * @param destination file name of destination file.
      * @throws IOException with a message if an error occurs.
      */
-    public void copyFile(Log log, File source, File destination) throws IOException, MojoExecutionException {
-        log.info("Copying " + source + " to " + destination);
+    public void copyFile(File source, File destination) throws IOException, MojoExecutionException {
+        logger.info("Copying {} to {}", source, destination);
 
         if (source.isDirectory()) {
             // usual case is a future jar packaging, but there are special cases: classifier and other packaging

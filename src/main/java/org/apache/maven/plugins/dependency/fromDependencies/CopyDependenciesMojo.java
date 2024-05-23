@@ -27,7 +27,6 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -208,7 +207,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      * @param theUseBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
      * @param removeClassifier specifies if the classifier should be removed from the file name when copying.
      * @throws MojoExecutionException with a message if an error occurs.
-     * @see CopyUtil#copyFile(Log, File, File)
+     * @see CopyUtil#copyFile(File, File)
      * @see DependencyUtil#getFormattedOutputDirectory(boolean, boolean, boolean, boolean, boolean, boolean, File, Artifact)
      */
     protected void copyArtifact(
@@ -234,7 +233,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         File destFile = new File(destDir, destFileName);
 
         try {
-            copyUtil.copyFile(getLog(), artifact.getFile(), destFile);
+            copyUtil.copyFile(artifact.getFile(), destFile);
         } catch (IOException e) {
             throw new MojoExecutionException("Failed copy " + artifact.getFile() + " to " + destFile, e);
         }
@@ -278,7 +277,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                                 pomArtifact, removeVersion, prependGroupId, useBaseVersion, removeClassifier));
                 if (!pomDestFile.exists()) {
                     try {
-                        copyUtil.copyFile(getLog(), pomArtifact.getFile(), pomDestFile);
+                        copyUtil.copyFile(pomArtifact.getFile(), pomDestFile);
                     } catch (IOException e) {
                         throw new MojoExecutionException(
                                 "Failed copy " + pomArtifact.getFile() + " to " + pomDestFile, e);

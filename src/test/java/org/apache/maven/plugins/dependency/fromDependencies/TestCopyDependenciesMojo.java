@@ -87,7 +87,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
         assertFalse(dest.exists());
 
-        copyFile(mojo, src, dest);
+        copyFile(src, dest);
         assertTrue(dest.exists());
     }
 
