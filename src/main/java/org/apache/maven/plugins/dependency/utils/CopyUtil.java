@@ -33,6 +33,8 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Provide a copyFile method in one place.
+ *
+ * @since 3.7.0
  */
 @Named
 @Singleton
@@ -53,6 +55,8 @@ public class CopyUtil {
      * @param source represents the file to copy.
      * @param destination file name of destination file.
      * @throws IOException with a message if an error occurs.
+     *
+     * @since 3.7.0
      */
     public void copyFile(File source, File destination) throws IOException, MojoExecutionException {
         logger.info("Copying {} to {}", source, destination);
