@@ -19,6 +19,7 @@
 package org.apache.maven.plugins.dependency.fromDependencies;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.dependency.utils.CopyUtil;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
@@ -62,6 +64,9 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     @Parameter(property = "mdep.copyPom", defaultValue = "false")
     protected boolean copyPom = true;
+
+    @Component
+    private CopyUtil copyUtil;
 
     /**
      *
@@ -202,7 +207,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      * @param theUseBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
      * @param removeClassifier specifies if the classifier should be removed from the file name when copying.
      * @throws MojoExecutionException with a message if an error occurs.
-     * @see #copyFile(File, File)
+     * @see CopyUtil#copyFile(File, File)
      * @see DependencyUtil#getFormattedOutputDirectory(boolean, boolean, boolean, boolean, boolean, boolean, File, Artifact)
      */
     protected void copyArtifact(
@@ -227,7 +232,11 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                 artifact);
         File destFile = new File(destDir, destFileName);
 
-        copyFile(artifact.getFile(), destFile);
+        try {
+            copyUtil.copyFile(artifact.getFile(), destFile);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed copy " + artifact.getFile() + " to " + destFile, e);
+        }
     }
 
     /**
@@ -267,7 +276,12 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                         DependencyUtil.getFormattedFileName(
                                 pomArtifact, removeVersion, prependGroupId, useBaseVersion, removeClassifier));
                 if (!pomDestFile.exists()) {
-                    copyFile(pomArtifact.getFile(), pomDestFile);
+                    try {
+                        copyUtil.copyFile(pomArtifact.getFile(), pomDestFile);
+                    } catch (IOException e) {
+                        throw new MojoExecutionException(
+                                "Failed copy " + pomArtifact.getFile() + " to " + pomDestFile, e);
+                    }
                 }
             }
         }
