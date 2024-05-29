@@ -76,11 +76,10 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
 
     /**
      * Tests the proper discovery and configuration of the mojo.
-     * // TODO: tests disabled during MDEP-339 work, to be reactivated
      *
      * @throws Exception in case of an error.
      */
-    public void _testTreeTestEnvironment() throws Exception {
+    public void testTreeTestEnvironment() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/tree-test/plugin-config.xml");
         TreeMojo mojo = (TreeMojo) lookupMojo("tree", testPom);
 
@@ -101,8 +100,8 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
         DependencyNode rootNode = mojo.getDependencyGraph();
         assertNodeEquals("testGroupId:project:jar:1.0:compile", rootNode);
         assertEquals(2, rootNode.getChildren().size());
-        assertChildNodeEquals("testGroupId:snapshot:jar:2.0-SNAPSHOT:compile", rootNode, 0);
-        assertChildNodeEquals("testGroupId:release:jar:1.0:compile", rootNode, 1);
+        assertChildNodeEquals("testGroupId:release:jar:1.0:compile", rootNode, 0);
+        assertChildNodeEquals("testGroupId:snapshot:jar:2.0-SNAPSHOT:compile", rootNode, 1);
     }
 
     /**
