@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,15 +56,14 @@ import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 import org.apache.maven.shared.dependency.graph.traversal.FilteringDependencyNodeVisitor;
 import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor;
 import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor.GraphTokens;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.repository.RemoteRepository;
 
 /**
  * Displays the dependency tree for this project. Multiple formats are supported: text (by default), but also
  * <a href="https://en.wikipedia.org/wiki/DOT_language">DOT</a>,
- * <a href="https://en.wikipedia.org/wiki/GraphML">GraphML</a>, and
- * <a href="https://en.wikipedia.org/wiki/Trivial_Graph_Format">TGF</a>.
+ * <a href="https://en.wikipedia.org/wiki/GraphML">GraphML</a>,
+ * <a href="https://en.wikipedia.org/wiki/Trivial_Graph_Format">TGF</a> and
+ * <a href="https://en.wikipedia.org/wiki/JSON">JSON</a>.
+ *
  *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @since 2.0-alpha-5
@@ -85,30 +83,6 @@ public class TreeMojo extends AbstractMojo {
 
     @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
     private String outputEncoding;
-
-    /**
-     * Contains the full list of projects in the reactor.
-     */
-    @Parameter(defaultValue = "${reactorProjects}", readonly = true, required = true)
-    private List<MavenProject> reactorProjects;
-
-    @Component
-    private RepositorySystem repositorySystem;
-
-    @Parameter(defaultValue = "${repositorySystem}")
-    RepositorySystem repositorySystemParam;
-
-    /**
-     * The current repository/network configuration of Maven.
-     */
-    @Parameter(defaultValue = "${repositorySystemSession}")
-    private RepositorySystemSession repoSession;
-
-    /**
-     * The project's remote repositories to use for the resolution of project dependencies.
-     */
-    @Parameter(defaultValue = "${project.remoteProjectRepositories}")
-    private List<RemoteRepository> projectRepos;
 
     /**
      * The dependency collector builder to use.
@@ -133,7 +107,8 @@ public class TreeMojo extends AbstractMojo {
 
     /**
      * If specified, this parameter will cause the dependency tree to be written using the specified format. Currently
-     * supported format are: <code>text</code> (default), <code>dot</code>, <code>graphml</code> and <code>tgf</code>.
+     * supported formats are: <code>text</code> (default), <code>dot</code>, <code>graphml</code>, <code>tgf</code>
+     * and <code>json</code>.
      * These additional formats can be plotted to image files.
      *
      * @since 2.2
@@ -187,7 +162,7 @@ public class TreeMojo extends AbstractMojo {
      * @since 2.0-alpha-6
      */
     @Parameter(property = "includes")
-    private String includes;
+    private List<String> includes;
 
     /**
      * A comma-separated list of artifacts to filter from the serialized dependency tree, or <code>null</code> not to
@@ -208,7 +183,7 @@ public class TreeMojo extends AbstractMojo {
      * @since 2.0-alpha-6
      */
     @Parameter(property = "excludes")
-    private String excludes;
+    private List<String> excludes;
 
     /**
      * The computed dependency tree root node of the Maven project.
@@ -417,22 +392,20 @@ public class TreeMojo extends AbstractMojo {
         List<DependencyNodeFilter> filters = new ArrayList<>();
 
         // filter includes
-        if (includes != null) {
-            List<String> patterns = Arrays.asList(includes.split(","));
+        if (includes != null && !includes.isEmpty()) {
 
-            getLog().debug("+ Filtering dependency tree by artifact include patterns: " + patterns);
+            getLog().debug("+ Filtering dependency tree by artifact include patterns: " + includes);
 
-            ArtifactFilter artifactFilter = new StrictPatternIncludesArtifactFilter(patterns);
+            ArtifactFilter artifactFilter = new StrictPatternIncludesArtifactFilter(includes);
             filters.add(new ArtifactDependencyNodeFilter(artifactFilter));
         }
 
         // filter excludes
-        if (excludes != null) {
-            List<String> patterns = Arrays.asList(excludes.split(","));
+        if (excludes != null && !excludes.isEmpty()) {
 
-            getLog().debug("+ Filtering dependency tree by artifact exclude patterns: " + patterns);
+            getLog().debug("+ Filtering dependency tree by artifact exclude patterns: " + excludes);
 
-            ArtifactFilter artifactFilter = new StrictPatternExcludesArtifactFilter(patterns);
+            ArtifactFilter artifactFilter = new StrictPatternExcludesArtifactFilter(excludes);
             filters.add(new ArtifactDependencyNodeFilter(artifactFilter));
         }
 
