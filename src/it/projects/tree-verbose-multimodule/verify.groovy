@@ -17,19 +17,15 @@
  * under the License.
  */
 
-import java.io.*;
-import org.codehaus.plexus.util.*;
+import static org.assertj.core.api.Assertions.assertThat
 
-String actual = FileUtils.fileRead( new File( basedir, "target/tree.txt" ) );
-String expected = FileUtils.fileRead( new File( basedir, "expected.txt" ) );
+assertThat(new File(basedir, "target/tree.txt"))
+        .hasSameTextualContentAs(new File(basedir, "expected.txt"))
 
-actual = actual.replaceAll( "[\n\r]+", "\n" );
-expected = expected.replaceAll( "[\n\r]+", "\n" );
+assertThat(new File(basedir, "module-a/target/tree.txt"))
+        .hasSameTextualContentAs(new File(basedir, "module-a/expected.txt"))
 
-if ( !actual.equals( expected ) )
-{
-    throw new Exception( "Unexpected dependency tree." + System.lineSeparator() + "Expected:" + System.lineSeparator()
-        + expected + System.lineSeparator() + "Actual:" + System.lineSeparator() + actual );
-}
+assertThat(new File(basedir, "module-b/target/tree.txt"))
+        .hasSameTextualContentAs(new File(basedir, "module-b/expected.txt"))
 
 return true;
