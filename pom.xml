@@ -95,7 +95,7 @@ under the License.
     <plexus-archiver.version>4.9.2</plexus-archiver.version>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
     <resolverVersion>1.4.1</resolverVersion>
-    <slf4j.version>1.7.36</slf4j.version>
+    <slf4jVersion>1.7.36</slf4jVersion>
 
     <project.build.outputTimestamp>2023-10-20T21:21:50Z</project.build.outputTimestamp>
   </properties>
@@ -313,6 +313,11 @@ under the License.
       <!-- stick with old GAV until https://github.com/eclipse-m2e/m2e-core/issues/944 is fixed -->
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4jVersion}</version>
+    </dependency>
 
     <!-- test -->
     <dependency>
@@ -428,7 +433,7 @@ under the License.
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
-      <version>${slf4j.version}</version>
+      <version>${slf4jVersion}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
