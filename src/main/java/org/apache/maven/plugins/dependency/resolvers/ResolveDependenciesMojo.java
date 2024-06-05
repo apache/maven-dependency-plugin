@@ -54,7 +54,7 @@ import org.apache.maven.shared.utils.logging.MessageUtils;
  */
 @Mojo(
         name = "resolve",
-        requiresDependencyResolution = ResolutionScope.TEST,
+        requiresDependencyCollection = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.GENERATE_SOURCES,
         threadSafe = true)
 public class ResolveDependenciesMojo extends AbstractResolveMojo {
