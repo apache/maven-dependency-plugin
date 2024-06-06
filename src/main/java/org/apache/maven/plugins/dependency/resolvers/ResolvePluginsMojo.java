@@ -31,10 +31,17 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
+import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
+import org.apache.maven.shared.artifact.filter.collection.ClassifierFilter;
 import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
+import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
+import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
+import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
+import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 
 /**
@@ -138,13 +145,70 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
     }
 
     /**
+     * This method resolves all transitive dependencies of an artifact.
+     *
+     * @param artifact the artifact used to retrieve dependencies
+     * @return resolved set of dependencies
+     * @throws DependencyResolverException in case of error while resolving artifacts.
+     */
+    private Set<Artifact> resolveArtifactDependencies(final DependableCoordinate artifact)
+            throws DependencyResolverException {
+        ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
+
+        Iterable<ArtifactResult> artifactResults =
+                getDependencyResolver().resolveDependencies(buildingRequest, artifact, null);
+
+        Set<Artifact> artifacts = new LinkedHashSet<>();
+
+        for (final ArtifactResult artifactResult : artifactResults) {
+            artifacts.add(artifactResult.getArtifact());
+        }
+
+        return artifacts;
+    }
+
+    /**
+     * @return {@link FilterArtifacts}
+     */
+    private FilterArtifacts getArtifactsFilter() {
+        final FilterArtifacts filter = new FilterArtifacts();
+
+        if (excludeReactor) {
+
+            filter.addFilter(new ExcludeReactorProjectsArtifactFilter(reactorProjects, getLog()));
+        }
+
+        filter.addFilter(new ScopeFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeScope),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeScope)));
+
+        filter.addFilter(new TypeFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeTypes),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeTypes)));
+
+        filter.addFilter(new ClassifierFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeClassifiers),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeClassifiers)));
+
+        filter.addFilter(new GroupIdFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeGroupIds),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeGroupIds)));
+
+        filter.addFilter(new ArtifactIdFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
+
+        return filter;
+    }
+
+    /**
      * This method resolves the plugin artifacts from the project.
      *
      * @return set of resolved plugin artifacts
      * @throws ArtifactFilterException in case of an error
      * @throws ArtifactResolverException in case of an error
      */
-    protected Set<Artifact> resolvePluginArtifacts() throws ArtifactFilterException, ArtifactResolverException {
+    private Set<Artifact> resolvePluginArtifacts() throws ArtifactFilterException, ArtifactResolverException {
         final Set<Artifact> plugins = getProject().getPluginArtifacts();
         final Set<Artifact> reports = getProject().getReportArtifacts();
 
