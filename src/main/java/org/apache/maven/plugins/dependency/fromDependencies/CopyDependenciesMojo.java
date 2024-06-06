@@ -98,12 +98,6 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     protected boolean addParentPoms;
 
     /**
-     * <i>not used in this goal</i>
-     */
-    @Parameter
-    protected boolean ignorePermissions;
-
-    /**
      * Main entry into mojo. Gets the list of dependencies and iterates through calling copyArtifact.
      *
      * @throws MojoExecutionException with a message if an error occurs.

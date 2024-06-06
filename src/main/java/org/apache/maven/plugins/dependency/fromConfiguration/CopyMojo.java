@@ -80,12 +80,6 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     private String artifact;
 
     /**
-     * <i>not used in this goal</i>
-     */
-    @Parameter
-    protected boolean ignorePermissions;
-
-    /**
      * Main entry into mojo. This method gets the ArtifactItems and iterates through each one passing it to
      * copyArtifact.
      *
