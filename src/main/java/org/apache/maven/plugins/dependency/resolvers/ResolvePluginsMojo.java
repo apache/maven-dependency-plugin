@@ -19,10 +19,12 @@
 package org.apache.maven.plugins.dependency.resolvers;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -43,6 +45,7 @@ import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 
 /**
  * Goal that resolves all project plugins and reports and their dependencies.
@@ -139,7 +142,11 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
                     DependencyUtil.write(output, outputFile, appendOutput, encoding);
                 }
             }
-        } catch (IOException | ArtifactFilterException | ArtifactResolverException | DependencyResolverException e) {
+        } catch (IOException
+                | ArtifactFilterException
+                | ArtifactResolverException
+                | DependencyResolverException
+                | ArtifactResolutionException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
@@ -208,39 +215,27 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
      * @throws ArtifactFilterException in case of an error
      * @throws ArtifactResolverException in case of an error
      */
-    private Set<Artifact> resolvePluginArtifacts() throws ArtifactFilterException, ArtifactResolverException {
+    private Set<Artifact> resolvePluginArtifacts()
+            throws ArtifactFilterException, ArtifactResolverException, ArtifactResolutionException {
         final Set<Artifact> plugins = getProject().getPluginArtifacts();
         final Set<Artifact> reports = getProject().getReportArtifacts();
 
-        Set<Artifact> artifacts = new LinkedHashSet<>();
+        Set<Artifact> artifacts = new HashSet<>();
         artifacts.addAll(reports);
         artifacts.addAll(plugins);
 
         final FilterArtifacts filter = getArtifactsFilter();
         artifacts = filter.filter(artifacts);
 
-        // final ArtifactFilter filter = getPluginFilter();
+        Set<Artifact> result = new HashSet<>();
         for (final Artifact artifact : new LinkedHashSet<>(artifacts)) {
-            // if ( !filter.include( artifact ) )
-            // {
-            // final String logStr =
-            // String.format( " Plugin SKIPPED: %s", DependencyUtil.getFormattedFileName( artifact, false ) );
-            //
-            // if ( !silent )
-            // {
-            // this.getLog().info( logStr );
-            // }
-            //
-            // artifacts.remove( artifact );
-            // continue;
-            // }
 
-            ProjectBuildingRequest buildingRequest = newResolvePluginProjectBuildingRequest();
-
-            // resolve the new artifact
-            getArtifactResolver().resolveArtifact(buildingRequest, artifact).getArtifact();
+            org.eclipse.aether.artifact.Artifact resolveArtifact = getResolverUtil()
+                    .resolveArtifact(
+                            RepositoryUtils.toArtifact(artifact), getProject().getRemotePluginRepositories());
+            result.add(RepositoryUtils.toArtifact(resolveArtifact));
         }
-        return artifacts;
+        return result;
     }
 
     @Override
