@@ -32,7 +32,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 @Mojo(
         name = "sources",
         defaultPhase = LifecyclePhase.GENERATE_SOURCES,
-        requiresDependencyCollection = ResolutionScope.TEST,
+        requiresDependencyResolution = ResolutionScope.TEST,
         threadSafe = true)
 public class ResolveDependencySourcesMojo extends ResolveDependenciesMojo {
 
