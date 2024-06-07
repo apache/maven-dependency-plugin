@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -32,12 +33,12 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.translators.ArtifactTranslator;
 import org.apache.maven.plugins.dependency.utils.translators.ClassifierTypeTranslator;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
@@ -47,11 +48,9 @@ import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ProjectTransitivityFilter;
 import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
-import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 
 /**
  * Class that encapsulates the plugin parameters, and contains methods that handle dependency filtering
@@ -60,8 +59,9 @@ import org.apache.maven.shared.transfer.repository.RepositoryManager;
  * @see org.apache.maven.plugins.dependency.AbstractDependencyMojo
  */
 public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMojo {
+
     @Component
-    private ArtifactResolver artifactResolver;
+    private ResolverUtil resolverUtil;
 
     @Component
     private DependencyResolver dependencyResolver;
@@ -364,14 +364,11 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
                 break;
             }
             try {
-                ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
+                org.eclipse.aether.artifact.Artifact resolvedArtifact = resolverUtil.resolveArtifact(
+                        RepositoryUtils.toArtifact(project.getArtifact()), project.getRemoteProjectRepositories());
 
-                Artifact resolvedArtifact = artifactResolver
-                        .resolveArtifact(buildingRequest, project.getArtifact())
-                        .getArtifact();
-
-                artifacts.add(resolvedArtifact);
-            } catch (ArtifactResolverException e) {
+                artifacts.add(RepositoryUtils.toArtifact(resolvedArtifact));
+            } catch (ArtifactResolutionException e) {
                 throw new MojoExecutionException(e.getMessage(), e);
             }
         }
@@ -385,7 +382,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
      * @return DependencyStatusSets - Bean of TreeSets that contains information on the projects dependencies
      * @throws MojoExecutionException in case of an error.
      */
-    protected DependencyStatusSets getClassifierTranslatedDependencies(Set<Artifact> artifacts, boolean stopOnFailure)
+    private DependencyStatusSets getClassifierTranslatedDependencies(Set<Artifact> artifacts, boolean stopOnFailure)
             throws MojoExecutionException {
         Set<Artifact> unResolvedArtifacts = new LinkedHashSet<>();
         Set<Artifact> resolvedArtifacts = artifacts;
@@ -397,7 +394,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
         if (classifier != null && !classifier.isEmpty()) {
             ArtifactTranslator translator =
                     new ClassifierTypeTranslator(artifactHandlerManager, this.classifier, this.type);
-            Collection<ArtifactCoordinate> coordinates = translator.translate(artifacts, getLog());
+            Collection<org.eclipse.aether.artifact.Artifact> coordinates = translator.translate(artifacts, getLog());
 
             status = filterMarkedDependencies(artifacts);
 
@@ -447,29 +444,26 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
-     * @param coordinates The set of artifact coordinates{@link ArtifactCoordinate}.
+     * @param artifacts The set of artifacts
      * @param stopOnFailure <code>true</code> if we should fail with exception if an artifact couldn't be resolved
      *            <code>false</code> otherwise.
      * @return the resolved artifacts. {@link Artifact}.
      * @throws MojoExecutionException in case of error.
      */
-    protected Set<Artifact> resolve(Set<ArtifactCoordinate> coordinates, boolean stopOnFailure)
+    private Set<Artifact> resolve(Set<org.eclipse.aether.artifact.Artifact> artifacts, boolean stopOnFailure)
             throws MojoExecutionException {
-        ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
 
         Set<Artifact> resolvedArtifacts = new LinkedHashSet<>();
-        for (ArtifactCoordinate coordinate : coordinates) {
+        for (org.eclipse.aether.artifact.Artifact artifact : artifacts) {
             try {
-                Artifact artifact = artifactResolver
-                        .resolveArtifact(buildingRequest, coordinate)
-                        .getArtifact();
-                resolvedArtifacts.add(artifact);
-            } catch (ArtifactResolverException ex) {
+                org.eclipse.aether.artifact.Artifact resolveArtifact =
+                        resolverUtil.resolveArtifact(artifact, getProject().getRemoteProjectRepositories());
+                resolvedArtifacts.add(RepositoryUtils.toArtifact(resolveArtifact));
+            } catch (ArtifactResolutionException ex) {
                 // an error occurred during resolution, log it an continue
-                getLog().debug("error resolving: " + coordinate);
-                getLog().debug(ex);
+                getLog().debug("error resolving: " + artifact, ex);
                 if (stopOnFailure) {
-                    throw new MojoExecutionException("error resolving: " + coordinate, ex);
+                    throw new MojoExecutionException("error resolving: " + artifact, ex);
                 }
             }
         }
@@ -507,10 +501,10 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
-     * @return {@link #artifactResolver}
+     * @return {@link #resolverUtil}
      */
-    protected final ArtifactResolver getArtifactResolver() {
-        return artifactResolver;
+    protected final ResolverUtil getResolverUtil() {
+        return resolverUtil;
     }
 
     /**

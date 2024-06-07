@@ -22,7 +22,6 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
@@ -31,7 +30,7 @@ public interface ArtifactTranslator {
     /**
      * @param artifacts set of {@link Artifact}s.
      * @param log {@link Log}
-     * @return {@link ArtifactCoordinate}
+     * @return set of {@link org.eclipse.aether.artifact.Artifact}
      */
-    Set<ArtifactCoordinate> translate(Set<Artifact> artifacts, Log log);
+    Set<org.eclipse.aether.artifact.Artifact> translate(Set<Artifact> artifacts, Log log);
 }
