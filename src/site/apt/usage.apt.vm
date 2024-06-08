@@ -13,8 +13,8 @@
 ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 ~~ KIND, either express or implied.  See the License for the
 ~~ specific language governing permissions and limitations
-~~ under the License.    
- 
+~~ under the License.
+
   ------
   Usage
   ------
@@ -25,11 +25,11 @@
   ------
 
 Usage
- 
+
   Brief examples on how to use the dependency goals:
 
 %{toc|fromDepth=2}
- 
+
 * <<<dependency:copy>>>
 
    This goal is meant to be bound to a lifecycle phase and configured in your
@@ -37,8 +37,8 @@ Usage
    in the specified location. Multiple artifacts can be defined in a single
    execution. A default output directory is specified but can be overridden for
    each ArtifactItem by setting the optional outputDirectory field. An
-   optional new name can be set to rename or the version stripped while copying. 
-   
+   optional new name can be set to rename or the version stripped while copying.
+
    The artifact version is optional. If not set, the plugin will attempt to resolve it from the
    project dependencies and then the dependencyManagement section.
 
@@ -87,7 +87,7 @@ Usage
   [...]
 </project>
 +---+
-  
+
   If you intend to configure this goal for execution on the command line using:
 
 +---+
@@ -128,28 +128,28 @@ mvn dependency:copy
 +---+
 
   <Notes:>
-  
-    * By default, artifacts are copied into <outputDirectory> using 
+
+    * By default, artifacts are copied into <outputDirectory> using
       Maven artifact file name convention ( ie <artifactId-version-classifier.type> ).
       Use the following rules to override the default convention:
-      
-      * Use <artifactItem.destFileName> to override the default file name.  
-        
+
+      * Use <artifactItem.destFileName> to override the default file name.
+
       * Use <stripVersion> to remove <version> from default file name.
         This field is ignored when <artifactId.destFileName> is set.
-      
-      * Use <artifactItem.outputDirectory> to override the plugin's <outputDirectory> configuration 
+
+      * Use <artifactItem.outputDirectory> to override the plugin's <outputDirectory> configuration
         per <artifactItem>.
-        
+
       []
-      
+
     []
 
 * <<<dependency:copy-dependencies>>>
 
    This goal can be bound to a lifecycle phase and configured in your <<<pom.xml>>>.
    It will resolve the dependencies (including transitive dependencies) from
-   the repository and place a copy in the specified location. 
+   the repository and place a copy in the specified location.
 
    The artifacts can be placed in subfolders based on type. For example:
 
@@ -171,7 +171,7 @@ mvn dependency:copy
    <<<mvn dependency:copy-dependencies -Dclassifier=sources>>> will try to find
    the sources for all dependencies and copy them.
 
-  Also included is the ability to include or exclude by type (war, jar etc), scope (runtime, test, etc), classifier (jdk14, sources, etc), groupId, artifactId, or a combination of them. 
+  Also included is the ability to include or exclude by type (war, jar etc), scope (runtime, test, etc), classifier (jdk14, sources, etc), groupId, artifactId, or a combination of them.
 
   <<Note:>> As of 2.0-alpha-5, you may mix includes and excludes of the same category (ie scope). Includes are processed before excludes.
 
@@ -216,8 +216,8 @@ mvn dependency:copy
    It will resolve the artifact from the repository and place a copy in the
    specified location. Multiple artifacts can be defined in a single execution.
    A default outputDirectory is specified but can be overridden for each
-   ArtifactItem by setting the optional outputDirectory field. 
-   
+   ArtifactItem by setting the optional outputDirectory field.
+
    A single artifact can be unpacked multiple times if different include/exclude parameters
    are defined for each artifactItem
 
@@ -225,9 +225,9 @@ mvn dependency:copy
 
    The artifact version is optional. If not set, the plugin will attempt to resolve it from the
    project dependencies and then the dependencyManagement section.
-   
+
    Configure the plugin something like this if you intend to bind it to execute along with your build:
-   
+
 +---+
 <project>
   [...]
@@ -328,15 +328,15 @@ mvn dependency:unpack
    resolve artifacts with the classifier and type. For example:
    <<<mvn dependency:unpack-dependencies -Dclassifier=sources>>> will try to find
    the sources for all dependencies and unpack them.
-   
+
    Filters can be applied to include or exclude certain file or filesets as necessary
-   
-   Also included is the ability to include or exclude by type (war, jar etc), scope (runtime, test, etc), classifier (jdk14, sources, etc), groupId, artifactId, or a combination of them. 
+
+   Also included is the ability to include or exclude by type (war, jar etc), scope (runtime, test, etc), classifier (jdk14, sources, etc), groupId, artifactId, or a combination of them.
 
    <<Note:>> You can mix includes and excludes of the same category (i.e. scope). Includes are processed before excludes.
 
    See the {{{#Overwrite_Rules}Overwrite Rules}} section for rules about how overwriting is handled.
-                                      
+
    The goal can also be launched from the command line like:
    <<<mvn dependency:unpack-dependencies [optional params]>>>
 
@@ -373,31 +373,31 @@ mvn dependency:unpack
     Artifacts are copied or unpacked using the following rules:
 
      * If the artifact doesn't exist in the destination, then copy/unpack it.
-     
+
      Otherwise:
-     
+
      * For copy/unpack goal only: if <<<artifactItem / overWrite>>> or <<<overWrite>>> is true, then it will force an overwrite.
-     
+
      * Releases check the <<<overWriteReleases>>> value (default = false). If true, then it will force an overwrite.
 
      * Snapshots check the <<<overWriteSnapshots>>> value (default = false). If true, then it will force an overwrite.
-     
+
      * If none of the above is set to true, then it defaults to the <<<overWriteIfNewer>>> value (default = true). This value, if true, causes
      the plugin to only copy if the source is newer than the destination (or it doesn't exist in the destination). (for unpack, this checks the existence of the marker file, created in the <<<markersDirectory>>> path.
      To avoid unexpected behavior after <<<mvn clean>>>, this path should normally be contained within the <<</target>>> hierarchy.)
-     
+
    Examples:
-     
+
      * Using the default settings (<<<overWriteReleases>>> = false, <<<overWriteSnapshots>>> = false, <<<overWriteIfNewer>>> = true), then a release or snapshot artifact will
      only over write the destination if the source is newer than the destination (or marker file if unpacking).
-     
+
      * If <<<overWriteReleases>>> = true, then a release artifact (ie <<<foo-1.0.jar>>>) will always overwrite.
-     
+
      * If <<<overWriteSnapshots>>> = true, then a snapshot artifact (ie <<<foo-1.0-SNAPSHOT.jar>>>) will always overwrite.
-     
+
      * If all of the values are false, then a copy/unpack will only occur if it doesn't exist in the destination (or <<<markersDirectory>>> if unpacking).
-     
-     
+
+
 
 * <<<dependency:resolve>>>
 
@@ -419,15 +419,15 @@ mvn dependency:unpack
   <<<mvn dependency:resolve -Dclassifer=test-jar>>> will try to find the
   test-jar for all dependencies resolve them to the local repository.
 
-* <<<dependency:sources>>>
+* <<<dependency:resolve-sources>>>
 
-  Sources is intended to be used from the command line like:
-  <<<mvn dependency:sources -Dsilent=true>>>
+  Resolve-sources is intended to be used from the command line like:
+  <<<mvn dependency:resolve-sources -Dsilent=true>>>
 
   This is the same as the resolve goal except it includes the source
   attachments if they exist.  This is useful when you want to download source
-  attachments to your local repository. 
-  
+  attachments to your local repository.
+
   You can also define the <<<markersDirectory>>> either in the pom or settings
   to be a common location for all projects. This allows the system to resolve sources faster for dependencies that don't
   have the sources published. The plugin will store a marker file to describe if the sources were resolved or not. By placing
@@ -452,7 +452,7 @@ mvn dependency:unpack
   (or projects, in the case of a multimodule build) from the local repository.
   Purges can be run with a variety of limiting parameters, including artifact
   exclusions, limiting to direct dependencies only, and different levels of
-  depth for deletion. By default, deleted artifacts can be re-resolved 
+  depth for deletion. By default, deleted artifacts can be re-resolved
   afterwards; you can disable this by specifying <<<-DreResolve=false>>>.
 
   In its simplest form, the goal can be called like this:
@@ -468,7 +468,7 @@ mvn dependency:purge-local-repository
 mvn dependency:purge-local-repository -Dexclude=org.apache.maven:maven-plugin-api
 +---+
 
-  <<Note:>> The <<<exclude>>> parameter is a comma-delimited list of 
+  <<Note:>> The <<<exclude>>> parameter is a comma-delimited list of
   groupId:artifactId pairs. It has a corresponding List-based parameter -
   <<<excludes>>> - for convenient use inside the POM.
 
@@ -529,7 +529,7 @@ mvn dependency:analyze
 
 * <<<dependency:analyze-dep-mgt>>>
 
-  This goal looks at the dependencies after final resolution and looks for mismatches in your dependencyManagement section. 
+  This goal looks at the dependencies after final resolution and looks for mismatches in your dependencyManagement section.
   In versions of maven prior to 2.0.6, it was possible to inherit versions that didn't match your dependencyManagement. See {{{https://issues.apache.org/jira/browse/MNG-1577}MNG-1577}} for more info.
 
   If this goal detects issues, you should attempt to resolve the discrepancies before upgrading to 2.0.6 to avoid any surprises. This can be done by upgrading or downgrading the version in dependencyManagement to match what is actually
@@ -559,7 +559,7 @@ mvn dependency:analyze-dep-mgt
 [INFO]          Resolved: 2.4
 [WARNING] Potential problems found in Dependency Management
 +---+
- 
+
 
 * <<<dependency:analyze-report>>>
 
@@ -624,15 +624,15 @@ mvn dependency:tree -DoutputFile=/path/to/file.graphml -DoutputType=graphml
 * <<<dependency:build-classpath>>>
 
    Since: 2.0-alpha-2
-   
+
    This goal will output a classpath string of dependencies from the local repository to a file or log and optionally attach and deploy the file. For instance, the file would contain a classpath string like this:
 
 +---+
 /home/foo/.m2/repository/org/java/utils/util/util-1.0.jar:/home/foo/.m2/ ....
-+---+  
++---+
 
   The resulting file could then be used like this:
-  
+
 +---+
 java -cp `cat resultFile` MyClass
 +---+
@@ -650,8 +650,8 @@ mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 +---+
 
   The goal can also be bound to a lifecycle phase with the following configuration:
-  
-+---+  
+
++---+
 <project>
   [...]
   <build>
@@ -682,7 +682,7 @@ mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 
 * <<<dependency:list-repositories>>>
 
-  This goal lists all the repositories that this build depends upon. It shows repositories defined in your settings, 
+  This goal lists all the repositories that this build depends upon. It shows repositories defined in your settings,
   poms, and declared in transitive dependency poms.
 
 
@@ -692,7 +692,7 @@ mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 
 +-----+
 mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources -DremoteRepositories=central::default::https://repo.maven.apache.org/maven2,myrepo::::http://myrepo.com/maven2
-mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources -DremoteRepositories=https://repo.maven.apache.org/maven2 
+mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources -DremoteRepositories=https://repo.maven.apache.org/maven2
 mvn dependency:get -Dartifact=org.apache.maven:maven-core:2.2.1:jar:sources -DremoteRepositories=https://repo.maven.apache.org/maven2 -Ddest=/tmp/myfile.jar
 +-----+
 

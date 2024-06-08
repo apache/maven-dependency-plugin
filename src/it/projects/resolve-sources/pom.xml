@@ -29,7 +29,7 @@
 
   <name>Test</name>
   <description>
-    Test dependency:sources
+    Test dependency:resolve-sources
   </description>
 
   <properties>
