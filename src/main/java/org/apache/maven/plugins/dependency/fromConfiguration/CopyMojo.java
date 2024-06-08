@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -108,16 +109,18 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
      *
      * @param artifactItem containing the information about the Artifact to copy.
      * @throws MojoExecutionException with a message if an error occurs.
-     * @see CopyUtil#copyFile(File, File)
+     * @see CopyUtil#copyArtifactFile(Artifact, File)
      */
     protected void copyArtifact(ArtifactItem artifactItem) throws MojoExecutionException {
         File destFile = new File(artifactItem.getOutputDirectory(), artifactItem.getDestFileName());
 
         try {
-            copyUtil.copyFile(artifactItem.getArtifact().getFile(), destFile);
+            copyUtil.copyArtifactFile(artifactItem.getArtifact(), destFile);
         } catch (IOException e) {
             throw new MojoExecutionException(
-                    "Failed copy " + artifactItem.getArtifact().getFile() + " to " + destFile, e);
+                    "Failed to copy artifact '" + artifactItem.getArtifact() + "' ("
+                            + artifactItem.getArtifact().getFile() + ") to " + destFile,
+                    e);
         }
     }
 

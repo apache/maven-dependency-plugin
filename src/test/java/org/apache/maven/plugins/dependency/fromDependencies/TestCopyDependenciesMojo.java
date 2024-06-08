@@ -30,6 +30,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.testing.stubs.ArtifactStub;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
@@ -80,14 +81,19 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         assertFalse(handle.isMarkerSet());
     }
 
-    public void testCopyFile() throws Exception {
+    public void testCopyArtifactFile() throws Exception {
+        final Artifact srcArtifact = new ArtifactStub();
+        srcArtifact.setGroupId("org.apache.maven.plugins");
+        srcArtifact.setArtifactId("maven-dependency-plugin-dummy");
+        srcArtifact.setVersion("1.0");
         File src = File.createTempFile("copy", null);
+        srcArtifact.setFile(src);
 
         File dest = new File(mojo.outputDirectory, "toMe.jar");
 
         assertFalse(dest.exists());
 
-        copyFile(src, dest);
+        copyArtifactFile(srcArtifact, dest);
         assertTrue(dest.exists());
     }
 

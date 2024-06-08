@@ -201,7 +201,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      * @param theUseBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
      * @param removeClassifier specifies if the classifier should be removed from the file name when copying.
      * @throws MojoExecutionException with a message if an error occurs.
-     * @see CopyUtil#copyFile(File, File)
+     * @see CopyUtil#copyArtifactFile(Artifact, File)
      * @see DependencyUtil#getFormattedOutputDirectory(boolean, boolean, boolean, boolean, boolean, boolean, File, Artifact)
      */
     protected void copyArtifact(
@@ -227,9 +227,10 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         File destFile = new File(destDir, destFileName);
 
         try {
-            copyUtil.copyFile(artifact.getFile(), destFile);
+            copyUtil.copyArtifactFile(artifact, destFile);
         } catch (IOException e) {
-            throw new MojoExecutionException("Failed copy " + artifact.getFile() + " to " + destFile, e);
+            throw new MojoExecutionException(
+                    "Failed to copy artifact '" + artifact + "' (" + artifact.getFile() + ") to " + destFile, e);
         }
     }
 
@@ -271,10 +272,12 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                                 pomArtifact, removeVersion, prependGroupId, useBaseVersion, removeClassifier));
                 if (!pomDestFile.exists()) {
                     try {
-                        copyUtil.copyFile(pomArtifact.getFile(), pomDestFile);
+                        copyUtil.copyArtifactFile(pomArtifact, pomDestFile);
                     } catch (IOException e) {
                         throw new MojoExecutionException(
-                                "Failed copy " + pomArtifact.getFile() + " to " + pomDestFile, e);
+                                "Failed to copy artifact '" + pomArtifact + "' (" + pomArtifact.getFile() + ") to "
+                                        + pomDestFile,
+                                e);
                     }
                 }
             }

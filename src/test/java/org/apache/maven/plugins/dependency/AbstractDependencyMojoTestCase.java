@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
@@ -63,14 +64,14 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
                 FileUtils.deleteDirectory(testDir);
             } catch (IOException e) {
                 e.printStackTrace();
-                fail("Trying to remove directory:" + testDir + System.lineSeparator() + e);
+                fail("Trying to remove directory: " + testDir + System.lineSeparator() + e);
             }
             assertFalse(testDir.exists());
         }
     }
 
-    protected void copyFile(File artifact, File destFile) throws MojoExecutionException, IOException {
-        new CopyUtil(new DefaultBuildContext()).copyFile(artifact, destFile);
+    protected void copyArtifactFile(Artifact sourceArtifact, File destFile) throws MojoExecutionException, IOException {
+        new CopyUtil(new DefaultBuildContext()).copyArtifactFile(sourceArtifact, destFile);
     }
 
     protected void installLocalRepository(LegacySupport legacySupport) throws ComponentLookupException {
