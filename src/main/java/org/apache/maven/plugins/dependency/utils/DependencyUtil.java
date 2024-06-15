@@ -25,6 +25,8 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 
 import org.apache.maven.artifact.Artifact;
@@ -132,8 +134,9 @@ public final class DependencyUtil {
      * @param useSubdirsPerScope if a new sub directory should be used for each scope.
      * @param useSubdirsPerType if a new sub directory should be used for each type.
      * @param useSubdirPerArtifact if a new sub directory should be used for each artifact.
-     * @param useRepositoryLayout if dependencies must be moved into a Maven repository layout, if set, other settings
-     *            will be ignored.
+     * @param useRepositoryLayout if dependencies must be moved into a Maven repository layout, if set, other
+     *         settings
+     *         will be ignored.
      * @param removeVersion if the version must not be mentioned in the filename
      * @param removeType if the type must not be mentioned in the filename
      * @param outputDirectory base outputDirectory.
@@ -226,7 +229,14 @@ public final class DependencyUtil {
             throws IOException {
         Files.createDirectories(file.getParentFile().toPath());
 
-        try (Writer writer = Files.newBufferedWriter(file.toPath(), Charset.forName(encoding))) {
+        OpenOption appendOption = append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING;
+
+        try (Writer writer = Files.newBufferedWriter(
+                file.toPath(),
+                Charset.forName(encoding),
+                appendOption,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE)) {
             writer.write(string);
         }
     }

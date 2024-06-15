@@ -19,28 +19,31 @@
 package org.apache.maven.plugins.dependency.utils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.io.IOException;
 
-import junit.framework.TestCase;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugin.testing.stubs.DefaultArtifactHandlerStub;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author brianf
  */
-public class TestDependencyUtil extends TestCase {
-    List<Artifact> artifacts = new ArrayList<>();
+class TestDependencyUtil {
 
-    Log log = new SilentLog();
+    private static final String TEST_CONTENT =
+            "Test line 1" + System.lineSeparator() + "Test line 2" + System.lineSeparator();
 
-    File outputFolder;
+    @TempDir
+    File temDir;
 
     Artifact snap;
 
@@ -50,40 +53,31 @@ public class TestDependencyUtil extends TestCase {
 
     Artifact sources;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    protected void setUp() {
 
         ArtifactHandler ah = new DefaultArtifactHandlerStub("jar", null);
         VersionRange vr = VersionRange.createFromVersion("1.1");
         release = new DefaultArtifact("test", "one", vr, Artifact.SCOPE_COMPILE, "jar", "sources", ah, false);
-        artifacts.add(release);
 
         ah = new DefaultArtifactHandlerStub("war", null);
         vr = VersionRange.createFromVersion("1.1-SNAPSHOT");
         snap = new DefaultArtifact("test", "two", vr, Artifact.SCOPE_PROVIDED, "war", null, ah, false);
-        artifacts.add(snap);
 
         ah = new DefaultArtifactHandlerStub("war", null);
         vr = VersionRange.createFromVersion("1.1-SNAPSHOT");
         snapResolvedVersion = new DefaultArtifact("test", "three", vr, Artifact.SCOPE_PROVIDED, "war", null, ah, false);
         snapResolvedVersion.setResolvedVersion("1.1-20121003.035531-117");
-        artifacts.add(snapResolvedVersion);
 
         ah = new DefaultArtifactHandlerStub("war", null);
         vr = VersionRange.createFromVersion("1.1-SNAPSHOT");
         sources = new DefaultArtifact("test", "two", vr, Artifact.SCOPE_PROVIDED, "sources", "sources", ah, false);
-
-        // pick random output location
-        Random a = new Random();
-        outputFolder = new File("target/copy" + a.nextLong() + "/");
-        outputFolder.delete();
-        assertFalse(outputFolder.exists());
     }
 
-    public void testDirectoryName() {
+    @Test
+    void testDirectoryName() {
         File folder = new File("target/a");
-        final Artifact artifact = artifacts.get(0);
+        final Artifact artifact = release;
         File name =
                 DependencyUtil.getFormattedOutputDirectory(false, false, false, false, false, false, folder, artifact);
         // object is the same.
@@ -153,9 +147,10 @@ public class TestDependencyUtil extends TestCase {
         assertEquals(expectedResult, name.getAbsolutePath());
     }
 
-    public void testDirectoryName2() {
+    @Test
+    void testDirectoryName2() {
         File folder = new File("target/a");
-        final Artifact artifact = artifacts.get(1);
+        final Artifact artifact = snap;
         File name =
                 DependencyUtil.getFormattedOutputDirectory(false, false, false, false, false, false, folder, artifact);
         // object is the same.
@@ -205,7 +200,8 @@ public class TestDependencyUtil extends TestCase {
         assertEquals(expectedResult, name.getAbsolutePath());
     }
 
-    public void testDirectoryNameSources() {
+    @Test
+    void testDirectoryNameSources() {
         File folder = new File("target/a");
         File name = DependencyUtil.getFormattedOutputDirectory(false, false, true, false, true, false, folder, sources);
         String expectedResult = folder.getAbsolutePath() + File.separatorChar + "two-sources";
@@ -224,8 +220,9 @@ public class TestDependencyUtil extends TestCase {
         assertEquals(expectedResult, name.getAbsolutePath());
     }
 
-    public void testFileName() {
-        Artifact artifact = artifacts.get(0);
+    @Test
+    void testFileName() {
+        Artifact artifact = release;
 
         String name = DependencyUtil.getFormattedFileName(artifact, false);
         String expectedResult = "one-1.1-sources.jar";
@@ -235,7 +232,8 @@ public class TestDependencyUtil extends TestCase {
         assertEquals(expectedResult, name);
     }
 
-    public void testFileNameUseBaseVersion() {
+    @Test
+    void testFileNameUseBaseVersion() {
         Artifact artifact = snapResolvedVersion;
 
         String name = DependencyUtil.getFormattedFileName(artifact, false, false, true);
@@ -246,7 +244,8 @@ public class TestDependencyUtil extends TestCase {
         assertEquals(expectedResult, name);
     }
 
-    public void testTestJar() {
+    @Test
+    void testTestJar() {
         ArtifactHandler ah = new DefaultArtifactHandlerStub("test-jar", null);
         VersionRange vr = VersionRange.createFromVersion("1.1-SNAPSHOT");
         Artifact artifact =
@@ -257,7 +256,8 @@ public class TestDependencyUtil extends TestCase {
         assertEquals(expectedResult, name);
     }
 
-    public void testFileNameClassifier() {
+    @Test
+    void testFileNameClassifier() {
         ArtifactHandler ah = new DefaultArtifactHandlerStub("jar", "sources");
         VersionRange vr = VersionRange.createFromVersion("1.1-SNAPSHOT");
         Artifact artifact =
@@ -282,7 +282,8 @@ public class TestDependencyUtil extends TestCase {
         assertEquals(expectedResult, name);
     }
 
-    public void testFileNameClassifierWithFile() {
+    @Test
+    void testFileNameClassifierWithFile() {
         // specifically testing the default operation that getFormattedFileName
         // returns
         // the actual name of the file if available unless remove version is
@@ -319,7 +320,8 @@ public class TestDependencyUtil extends TestCase {
         assertEquals(expectedResult, name);
     }
 
-    public void testTokenizer() {
+    @Test
+    void testTokenizer() {
         String[] tokens = DependencyUtil.tokenizer(" alpha,bravo, charlie , delta kappa, theta");
         String[] expected = new String[] {"alpha", "bravo", "charlie", "delta kappa", "theta"};
         // easier to see in the JUnit reports
@@ -336,5 +338,29 @@ public class TestDependencyUtil extends TestCase {
 
         tokens = DependencyUtil.tokenizer("  ");
         assertEquals(0, tokens.length);
+    }
+
+    @Test
+    void outputFileShouldBeOverridden() throws IOException {
+        File file = new File(temDir, "file1.out");
+        assertThat(file).doesNotExist();
+
+        DependencyUtil.write(TEST_CONTENT, file, false, "UTF-8");
+        assertThat(file).hasContent(TEST_CONTENT);
+
+        DependencyUtil.write(TEST_CONTENT, file, false, "UTF-8");
+        assertThat(file).hasContent(TEST_CONTENT);
+    }
+
+    @Test
+    void outputFileShouldBeAppended() throws IOException {
+        File file = new File(temDir, "file2.out");
+        assertThat(file).doesNotExist();
+
+        DependencyUtil.write(TEST_CONTENT, file, true, "UTF-8");
+        assertThat(file).hasContent(TEST_CONTENT);
+
+        DependencyUtil.write(TEST_CONTENT, file, true, "UTF-8");
+        assertThat(file).hasContent(TEST_CONTENT + TEST_CONTENT);
     }
 }
