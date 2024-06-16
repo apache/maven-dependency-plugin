@@ -105,7 +105,7 @@ public class GetMojo extends AbstractMojo {
     private List<ArtifactRepository> pomRemoteRepositories;
 
     /**
-     * Download transitively, retrieving the specified artifact and all of its dependencies.
+     * Resolve transitively, retrieving the specified artifact and all of its dependencies.
      */
     @Parameter(property = "transitive", defaultValue = "true")
     private boolean transitive = true;
@@ -241,7 +241,7 @@ public class GetMojo extends AbstractMojo {
     }
 
     /**
-     * The groupId of the artifact to download. Ignored if {@link #artifact} is used.
+     * The groupId of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
      * @param groupId The groupId.
      */
@@ -251,7 +251,7 @@ public class GetMojo extends AbstractMojo {
     }
 
     /**
-     * The artifactId of the artifact to download. Ignored if {@link #artifact} is used.
+     * The artifactId of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
      * @param artifactId The artifactId.
      */
@@ -261,7 +261,7 @@ public class GetMojo extends AbstractMojo {
     }
 
     /**
-     * The version of the artifact to download. Ignored if {@link #artifact} is used.
+     * The version of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
      * @param version The version.
      */
@@ -271,7 +271,7 @@ public class GetMojo extends AbstractMojo {
     }
 
     /**
-     * The classifier of the artifact to download. Ignored if {@link #artifact} is used.
+     * The classifier of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
      * @param classifier The classifier to be used.
      *
@@ -283,7 +283,7 @@ public class GetMojo extends AbstractMojo {
     }
 
     /**
-     * The packaging of the artifact to download. Ignored if {@link #artifact} is used.
+     * The packaging of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
      * @param type packaging.
      */
