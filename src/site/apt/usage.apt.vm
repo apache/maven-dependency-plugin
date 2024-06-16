@@ -90,9 +90,9 @@ Usage
 
   If you intend to configure this goal for execution on the command line using:
 
-+---+
+---
 mvn dependency:copy
-+---+
+---
 
   you must not put the configuration inside the <executions> tag. Your configuration should look like this:
 
@@ -258,9 +258,9 @@ mvn dependency:copy
 
   If you intend to configure this goal for execution on the command line using:
 
-+---+
+---
 mvn dependency:unpack
-+---+
+---
 
   you must not put the configuration inside the <executions> tag. Your configuration should look like this:
 
@@ -457,16 +457,16 @@ mvn dependency:unpack
 
   In its simplest form, the goal can be called like this:
 
-+---+
+---
 mvn dependency:purge-local-repository
-+---+
+---
 
   To add the restriction that the <<<org.apache.maven:maven-plugin-api>>>
   artifact not be deleted, we can modify the command to this:
 
-+---+
+---
 mvn dependency:purge-local-repository -Dexclude=org.apache.maven:maven-plugin-api
-+---+
+---
 
   <<Note:>> The <<<exclude>>> parameter is a comma-delimited list of
   groupId:artifactId pairs. It has a corresponding List-based parameter -
@@ -497,9 +497,9 @@ mvn dependency:purge-local-repository -Dexclude=org.apache.maven:maven-plugin-ap
   (in order to verify proper artifact resolution, for example), simply use this
   command:
 
-+---+
+---
 mvn dependency:purge-local-repository -DresolutionFuzziness=artifactId
-+---+
+---
 
   Finally, it's possible to bind this goal to the build lifecycle. One reason for this
   might be to clean out all dependencies when the build is initialized, to verify
@@ -513,9 +513,9 @@ mvn dependency:purge-local-repository -DresolutionFuzziness=artifactId
 
   This goal can be executed from the command line:
 
-+---+
+---
 mvn dependency:analyze
-+---+
+---
 
   Sample output:
 
@@ -540,9 +540,9 @@ mvn dependency:analyze
 
   This goal can be executed from the command line:
 
-+---+
+---
 mvn dependency:analyze-dep-mgt
-+---+
+---
 
   Sample output:
 
@@ -593,15 +593,15 @@ mvn dependency:analyze-dep-mgt
 
   This goal can be executed from the command line:
 
-+-----+
+---
 mvn dependency:tree
-+-----+
+---
 
   Optionally, the <<<output>>> parameter can be specified to divert the output to a file:
 
-+-----+
+---
 mvn dependency:tree -DoutputFile=/path/to/file
-+-----+
+---
 
   Also, the <<<outputType>>> parameter can be used to generate different formats of output.  The
   following formats are currently supported:
@@ -616,9 +616,9 @@ mvn dependency:tree -DoutputFile=/path/to/file
 
    []
 
-+-----+
+---
 mvn dependency:tree -DoutputFile=/path/to/file.graphml -DoutputType=graphml
-+-----+
+---
 
 
 * <<<dependency:build-classpath>>>
@@ -627,27 +627,27 @@ mvn dependency:tree -DoutputFile=/path/to/file.graphml -DoutputType=graphml
 
    This goal will output a classpath string of dependencies from the local repository to a file or log and optionally attach and deploy the file. For instance, the file would contain a classpath string like this:
 
-+---+
+---
 /home/foo/.m2/repository/org/java/utils/util/util-1.0.jar:/home/foo/.m2/ ....
-+---+
+---
 
   The resulting file could then be used like this:
 
-+---+
+---
 java -cp `cat resultFile` MyClass
-+---+
+---
 
   In its simplest form, to output the classpath to the log, the goal can be called like this:
 
-+---+
+---
 mvn dependency:build-classpath
-+---+
+---
 
   or to write the classpath to cp.txt:
 
-+---+
+---
 mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
-+---+
+---
 
   The goal can also be bound to a lifecycle phase with the following configuration:
 
@@ -688,13 +688,13 @@ mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 
 * <<<dependency:get>>>
 
-  This goal fetches an artifact and (optionally) its dependencies from remote repositories using its Maven coordinates.
+  This goal resolves an artifact and (optionally) its dependencies from remote repositories using its Maven coordinates.
+  The Maven Central repository are always consider during resolving.
 
-+-----+
-mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources -DremoteRepositories=central::default::https://repo.maven.apache.org/maven2,myrepo::::http://myrepo.com/maven2
-mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources -DremoteRepositories=https://repo.maven.apache.org/maven2
-mvn dependency:get -Dartifact=org.apache.maven:maven-core:2.2.1:jar:sources -DremoteRepositories=https://repo.maven.apache.org/maven2 -Ddest=/tmp/myfile.jar
-+-----+
+---
+mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources
+mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources -DremoteRepositories=https://myrepo.com/maven2
+---
 
 
 * <<<dependency:analyze-exclusions>>>
@@ -704,9 +704,9 @@ mvn dependency:get -Dartifact=org.apache.maven:maven-core:2.2.1:jar:sources -Dre
   Later a:b:2.0 has removed the unwanted dependency and you upgrade. This goal will inform you that the exclusion is no
   longer required.
 
-+---+
+---
 mvn dependency:analyze-exclusions
-+---+
+---
 
   Sample output:
 
