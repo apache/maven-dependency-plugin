@@ -136,7 +136,9 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
     /**
      * Scope threshold to exclude, if no value is defined for include.
-     * An empty string indicates no dependencies (default).<br>
+     * An empty string indicates no dependencies (default).  Unlike the other
+     * exclusion parameters, this property does not support a comma-delimited
+     * list of scope exclusions. Just one scope may be excluded at a time.<br>
      * The scope threshold value being interpreted is the scope as
      * Maven filters for creating a classpath, not as specified in the pom. In summary:
      * <ul>
