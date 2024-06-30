@@ -491,16 +491,13 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
-    public void testArtifactNotFound() throws Exception {
-        dotestArtifactExceptions(false, true);
+    public void testArtifactResolutionException() throws MojoFailureException {
+        dotestArtifactExceptions();
     }
 
-    public void testArtifactResolutionException() throws Exception {
-        dotestArtifactExceptions(true, false);
-    }
-
-    public void dotestArtifactExceptions(boolean are, boolean anfe) throws Exception {
+    public void dotestArtifactExceptions() throws MojoFailureException {
         mojo.classifier = "jdk";
+        mojo.failOnMissingClassifierArtifact = true;
         mojo.type = "java-sources";
 
         try {
