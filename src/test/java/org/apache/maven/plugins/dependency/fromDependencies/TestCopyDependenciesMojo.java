@@ -429,6 +429,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void dotestArtifactExceptions() throws MojoFailureException {
         mojo.classifier = "jdk";
+        mojo.failOnMissingClassifierArtifact = true;
         mojo.type = "java-sources";
 
         try {

@@ -64,7 +64,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      * @since 2.0
      */
     @Parameter(property = "mdep.copyPom", defaultValue = "false")
-    protected boolean copyPom = true;
+    protected boolean copyPom;
 
     @Component
     private CopyUtil copyUtil;
