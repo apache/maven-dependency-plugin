@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.apache.maven.plugins.dependency</groupId>
+	<artifactId>mdep-739-go-offline-respect-classifiers</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<description>Test that dependency:go-offline applies exclude filters</description>
+	<dependencies>
+		<dependency> <!-- excluded by excludeGroupId -->
+			<groupId>skip.this.groupid</groupId>
+			<artifactId>dummy-artifact</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency> <!-- excluded by excludeGroupId -->
+			<groupId>skip.this.groupid.too</groupId>
+			<artifactId>dummy-artifact</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency> <!-- excluded by excludeArtifactId -->
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>skip-this-artifact</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency> <!-- excluded by excludeArtifactId -->
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>skip-this-artifact-too</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency> <!-- excluded by excludeClassifier -->
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-access</artifactId>
+			<version>1.4.7</version>
+			<classifier>skipThisClassifier</classifier>
+		</dependency>
+		<dependency> <!-- excluded by excludeClassifier -->
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>1.5.6</version>
+			<classifier>skipThisClassifierToo</classifier>
+		</dependency>
+		<dependency><!-- should not be excluded -->
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>2.0.13</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency> <!-- excluded by excludeScope -->
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.5.4</version>
+			<scope>system</scope>
+			<!-- it doesn't matter what jar this points to, needs a systemPath to compile -->
+			<systemPath>${project.build.directory}/local-repo/junit/junit/4.13.2/junit-4.13.2.jar</systemPath>
+		</dependency>
+		<dependency><!-- should not be excluded -->
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>2.0.13</version>
+		</dependency>
+		<dependency> <!-- excluded by excludeType -->
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-examples</artifactId>
+			<version>1.4.7</version>
+			<type>ear</type>
+		</dependency>
+	</dependencies>
+	<build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>@project.version@</version>
+          <configuration>
+            <excludeGroupIds>skip.this.groupid,skip.this.groupid.too</excludeGroupIds>
+            <excludeArtifactIds>skip-this-artifact,skip-this-artifact-too</excludeArtifactIds>
+            <!-- the maven-common-artifact-filters library does not support comma delimited
+            scope exclusions.  only one at a time.  the other filters support comma delimited lists-->
+            <!-- <excludeScope>compile,system</excludeScope> -->
+            <excludeScope>system</excludeScope>
+            <excludeTypes>ear</excludeTypes>
+            <excludeClassifiers>skipThisClassifier,skipThisClassifierToo</excludeClassifiers>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>
