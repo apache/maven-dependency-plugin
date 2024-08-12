@@ -82,7 +82,7 @@ ${project.name}
   used by the build and by the transitive dependencies.
 
   *{{{./properties-mojo.html}dependency:properties}} sets a property for each project dependency containing the
-  the artifact on the file system.
+  artifact on the file system.
 
   *{{{./purge-local-repository-mojo.html}dependency:purge-local-repository}} tells Maven to clear dependency artifact
   files out of the local repository, and optionally re-resolve them.
