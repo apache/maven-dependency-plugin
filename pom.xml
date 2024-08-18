@@ -92,7 +92,7 @@ under the License.
 
     <jettyVersion>9.4.55.v20240627</jettyVersion>
     <mockito.version>4.11.0</mockito.version>
-    <plexus-archiver.version>4.9.2</plexus-archiver.version>
+    <plexus-archiver.version>4.10.0</plexus-archiver.version>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
     <resolverVersion>1.4.1</resolverVersion>
     <slf4jVersion>1.7.36</slf4jVersion>
@@ -212,6 +212,13 @@ under the License.
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-archiver</artifactId>
       <version>${plexus-archiver.version}</version>
+    </dependency>
+    <!-- MNG-6607: needs to be overriden for commons-compress otherwise it will appear earlier in the tree -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.14.0</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
