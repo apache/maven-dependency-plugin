@@ -90,7 +90,7 @@ under the License.
     <mavenVersion>3.6.3</mavenVersion>
     <javaVersion>8</javaVersion>
 
-    <jettyVersion>9.4.54.v20240208</jettyVersion>
+    <jettyVersion>9.4.55.v20240627</jettyVersion>
     <mockito.version>4.11.0</mockito.version>
     <plexus-archiver.version>4.9.2</plexus-archiver.version>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
