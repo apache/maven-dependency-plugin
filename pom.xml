@@ -23,7 +23,7 @@ under the License.
   <parent>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-plugins</artifactId>
-    <version>42</version>
+    <version>43</version>
     <relativePath />
   </parent>
 
@@ -457,6 +457,13 @@ under the License.
               -->
               <exclude>src/test/resources/unit/list-test/testListClasses*.txt</exclude>
             </excludes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <configuration>
+            <suppressionsLocation>src/config/checkstyle-suppressions.xml</suppressionsLocation>
           </configuration>
         </plugin>
       </plugins>
