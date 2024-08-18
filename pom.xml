@@ -28,7 +28,7 @@ under the License.
   </parent>
 
   <artifactId>maven-dependency-plugin</artifactId>
-  <version>3.7.2-SNAPSHOT</version>
+  <version>3.8.0</version>
   <packaging>maven-plugin</packaging>
 
   <name>Apache Maven Dependency Plugin</name>
@@ -68,7 +68,7 @@ under the License.
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-dependency-plugin.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-dependency-plugin.git</developerConnection>
-    <tag>maven-dependency-plugin-3.5.0</tag>
+    <tag>maven-dependency-plugin-3.8.0</tag>
     <url>https://github.com/apache/maven-dependency-plugin/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
@@ -95,7 +95,7 @@ under the License.
     <mockito.version>4.11.0</mockito.version>
     <plexus-archiver.version>4.10.0</plexus-archiver.version>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
-    <project.build.outputTimestamp>2024-06-18T07:04:19Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-08-18T19:00:48Z</project.build.outputTimestamp>
   </properties>
 
   <dependencies>
