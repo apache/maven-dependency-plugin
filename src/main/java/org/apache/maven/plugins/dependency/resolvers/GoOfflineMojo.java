@@ -169,36 +169,6 @@ public class GoOfflineMojo extends AbstractResolveMojo {
         return resolveDependableCoordinate(buildingRequest, dependableCoordinates, "plugins");
     }
 
-    protected FilterArtifacts getArtifactsFilter() {
-        final FilterArtifacts filter = new FilterArtifacts();
-
-        if (excludeReactor) {
-            filter.addFilter(new ExcludeReactorProjectsArtifactFilter(reactorProjects, getLog()));
-        }
-
-        filter.addFilter(new ScopeFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeScope),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeScope)));
-
-        filter.addFilter(new TypeFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeTypes),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeTypes)));
-
-        filter.addFilter(new ClassifierFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeClassifiers),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeClassifiers)));
-
-        filter.addFilter(new GroupIdFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeGroupIds),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeGroupIds)));
-
-        filter.addFilter(new ArtifactIdFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
-
-        return filter;
-    }
-
     private Collection<Dependency> filterDependencies(Collection<Dependency> deps) throws ArtifactFilterException {
 
         Set<Artifact> artifacts = createArtifactSetFromDependencies(deps);
