@@ -91,7 +91,7 @@ under the License.
     <mavenVersion>3.6.3</mavenVersion>
     <resolverVersion>1.4.1</resolverVersion>
     <slf4jVersion>1.7.36</slf4jVersion>
-    <jettyVersion>9.4.55.v20240627</jettyVersion>
+    <jettyVersion>9.4.56.v20240826</jettyVersion>
     <mockito.version>4.11.0</mockito.version>
     <plexus-archiver.version>4.10.0</plexus-archiver.version>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
