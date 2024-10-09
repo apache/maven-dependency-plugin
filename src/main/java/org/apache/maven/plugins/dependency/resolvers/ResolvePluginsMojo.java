@@ -175,40 +175,6 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
     }
 
     /**
-     * @return {@link FilterArtifacts}
-     */
-    private FilterArtifacts getArtifactsFilter() {
-        final FilterArtifacts filter = new FilterArtifacts();
-
-        if (excludeReactor) {
-
-            filter.addFilter(new ExcludeReactorProjectsArtifactFilter(reactorProjects, getLog()));
-        }
-
-        filter.addFilter(new ScopeFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeScope),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeScope)));
-
-        filter.addFilter(new TypeFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeTypes),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeTypes)));
-
-        filter.addFilter(new ClassifierFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeClassifiers),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeClassifiers)));
-
-        filter.addFilter(new GroupIdFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeGroupIds),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeGroupIds)));
-
-        filter.addFilter(new ArtifactIdFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
-
-        return filter;
-    }
-
-    /**
      * This method resolves the plugin artifacts from the project.
      *
      * @return set of resolved plugin artifacts
