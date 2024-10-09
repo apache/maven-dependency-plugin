@@ -228,11 +228,15 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
+     * <p>
+     * By default, org.slf4j:slf4j-simple is ignored. Setting this property to an empty list
+     * will allow it to be detected.
+     * </p>
      *
      * @since 2.10
      */
     @Parameter
-    private String[] ignoredUnusedDeclaredDependencies = new String[0];
+    private String[] ignoredUnusedDeclaredDependencies = {"org.slf4j:slf4j-simple::"};
 
     /**
      * List of dependencies that will be ignored if they are in not test scope but are only used in test classes.
@@ -248,11 +252,15 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
+     * <p>
+     * By default, org.slf4j:slf4j-simple is ignored. Setting this property to an empty list
+     * will allow it to be detected.
+     * </p>
      *
      * @since 3.3.0
      */
     @Parameter
-    private String[] ignoredNonTestScopedDependencies = new String[0];
+    private String[] ignoredNonTestScopedDependencies = {"org.slf4j:slf4j-simple::"};
 
     /**
      * List of project packaging that will be ignored.
