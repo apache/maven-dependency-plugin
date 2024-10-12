@@ -28,6 +28,8 @@ import java.io.IOException;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -40,6 +42,8 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 public class CopyUtil {
 
     private final BuildContext buildContext;
+
+    private final Logger logger = LoggerFactory.getLogger(CopyUtil.class);
 
     @Inject
     public CopyUtil(BuildContext buildContext) {
@@ -64,7 +68,7 @@ public class CopyUtil {
                     + "' has not been packaged yet (is a directory). When used on reactor artifact, "
                     + "copy should be executed after packaging: see MDEP-187.");
         }
-
+        logger.debug("Copying artifact '{}' ({}) to {}", sourceArtifact, sourceArtifact.getFile(), destination);
         FileUtils.copyFile(source, destination);
         buildContext.refresh(destination);
     }
