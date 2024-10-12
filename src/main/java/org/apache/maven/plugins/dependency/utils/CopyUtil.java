@@ -28,8 +28,6 @@ import java.io.IOException;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -41,8 +39,6 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 @Singleton
 public class CopyUtil {
 
-    private final Logger logger = LoggerFactory.getLogger(CopyUtil.class);
-
     private final BuildContext buildContext;
 
     @Inject
@@ -51,18 +47,16 @@ public class CopyUtil {
     }
 
     /**
-     * Does the actual copy of the artifact (file) and logging.
+     * Copies the artifact (file).
      *
-     * @param sourceArtifact represents the artifact (file) to copy.
-     * @param destination file name of destination file.
+     * @param sourceArtifact represents the artifact (file) to copy
+     * @param destination file name of destination file
      * @throws IOException if copy has failed
      * @throws MojoExecutionException if artifact file is a directory (which has not been packaged yet)
      *
      * @since 3.7.0
      */
     public void copyArtifactFile(Artifact sourceArtifact, File destination) throws IOException, MojoExecutionException {
-        logger.info("Copying artifact '{}' ({}) to {}", sourceArtifact, sourceArtifact.getFile(), destination);
-
         File source = sourceArtifact.getFile();
         if (source.isDirectory()) {
             // usual case is a future jar packaging, but there are special cases: classifier and other packaging
