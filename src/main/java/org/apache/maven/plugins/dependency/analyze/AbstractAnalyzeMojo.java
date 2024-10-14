@@ -261,13 +261,11 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 3.2.1
      */
-    // defaultValue value on @Parameter - not work with Maven 3.2.5
-    // When is set defaultValue always win, and there is no possibility to override by plugin configuration.
-    @Parameter
-    private List<String> ignoredPackagings = Arrays.asList("pom", "ear");
+    @Parameter(defaultValue = "pom,ear")
+    private List<String> ignoredPackagings;
 
     /**
-     * List Excluded classes patterns from analyze. Java regular expression pattern is applied to full class name.
+     * List of class patterns excluded from analyze. Java regular expression pattern is applied to full class name.
      *
      * @since 3.7.0
      */
