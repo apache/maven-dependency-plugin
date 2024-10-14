@@ -26,7 +26,7 @@
 
 Usage
 
-  Brief examples on how to use the dependency goals:
+  Brief examples of how to use the dependency goals:
 
 %{toc|fromDepth=2}
 
@@ -129,8 +129,8 @@ mvn dependency:copy
 
   <Notes:>
 
-    * By default, artifacts are copied into <outputDirectory> using
-      Maven artifact file name convention ( ie <artifactId-version-classifier.type> ).
+    * By default, artifacts are copied into <outputDirectory> using the
+      Maven artifact file name convention (that is, <artifactId-version-classifier.type>).
       Use the following rules to override the default convention:
 
       * Use <artifactItem.destFileName> to override the default file name.
@@ -329,11 +329,11 @@ mvn dependency:unpack
    <<<mvn dependency:unpack-dependencies -Dclassifier=sources>>> will try to find
    the sources for all dependencies and unpack them.
 
-   Filters can be applied to include or exclude certain file or filesets as necessary
+   Filters can be applied to include or exclude files or filesets as necessary
 
-   Also included is the ability to include or exclude by type (war, jar etc), scope (runtime, test, etc), classifier (jdk14, sources, etc), groupId, artifactId, or a combination of them.
+   Also included is the ability to include or exclude by type (war, jar, etc.), scope (runtime, test, etc.), classifier (jdk14, sources, etc.), groupId, artifactId, or a combination of them.
 
-   <<Note:>> You can mix includes and excludes of the same category (i.e. scope). Includes are processed before excludes.
+   <<Note:>> You can mix includes and excludes of the same category (e.g. scope). Includes are processed before excludes.
 
    See the {{{#Overwrite_Rules}Overwrite Rules}} section for rules about how overwriting is handled.
 
@@ -391,9 +391,9 @@ mvn dependency:unpack
      * Using the default settings (<<<overWriteReleases>>> = false, <<<overWriteSnapshots>>> = false, <<<overWriteIfNewer>>> = true), then a release or snapshot artifact will
      only over write the destination if the source is newer than the destination (or marker file if unpacking).
 
-     * If <<<overWriteReleases>>> = true, then a release artifact (ie <<<foo-1.0.jar>>>) will always overwrite.
+     * If <<<overWriteReleases>>> = true, then a release artifact (e.g. <<<foo-1.0.jar>>>) will always overwrite.
 
-     * If <<<overWriteSnapshots>>> = true, then a snapshot artifact (ie <<<foo-1.0-SNAPSHOT.jar>>>) will always overwrite.
+     * If <<<overWriteSnapshots>>> = true, then a snapshot artifact (e.g. <<<foo-1.0-SNAPSHOT.jar>>>) will always overwrite.
 
      * If all of the values are false, then a copy/unpack will only occur if it doesn't exist in the destination (or <<<markersDirectory>>> if unpacking).
 
@@ -404,19 +404,19 @@ mvn dependency:unpack
   Resolve is intended to be used from the command line like:
   <<<mvn dependency:resolve -Dsilent=true>>>
 
-  This goal simply tells maven to resolve all test scope (includes compile)
-  dependencies and then displays the resolved versions. This is intended to
-  help ensure all dependencies are downloaded to the local repository. This is
+  This goal resolves all test and compile scoped
+  dependencies and then displays the resolved versions. This
+  ensures all dependencies are downloaded to the local repository. This is
   useful when troubleshooting or during intermittent remote repository
-  failures when repeatedly building multiproject modules is undersirable and
+  failures when repeatedly building multiproject modules is undesirable and
   the build is failing on dependency resolution. It can also be used to quickly
   determine how versions are being resolved.
 
-  Artifacts can also be resolved by specifying the classifer and optionally
+  Artifacts can also be resolved by specifying the classifier and optionally
   type. Type is only used with the classifier and defaults to java-sources.
   When the classifier is set, the list of dependencies is used as the base to
-  resolve artifacts with the classifer and type. For example:
-  <<<mvn dependency:resolve -Dclassifer=test-jar>>> will try to find the
+  resolve artifacts with the classifier and type. For example:
+  <<<mvn dependency:resolve -Dclassifier=test-jar>>> will try to find the
   test-jar for all dependencies resolve them to the local repository.
 
 * <<<dependency:resolve-sources>>>
@@ -530,13 +530,8 @@ mvn dependency:analyze
 * <<<dependency:analyze-dep-mgt>>>
 
   This goal looks at the dependencies after final resolution and looks for mismatches in your dependencyManagement section.
-  In versions of maven prior to 2.0.6, it was possible to inherit versions that didn't match your dependencyManagement. See {{{https://issues.apache.org/jira/browse/MNG-1577}MNG-1577}} for more info.
 
-  If this goal detects issues, you should attempt to resolve the discrepancies before upgrading to 2.0.6 to avoid any surprises. This can be done by upgrading or downgrading the version in dependencyManagement to match what is actually
-  being included at runtime, or you can specify a dependency in your project to override what is being included. You can check the results by rerunning this goal.
-  If you decide to override by using a dependency, be sure to note it so you can remove it later after upgrading to 2.0.6. You could also use the dependency:analyze goal to uncover this unused direct dependency.
-
-  This goal is also useful for just detecting projects that override the dependencyManagement directly. Set ignoreDirect to false to detect these otherwise normal conditions.
+  This goal is useful for detecting projects that override the dependencyManagement directly. Set ignoreDirect to false to detect these otherwise normal conditions.
 
   This goal can be executed from the command line:
 
@@ -623,8 +618,6 @@ mvn dependency:tree -DoutputFile=/path/to/file.graphml -DoutputType=graphml
 
 * <<<dependency:build-classpath>>>
 
-   Since: 2.0-alpha-2
-
    This goal will output a classpath string of dependencies from the local repository to a file or log and optionally attach and deploy the file. For instance, the file would contain a classpath string like this:
 
 ---
@@ -700,7 +693,7 @@ mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=
 * <<<dependency:analyze-exclusions>>>
 
   This goal checks exclusions on dependencies and checks if the artifact actually brings in the given dependency.
-  For instance given dependency a:b:1.0 transitively includes x:y:1.0 which you do not want for some reason and exclude it.
+  For instance, given dependency a:b:1.0 transitively includes x:y:1.0 which you do not want for some reason and exclude it.
   Later a:b:2.0 has removed the unwanted dependency and you upgrade. This goal will inform you that the exclusion is no
   longer required.
 
