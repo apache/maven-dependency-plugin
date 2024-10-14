@@ -235,8 +235,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 2.10
      */
-    @Parameter
-    private String[] ignoredUnusedDeclaredDependencies = {"org.slf4j:slf4j-simple::"};
+    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    private String[] ignoredUnusedDeclaredDependencies;
 
     /**
      * List of dependencies that will be ignored if they are in not test scope but are only used in test classes.
@@ -259,8 +259,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 3.3.0
      */
-    @Parameter
-    private String[] ignoredNonTestScopedDependencies = {"org.slf4j:slf4j-simple::"};
+    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    private String[] ignoredNonTestScopedDependencies;
 
     /**
      * List of project packaging that will be ignored.
