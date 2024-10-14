@@ -75,19 +75,19 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * a dependency for this plugin that contains the code for the analyzer. The analyzer must have a declared Plexus
      * role name, and you specify the role name here.
      */
-    @Parameter(defaultValue = "default")
+    @Parameter(property = "analyzer", defaultValue = "default")
     private String analyzer;
 
     /**
      * Whether to fail the build if a dependency warning is found.
      */
-    @Parameter(defaultValue = "false")
+    @Parameter(property = "failOnWarning", defaultValue = "false")
     private boolean failOnWarning;
 
     /**
      * Output used dependencies.
      */
-    @Parameter(defaultValue = "false")
+    @Parameter(property = "verbose", defaultValue = "false")
     private boolean verbose;
 
     /**
@@ -95,7 +95,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * <p>
      * <code><b>Non-test scoped</b></code> list will be not affected.
      */
-    @Parameter(defaultValue = "false")
+    @Parameter(property = "ignoreNonCompile", defaultValue = "false")
     private boolean ignoreNonCompile;
 
     /**
@@ -103,7 +103,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 3.2.0
      */
-    @Parameter(defaultValue = "false")
+    @Parameter(property = "ignoreUnusedRuntime", defaultValue = "false")
     private boolean ignoreUnusedRuntime;
 
     /**
@@ -114,25 +114,25 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 3.3.1
      */
-    @Parameter(defaultValue = "false")
+    @Parameter(property = "ignoreAllNonTestScoped", defaultValue = "false")
     private boolean ignoreAllNonTestScoped;
 
     /**
      * Output XML for the missing dependencies (used but not declared).
      */
-    @Parameter(defaultValue = "false")
+    @Parameter(property = "outputXML", defaultValue = "false")
     private boolean outputXML;
 
     /**
      * Output scriptable values for the missing dependencies (used but not declared).
      */
-    @Parameter(defaultValue = "false")
+    @Parameter(property = "scriptableOutput", defaultValue = "false")
     private boolean scriptableOutput;
 
     /**
      * Flag to use for scriptable output.
      */
-    @Parameter(defaultValue = "$$$%%%")
+    @Parameter(property = "scriptableFlag", defaultValue = "$$$%%%")
     private String scriptableFlag;
 
     /**
