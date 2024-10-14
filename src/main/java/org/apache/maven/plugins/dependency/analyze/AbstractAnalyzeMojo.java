@@ -504,9 +504,6 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
             PrettyPrintXMLWriter writer = new PrettyPrintXMLWriter(out);
 
             for (Artifact artifact : artifacts) {
-                // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
-                artifact.isSnapshot();
-
                 writer.startElement("dependency");
                 writer.startElement("groupId");
                 writer.writeText(artifact.getGroupId());
