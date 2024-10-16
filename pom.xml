@@ -161,6 +161,12 @@ under the License.
       <artifactId>maven-reporting-impl</artifactId>
       <version>4.0.0-M15</version>
     </dependency>
+    <!-- Required transitive dependency, even if only used in tests. -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.16.1</version>
+    </dependency>
 
     <!-- plexus -->
     <dependency>
