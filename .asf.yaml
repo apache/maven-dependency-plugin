@@ -35,3 +35,8 @@ notifications:
   issues: issues@maven.apache.org
   pullrequests: issues@maven.apache.org
   jira_options: link label comment
+protected_branches:
+  master:
+    required_pull_request_reviews:
+      required_approving_review_count: 1
+    required_linear_history: true
