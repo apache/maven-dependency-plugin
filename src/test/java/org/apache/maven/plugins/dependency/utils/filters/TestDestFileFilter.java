@@ -18,46 +18,40 @@
  */
 package org.apache.maven.plugins.dependency.utils.filters;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * @author brianf
  */
-public class TestDestFileFilter extends TestCase {
+public class TestDestFileFilter {
     Set<Artifact> artifacts = new HashSet<>();
 
-    Log log = new SilentLog();
-
+    @TempDir
     File outputFolder;
 
     DependencyArtifactStubFactory fact;
 
+    @BeforeEach
     protected void setUp() throws Exception {
-        super.setUp();
-
-        outputFolder = new File("target/markers/");
-        FileUtils.deleteDirectory(outputFolder);
-        assertFalse(outputFolder.exists());
-
         this.fact = new DependencyArtifactStubFactory(outputFolder, false);
         artifacts = fact.getReleaseAndSnapshotArtifacts();
-    }
-
-    protected void tearDown() throws IOException {
-        FileUtils.deleteDirectory(outputFolder);
     }
 
     public void createFile(Artifact artifact) throws IOException {
@@ -91,6 +85,7 @@ public class TestDestFileFilter extends TestCase {
         return destFile;
     }
 
+    @Test
     public void testDestFileRelease() throws IOException, ArtifactFilterException {
         DestFileFilter filter = new DestFileFilter(outputFolder);
         Artifact artifact = fact.getReleaseArtifact();
@@ -103,6 +98,7 @@ public class TestDestFileFilter extends TestCase {
         assertTrue(filter.isArtifactIncluded(artifact));
     }
 
+    @Test
     public void testDestFileSnapshot() throws IOException, ArtifactFilterException {
         DestFileFilter filter = new DestFileFilter(outputFolder);
         Artifact artifact = fact.getSnapshotArtifact();
@@ -115,6 +111,7 @@ public class TestDestFileFilter extends TestCase {
         assertTrue(filter.isArtifactIncluded(artifact));
     }
 
+    @Test
     public void testDestFileStripVersion() throws IOException, ArtifactFilterException {
         DestFileFilter filter = new DestFileFilter(outputFolder);
         Artifact artifact = fact.getSnapshotArtifact();
@@ -128,6 +125,7 @@ public class TestDestFileFilter extends TestCase {
         assertTrue(filter.isArtifactIncluded(artifact));
     }
 
+    @Test
     public void testDestFileStripClassifier() throws IOException, ArtifactFilterException {
         DestFileFilter filter = new DestFileFilter(outputFolder);
         Artifact artifact = fact.getSnapshotArtifact();
@@ -141,6 +139,7 @@ public class TestDestFileFilter extends TestCase {
         assertTrue(filter.isArtifactIncluded(artifact));
     }
 
+    @Test
     public void testDestFileSubPerArtifact() throws IOException, ArtifactFilterException {
         DestFileFilter filter = new DestFileFilter(outputFolder);
         Artifact artifact = fact.getSnapshotArtifact();
@@ -154,6 +153,7 @@ public class TestDestFileFilter extends TestCase {
         assertTrue(filter.isArtifactIncluded(artifact));
     }
 
+    @Test
     public void testDestFileSubPerType() throws MojoExecutionException, IOException, ArtifactFilterException {
         DestFileFilter filter = new DestFileFilter(outputFolder);
         Artifact artifact = fact.getSnapshotArtifact();
@@ -167,6 +167,7 @@ public class TestDestFileFilter extends TestCase {
         assertTrue(filter.isArtifactIncluded(artifact));
     }
 
+    @Test
     public void testDestFileOverwriteIfNewer() throws MojoExecutionException, IOException, ArtifactFilterException {
         DestFileFilter filter = new DestFileFilter(outputFolder);
 
@@ -192,6 +193,7 @@ public class TestDestFileFilter extends TestCase {
         assertFalse(filter.isArtifactIncluded(artifact));
     }
 
+    @Test
     public void testGettersSetters() {
         DestFileFilter filter = new DestFileFilter(null);
         assertNull(filter.getOutputFileDirectory());
