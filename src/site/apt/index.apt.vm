@@ -40,6 +40,8 @@ ${project.name}
   *{{{./analyze-dep-mgt-mojo.html}dependency:analyze-dep-mgt}} analyzes the project's dependencies and lists mismatches
   between resolved dependencies and those listed in your dependencyManagement section.
 
+  *{{{./analyze-exclusions.html}dependency:analyze-exclusions}} analyzes the exclusions on dependencies and checks if the artifact actually brings in the given dependency.
+
   *{{{./analyze-only-mojo.html}dependency:analyze-only}} is the same as analyze, but is meant to be bound in a pom. It
   does not fork the build and execute test-compile.
 

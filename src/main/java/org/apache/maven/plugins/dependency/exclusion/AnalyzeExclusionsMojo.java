@@ -46,10 +46,10 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.maven.plugins.dependency.exclusion.Coordinates.coordinates;
 
 /**
- * Analyzes the exclusions defined on dependencies in this project and reports if any of them are invalid.
+ * Analyzes the exclusions defined on dependencies in this project and reports if any of them are unneeded.
  * <p>
  * Relevant use case is when an artifact in a later version has removed usage of a dependency, making the exclusion no
- * longer valid.
+ * longer necessary.
  * </p>
  *
  * @since 3.7.0
