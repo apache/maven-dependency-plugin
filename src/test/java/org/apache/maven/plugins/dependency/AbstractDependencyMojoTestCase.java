@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
@@ -49,15 +50,17 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
     protected void setUp(String testDirStr, boolean createFiles, boolean flattenedPath) throws Exception {
         // required for mojo lookups to work
         super.setUp();
+
         testDir = new File(
                 getBasedir(),
                 "target" + File.separatorChar + "unit-tests" + File.separatorChar + testDirStr + File.separatorChar);
-        FileUtils.deleteDirectory(testDir);
-        assertFalse(testDir.exists());
+        testDir = Files.createTempDirectory("testDirStr").toFile();
+        testDir.deleteOnExit();
 
         stubFactory = new DependencyArtifactStubFactory(this.testDir, createFiles, flattenedPath);
     }
 
+    @Override
     protected void tearDown() {
         if (testDir != null) {
             try {
