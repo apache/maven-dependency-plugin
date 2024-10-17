@@ -23,14 +23,15 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
+import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.project.MavenProject;
 
 public class TestResolveMojo extends AbstractDependencyMojoTestCase {
 
+    @Override
     protected void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp("markers", false);
@@ -81,6 +82,6 @@ public class TestResolveMojo extends AbstractDependencyMojoTestCase {
         ResolveDependenciesMojo mojo = (ResolveDependenciesMojo) lookupMojo("resolve", testPom);
         mojo.setSilent(false);
 
-        assertFalse(mojo.getLog() instanceof SilentLog);
+        assertFalse(mojo.getLog() instanceof DependencySilentLog);
     } // TODO: Test skipping artifacts.
 }
