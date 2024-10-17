@@ -212,8 +212,8 @@ public class AnalyzeDepMgt extends AbstractMojo {
     /**
      * Calculate the mismatches between the DependencyManagement and resolved artifacts
      *
-     * @param depMgtMap contains the Dependency.GetManagementKey as the keyset for quick lookup
-     * @param allDependencyArtifacts contains the set of all artifacts to compare
+     * @param depMgtMap a keyset of the Dependency.GetManagementKey for quick lookup
+     * @param allDependencyArtifacts the set of all artifacts to compare
      * @return a map containing the resolved artifact as the key and the listed dependency as the value
      */
     public Map<Artifact, Dependency> getMismatch(
