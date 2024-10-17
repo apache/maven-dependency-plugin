@@ -216,7 +216,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private String[] ignoredUsedUndeclaredDependencies = new String[0];
 
     /**
-     * List of dependencies that will be ignored if they are declared but unused. The filter syntax is:
+     * List of dependencies that are ignored if they are declared but unused. The filter syntax is:
      *
      * <pre>
      * [groupId]:[artifactId]:[type]:[version]
@@ -225,17 +225,17 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard. *
      * <p>
-     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
+     * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
      *
      * @since 2.10
      */
-    @Parameter
-    private String[] ignoredUnusedDeclaredDependencies = new String[0];
+    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    private String[] ignoredUnusedDeclaredDependencies;
 
     /**
-     * List of dependencies that will be ignored if they are in not test scope but are only used in test classes.
+     * List of dependencies that are ignored if they are in not test scope but are only used in test classes.
      * The filter syntax is:
      *
      * <pre>
@@ -245,14 +245,14 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard. *
      * <p>
-     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
+     * For example, <code>org.apache.*</code> matched all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
      *
      * @since 3.3.0
      */
-    @Parameter
-    private String[] ignoredNonTestScopedDependencies = new String[0];
+    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    private String[] ignoredNonTestScopedDependencies;
 
     /**
      * List of project packaging that will be ignored.
