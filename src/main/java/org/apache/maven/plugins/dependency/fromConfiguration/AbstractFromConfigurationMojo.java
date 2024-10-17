@@ -192,24 +192,14 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * Resolves the Artifact from the remote repository if necessary. If no version is specified, it will be retrieved
      * from the dependency list or from the DependencyManagement section of the pom.
      *
-     * @param artifactItem containing information about artifact from plugin configuration.
-     * @return Artifact object representing the specified file.
-     * @throws MojoExecutionException with a message if the version can't be found in DependencyManagement.
+     * @param artifactItem containing information about artifact from plugin configuration
+     * @return Artifact object representing the specified file
+     * @throws MojoExecutionException if the version can't be found in DependencyManagement
      */
     protected Artifact getArtifact(ArtifactItem artifactItem) throws MojoExecutionException {
         Artifact artifact;
 
         try {
-            // mdep-50 - rolledback for now because it's breaking some functionality.
-            /*
-             * List listeners = new ArrayList(); Set theSet = new HashSet(); theSet.add( artifact );
-             * ArtifactResolutionResult artifactResolutionResult = artifactCollector.collect( theSet, project
-             * .getArtifact(), managedVersions, this.local, project.getRemoteArtifactRepositories(),
-             * artifactMetadataSource, null, listeners ); Iterator iter =
-             * artifactResolutionResult.getArtifactResolutionNodes().iterator(); while ( iter.hasNext() ) {
-             * ResolutionNode node = (ResolutionNode) iter.next(); artifact = node.getArtifact(); }
-             */
-
             ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
 
             if (localRepositoryDirectory != null) {
