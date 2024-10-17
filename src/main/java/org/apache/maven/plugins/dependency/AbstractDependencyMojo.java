@@ -25,6 +25,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
@@ -182,6 +183,8 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
         this.silent = silent;
         if (silent) {
             setLog(new DependencySilentLog());
+        } else if (getLog() instanceof DependencySilentLog) {
+            setLog(new SystemStreamLog());
         }
     }
 }
