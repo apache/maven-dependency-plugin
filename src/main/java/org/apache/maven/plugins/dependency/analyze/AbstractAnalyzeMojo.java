@@ -142,7 +142,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private File baseDir;
 
     /**
-     * Target folder.
+     * Target directory.
      */
     @Parameter(defaultValue = "${project.build.directory}", readonly = true)
     private File outputDirectory;
