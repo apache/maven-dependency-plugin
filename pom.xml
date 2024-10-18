@@ -68,7 +68,7 @@ under the License.
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-dependency-plugin.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-dependency-plugin.git</developerConnection>
-    <tag>maven-dependency-plugin-3.5.0</tag>
+    <tag>HEAD</tag>
     <url>https://github.com/apache/maven-dependency-plugin/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
