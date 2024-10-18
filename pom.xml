@@ -159,7 +159,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>
       <artifactId>maven-reporting-impl</artifactId>
-      <version>4.0.0-M15</version>
+      <version>4.0.0</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
