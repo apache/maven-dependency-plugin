@@ -242,7 +242,11 @@ public final class DependencyUtil {
     }
 
     /**
-     * Writes the specified string to the log at info level.
+     * Writes each line in the specified string to the log at info level.
+     * The difference between calling
+     * {@code DependencyUtil.log(s, log)} and {@code log.indfo(s)} is that the latter
+     * will put "[INFO]" in front of each line in the string whereas the former only
+     * outputs it once at the front of the string.
      *
      * @param string the string to write
      * @param log where to log information
