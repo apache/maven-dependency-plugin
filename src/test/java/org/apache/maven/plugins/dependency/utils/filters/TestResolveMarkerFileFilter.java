@@ -20,46 +20,36 @@ package org.apache.maven.plugins.dependency.utils.filters;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
-import junit.framework.TestCase;
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.markers.SourcesFileMarkerHandler;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author brianf
  */
-public class TestResolveMarkerFileFilter extends TestCase {
-    Set<Artifact> artifacts = new HashSet<>();
+public class TestResolveMarkerFileFilter {
 
-    Log log = new SilentLog();
-
+    @TempDir
     File outputFolder;
 
     DependencyArtifactStubFactory fact;
 
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        outputFolder = new File("target/markers/");
-        FileUtils.deleteDirectory(outputFolder);
-        assertFalse(outputFolder.exists());
-
-        this.fact = new DependencyArtifactStubFactory(outputFolder, false);
-        artifacts = fact.getReleaseAndSnapshotArtifacts();
+    @BeforeEach
+    protected void setUp() throws IOException {
+        fact = new DependencyArtifactStubFactory(outputFolder, false);
+        fact.getReleaseAndSnapshotArtifacts();
     }
 
-    protected void tearDown() throws IOException {
-        FileUtils.deleteDirectory(outputFolder);
-    }
-
+    @Test
     public void testResolveFile() throws IOException, ArtifactFilterException, MojoExecutionException {
         SourcesFileMarkerHandler handler = new SourcesFileMarkerHandler(outputFolder);
 
