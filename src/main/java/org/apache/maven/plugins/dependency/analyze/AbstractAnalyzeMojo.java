@@ -74,6 +74,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * <a href="/shared/maven-dependency-analyzer/">maven-dependency-analyzer</a> is used. To use this, you must declare
      * a dependency for this plugin that contains the code for the analyzer. The analyzer must have a declared Plexus
      * role name, and you specify the role name here.
+     *
+     * @since 2.2
      */
     @Parameter(property = "analyzer", defaultValue = "default")
     private String analyzer;
@@ -112,37 +114,47 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * the <i>Non-test scoped test only dependencies found</i> warning to the
      * <code>&lt;ignoredNonTestScopedDependencies&gt;</code> configuration.
      *
-     * @since 3.3.1
+     * @since 3.3.1-SNAPSHOT
      */
     @Parameter(property = "ignoreAllNonTestScoped", defaultValue = "false")
     private boolean ignoreAllNonTestScoped;
 
     /**
-     * Output XML for the missing dependencies (used but not declared).
+     * Output the xml for the missing dependencies (used but not declared).
+     *
+     * @since 2.0-alpha-5
      */
     @Parameter(property = "outputXML", defaultValue = "false")
     private boolean outputXML;
 
     /**
      * Output scriptable values for the missing dependencies (used but not declared).
+     *
+     * @since 2.0-alpha-5
      */
     @Parameter(property = "scriptableOutput", defaultValue = "false")
     private boolean scriptableOutput;
 
     /**
      * Flag to use for scriptable output.
+     *
+     * @since 2.0-alpha-5
      */
     @Parameter(property = "scriptableFlag", defaultValue = "$$$%%%")
     private String scriptableFlag;
 
     /**
-     * Base directory for output.
+     * Flag to use for scriptable output
+     *
+     * @since 2.0-alpha-5
      */
     @Parameter(defaultValue = "${basedir}", readonly = true)
     private File baseDir;
 
     /**
-     * Target directory.
+     * Target folder
+     *
+     * @since 2.0-alpha-5
      */
     @Parameter(defaultValue = "${project.build.directory}", readonly = true)
     private File outputDirectory;
@@ -150,12 +162,16 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     /**
      * Force dependencies as used, to override incomplete result caused by bytecode-level analysis. Dependency format is
      * <code>groupId:artifactId</code>.
+     *
+     * @since 2.6
      */
     @Parameter
     private String[] usedDependencies;
 
     /**
      * Skip plugin execution completely.
+     *
+     * @since 2.7
      */
     @Parameter(property = "mdep.analyze.skip", defaultValue = "false")
     private boolean skip;
@@ -174,6 +190,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
+     *
+     * @since 2.10
      */
     @Parameter
     private String[] ignoredDependencies = new String[0];
@@ -191,6 +209,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
+     *
+     * @since 2.10
      */
     @Parameter
     private String[] ignoredUsedUndeclaredDependencies = new String[0];
@@ -208,6 +228,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
+     *
+     * @since 2.10
      */
     @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
     private String[] ignoredUnusedDeclaredDependencies;
