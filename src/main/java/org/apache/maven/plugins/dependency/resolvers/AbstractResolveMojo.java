@@ -59,7 +59,7 @@ public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
      */
     @Parameter(property = "excludeReactor", defaultValue = "true")
     protected boolean excludeReactor;
-    
+
     /**
      * @return {@link FilterArtifacts}
      */
