@@ -212,9 +212,9 @@ public class AnalyzeDepMgt extends AbstractMojo {
     /**
      * Calculate the mismatches between the DependencyManagement and resolved artifacts
      *
-     * @param depMgtMap contains the Dependency.GetManagementKey as the keyset for quick lookup.
-     * @param allDependencyArtifacts contains the set of all artifacts to compare.
-     * @return a map containing the resolved artifact as the key and the listed dependency as the value.
+     * @param depMgtMap a keyset of the Dependency.GetManagementKey for quick lookup
+     * @param allDependencyArtifacts the set of all artifacts to compare
+     * @return a map containing the resolved artifact as the key and the listed dependency as the value
      */
     public Map<Artifact, Dependency> getMismatch(
             Map<String, Dependency> depMgtMap, Set<Artifact> allDependencyArtifacts) {
@@ -223,9 +223,6 @@ public class AnalyzeDepMgt extends AbstractMojo {
         for (Artifact dependencyArtifact : allDependencyArtifacts) {
             Dependency depFromDepMgt = depMgtMap.get(getArtifactManagementKey(dependencyArtifact));
             if (depFromDepMgt != null) {
-                // workaround for MNG-2961
-                dependencyArtifact.isSnapshot();
-
                 if (depFromDepMgt.getVersion() != null
                         && !depFromDepMgt.getVersion().equals(dependencyArtifact.getBaseVersion())) {
                     mismatchMap.put(dependencyArtifact, depFromDepMgt);

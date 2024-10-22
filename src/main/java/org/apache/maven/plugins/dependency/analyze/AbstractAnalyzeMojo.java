@@ -74,8 +74,6 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * <a href="/shared/maven-dependency-analyzer/">maven-dependency-analyzer</a> is used. To use this, you must declare
      * a dependency for this plugin that contains the code for the analyzer. The analyzer must have a declared Plexus
      * role name, and you specify the role name here.
-     *
-     * @since 2.2
      */
     @Parameter(property = "analyzer", defaultValue = "default")
     private String analyzer;
@@ -114,47 +112,37 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * the <i>Non-test scoped test only dependencies found</i> warning to the
      * <code>&lt;ignoredNonTestScopedDependencies&gt;</code> configuration.
      *
-     * @since 3.3.1-SNAPSHOT
+     * @since 3.3.1
      */
     @Parameter(property = "ignoreAllNonTestScoped", defaultValue = "false")
     private boolean ignoreAllNonTestScoped;
 
     /**
-     * Output the xml for the missing dependencies (used but not declared).
-     *
-     * @since 2.0-alpha-5
+     * Output XML for the missing dependencies (used but not declared).
      */
     @Parameter(property = "outputXML", defaultValue = "false")
     private boolean outputXML;
 
     /**
      * Output scriptable values for the missing dependencies (used but not declared).
-     *
-     * @since 2.0-alpha-5
      */
     @Parameter(property = "scriptableOutput", defaultValue = "false")
     private boolean scriptableOutput;
 
     /**
      * Flag to use for scriptable output.
-     *
-     * @since 2.0-alpha-5
      */
     @Parameter(property = "scriptableFlag", defaultValue = "$$$%%%")
     private String scriptableFlag;
 
     /**
-     * Flag to use for scriptable output
-     *
-     * @since 2.0-alpha-5
+     * Base directory for output.
      */
     @Parameter(defaultValue = "${basedir}", readonly = true)
     private File baseDir;
 
     /**
-     * Target folder
-     *
-     * @since 2.0-alpha-5
+     * Target directory.
      */
     @Parameter(defaultValue = "${project.build.directory}", readonly = true)
     private File outputDirectory;
@@ -162,16 +150,12 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     /**
      * Force dependencies as used, to override incomplete result caused by bytecode-level analysis. Dependency format is
      * <code>groupId:artifactId</code>.
-     *
-     * @since 2.6
      */
     @Parameter
     private String[] usedDependencies;
 
     /**
      * Skip plugin execution completely.
-     *
-     * @since 2.7
      */
     @Parameter(property = "mdep.analyze.skip", defaultValue = "false")
     private boolean skip;
@@ -190,8 +174,6 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
-     *
-     * @since 2.10
      */
     @Parameter
     private String[] ignoredDependencies = new String[0];
@@ -209,14 +191,12 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
-     *
-     * @since 2.10
      */
     @Parameter
     private String[] ignoredUsedUndeclaredDependencies = new String[0];
 
     /**
-     * List of dependencies that will be ignored if they are declared but unused. The filter syntax is:
+     * List of dependencies that are ignored if they are declared but unused. The filter syntax is:
      *
      * <pre>
      * [groupId]:[artifactId]:[type]:[version]
@@ -225,17 +205,15 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard. *
      * <p>
-     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
+     * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
-     *
-     * @since 2.10
      */
-    @Parameter
-    private String[] ignoredUnusedDeclaredDependencies = new String[0];
+    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    private String[] ignoredUnusedDeclaredDependencies;
 
     /**
-     * List of dependencies that will be ignored if they are in not test scope but are only used in test classes.
+     * List of dependencies that are ignored if they are in not test scope but are only used in test classes.
      * The filter syntax is:
      *
      * <pre>
@@ -245,14 +223,14 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard. *
      * <p>
-     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
+     * For example, <code>org.apache.*</code> matched all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
      *
      * @since 3.3.0
      */
-    @Parameter
-    private String[] ignoredNonTestScopedDependencies = new String[0];
+    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    private String[] ignoredNonTestScopedDependencies;
 
     /**
      * List of project packaging that will be ignored.
@@ -261,13 +239,11 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 3.2.1
      */
-    // defaultValue value on @Parameter - not work with Maven 3.2.5
-    // When is set defaultValue always win, and there is no possibility to override by plugin configuration.
-    @Parameter
-    private List<String> ignoredPackagings = Arrays.asList("pom", "ear");
+    @Parameter(defaultValue = "pom,ear")
+    private List<String> ignoredPackagings;
 
     /**
-     * List Excluded classes patterns from analyze. Java regular expression pattern is applied to full class name.
+     * List of class patterns excluded from analyze. Java regular expression pattern is applied to full class name.
      *
      * @since 3.7.0
      */
@@ -504,9 +480,6 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
             PrettyPrintXMLWriter writer = new PrettyPrintXMLWriter(out);
 
             for (Artifact artifact : artifacts) {
-                // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
-                artifact.isSnapshot();
-
                 writer.startElement("dependency");
                 writer.startElement("groupId");
                 writer.writeText(artifact.getGroupId());
