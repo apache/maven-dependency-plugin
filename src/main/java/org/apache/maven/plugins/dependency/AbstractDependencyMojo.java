@@ -86,8 +86,10 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     /**
      * If the plugin should be silent.
      *
+     * @deprecated to be removed in 4.0; use -Q command line option instead
      * @since 2.0
      */
+    @Deprecated
     @Parameter(property = "silent", defaultValue = "false")
     private boolean silent;
 
@@ -170,14 +172,18 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
 
     /**
      * @return {@link #silent}
+     * @deprecated to be removed in 4.0
      */
+    @Deprecated
     protected final boolean isSilent() {
         return silent;
     }
 
     /**
      * @param silent {@link #silent}
+     * @deprecated to be removed in 4.0; no API replacement, use -Q command line option instead
      */
+    @Deprecated
     public void setSilent(boolean silent) {
         this.silent = silent;
         if (silent) {
