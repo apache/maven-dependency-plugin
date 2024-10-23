@@ -23,31 +23,34 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugins.dependency.testUtils.stubs.StubDefaultFileMarkerHandler;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author brianf
  */
-public class TestDefaultMarkerFileHandler extends TestCase {
+public class TestDefaultMarkerFileHandler {
     List<Artifact> artifacts = new ArrayList<>();
 
-    Log log = new SilentLog();
-
+    @TempDir
     File outputFolder;
 
+    @BeforeEach
     protected void setUp() throws Exception {
-        super.setUp();
-
         ArtifactHandler ah = new DefaultArtifactHandler();
         VersionRange vr = VersionRange.createFromVersion("1.1");
         Artifact artifact = new DefaultArtifact("test", "1", vr, Artifact.SCOPE_COMPILE, "jar", "", ah, false);
@@ -58,16 +61,9 @@ public class TestDefaultMarkerFileHandler extends TestCase {
         artifacts.add(artifact);
         artifact = new DefaultArtifact("test", "4", vr, Artifact.SCOPE_RUNTIME, "zip", "", ah, false);
         artifacts.add(artifact);
-
-        outputFolder = new File("target/markers/");
-        FileUtils.deleteDirectory(this.outputFolder);
-        assertFalse(outputFolder.exists());
     }
 
-    protected void tearDown() throws IOException {
-        FileUtils.deleteDirectory(this.outputFolder);
-    }
-
+    @Test
     public void testSetMarker() throws MojoExecutionException {
         DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler(artifacts.get(0), this.outputFolder);
         assertFalse(handler.isMarkerSet());
@@ -87,6 +83,7 @@ public class TestDefaultMarkerFileHandler extends TestCase {
         assertFalse(handler.isMarkerSet());
     }
 
+    @Test
     public void testMarkerFile() throws MojoExecutionException, IOException {
         DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler(artifacts.get(0), this.outputFolder);
 
@@ -108,6 +105,7 @@ public class TestDefaultMarkerFileHandler extends TestCase {
         assertFalse(handle.exists());
     }
 
+    @Test
     public void testMarkerTimeStamp() throws MojoExecutionException, IOException, InterruptedException {
         File theFile = new File(outputFolder, "theFile.jar");
         outputFolder.mkdirs();
@@ -130,6 +128,7 @@ public class TestDefaultMarkerFileHandler extends TestCase {
         assertFalse(handler.isMarkerSet());
     }
 
+    @Test
     public void testMarkerFileException() {
         // this stub wraps the file with an object to throw exceptions
         StubDefaultFileMarkerHandler handler = new StubDefaultFileMarkerHandler(artifacts.get(0), this.outputFolder);
@@ -141,6 +140,7 @@ public class TestDefaultMarkerFileHandler extends TestCase {
         }
     }
 
+    @Test
     public void testGetterSetter() {
         DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler(null, null);
         assertNull(handler.getArtifact());
@@ -152,6 +152,7 @@ public class TestDefaultMarkerFileHandler extends TestCase {
         assertSame(outputFolder, handler.getMarkerFilesDirectory());
     }
 
+    @Test
     public void testNullParent() throws MojoExecutionException {
         // the parent isn't set so this will create the marker in the local
         // folder. We must clear the
