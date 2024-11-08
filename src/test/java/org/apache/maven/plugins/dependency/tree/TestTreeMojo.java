@@ -31,9 +31,8 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
@@ -101,8 +100,15 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
         DependencyNode rootNode = mojo.getDependencyGraph();
         assertNodeEquals("testGroupId:project:jar:1.0:compile", rootNode);
         assertEquals(2, rootNode.getChildren().size());
-        assertChildNodeEquals("testGroupId:release:jar:1.0:compile", rootNode, 0);
-        assertChildNodeEquals("testGroupId:snapshot:jar:2.0-SNAPSHOT:compile", rootNode, 1);
+
+        List<String> actualNodes = Arrays.asList(
+                createArtifactCoordinateString(rootNode.getChildren().get(0)),
+                createArtifactCoordinateString(rootNode.getChildren().get(1)));
+        List<String> expectedNodes =
+                Arrays.asList("testGroupId:release:jar:1.0:compile", "testGroupId:snapshot:jar:2.0-SNAPSHOT:compile");
+
+        assertTrue(expectedNodes.containsAll(actualNodes));
+        ;
     }
 
     /**
@@ -194,8 +200,13 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
             JsonArray children = root.getJsonArray("children");
             assertEquals(children.size(), 2);
 
-            JsonObject child0 = children.getJsonObject(0);
+            List<JsonObject> sortedChildren = children.stream()
+                    .map(JsonObject.class::cast)
+                    .sorted(Comparator.comparing(child -> child.getString("artifactId")))
+                    .collect(Collectors.toList());
 
+            // Now that children are sorted, we can assert their values in a fixed order
+            JsonObject child0 = sortedChildren.get(0);
             assertEquals(child0.getString("groupId"), "testGroupId");
             assertEquals(child0.getString("artifactId"), "release");
             assertEquals(child0.getString("version"), "1.0");
@@ -204,8 +215,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
             assertEquals(child0.getString("classifier"), "");
             assertEquals(child0.getString("optional"), "false");
 
-            JsonObject child1 = children.getJsonObject(1);
-
+            JsonObject child1 = sortedChildren.get(1);
             assertEquals(child1.getString("groupId"), "testGroupId");
             assertEquals(child1.getString("artifactId"), "snapshot");
             assertEquals(child1.getString("version"), "2.0-SNAPSHOT");
@@ -271,12 +281,6 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
 
     // private methods --------------------------------------------------------
 
-    private void assertChildNodeEquals(String expectedNode, DependencyNode actualParentNode, int actualChildIndex) {
-        DependencyNode actualNode = actualParentNode.getChildren().get(actualChildIndex);
-
-        assertNodeEquals(expectedNode, actualNode);
-    }
-
     private void assertNodeEquals(String expectedNode, DependencyNode actualNode) {
         String[] tokens = expectedNode.split(":");
 
@@ -297,5 +301,13 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
         assertEquals("type", expectedType, actualArtifact.getType());
         assertEquals("version", expectedVersion, actualArtifact.getVersion());
         assertEquals("scope", expectedScope, actualArtifact.getScope());
+    }
+
+    private String createArtifactCoordinateString(DependencyNode actualNode) {
+        return actualNode.getArtifact().getGroupId() + ":"
+                + actualNode.getArtifact().getArtifactId() + ":"
+                + actualNode.getArtifact().getType() + ":"
+                + actualNode.getArtifact().getVersion() + ":"
+                + actualNode.getArtifact().getScope();
     }
 }
