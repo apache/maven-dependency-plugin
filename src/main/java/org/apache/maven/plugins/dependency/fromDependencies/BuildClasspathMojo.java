@@ -228,7 +228,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
         }
 
         if (outputFile == null) {
-            getLog().info("Dependencies classpath:" + System.lineSeparator() + cpString);
+            getLog().info("Dependencies classpath:\n" + cpString);
         } else {
             if (regenerateFile || !isUpToDate(cpString)) {
                 storeClasspathFile(cpString, outputFile);

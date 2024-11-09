@@ -79,12 +79,9 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
             final Set<Artifact> plugins = resolvePluginArtifacts();
 
             StringBuilder sb = new StringBuilder();
-            sb.append(System.lineSeparator());
-            sb.append("The following plugins have been resolved:");
-            sb.append(System.lineSeparator());
+            sb.append("\nThe following plugins have been resolved:\n");
             if (plugins == null || plugins.isEmpty()) {
-                sb.append("   none");
-                sb.append(System.lineSeparator());
+                sb.append("   none\n");
             } else {
                 for (Artifact plugin : plugins) {
                     String artifactFilename = null;
@@ -103,7 +100,7 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
                     sb.append("   ")
                             .append(id)
                             .append(outputAbsoluteArtifactFilename ? ":" + artifactFilename : "")
-                            .append(System.lineSeparator());
+                            .append("\n");
 
                     if (!excludeTransitive) {
                         DefaultDependableCoordinate pluginCoordinate = new DefaultDependableCoordinate();
@@ -128,11 +125,11 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
                             sb.append("      ")
                                     .append(id)
                                     .append(outputAbsoluteArtifactFilename ? ":" + artifactFilename : "")
-                                    .append(System.lineSeparator());
+                                    .append("\n");
                         }
                     }
                 }
-                sb.append(System.lineSeparator());
+                sb.append("\n");
 
                 String output = sb.toString();
                 if (outputFile == null) {

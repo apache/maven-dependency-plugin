@@ -40,10 +40,10 @@ public class GraphmlDependencyNodeVisitor extends AbstractSerializingVisitor imp
             + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
             + "xmlns:y=\"http://www.yworks.com/xml/graphml\" "
             + "xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns "
-            + "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">" + System.lineSeparator()
-            + "  <key for=\"node\" id=\"d0\" yfiles.type=\"nodegraphics\"/> " + System.lineSeparator()
-            + "  <key for=\"edge\" id=\"d1\" yfiles.type=\"edgegraphics\"/> " + System.lineSeparator()
-            + "<graph id=\"dependencies\" edgedefault=\"directed\">" + System.lineSeparator();
+            + "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">\n"
+            + "  <key for=\"node\" id=\"d0\" yfiles.type=\"nodegraphics\"/> \n"
+            + "  <key for=\"edge\" id=\"d1\" yfiles.type=\"edgegraphics\"/> \n"
+            + "<graph id=\"dependencies\" edgedefault=\"directed\">\n";
 
     /**
      * Graphml xml file footer.

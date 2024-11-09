@@ -623,13 +623,11 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
         }
 
         if (!missingArtifacts.isEmpty()) {
-            StringBuilder message = new StringBuilder("required artifacts missing:");
-            message.append(System.lineSeparator());
+            StringBuilder message = new StringBuilder("required artifacts missing:\n");
             for (Artifact missingArtifact : missingArtifacts) {
-                message.append("  ").append(missingArtifact.getId()).append(System.lineSeparator());
+                message.append("  ").append(missingArtifact.getId()).append("\n");
             }
-            message.append(System.lineSeparator());
-            message.append("for the artifact:");
+            message.append("\nfor the artifact:");
 
             throw new ArtifactResolutionException(
                     message.toString(), theProject.getArtifact(), theProject.getRemoteArtifactRepositories());

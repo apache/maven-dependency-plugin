@@ -48,7 +48,7 @@ public class DOTDependencyNodeVisitor extends AbstractSerializingVisitor impleme
     @Override
     public boolean visit(DependencyNode node) {
         if (node.getParent() == null || node.getParent() == node) {
-            writer.write("digraph \"" + node.toNodeString() + "\" { " + System.lineSeparator());
+            writer.write("digraph \"" + node.toNodeString() + "\" { \n");
         }
 
         // Generate "currentNode -> Child" lines

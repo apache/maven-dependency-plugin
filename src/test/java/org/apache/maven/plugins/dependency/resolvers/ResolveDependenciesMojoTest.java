@@ -57,7 +57,7 @@ public class ResolveDependenciesMojoTest extends AbstractDependencyMojoTestCase 
         ResolveDependenciesMojo mojo = newMojo(new DependencyStatusSets());
         mojo.results.setResolvedDependencies(set);
         String output = mojo.getOutput(false, true, false);
-        assertTrue(output.contains("g:a:jar:1.0:test (optional)" + System.lineSeparator()));
+        assertTrue(output.contains("g:a:jar:1.0:test (optional)\n"));
     }
 
     public void doTestDependencyStatusLog(Set<Artifact> artifacts) {
