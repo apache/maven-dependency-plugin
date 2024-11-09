@@ -44,8 +44,8 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.util.graph.visitor.TreeDependencyVisitor;
 
 /**
- * Goal that collect all project dependencies and then lists the repositories used by the build and by the transitive
- * dependencies
+ * Goal that collects all project dependencies and then lists the repositories used by the build and by the transitive
+ * dependencies.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 2.2
@@ -142,15 +142,5 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
 
         remoteProjectRepositories.forEach(
                 repo -> message.append(" * ").append(repo).append(System.lineSeparator()));
-    }
-
-    private Map<RemoteRepository, RemoteRepository> getMirroredRepo(Set<RemoteRepository> repositories) {
-        Map<RemoteRepository, RemoteRepository> mirrorMap = new HashMap<>();
-
-        repositories.stream()
-                .filter(repo -> !repo.getMirroredRepositories().isEmpty())
-                .forEach(repo -> repo.getMirroredRepositories().forEach(mrepo -> mirrorMap.put(mrepo, repo)));
-
-        return mirrorMap;
     }
 }
