@@ -23,14 +23,14 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -57,6 +57,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     /*
      * @see org.apache.maven.plugin.testing.AbstractMojoTestCase#setUp()
      */
+    @Override
     protected void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp("tree", false);
@@ -225,10 +226,11 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      */
     private List<String> runTreeMojo(String outputFile, String format) throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/tree-test/plugin-config.xml");
-        String outputFileName = testDir.getAbsolutePath() + outputFile;
+        Path outputFilePath = Paths.get(testDir.getAbsolutePath() + outputFile);
         TreeMojo mojo = (TreeMojo) lookupMojo("tree", testPom);
+        setVariableValueToObject(mojo, "outputEncoding", "UTF-8");
         setVariableValueToObject(mojo, "outputType", format);
-        setVariableValueToObject(mojo, "outputFile", new File(outputFileName));
+        setVariableValueToObject(mojo, "outputFile", outputFilePath.toFile());
 
         assertNotNull(mojo);
         assertNotNull(mojo.getProject());
@@ -244,14 +246,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
 
         mojo.execute();
 
-        BufferedReader fp1 = new BufferedReader(new FileReader(outputFileName));
-        List<String> contents = new ArrayList<>();
-
-        String line;
-        while ((line = fp1.readLine()) != null) {
-            contents.add(line);
-        }
-        fp1.close();
+        List<String> contents = Files.readAllLines(outputFilePath);
 
         return contents;
     }
