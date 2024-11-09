@@ -25,6 +25,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
@@ -86,7 +87,7 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     /**
      * If the plugin should be silent.
      *
-     * @deprecated to be removed in 4.0; use -Q command line option instead
+     * @deprecated to be removed in 4.0; use -q command line option instead
      * @since 2.0
      */
     @Deprecated
@@ -181,13 +182,15 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
 
     /**
      * @param silent {@link #silent}
-     * @deprecated to be removed in 4.0; no API replacement, use -Q command line option instead
+     * @deprecated to be removed in 4.0; no API replacement, use -q command line option instead
      */
     @Deprecated
     public void setSilent(boolean silent) {
         this.silent = silent;
         if (silent) {
             setLog(new DependencySilentLog());
+        } else if (getLog() instanceof DependencySilentLog) {
+            setLog(new SystemStreamLog());
         }
     }
 }
