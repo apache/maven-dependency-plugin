@@ -56,7 +56,6 @@ public class TestResolveMojo extends AbstractDependencyMojoTestCase {
         assertNotNull(mojo.getProject());
         MavenProject project = mojo.getProject();
 
-        mojo.setSilent(true);
         Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
         Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
         artifacts.addAll(directArtifacts);
