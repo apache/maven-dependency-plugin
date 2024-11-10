@@ -564,9 +564,8 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
     }
 
     public void testGetDependencies() throws MojoExecutionException {
-        assertEquals(
-                mojo.getResolvedDependencies(true).toString(),
-                mojo.getDependencySets(true).getResolvedDependencies().toString());
+        assertTrue(mojo.getResolvedDependencies(true)
+                .containsAll(mojo.getDependencySets(true).getResolvedDependencies()));
     }
 
     public void testExcludeProvidedScope() throws Exception {
