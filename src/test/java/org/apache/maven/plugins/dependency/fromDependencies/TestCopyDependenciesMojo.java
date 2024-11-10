@@ -61,7 +61,6 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         File testPom = new File(getBasedir(), "target/test-classes/unit/copy-dependencies-test/plugin-config.xml");
         mojo = (CopyDependenciesMojo) lookupMojo("copy-dependencies", testPom);
         mojo.outputDirectory = new File(this.testDir, "outputDirectory");
-        // mojo.silent = true;
 
         assertNotNull(mojo);
         assertNotNull(mojo.getProject());
@@ -572,7 +571,6 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeScope = "provided";
-        // mojo.silent = false;
 
         mojo.execute();
 
@@ -590,7 +588,6 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeScope = "system";
-        // mojo.silent = false;
 
         mojo.execute();
 

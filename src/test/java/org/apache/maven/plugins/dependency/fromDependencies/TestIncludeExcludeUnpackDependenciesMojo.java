@@ -51,7 +51,6 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
         File testPom = new File(getBasedir(), "target/test-classes/unit/unpack-dependencies-test/plugin-config.xml");
         mojo = (UnpackDependenciesMojo) lookupMojo("unpack-dependencies", testPom);
         mojo.outputDirectory = new File(this.testDir, "outputDirectory");
-        // mojo.silent = true;
 
         // it needs to get the archivermanager
         // stubFactory.setUnpackableFile( mojo.getArchiverManager() );

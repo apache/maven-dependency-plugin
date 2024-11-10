@@ -69,7 +69,6 @@ public class TestCopyDependenciesMojo2 extends AbstractDependencyMojoTestCase {
         File testPom = new File(getBasedir(), "target/test-classes/unit/copy-dependencies-test/plugin-config.xml");
         mojo = (CopyDependenciesMojo) lookupMojo("copy-dependencies", testPom);
         mojo.outputDirectory = new File(this.testDir, "outputDirectory");
-        // mojo.silent = true;
 
         assertNotNull(mojo);
         assertNotNull(mojo.getProject());

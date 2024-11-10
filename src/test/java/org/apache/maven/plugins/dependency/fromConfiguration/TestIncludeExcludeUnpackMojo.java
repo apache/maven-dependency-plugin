@@ -56,7 +56,6 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
         File testPom = new File(getBasedir(), "target/test-classes/unit/unpack-test/plugin-config.xml");
         mojo = (UnpackMojo) lookupMojo("unpack", testPom);
         mojo.setOutputDirectory(new File(this.testDir, "outputDirectory"));
-        // mojo.silent = true;
 
         // i'm using one file repeatedly to archive so I can test the name
         // programmatically.

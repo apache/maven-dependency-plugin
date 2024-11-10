@@ -56,7 +56,6 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
     public void testEnvironment() throws Exception {
         MavenProject project = mojo.getProject();
 
-        // mojo.silent = true;
         Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
         Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
         artifacts.addAll(directArtifacts);

@@ -67,7 +67,6 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         File testPom = new File(getBasedir(), "target/test-classes/unit/unpack-dependencies-test/plugin-config.xml");
         mojo = (UnpackDependenciesMojo) lookupMojo("unpack-dependencies", testPom);
         mojo.outputDirectory = new File(this.testDir, "outputDirectory");
-        // mojo.silent = true;
 
         // it needs to get the archivermanager
         stubFactory.setUnpackableFile(lookup(ArchiverManager.class));
@@ -161,7 +160,6 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeScope = "provided";
-        // mojo.silent = false;
 
         mojo.execute();
 
@@ -174,7 +172,6 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.getProject().setDependencyArtifacts(new HashSet<>());
         mojo.excludeScope = "system";
-        // mojo.silent = false;
 
         mojo.execute();
 
