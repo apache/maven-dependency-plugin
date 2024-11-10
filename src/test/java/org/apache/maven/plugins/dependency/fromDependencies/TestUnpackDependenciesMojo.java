@@ -20,7 +20,6 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
