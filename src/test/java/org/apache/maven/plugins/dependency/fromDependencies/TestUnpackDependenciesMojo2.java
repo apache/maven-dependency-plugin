@@ -71,7 +71,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.addAll(directArtifacts);
 
         project.setArtifacts(artifacts);
-        project.setDependencyArtifacts(directArtifacts);
         mojo.markersDirectory = new File(this.testDir, "markers");
     }
 
