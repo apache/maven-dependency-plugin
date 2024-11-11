@@ -53,7 +53,7 @@
       <version>2.0.6</version>
     </dependency>
     <!-- MDEP-957 slf4j-simple is unused but should not be reported -->
-    <dependency>
+    <dependency2>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
       <version>2.0.16</version>
