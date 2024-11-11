@@ -35,12 +35,10 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerException;
-import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 
@@ -105,7 +103,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean ignoreAllNonTestScoped;
 
     /**
-     * Output the xml for the missing dependencies (used but not declared).
+     * Output the XML for the missing dependencies (used but not declared).
      *
      * @since 2.0-alpha-5
      */
@@ -214,15 +212,10 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
      * </p>
      *
-     * <p>Certain dependencies that are known to be used and loaded by reflection
-     * are always ignored. This includes {@code org.slf4j:slf4j-simple::}.</p>
-     *
      * @since 2.10
      */
     @Parameter
-    private String[] ignoredUnusedDeclaredDependencies = new String[0];
-
-    private String[] unconditionallyIgnoredDeclaredDependencies = {"org.slf4j:slf4j-simple::"};
+    private String[] ignoredUnusedDeclaredDependencies;
 
     /**
      * List of dependencies that are ignored if they are in not test scope but are only used in test classes.
@@ -241,7 +234,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 3.3.0
      */
-    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    @Parameter
     private String[] ignoredNonTestScopedDependencies;
 
     /**
@@ -261,22 +254,6 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      */
     @Parameter(property = "mdep.analyze.excludedClasses")
     private Set<String> excludedClasses;
-
-    /**
-     * The plexusContainer to look up the {@link ProjectDependencyAnalyzer} implementation depending on the mojo
-     * configuration.
-     */
-    private final PlexusContainer plexusContainer;
-
-    /**
-     * The Maven project to analyze.
-     */
-    private final MavenProject project;
-
-    protected AbstractAnalyzeMojo(PlexusContainer plexusContainer, MavenProject project) {
-        this.plexusContainer = plexusContainer;
-        this.project = project;
-    }
 
     // Mojo methods -----------------------------------------------------------
 
