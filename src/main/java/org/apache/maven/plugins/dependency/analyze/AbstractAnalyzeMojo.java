@@ -120,7 +120,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean ignoreAllNonTestScoped;
 
     /**
-     * Output the xml for the missing dependencies (used but not declared).
+     * Output the XML for the missing dependencies (used but not declared).
      *
      * @since 2.0-alpha-5
      */
@@ -231,7 +231,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 2.10
      */
-    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    @Parameter(defaultValue = "org.slf4j:slf4j-simple::,org.glassfish:javax.json::")
     private String[] ignoredUnusedDeclaredDependencies;
 
     /**
@@ -251,7 +251,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 3.3.0
      */
-    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    @Parameter(defaultValue = "org.slf4j:slf4j-simple::,org.glassfish:javax.json::")
     private String[] ignoredNonTestScopedDependencies;
 
     /**
