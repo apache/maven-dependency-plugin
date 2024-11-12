@@ -226,7 +226,9 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                 outputDirectory,
                 artifact);
         File destFile = new File(destDir, destFileName);
-
+        if (destFile.exists()) {
+            getLog().warn("Overwriting " + destFile);
+        }
         try {
             copyUtil.copyArtifactFile(artifact, destFile);
         } catch (IOException e) {
