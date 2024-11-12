@@ -18,11 +18,6 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,6 +33,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.LegacySupport;
@@ -190,6 +189,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     public void testTreeJsonParsing() throws Exception {
         List<String> contents = runTreeMojo("tree2.json", "json");
 
+        System.setProperty("jakarta.json.provider", "org.glassfish.json.JsonProviderImpl");
         try (JsonReader reader = Json.createReader(new StringReader(String.join("\n", contents)))) {
             JsonObject root = reader.readObject();
 
