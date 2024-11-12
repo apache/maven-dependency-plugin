@@ -72,15 +72,9 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     @Component
     private CopyUtil copyUtil;
 
-    /**
-     *
-     */
     @Component
     private ArtifactInstaller installer;
 
-    /**
-     *
-     */
     @Component(role = ArtifactRepositoryLayout.class)
     private Map<String, ArtifactRepositoryLayout> repositoryLayouts;
 
@@ -331,7 +325,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     }
 
     /**
-     * @param copyPom - true if the pom of each artifact must be copied
+     * @param copyPom true if the pom of each artifact must be copied
      */
     public void setCopyPom(boolean copyPom) {
         this.copyPom = copyPom;
