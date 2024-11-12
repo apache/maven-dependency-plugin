@@ -45,9 +45,10 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.util.artifact.SubArtifact;
 
 /**
- * Goal that copies the project's dependency files from the repository to a directory.
- * Typically these are jar files. The default location to copy to is target/dependencies.
- *
+ * Goal that copies the files for a project's dependencies from the repository to a directory.
+ * The default location to copy to is target/dependencies.
+ * Since all files are copied to the same directory by default, a dependency that
+ * has the same file name as another dependency will be overwritten.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 1.0
