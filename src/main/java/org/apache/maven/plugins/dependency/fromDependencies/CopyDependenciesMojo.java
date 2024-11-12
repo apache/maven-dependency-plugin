@@ -141,10 +141,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     }
 
     /**
-     * install the artifact and the corresponding pom if copyPoms=true
-     *
-     * @param artifact
-     * @param buildingRequest
+     * Install the artifact and the corresponding pom if copyPoms=true.
      */
     private void installArtifact(Artifact artifact, ProjectBuildingRequest buildingRequest) {
         try {
