@@ -27,13 +27,11 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.DefaultArtifactFactory;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.handler.manager.DefaultArtifactHandlerManager;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
-import org.apache.maven.plugin.testing.stubs.StubArtifactRepository;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 
@@ -42,8 +40,6 @@ import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFacto
  */
 public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase {
     Set<Artifact> artifacts = new HashSet<>();
-
-    ArtifactRepository artifactRepository;
 
     Log log = new SilentLog();
 
@@ -58,8 +54,6 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
 
         DefaultArtifactFactory artifactFactory = new DefaultArtifactFactory();
         this.setVariableValueToObject(artifactFactory, "artifactHandlerManager", artifactHandlerManager);
-
-        artifactRepository = new StubArtifactRepository(null);
 
         DependencyArtifactStubFactory factory = new DependencyArtifactStubFactory(null, false);
         artifacts = factory.getMixedArtifacts();
