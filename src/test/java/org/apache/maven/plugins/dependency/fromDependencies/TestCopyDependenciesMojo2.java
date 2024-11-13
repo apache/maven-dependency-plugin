@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.factory.DefaultArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadata;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
@@ -53,6 +54,7 @@ public class TestCopyDependenciesMojo2 extends AbstractDependencyMojoTestCase {
 
     private CopyDependenciesMojo mojo;
 
+    @Override
     protected void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp("copy-dependencies", true);
@@ -242,7 +244,7 @@ public class TestCopyDependenciesMojo2 extends AbstractDependencyMojoTestCase {
         mojo.useRepositoryLayout = true;
         mojo.execute();
 
-        ArtifactFactory artifactFactory = lookup(ArtifactFactory.class);
+        DefaultArtifactFactory artifactFactory = new DefaultArtifactFactory();
 
         File outputDirectory = mojo.outputDirectory;
         ArtifactRepository targetRepository = new MavenArtifactRepository(
