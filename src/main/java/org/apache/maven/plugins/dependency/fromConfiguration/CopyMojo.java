@@ -20,7 +20,9 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -95,6 +97,19 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
 
         List<ArtifactItem> theArtifactItems = getProcessedArtifactItems(
                 new ProcessArtifactItemsRequest(stripVersion, prependGroupId, useBaseVersion, stripClassifier));
+        if (!prependGroupId) {
+            Map<String, Integer> copies = new HashMap<>();
+            for (ArtifactItem artifactItem : theArtifactItems) {
+                int numCopies = copies.getOrDefault(artifactItem.getArtifactId(), 0);
+                copies.put(artifactItem.getArtifactId(), numCopies + 1);
+            }
+            for (Map.Entry<String, Integer> entry : copies.entrySet()) {
+                if (entry.getValue() > 1) {
+                    getLog().warn("Multiple files with the name " + entry.getKey() + "; unpacking is incomplete.");
+                }
+            }
+        }
+
         for (ArtifactItem artifactItem : theArtifactItems) {
             if (artifactItem.isNeedsProcessing()) {
                 copyArtifact(artifactItem);
