@@ -33,7 +33,7 @@
   <artifactId>test</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>Test</name>
+  <name>Test with conflicts</name>
   <description>
     Test dependency:copy-dependencies with conflicting artifact IDs
   </description>
@@ -73,43 +73,6 @@
             <configuration>
               <copyPom>true</copyPom>
               <outputDirectory>${project.build.directory}/it/copy-dep-test-1</outputDirectory>
-            </configuration>
-          </execution>
-          <execution>
-            <id>test-2</id>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <!-- MDEP-235 -->
-              <excludeClassifiers>
-                sources,
-                javadoc
-              </excludeClassifiers>
-              <outputDirectory>${project.build.directory}/it/copy-dep-test-2</outputDirectory>
-            </configuration>
-          </execution>
-          <execution>
-            <id>test-3</id>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <includeClassifiers>sources</includeClassifiers>
-              <outputDirectory>${project.build.directory}/it/copy-dep-test-3</outputDirectory>
-            </configuration>
-          </execution>
-          <execution>
-            <id>repositoryLayout</id>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/it/repositoryLayout</outputDirectory>
-              <useRepositoryLayout>true</useRepositoryLayout>
-              <copyPom>true</copyPom>
-              <addParentPoms>true</addParentPoms>
-              <excludeArtifactIds>maven-parent</excludeArtifactIds>
             </configuration>
           </execution>
         </executions>
