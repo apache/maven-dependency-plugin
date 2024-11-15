@@ -111,8 +111,10 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         if (!useRepositoryLayout) {
             Map<String, Integer> copies = new HashMap<>();
             for (Artifact artifactItem : artifacts) {
-                int numCopies = copies.getOrDefault(artifactItem.getArtifactId(), 0);
-                copies.put(artifactItem.getArtifactId(), numCopies + 1);
+                String destFileName = DependencyUtil.getFormattedFileName(
+                        artifactItem, stripVersion, prependGroupId, useBaseVersion, stripClassifier);
+                int numCopies = copies.getOrDefault(destFileName, 0);
+                copies.put(destFileName, numCopies + 1);
             }
             for (Map.Entry<String, Integer> entry : copies.entrySet()) {
                 if (entry.getValue() > 1) {
