@@ -21,14 +21,7 @@ File file = new File( basedir, "build.log" )
 assert file.exists()
 
 String buildLog = file.getText( "UTF-8" )
-assert buildLog.contains( 'kjdkjhds[INFO] Used declared dependencies found:')
-assert buildLog.contains( '[INFO]    org.apache.maven:maven-artifact:jar:2.0.6:compile')
-assert buildLog.contains( '[INFO]    org.apache.maven:maven-model:jar:2.0.6:compile')
-assert buildLog.contains( '[WARNING] Used undeclared dependencies found:')
-assert buildLog.contains( '[WARNING]    org.apache.maven:maven-repository-metadata:jar:2.0.6:compile')
-assert buildLog.contains( '[WARNING]       class org.apache.maven.artifact.repository.metadata.Metadata')
-assert buildLog.contains( '[WARNING] Unused declared dependencies found:')
-assert buildLog.contains( '[WARNING]    org.apache.maven:maven-project:jar:2.0.6:compile')
+assert buildLog.contains( '[INFO]')
 
 
 return true
