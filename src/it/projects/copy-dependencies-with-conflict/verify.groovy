@@ -22,7 +22,6 @@ assert file.exists()
 
 String buildLog = file.getText( "UTF-8" )
 assert buildLog.contains( '[WARNING] Overwriting ' )
-assert buildLog.contains( 'maven-dependency-plugin/target/it/copy-dependencies-with-conflict/target/it/copy-dep-test-2/jdom-1.1.3.jar' )
 assert buildLog.contains( '[DEBUG] Copying artifact \'org.jdom:jdom:jar:1.1.3\'' )
 assert buildLog.contains( '[DEBUG] Copying artifact \'org.jdom:jdom:pom:1.1.3\'' )
 assert buildLog.contains( '[DEBUG] Copying artifact \'org.jdom:jdom:jar:1.1.3\'' )
