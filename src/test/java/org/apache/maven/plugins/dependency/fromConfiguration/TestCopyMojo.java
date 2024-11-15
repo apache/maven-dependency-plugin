@@ -30,7 +30,6 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;

@@ -99,7 +99,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through calling copyArtifact.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      * @see #getDependencySets(boolean, boolean)
      * @see #copyArtifact(Artifact, boolean, boolean, boolean, boolean)
      */
@@ -109,17 +109,16 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         Set<Artifact> artifacts = dss.getResolvedDependencies();
 
         if (!useRepositoryLayout) {
-            getLog().info("Checking " + artifacts.size() + " artifact items");
             Map<String, Integer> copies = new HashMap<>();
             for (Artifact artifactItem : artifacts) {
-                getLog().info("Found " + artifactItem.getArtifactId());
                 int numCopies = copies.getOrDefault(artifactItem.getArtifactId(), 0);
                 copies.put(artifactItem.getArtifactId(), numCopies + 1);
             }
             for (Map.Entry<String, Integer> entry : copies.entrySet()) {
-                getLog().info("File with the name " + entry.getKey() + "; " + entry.getValue() + " copies");
                 if (entry.getValue() > 1) {
-                    getLog().warn("Multiple files with the name " + entry.getKey() + "; unpacking is incomplete.");
+                    getLog().warn("Multiple files with the name " + entry.getKey() + " in the dependency tree.");
+                    getLog().warn(
+                                    "Not all jars will be available. Consider using prependGroupId, useSubDirectoryPerArtifact, or useRepositoryLayout.");
                 }
             }
 
@@ -205,7 +204,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      * @param artifact representing the object to be copied.
      * @param removeVersion specifies if the version should be removed from the file name when copying.
      * @param prependGroupId specifies if the groupId should be prepend to the file while copying.
-     * @param theUseBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
+     * @param useBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
      * @param removeClassifier specifies if the classifier should be removed from the file name when copying.
      * @throws MojoExecutionException with a message if an error occurs.
      * @see CopyUtil#copyArtifactFile(Artifact, File)
@@ -215,12 +214,12 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
             Artifact artifact,
             boolean removeVersion,
             boolean prependGroupId,
-            boolean theUseBaseVersion,
+            boolean useBaseVersion,
             boolean removeClassifier)
             throws MojoExecutionException {
 
         String destFileName = DependencyUtil.getFormattedFileName(
-                artifact, removeVersion, prependGroupId, theUseBaseVersion, removeClassifier);
+                artifact, removeVersion, prependGroupId, useBaseVersion, removeClassifier);
 
         File destDir = DependencyUtil.getFormattedOutputDirectory(
                 useSubDirectoryPerScope,
