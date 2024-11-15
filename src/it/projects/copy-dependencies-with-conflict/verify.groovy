@@ -21,7 +21,7 @@ File file = new File( basedir, "build.log" )
 assert file.exists()
 
 String buildLog = file.getText( "UTF-8" )
-assert buildLog.contains( '[INFO]')
-
+assert buildLog.contains( '[WARNING] Overwriting ')
+assert buildLog.contains( 'maven-dependency-plugin/target/it/copy-dependencies-with-conflict/target/it/copy-dep-test-1/jdom-1.1.3.jar')
 
 return true
