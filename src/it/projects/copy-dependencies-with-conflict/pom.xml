@@ -48,7 +48,7 @@
     <dependency>
       <groupId>dev.ikm.jpms</groupId>
       <artifactId>guava</artifactId>
-      <version>33.3.0-jre</version>
+      <version>33.3.0-jre-r3</version>
     </dependency>
   </dependencies>
 
