@@ -270,7 +270,6 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
             }
             sb.append(file);
         } else {
-            // TODO: add param for prepending groupId and version.
             sb.append(prefix);
             sb.append(File.separator);
             sb.append(DependencyUtil.getFormattedFileName(
