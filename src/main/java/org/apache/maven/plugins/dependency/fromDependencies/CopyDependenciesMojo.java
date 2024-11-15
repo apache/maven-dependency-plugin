@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -108,6 +109,20 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         Set<Artifact> artifacts = dss.getResolvedDependencies();
 
         if (!useRepositoryLayout) {
+            getLog().info("Checking " + artifacts.size() + " artifact items");
+            Map<String, Integer> copies = new HashMap<>();
+            for (Artifact artifactItem : artifacts) {
+                getLog().info("Found " + artifactItem.getArtifactId());
+                int numCopies = copies.getOrDefault(artifactItem.getArtifactId(), 0);
+                copies.put(artifactItem.getArtifactId(), numCopies + 1);
+            }
+            for (Map.Entry<String, Integer> entry : copies.entrySet()) {
+                getLog().info("File with the name " + entry.getKey() + "; " + entry.getValue() + " copies");
+                if (entry.getValue() > 1) {
+                    getLog().warn("Multiple files with the name " + entry.getKey() + "; unpacking is incomplete.");
+                }
+            }
+
             for (Artifact artifact : artifacts) {
                 copyArtifact(
                         artifact, isStripVersion(), this.prependGroupId, this.useBaseVersion, this.stripClassifier);
@@ -126,11 +141,8 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
 
         if (isCopyPom() && !useRepositoryLayout) {
             copyPoms(getOutputDirectory(), artifacts, this.stripVersion);
-            copyPoms(getOutputDirectory(), skippedArtifacts, this.stripVersion, this.stripClassifier); // Artifacts
-            // that already
-            // exist may
-            // not yet have
-            // poms
+            copyPoms(getOutputDirectory(), skippedArtifacts, this.stripVersion, this.stripClassifier);
+            // Artifacts that already exist may not yet have poms
         }
     }
 

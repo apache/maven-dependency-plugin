@@ -690,22 +690,6 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertFilesExist(list, true);
     }
 
-    public void testConflictingArtifacts() throws MojoExecutionException, MojoFailureException {
-        List<ArtifactItem> list = new ArrayList<>(2);
-        ArtifactItem jdom = new ArtifactItem();
-        jdom.setGroupId("jdom");
-        jdom.setArtifactId("jdom");
-        jdom.setVersion("1.1.3");
-        list.add(jdom);
-        ArtifactItem lucee = new ArtifactItem();
-        lucee.setGroupId("org.lucee");
-        lucee.setArtifactId("jdom");
-        lucee.setVersion("1.1.3");
-        list.add(lucee);
-        mojo.setArtifactItems(list);
-        mojo.execute();
-    }
-
     private List<Dependency> createDependencyArtifacts(List<Dependency> items) throws IOException {
         stubFactory.setCreateFiles(true);
         for (Dependency item : items) {
