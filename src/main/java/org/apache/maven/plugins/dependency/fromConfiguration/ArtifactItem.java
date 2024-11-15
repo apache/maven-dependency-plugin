@@ -36,8 +36,7 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
  */
 public class ArtifactItem implements DependableCoordinate {
     /**
-     * Group Id of Artifact
-     *
+     * Group ID of Artifact
      */
     @Parameter(required = true)
     private String groupId;
@@ -56,7 +55,6 @@ public class ArtifactItem implements DependableCoordinate {
 
     /**
      * Type of Artifact (War,Jar,etc)
-     *
      */
     @Parameter(required = true)
     private String type = "jar";
@@ -90,9 +88,6 @@ public class ArtifactItem implements DependableCoordinate {
     @Parameter
     private String encoding;
 
-    /**
-     *
-     */
     private boolean needsProcessing;
 
     /**
@@ -147,6 +142,7 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * @return Returns the artifactId.
      */
+    @Override
     public String getArtifactId() {
         return artifactId;
     }
@@ -161,6 +157,7 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * @return Returns the groupId.
      */
+    @Override
     public String getGroupId() {
         return groupId;
     }
@@ -175,6 +172,7 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * @return Returns the type.
      */
+    @Override
     public String getType() {
         return type;
     }
@@ -189,6 +187,7 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * @return Returns the version.
      */
+    @Override
     public String getVersion() {
         return version;
     }
@@ -210,6 +209,7 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * @return Classifier.
      */
+    @Override
     public String getClassifier() {
         return classifier;
     }
