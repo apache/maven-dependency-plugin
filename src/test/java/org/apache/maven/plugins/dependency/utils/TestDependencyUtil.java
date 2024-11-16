@@ -325,7 +325,7 @@ class TestDependencyUtil {
         String[] tokens = DependencyUtil.tokenizer(" alpha,bravo, charlie , delta kappa, theta");
         String[] expected = new String[] {"alpha", "bravo", "charlie", "delta kappa", "theta"};
         // easier to see in the JUnit reports
-        assertEquals(StringUtils.join(expected, ", "), StringUtils.join(tokens, ", "));
+        assertEquals(String.join(", ", expected), String.join(", ", tokens));
         assertEquals(expected.length, tokens.length);
 
         tokens = DependencyUtil.tokenizer(" \r\n a, \t \n \r b \t \n \r");
