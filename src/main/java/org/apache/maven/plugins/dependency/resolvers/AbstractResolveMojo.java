@@ -22,6 +22,13 @@ import java.io.File;
 
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.fromDependencies.AbstractDependencyFilterMojo;
+import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
+import org.apache.maven.shared.artifact.filter.collection.ClassifierFilter;
+import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
+import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
+import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
+import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
@@ -52,4 +59,38 @@ public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
      */
     @Parameter(property = "excludeReactor", defaultValue = "true")
     protected boolean excludeReactor;
+
+    /**
+     * @return {@link FilterArtifacts}
+     */
+    protected FilterArtifacts getArtifactsFilter() {
+        final FilterArtifacts filter = new FilterArtifacts();
+
+        if (excludeReactor) {
+
+            filter.addFilter(new ExcludeReactorProjectsArtifactFilter(reactorProjects, getLog()));
+        }
+
+        filter.addFilter(new ScopeFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeScope),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeScope)));
+
+        filter.addFilter(new TypeFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeTypes),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeTypes)));
+
+        filter.addFilter(new ClassifierFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeClassifiers),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeClassifiers)));
+
+        filter.addFilter(new GroupIdFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeGroupIds),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeGroupIds)));
+
+        filter.addFilter(new ArtifactIdFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
+
+        return filter;
+    }
 }
