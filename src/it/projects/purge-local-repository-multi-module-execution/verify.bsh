@@ -22,9 +22,7 @@ import java.io.File;
 void checkFilePurged( String artifactId )
 {
     File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/" + artifactId + "/1.0/" + artifactId + "-1.0.jar" );
-    
-    System.out.println( "Checking for absence of dummy JAR " + purgedJar );
-    
+        
     if ( purgedJar.exists() )
     {
         throw new Exception( "JAR was not purged: " + purgedJar );

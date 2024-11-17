@@ -19,8 +19,6 @@
 
 import java.io.*;
 
-System.out.println( "Checking for presence of purged dependency directories" );
-
 File depJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository/1.0/purge-local-repository-1.0.jar" );
 
 if ( !depJar.exists() )
