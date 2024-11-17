@@ -480,7 +480,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
-     * @param theMarkersDirectory The markersDirectory to set.
+     * @param theMarkersDirectory the markersDirectory to set
      */
     public void setMarkersDirectory(File theMarkersDirectory) {
         this.markersDirectory = theMarkersDirectory;
@@ -489,14 +489,14 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     // TODO: Set marker files.
 
     /**
-     * @return true, if the groupId should be prepended to the filename.
+     * @return true, if the groupId should be prepended to the filename
      */
     public boolean isPrependGroupId() {
         return prependGroupId;
     }
 
     /**
-     * @param prependGroupId - true if the groupId must be prepended during the copy.
+     * @param prependGroupId true if the groupId must be prepended during the copy
      */
     public void setPrependGroupId(boolean prependGroupId) {
         this.prependGroupId = prependGroupId;
