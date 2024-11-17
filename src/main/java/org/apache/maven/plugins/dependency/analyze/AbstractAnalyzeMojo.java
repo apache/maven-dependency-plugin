@@ -29,14 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.StringUtils;
 import org.apache.maven.project.MavenProject;
@@ -62,13 +61,13 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * The plexusContainer to look-up the right {@link ProjectDependencyAnalyzer} implementation depending on the mojo
      * configuration.
      */
-    @Inject
+    @Named
     private PlexusContainer plexusContainer;
 
     /**
      * The Maven project to analyze.
      */
-    @Inject
+    @Named
     private MavenProject project;
 
     /**
