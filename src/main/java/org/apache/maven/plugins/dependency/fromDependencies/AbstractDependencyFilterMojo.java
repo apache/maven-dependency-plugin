@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
@@ -61,13 +61,13 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
  */
 public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMojo {
 
-    @Inject
+    @Named
     private ResolverUtil resolverUtil;
 
-    @Inject
+    @Named
     private DependencyResolver dependencyResolver;
 
-    @Inject
+    @Named
     private RepositoryManager repositoryManager;
 
     /**
@@ -240,10 +240,10 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     @Parameter(property = "mdep.prependGroupId", defaultValue = "false")
     protected boolean prependGroupId = false;
 
-    @Inject
+    @Named
     private ProjectBuilder projectBuilder;
 
-    @Inject
+    @Named
     private ArtifactHandlerManager artifactHandlerManager;
 
     /**
