@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.analyze;
 
+import javax.inject.Named;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -33,7 +35,6 @@ import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -51,10 +52,7 @@ import org.apache.maven.project.MavenProject;
 public class AnalyzeDepMgt extends AbstractMojo {
     // fields -----------------------------------------------------------------
 
-    /**
-     *
-     */
-    @Component
+    @Named
     private MavenProject project;
 
     /**
@@ -103,7 +101,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
     /**
      * Does the work of checking the DependencyManagement Section.
      *
-     * @return true if errors are found.
+     * @return true if errors are found
      * @throws MojoExecutionException
      */
     private boolean checkDependencyManagement() throws MojoExecutionException {
@@ -169,8 +167,8 @@ public class AnalyzeDepMgt extends AbstractMojo {
     /**
      * Returns a map of the exclusions using the Dependency ManagementKey as the keyset.
      *
-     * @param exclusionList to be added to the map.
-     * @return a map of the exclusions using the Dependency ManagementKey as the keyset.
+     * @param exclusionList to be added to the map
+     * @return a map of the exclusions using the Dependency ManagementKey as the keyset
      */
     public Map<String, Exclusion> addExclusions(List<Exclusion> exclusionList) {
         if (exclusionList != null) {
@@ -183,9 +181,9 @@ public class AnalyzeDepMgt extends AbstractMojo {
      * Returns a List of the artifacts that should have been excluded, but were found in the dependency tree.
      *
      * @param exclusions a map of the DependencyManagement exclusions, with the ManagementKey as the key and Dependency
-     *            as the value.
-     * @param allDependencyArtifacts resolved artifacts to be compared.
-     * @return list of artifacts that should have been excluded.
+     *            as the value
+     * @param allDependencyArtifacts resolved artifacts to be compared
+     * @return list of artifacts that should have been excluded
      */
     public List<Artifact> getExclusionErrors(Map<String, Exclusion> exclusions, Set<Artifact> allDependencyArtifacts) {
         return allDependencyArtifacts.stream()
@@ -195,7 +193,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
 
     /**
      * @param artifact {@link Artifact}
-     * @return The resulting GA.
+     * @return the resulting GA
      */
     public String getExclusionKey(Artifact artifact) {
         return artifact.getGroupId() + ":" + artifact.getArtifactId();
@@ -203,7 +201,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
 
     /**
      * @param ex The exclusion key.
-     * @return The resulting combination of groupId+artifactId.
+     * @return the resulting combination of groupId+artifactId
      */
     public String getExclusionKey(Exclusion ex) {
         return ex.getGroupId() + ":" + ex.getArtifactId();
