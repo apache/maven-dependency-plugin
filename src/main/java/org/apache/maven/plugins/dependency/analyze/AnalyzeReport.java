@@ -18,10 +18,10 @@
  */
 package org.apache.maven.plugins.dependency.analyze;
 
+import javax.inject.Named;
+
 import java.util.Locale;
 import java.util.Set;
-
-import javax.inject.Named;
 
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;

@@ -18,13 +18,13 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
+import javax.inject.Named;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-
-import javax.inject.Named;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;

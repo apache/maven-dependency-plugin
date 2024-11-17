@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.analyze;
 
+import javax.inject.Named;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -25,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.inject.Named;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
