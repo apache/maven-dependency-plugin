@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.analyze;
 
+import javax.inject.Named;
+
 import java.io.File;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -28,8 +30,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.inject.Named;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
