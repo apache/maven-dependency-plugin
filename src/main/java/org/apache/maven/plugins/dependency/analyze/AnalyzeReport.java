@@ -21,7 +21,8 @@ package org.apache.maven.plugins.dependency.analyze;
 import java.util.Locale;
 import java.util.Set;
 
-import org.apache.maven.plugins.annotations.Component;
+import javax.inject.Named;
+
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -48,7 +49,7 @@ public class AnalyzeReport extends AbstractMavenReport {
     /**
      * The Maven project dependency analyzer to use.
      */
-    @Component
+    @Named
     private ProjectDependencyAnalyzer analyzer;
 
     /**
@@ -77,7 +78,7 @@ public class AnalyzeReport extends AbstractMavenReport {
     private boolean skip;
 
     /**
-     * List Excluded classes patterns from analyze. Java regular expression pattern is applied to full class name.
+     * List excluded classes patterns from analyze. Java regular expression pattern is applied to full class name.
      *
      * @since 3.7.0
      */
@@ -87,7 +88,7 @@ public class AnalyzeReport extends AbstractMavenReport {
     /**
      * Internationalization component
      */
-    @Component
+    @Named
     private I18N i18n;
 
     // Mojo methods -----------------------------------------------------------
@@ -142,11 +143,13 @@ public class AnalyzeReport extends AbstractMavenReport {
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getName(Locale locale) {
         return getI18nString(locale, "name");
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getDescription(Locale locale) {
         return getI18nString(locale, "description");
     }
