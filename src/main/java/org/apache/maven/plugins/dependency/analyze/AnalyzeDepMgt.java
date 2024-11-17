@@ -238,9 +238,9 @@ public class AnalyzeDepMgt extends AbstractMojo {
      * This function displays the log to the screen showing the versions and information about the artifacts that don't
      * match.
      *
-     * @param dependencyArtifact the artifact that was resolved.
-     * @param dependencyFromDepMgt the dependency listed in the DependencyManagement section.
-     * @throws MojoExecutionException in case of errors.
+     * @param dependencyArtifact the artifact that was resolved
+     * @param dependencyFromDepMgt the dependency listed in the DependencyManagement section
+     * @throws MojoExecutionException in case of errors
      */
     public void logMismatch(Artifact dependencyArtifact, Dependency dependencyFromDepMgt)
             throws MojoExecutionException {
@@ -285,13 +285,6 @@ public class AnalyzeDepMgt extends AbstractMojo {
      */
     protected final MavenProject getProject() {
         return this.project;
-    }
-
-    /**
-     * @param theProject the project to set
-     */
-    public void setProject(MavenProject theProject) {
-        this.project = theProject;
     }
 
     /**
