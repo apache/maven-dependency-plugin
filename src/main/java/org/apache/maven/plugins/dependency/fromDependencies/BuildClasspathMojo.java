@@ -35,6 +35,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.inject.Named;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -161,10 +163,10 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     /**
      * Maven ProjectHelper
      */
-    @Component
+    @Named
     private MavenProjectHelper projectHelper;
 
-    @Component
+    @Named
     private RepositoryManager repositoryManager;
 
     /**

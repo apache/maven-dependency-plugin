@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Named;
+
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
@@ -66,18 +68,12 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     @Parameter(property = "mdep.copyPom", defaultValue = "false")
     protected boolean copyPom;
 
-    @Component
+    @Named
     private CopyUtil copyUtil;
 
-    /**
-     *
-     */
-    @Component
+    @Named
     private ArtifactInstaller installer;
 
-    /**
-     *
-     */
     @Component(role = ArtifactRepositoryLayout.class)
     private Map<String, ArtifactRepositoryLayout> repositoryLayouts;
 

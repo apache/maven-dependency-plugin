@@ -20,6 +20,8 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 
 import java.io.File;
 
+import javax.inject.Named;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -50,7 +52,7 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
 // CHECKSTYLE_ON: LineLength
 public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
 
-    @Component
+    @Named
     private UnpackUtil unpackUtil;
 
     /**
