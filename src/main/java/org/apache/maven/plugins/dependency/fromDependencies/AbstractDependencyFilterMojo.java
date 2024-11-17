@@ -24,11 +24,12 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javax.inject.Inject;
+
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
@@ -60,13 +61,13 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
  */
 public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMojo {
 
-    @Component
+    @Inject
     private ResolverUtil resolverUtil;
 
-    @Component
+    @Inject
     private DependencyResolver dependencyResolver;
 
-    @Component
+    @Inject
     private RepositoryManager repositoryManager;
 
     /**
@@ -239,10 +240,10 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     @Parameter(property = "mdep.prependGroupId", defaultValue = "false")
     protected boolean prependGroupId = false;
 
-    @Component
+    @Inject
     private ProjectBuilder projectBuilder;
 
-    @Component
+    @Inject
     private ArtifactHandlerManager artifactHandlerManager;
 
     /**
