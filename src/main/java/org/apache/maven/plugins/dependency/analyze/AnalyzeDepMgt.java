@@ -18,7 +18,7 @@
  */
 package org.apache.maven.plugins.dependency.analyze;
 
-import javax.inject.Named;
+import javax.inject.Inject;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,7 +52,6 @@ import org.apache.maven.project.MavenProject;
 public class AnalyzeDepMgt extends AbstractMojo {
     // fields -----------------------------------------------------------------
 
-    @Named
     private MavenProject project;
 
     /**
@@ -74,6 +73,11 @@ public class AnalyzeDepMgt extends AbstractMojo {
      */
     @Parameter(property = "mdep.analyze.skip", defaultValue = "false")
     private boolean skip;
+
+    @Inject
+    public AnalyzeDepMgt(MavenProject project) {
+        this.project = project;
+    }
 
     // Mojo methods -----------------------------------------------------------
 
