@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -53,8 +55,12 @@ import org.eclipse.aether.util.graph.visitor.TreeDependencyVisitor;
 @Mojo(name = "list-repositories", threadSafe = true)
 public class ListRepositoriesMojo extends AbstractDependencyMojo {
 
-    @Component
     private RepositorySystem repositorySystem;
+
+    @Inject
+    public ListRepositoriesMojo(RepositorySystem repositorySystem) {
+        this.repositorySystem = repositorySystem;
+    }
 
     /**
      * Displays a list of the repositories used by this build.
