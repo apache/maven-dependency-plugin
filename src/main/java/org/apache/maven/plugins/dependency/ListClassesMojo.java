@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
@@ -28,7 +30,6 @@ import java.util.jar.JarFile;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.ParamArtifact;
@@ -45,10 +46,14 @@ import org.eclipse.aether.resolution.DependencyResolutionException;
 @Mojo(name = "list-classes", requiresProject = false, threadSafe = true)
 public class ListClassesMojo extends AbstractMojo {
 
-    @Component
     private ResolverUtil resolverUtil;
 
     private ParamArtifact paramArtifact = new ParamArtifact();
+
+    @Inject
+    public ListClassesMojo(ResolverUtil resolverUtil) {
+        this.resolverUtil = resolverUtil;
+    }
 
     /**
      * The group ID of the artifact to download. Ignored if {@code artifact} is used.
