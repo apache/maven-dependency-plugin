@@ -18,13 +18,14 @@
  */
 package org.apache.maven.plugins.dependency;
 
+import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.project.MavenProject;
@@ -39,11 +40,12 @@ import org.apache.maven.project.MavenProject;
 @Mojo(name = "display-ancestors", threadSafe = true, requiresProject = true, defaultPhase = LifecyclePhase.VALIDATE)
 public class DisplayAncestorsMojo extends AbstractMojo {
 
-    /**
-     * POM
-     */
-    @Component
     private MavenProject project;
+
+    @Inject
+    public DisplayAncestorsMojo(MavenProject project) {
+        this.project = project;
+    }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
