@@ -459,18 +459,6 @@ under the License.
         <groupId>org.eclipse.sisu</groupId>
         <artifactId>sisu-maven-plugin</artifactId>
       </plugin>
-      <plugin>
-        <groupId>org.eclipse.sisu</groupId>
-        <artifactId>sisu-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>generate-index</id>
-            <goals>
-              <goal>main-index</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
