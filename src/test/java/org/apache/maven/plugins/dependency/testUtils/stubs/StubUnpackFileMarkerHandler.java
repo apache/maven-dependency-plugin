@@ -20,8 +20,8 @@ package org.apache.maven.plugins.dependency.testUtils.stubs;
 
 import java.io.File;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
-import org.apache.maven.plugins.dependency.utils.StringUtils;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 
 public class StubUnpackFileMarkerHandler extends UnpackFileMarkerHandler {
