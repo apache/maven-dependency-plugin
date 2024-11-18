@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -266,7 +267,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
                 ProjectBuildingRequest projectBuildingRequest = session.getProjectBuildingRequest();
                 File localBasedir = repositoryManager.getLocalRepositoryBasedir(projectBuildingRequest);
 
-                file = file.replace(localBasedir.getAbsolutePath(), localRepoProperty);
+                file = StringUtils.replace(file, localBasedir.getAbsolutePath(), localRepoProperty);
             }
             sb.append(file);
         } else {

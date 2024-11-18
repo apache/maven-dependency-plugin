@@ -111,7 +111,6 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
                 Arrays.asList("testGroupId:release:jar:1.0:compile", "testGroupId:snapshot:jar:2.0-SNAPSHOT:compile");
 
         assertTrue(expectedNodes.containsAll(actualNodes));
-        ;
     }
 
     /**
