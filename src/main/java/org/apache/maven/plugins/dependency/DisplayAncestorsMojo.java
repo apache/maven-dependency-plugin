@@ -40,9 +40,6 @@ import org.apache.maven.project.MavenProject;
 @Mojo(name = "display-ancestors", threadSafe = true, requiresProject = true, defaultPhase = LifecyclePhase.VALIDATE)
 public class DisplayAncestorsMojo extends AbstractMojo {
 
-    /**
-     * POM
-     */
     private MavenProject project;
 
     @Inject
