@@ -178,6 +178,11 @@ under the License.
       <artifactId>plexus-archiver</artifactId>
       <version>${plexus-archiver.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.eclipse.sisu</groupId>
+      <artifactId>org.eclipse.sisu.plexus</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <!-- MNG-6607: needs to be overriden for commons-compress otherwise it will appear earlier in the tree -->
     <dependency>
       <groupId>org.apache.commons</groupId>
