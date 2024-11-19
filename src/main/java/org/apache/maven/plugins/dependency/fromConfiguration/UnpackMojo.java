@@ -18,13 +18,14 @@
  */
 package org.apache.maven.plugins.dependency.fromConfiguration;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -44,7 +45,6 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
 @Mojo(name = "unpack", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresProject = false, threadSafe = true)
 public class UnpackMojo extends AbstractFromConfigurationMojo {
 
-    @Component
     private UnpackUtil unpackUtil;
 
     /**
@@ -97,6 +97,11 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     @SuppressWarnings("unused") // marker-field, setArtifact(String) does the magic
     @Parameter(property = "artifact")
     private String artifact;
+
+    @Inject
+    public UnpackMojo(UnpackUtil unpackUtil) {
+        this.unpackUtil = unpackUtil;
+    }
 
     /**
      * Main entry into mojo. This method gets the ArtifactItems and iterates through each one passing it to
