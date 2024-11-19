@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.exclusion;
 
+import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,7 +34,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -57,14 +58,18 @@ import static org.apache.maven.plugins.dependency.exclusion.Coordinates.coordina
 @Mojo(name = "analyze-exclusions", requiresDependencyCollection = ResolutionScope.TEST, threadSafe = true)
 public class AnalyzeExclusionsMojo extends AbstractMojo {
 
-    @Component
     private MavenProject project;
 
-    @Component
     private ResolverUtil resolverUtil;
 
-    @Component
     private MavenSession session;
+
+    @Inject
+    public AnalyzeExclusionsMojo(MavenProject project, ResolverUtil resolverUtil, MavenSession session) {
+        this.project = project;
+        this.resolverUtil = resolverUtil;
+        this.session = session;
+    }
 
     /**
      * Whether to fail the build if invalid exclusions is found.
