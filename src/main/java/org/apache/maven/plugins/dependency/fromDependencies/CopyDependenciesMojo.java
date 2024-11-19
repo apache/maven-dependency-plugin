@@ -23,12 +23,10 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -71,14 +69,10 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
 
     private ArtifactInstaller installer;
 
-    private Map<String, ArtifactRepositoryLayout> repositoryLayouts;
-
     @Inject
-    public CopyDependenciesMojo(
-            CopyUtil copyUtil, ArtifactInstaller installer, Map<String, ArtifactRepositoryLayout> repositoryLayouts) {
+    public CopyDependenciesMojo(CopyUtil copyUtil, ArtifactInstaller installer) {
         this.copyUtil = copyUtil;
         this.installer = installer;
-        this.repositoryLayouts = repositoryLayouts;
     }
 
     /**
