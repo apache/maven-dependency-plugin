@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -80,7 +82,7 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     private String artifact;
 
     @Inject
-    public void CopyMojo(CopyUtil copyUtil) {
+    public CopyMojo(CopyUtil copyUtil) {
         this.copyUtil = copyUtil;
     }
 
