@@ -18,13 +18,13 @@
  */
 package org.apache.maven.plugins.dependency;
 
+import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.handler.ArtifactHandler;
@@ -111,7 +111,9 @@ public class GetMojo extends AbstractMojo {
     private boolean skip;
 
     @Inject
-    public GetMojo(MavenSession session, ArtifactResolver artifactResolver,
+    public GetMojo(
+            MavenSession session,
+            ArtifactResolver artifactResolver,
             DependencyResolver dependencyResolver,
             ArtifactHandlerManager artifactHandlerManager,
             Map<String, ArtifactRepositoryLayout> repositoryLayouts,
