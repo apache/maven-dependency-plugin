@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency;
 
+import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +36,6 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
@@ -58,28 +59,22 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverE
 public class GetMojo extends AbstractMojo {
     private static final Pattern ALT_REPO_SYNTAX_PATTERN = Pattern.compile("(.+)::(.*)::(.+)");
 
-    @Component
     private MavenSession session;
 
-    @Component
     private ArtifactResolver artifactResolver;
 
-    @Component
     private DependencyResolver dependencyResolver;
 
-    @Component
     private ArtifactHandlerManager artifactHandlerManager;
 
     /**
      * Map that contains the layouts.
      */
-    @Component(role = ArtifactRepositoryLayout.class)
     private Map<String, ArtifactRepositoryLayout> repositoryLayouts;
 
     /**
      * The repository system.
      */
-    @Component
     private RepositorySystem repositorySystem;
 
     private DefaultDependableCoordinate coordinate = new DefaultDependableCoordinate();
@@ -97,9 +92,6 @@ public class GetMojo extends AbstractMojo {
     @Parameter(property = "artifact")
     private String artifact;
 
-    /**
-     *
-     */
     @Parameter(defaultValue = "${project.remoteArtifactRepositories}", readonly = true, required = true)
     private List<ArtifactRepository> pomRemoteRepositories;
 
@@ -116,6 +108,22 @@ public class GetMojo extends AbstractMojo {
      */
     @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
+
+    @Inject
+    public GetMojo(
+            MavenSession session,
+            ArtifactResolver artifactResolver,
+            DependencyResolver dependencyResolver,
+            ArtifactHandlerManager artifactHandlerManager,
+            Map<String, ArtifactRepositoryLayout> repositoryLayouts,
+            RepositorySystem repositorySystem) {
+        this.session = session;
+        this.artifactResolver = artifactResolver;
+        this.dependencyResolver = dependencyResolver;
+        this.artifactHandlerManager = artifactHandlerManager;
+        this.repositoryLayouts = repositoryLayouts;
+        this.repositorySystem = repositorySystem;
+    }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
