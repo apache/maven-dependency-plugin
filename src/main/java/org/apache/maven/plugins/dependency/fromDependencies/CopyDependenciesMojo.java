@@ -120,7 +120,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                 if (entry.getValue() > 1) {
                     getLog().warn("Multiple files with the name " + entry.getKey() + " in the dependency tree.");
                     getLog().warn(
-                                    "Not all jars will be available. Consider using prependGroupId, useSubDirectoryPerArtifact, or useRepositoryLayout.");
+                                    "Not all JARs will be available. Consider using prependGroupId, useSubDirectoryPerArtifact, or useRepositoryLayout.");
                 }
             }
 
