@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -38,7 +40,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -162,16 +163,20 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     /**
      * Maven ProjectHelper
      */
-    @Component
     private MavenProjectHelper projectHelper;
 
-    @Component
     private RepositoryManager repositoryManager;
+
+    @Inject
+    public BuildClasspathMojo(MavenProjectHelper projectHelper, RepositoryManager repositoryManager) {
+        this.projectHelper = projectHelper;
+        this.repositoryManager = repositoryManager;
+    }
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates to create a classpath.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      * @see #getResolvedDependencies(boolean)
      */
     @Override

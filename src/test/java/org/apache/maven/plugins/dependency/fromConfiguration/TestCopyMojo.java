@@ -38,6 +38,7 @@ import org.apache.maven.project.MavenProject;
 public class TestCopyMojo extends AbstractDependencyMojoTestCase {
     private CopyMojo mojo;
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp("copy", false, false);
         MavenProject project = new DependencyProjectStub();
@@ -129,7 +130,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
     }
 
     public void testMojoDefaults() {
-        CopyMojo themojo = new CopyMojo();
+        CopyMojo themojo = new CopyMojo(null);
 
         assertFalse(themojo.isStripVersion());
         assertFalse(themojo.isSkip());
