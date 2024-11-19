@@ -18,9 +18,9 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
-import java.io.File;
-
 import javax.inject.Inject;
+
+import java.io.File;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;

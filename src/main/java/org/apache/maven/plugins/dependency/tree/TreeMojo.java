@@ -76,19 +76,19 @@ public class TreeMojo extends AbstractMojo {
     /**
      * The Maven project.
      */
-    private MavenProject project;
+    private final MavenProject project;
 
-    private MavenSession session;
+    private final MavenSession session;
 
     /**
      * The dependency collector builder to use.
      */
-    private DependencyCollectorBuilder dependencyCollectorBuilder;
+    private final DependencyCollectorBuilder dependencyCollectorBuilder;
 
     /**
      * The dependency graph builder to use.
      */
-    private DependencyGraphBuilder dependencyGraphBuilder;
+    private final DependencyGraphBuilder dependencyGraphBuilder;
 
     @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
     private String outputEncoding;
