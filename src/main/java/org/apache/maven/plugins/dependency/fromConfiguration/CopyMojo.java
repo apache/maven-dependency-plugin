@@ -43,7 +43,7 @@ import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
 @Mojo(name = "copy", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresProject = false, threadSafe = true)
 public class CopyMojo extends AbstractFromConfigurationMojo {
 
-    private CopyUtil copyUtil;
+    private final CopyUtil copyUtil;
 
     /**
      * Strip artifact version during copy

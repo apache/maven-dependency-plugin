@@ -59,25 +59,25 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverE
 public class GetMojo extends AbstractMojo {
     private static final Pattern ALT_REPO_SYNTAX_PATTERN = Pattern.compile("(.+)::(.*)::(.+)");
 
-    private MavenSession session;
+    private final MavenSession session;
 
-    private ArtifactResolver artifactResolver;
+    private final ArtifactResolver artifactResolver;
 
-    private DependencyResolver dependencyResolver;
+    private final DependencyResolver dependencyResolver;
 
-    private ArtifactHandlerManager artifactHandlerManager;
+    private final ArtifactHandlerManager artifactHandlerManager;
 
     /**
      * Map that contains the layouts.
      */
-    private Map<String, ArtifactRepositoryLayout> repositoryLayouts;
+    private final Map<String, ArtifactRepositoryLayout> repositoryLayouts;
 
     /**
      * The repository system.
      */
-    private RepositorySystem repositorySystem;
+    private final RepositorySystem repositorySystem;
 
-    private DefaultDependableCoordinate coordinate = new DefaultDependableCoordinate();
+    private final DefaultDependableCoordinate coordinate = new DefaultDependableCoordinate();
 
     /**
      * Repositories in the format id::[layout]::url or just url, separated by comma. ie.

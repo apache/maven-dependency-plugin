@@ -45,7 +45,7 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
 @Mojo(name = "unpack", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresProject = false, threadSafe = true)
 public class UnpackMojo extends AbstractFromConfigurationMojo {
 
-    private UnpackUtil unpackUtil;
+    private final UnpackUtil unpackUtil;
 
     /**
      * Directory to store flag files after unpack

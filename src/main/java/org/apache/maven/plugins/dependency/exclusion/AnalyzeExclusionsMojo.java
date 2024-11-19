@@ -58,11 +58,11 @@ import static org.apache.maven.plugins.dependency.exclusion.Coordinates.coordina
 @Mojo(name = "analyze-exclusions", requiresDependencyCollection = ResolutionScope.TEST, threadSafe = true)
 public class AnalyzeExclusionsMojo extends AbstractMojo {
 
-    private MavenProject project;
+    private final MavenProject project;
 
-    private ResolverUtil resolverUtil;
+    private final ResolverUtil resolverUtil;
 
-    private MavenSession session;
+    private final MavenSession session;
 
     @Inject
     public AnalyzeExclusionsMojo(MavenProject project, ResolverUtil resolverUtil, MavenSession session) {

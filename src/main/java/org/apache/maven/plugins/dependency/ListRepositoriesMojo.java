@@ -54,7 +54,7 @@ import org.eclipse.aether.util.graph.visitor.TreeDependencyVisitor;
 @Mojo(name = "list-repositories", threadSafe = true)
 public class ListRepositoriesMojo extends AbstractDependencyMojo {
 
-    private RepositorySystem repositorySystem;
+    private final RepositorySystem repositorySystem;
 
     @Inject
     public ListRepositoriesMojo(RepositorySystem repositorySystem) {

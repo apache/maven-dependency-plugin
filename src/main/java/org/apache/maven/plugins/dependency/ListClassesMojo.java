@@ -46,7 +46,7 @@ import org.eclipse.aether.resolution.DependencyResolutionException;
 @Mojo(name = "list-classes", requiresProject = false, threadSafe = true)
 public class ListClassesMojo extends AbstractMojo {
 
-    private ResolverUtil resolverUtil;
+    private final ResolverUtil resolverUtil;
 
     private ParamArtifact paramArtifact = new ParamArtifact();
 

@@ -83,24 +83,24 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     /**
      * The current Maven project.
      */
-    private MavenProject project;
+    private final MavenProject project;
 
-    private MavenSession session;
+    private final MavenSession session;
 
     /**
      * Artifact handler manager.
      */
-    private ArtifactHandlerManager artifactHandlerManager;
+    private final ArtifactHandlerManager artifactHandlerManager;
 
     /**
      * The dependency resolver
      */
-    private DependencyResolver dependencyResolver;
+    private final DependencyResolver dependencyResolver;
 
     /**
      * The artifact resolver used to re-resolve dependencies, if that option is enabled.
      */
-    private ArtifactResolver artifactResolver;
+    private final ArtifactResolver artifactResolver;
 
     /**
      * The Maven projects in the reactor.

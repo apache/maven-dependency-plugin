@@ -65,9 +65,9 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     @Parameter(property = "mdep.copyPom", defaultValue = "false")
     protected boolean copyPom;
 
-    private CopyUtil copyUtil;
+    private final CopyUtil copyUtil;
 
-    private ArtifactInstaller installer;
+    private final ArtifactInstaller installer;
 
     @Inject
     public CopyDependenciesMojo(CopyUtil copyUtil, ArtifactInstaller installer) {
