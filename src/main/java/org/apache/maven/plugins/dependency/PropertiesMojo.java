@@ -20,10 +20,11 @@ package org.apache.maven.plugins.dependency;
 
 import java.util.Set;
 
+import javax.inject.Inject;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -50,8 +51,12 @@ public class PropertiesMojo extends AbstractMojo {
     /**
      * The current Maven project
      */
-    @Component
     private MavenProject project;
+
+    @Inject
+    public PropertiesMojo(MavenProject project) {
+        this.project = project;
+    }
 
     /**
      * Skip plugin execution completely.
