@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
@@ -180,6 +181,10 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             } catch (ArtifactFilterException e) {
                 throw new MojoExecutionException(e.getMessage(), e);
             }
+
+            if (artifactItem.getType() == null) {
+                throw new NullPointerException("Missing type for " + artifactItem.getArtifactId());
+            }
         }
         return artifactItems;
     }
@@ -215,7 +220,12 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             coordinate.setVersion(artifactItem.getVersion());
             coordinate.setClassifier(artifactItem.getClassifier());
 
+            String type = artifactItem.getType();
+            if (type == null) {
+                throw new NullPointerException("missing type");
+            }
             final String extension;
+
             ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(artifactItem.getType());
             if (artifactHandler != null) {
                 extension = artifactHandler.getExtension();
@@ -367,7 +377,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
         if (artifact != null) {
             String packaging = "jar";
             String classifier;
-            String[] tokens = artifact.split(":");
+            String[] tokens = StringUtils.split(artifact, ":");
             if (tokens.length < 3 || tokens.length > 5) {
                 throw new MojoFailureException("Invalid artifact, "
                         + "you must specify groupId:artifactId:version[:packaging[:classifier]] " + artifact);
