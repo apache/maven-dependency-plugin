@@ -21,7 +21,6 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
 import java.io.File;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -157,18 +156,18 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     }
 
     /**
-     * @param removeVersion removeVersion.
+     * @param removeVersion removeVersion
      * @return list of {@link ArtifactItem}
-     * @throws MojoExecutionException in case of an error.
+     * @throws MojoExecutionException in case of an error
      */
     protected List<ArtifactItem> getProcessedArtifactItems(boolean removeVersion) throws MojoExecutionException {
         List<ArtifactItem> items =
                 super.getProcessedArtifactItems(new ProcessArtifactItemsRequest(removeVersion, false, false, false));
         for (ArtifactItem artifactItem : items) {
-            if (StringUtils.isEmpty(artifactItem.getIncludes())) {
+            if (artifactItem.getIncludes().isEmpty()) {
                 artifactItem.setIncludes(getIncludes());
             }
-            if (StringUtils.isEmpty(artifactItem.getExcludes())) {
+            if (artifactItem.getExcludes().isEmpty()) {
                 artifactItem.setExcludes(getExcludes());
             }
         }
@@ -176,7 +175,7 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     }
 
     /**
-     * @return Returns the markersDirectory.
+     * @return returns the markersDirectory
      */
     public File getMarkersDirectory() {
         return this.markersDirectory;
