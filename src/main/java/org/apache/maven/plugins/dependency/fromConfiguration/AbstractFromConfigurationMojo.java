@@ -169,7 +169,8 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
 
             artifactItem.setArtifact(this.getArtifact(artifactItem));
 
-            if (artifactItem.getDestFileName() == null || artifactItem.getDestFileName().length() == 0) {
+            if (artifactItem.getDestFileName() == null
+                    || artifactItem.getDestFileName().length() == 0) {
                 artifactItem.setDestFileName(DependencyUtil.getFormattedFileName(
                         artifactItem.getArtifact(), removeVersion, prependGroupId, useBaseVersion, removeClassifier));
             }
