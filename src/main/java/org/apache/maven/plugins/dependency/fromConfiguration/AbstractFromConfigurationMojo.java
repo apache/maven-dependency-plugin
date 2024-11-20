@@ -181,10 +181,6 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             } catch (ArtifactFilterException e) {
                 throw new MojoExecutionException(e.getMessage(), e);
             }
-
-            if (artifactItem.getType() == null) {
-                throw new NullPointerException("Missing type for " + artifactItem.getArtifactId());
-            }
         }
         return artifactItems;
     }
@@ -220,10 +216,6 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             coordinate.setVersion(artifactItem.getVersion());
             coordinate.setClassifier(artifactItem.getClassifier());
 
-            String type = artifactItem.getType();
-            if (type == null) {
-                throw new NullPointerException("missing type");
-            }
             final String extension;
 
             ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(artifactItem.getType());
