@@ -163,7 +163,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             artifactItem.getOutputDirectory().mkdirs();
 
             // make sure we have a version.
-            if (artifactItem.getVersion() != null && !artifactItem.getVersion().isEmpty()) {
+            if (artifactItem.getVersion() == null || artifactItem.getVersion().isEmpty()) {
                 fillMissingArtifactVersion(artifactItem);
             }
 
