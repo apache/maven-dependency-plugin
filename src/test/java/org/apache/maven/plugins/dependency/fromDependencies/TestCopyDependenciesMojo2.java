@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadata;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
@@ -232,8 +231,6 @@ public class TestCopyDependenciesMojo2 extends AbstractDependencyMojoTestCase {
         mojo.useRepositoryLayout = true;
         mojo.execute();
 
-        ArtifactFactory artifactFactory = lookup(ArtifactFactory.class);
-
         File outputDirectory = mojo.outputDirectory;
         ArtifactRepository targetRepository = new MavenArtifactRepository(
                 "local",
@@ -246,11 +243,12 @@ public class TestCopyDependenciesMojo2 extends AbstractDependencyMojoTestCase {
         File baseDirectory = Paths.get(targetRepository.getBasedir()).toFile();
         assertTrue(baseDirectory.isDirectory());
 
+        org.apache.maven.repository.RepositorySystem repositorySystem =
+                lookup(org.apache.maven.repository.RepositorySystem.class);
         for (Artifact artifact : artifacts) {
             assertArtifactExists(artifact, targetRepository);
-
             if (!artifact.getBaseVersion().equals(artifact.getVersion())) {
-                Artifact baseArtifact = artifactFactory.createArtifact(
+                Artifact baseArtifact = repositorySystem.createArtifact(
                         artifact.getGroupId(),
                         artifact.getArtifactId(),
                         artifact.getBaseVersion(),
