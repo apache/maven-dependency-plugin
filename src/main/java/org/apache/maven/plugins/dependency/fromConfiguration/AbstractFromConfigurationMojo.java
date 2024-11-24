@@ -164,13 +164,14 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             artifactItem.getOutputDirectory().mkdirs();
 
             // make sure we have a version.
-            if (StringUtils.isEmpty(artifactItem.getVersion())) {
+            if (artifactItem.getVersion() == null || artifactItem.getVersion().isEmpty()) {
                 fillMissingArtifactVersion(artifactItem);
             }
 
             artifactItem.setArtifact(this.getArtifact(artifactItem));
 
-            if (StringUtils.isEmpty(artifactItem.getDestFileName())) {
+            if (artifactItem.getDestFileName() == null
+                    || artifactItem.getDestFileName().length() == 0) {
                 artifactItem.setDestFileName(DependencyUtil.getFormattedFileName(
                         artifactItem.getArtifact(), removeVersion, prependGroupId, useBaseVersion, removeClassifier));
             }
@@ -185,7 +186,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     }
 
     private boolean checkIfProcessingNeeded(ArtifactItem item) throws MojoExecutionException, ArtifactFilterException {
-        return StringUtils.equalsIgnoreCase(item.getOverWrite(), "true")
+        return "true".equalsIgnoreCase(item.getOverWrite())
                 || getMarkedArtifactFilter(item).isArtifactIncluded(item);
     }
 
@@ -216,6 +217,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             coordinate.setClassifier(artifactItem.getClassifier());
 
             final String extension;
+
             ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(artifactItem.getType());
             if (artifactHandler != null) {
                 extension = artifactHandler.getExtension();
