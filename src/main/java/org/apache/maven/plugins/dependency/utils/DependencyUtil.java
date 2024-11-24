@@ -118,7 +118,9 @@ public final class DependencyUtil {
 
         String classifierString = "";
 
-        if (!removeClassifier && artifact.getClassifier() != null && !artifact.getClassifier().isEmpty()) {
+        if (!removeClassifier
+                && artifact.getClassifier() != null
+                && !artifact.getClassifier().isEmpty()) {
             classifierString = "-" + artifact.getClassifier();
         }
         destFileName.append(artifact.getArtifactId()).append(versionString);
