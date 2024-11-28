@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
@@ -146,7 +145,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
             // log exclusion errors
             List<Artifact> exclusionErrors = getExclusionErrors(exclusions, allDependencyArtifacts);
             for (Artifact exclusion : exclusionErrors) {
-                getLog().info(StringUtils.stripEnd(getArtifactManagementKey(exclusion), ":")
+                getLog().info(getArtifactManagementKey(exclusion)
                         + " was excluded in DepMgt, but version " + exclusion.getVersion()
                         + " has been found in the dependency tree.");
                 foundError = true;
@@ -249,7 +248,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
                     "Invalid params: Artifact: " + dependencyArtifact + " Dependency: " + dependencyFromDepMgt);
         }
 
-        getLog().info("\tDependency: " + StringUtils.stripEnd(dependencyFromDepMgt.getManagementKey(), ":"));
+        getLog().info("\tDependency: " + dependencyFromDepMgt.getManagementKey());
         getLog().info("\t\tDepMgt  : " + dependencyFromDepMgt.getVersion());
         getLog().info("\t\tResolved: " + dependencyArtifact.getBaseVersion());
     }
