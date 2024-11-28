@@ -49,7 +49,12 @@ public class AnalyzeReport extends AbstractMavenReport {
     /**
      * The Maven project dependency analyzer to use.
      */
-    private ProjectDependencyAnalyzer analyzer;
+    private final ProjectDependencyAnalyzer analyzer;
+
+    /**
+     * Internationalization component
+     */
+    private final I18N i18n;
 
     /**
      * Ignore Runtime/Provided/Test/System scopes for unused dependency analysis
@@ -83,11 +88,6 @@ public class AnalyzeReport extends AbstractMavenReport {
      */
     @Parameter(property = "mdep.analyze.excludedClasses")
     private Set<String> excludedClasses;
-
-    /**
-     * Internationalization component
-     */
-    private I18N i18n;
 
     @Inject
     public AnalyzeReport(ProjectDependencyAnalyzer analyzer, I18N i18n) {

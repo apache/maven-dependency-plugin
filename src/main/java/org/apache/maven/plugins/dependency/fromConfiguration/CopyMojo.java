@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.fromConfiguration;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -25,7 +27,6 @@ import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -42,8 +43,8 @@ import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
 @Mojo(name = "copy", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresProject = false, threadSafe = true)
 public class CopyMojo extends AbstractFromConfigurationMojo {
 
-    @Component
-    private CopyUtil copyUtil;
+    private final CopyUtil copyUtil;
+
     /**
      * Strip artifact version during copy
      */
@@ -79,6 +80,11 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     @SuppressWarnings("unused") // marker-field, setArtifact(String) does the magic
     @Parameter(property = "artifact")
     private String artifact;
+
+    @Inject
+    public CopyMojo(CopyUtil copyUtil) {
+        this.copyUtil = copyUtil;
+    }
 
     /**
      * Main entry into mojo. This method gets the ArtifactItems and iterates through each one passing it to

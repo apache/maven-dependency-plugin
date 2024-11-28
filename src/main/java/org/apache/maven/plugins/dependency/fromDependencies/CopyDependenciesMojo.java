@@ -18,17 +18,16 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -66,20 +65,15 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     @Parameter(property = "mdep.copyPom", defaultValue = "false")
     protected boolean copyPom;
 
-    @Component
-    private CopyUtil copyUtil;
+    private final CopyUtil copyUtil;
 
-    /**
-     *
-     */
-    @Component
-    private ArtifactInstaller installer;
+    private final ArtifactInstaller installer;
 
-    /**
-     *
-     */
-    @Component(role = ArtifactRepositoryLayout.class)
-    private Map<String, ArtifactRepositoryLayout> repositoryLayouts;
+    @Inject
+    public CopyDependenciesMojo(CopyUtil copyUtil, ArtifactInstaller installer) {
+        this.copyUtil = copyUtil;
+        this.installer = installer;
+    }
 
     /**
      * Either append the artifact's baseVersion or uniqueVersion to the filename. Will only be used if

@@ -51,7 +51,7 @@ public class PropertiesMojo extends AbstractMojo {
     /**
      * The current Maven project
      */
-    private MavenProject project;
+    private final MavenProject project;
 
     @Inject
     public PropertiesMojo(MavenProject project) {

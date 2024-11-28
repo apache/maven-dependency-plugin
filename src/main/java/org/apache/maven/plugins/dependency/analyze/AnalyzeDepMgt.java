@@ -52,7 +52,7 @@ import org.apache.maven.project.MavenProject;
 public class AnalyzeDepMgt extends AbstractMojo {
     // fields -----------------------------------------------------------------
 
-    private MavenProject project;
+    private final MavenProject project;
 
     /**
      * Fail the build if a problem is detected.

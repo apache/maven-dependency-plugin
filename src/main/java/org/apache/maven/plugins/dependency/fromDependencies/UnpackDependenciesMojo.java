@@ -18,11 +18,12 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
+import javax.inject.Inject;
+
 import java.io.File;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -50,8 +51,12 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
 // CHECKSTYLE_ON: LineLength
 public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
 
-    @Component
-    private UnpackUtil unpackUtil;
+    private final UnpackUtil unpackUtil;
+
+    @Inject
+    public UnpackDependenciesMojo(UnpackUtil unpackUtil) {
+        this.unpackUtil = unpackUtil;
+    }
 
     /**
      * A comma separated list of file patterns to include when unpacking the artifact. i.e.
