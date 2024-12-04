@@ -26,6 +26,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 
@@ -229,7 +230,8 @@ public final class DependencyUtil {
      */
     public static synchronized void write(String string, File file, boolean append, String encoding)
             throws IOException {
-        Files.createDirectories(file.getParentFile().toPath());
+        Path parent = Files.createDirectories(file.getParentFile().toPath());
+        System.err.println(parent.toAbsolutePath());
 
         OpenOption appendOption = append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING;
 

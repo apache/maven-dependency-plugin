@@ -17,8 +17,8 @@
  * under the License.
  */
 
-File file = new File( basedir, "/tmp/temp.txt" )
-assert file.exists()
+File file = new File( basedir, "classpath.txt" )
+assert file.exists() : "output file $file does not exist"
 
 String output = file.getText( "UTF-8" )
 assert output.contains( 'The following files have been resolved:')
