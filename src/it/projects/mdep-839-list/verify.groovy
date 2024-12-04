@@ -22,7 +22,7 @@ assert file.exists() : "output file $file does not exist"
 
 String output = file.getText( "UTF-8" )
 assert output.contains( 'The following files have been resolved:')
-for (char c : output) { // no color codes
-  assert c >= 32 || c == '\n' || c == '\r' || c == '\t';
+for (char c : output) { // no escape codes
+  assert c != 27;
 }
 

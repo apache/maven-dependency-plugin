@@ -185,7 +185,9 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
         StringBuilder sb = new StringBuilder();
         List<String> artifactStringList = new ArrayList<>();
         if (outputFile != null) {
-            MessageUtils.setColorEnabled(false);
+            // MessageUtils.setColorEnabled(false);
+        } else {
+            MessageUtils.setColorEnabled(true);
         }
         for (Artifact artifact : artifacts) {
             MessageBuilder messageBuilder = MessageUtils.buffer();
