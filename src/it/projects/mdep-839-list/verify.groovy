@@ -17,7 +17,7 @@
  * under the License.
  */
 
-File file = new File( basedir, "temp.txt" )
+File file = new File( basedir, "/tmp/temp.txt" )
 assert file.exists()
 
 String output = file.getText( "UTF-8" )
