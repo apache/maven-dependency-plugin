@@ -25,13 +25,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
+import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
 import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
@@ -43,6 +47,7 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverE
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @author Maarten Mulders
+ * @author Lisa Hardy
  * @since 2.0
  */
 @Mojo(name = "go-offline", threadSafe = true)
@@ -71,7 +76,7 @@ public class GoOfflineMojo extends AbstractResolveMojo {
                 }
             }
 
-        } catch (DependencyResolverException e) {
+        } catch (DependencyResolverException | ArtifactFilterException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
@@ -81,9 +86,12 @@ public class GoOfflineMojo extends AbstractResolveMojo {
      *
      * @return set of resolved dependency artifacts.
      * @throws DependencyResolverException in case of an error while resolving the artifacts.
+     * @throws ArtifactFilterException
      */
-    protected Set<Artifact> resolveDependencyArtifacts() throws DependencyResolverException {
+    protected Set<Artifact> resolveDependencyArtifacts() throws DependencyResolverException, ArtifactFilterException {
         Collection<Dependency> dependencies = getProject().getDependencies();
+
+        dependencies = filterDependencies(dependencies);
 
         Set<DependableCoordinate> dependableCoordinates = dependencies.stream()
                 .map(this::createDependendableCoordinateFromDependency)
@@ -133,8 +141,9 @@ public class GoOfflineMojo extends AbstractResolveMojo {
      *
      * @return set of resolved plugin artifacts.
      * @throws DependencyResolverException in case of an error while resolving the artifacts.
+     * @throws ArtifactFilterException
      */
-    protected Set<Artifact> resolvePluginArtifacts() throws DependencyResolverException {
+    protected Set<Artifact> resolvePluginArtifacts() throws DependencyResolverException, ArtifactFilterException {
 
         Set<Artifact> plugins = getProject().getPluginArtifacts();
         Set<Artifact> reports = getProject().getReportArtifacts();
@@ -143,6 +152,9 @@ public class GoOfflineMojo extends AbstractResolveMojo {
         artifacts.addAll(reports);
         artifacts.addAll(plugins);
 
+        final FilterArtifacts filter = getArtifactsFilter();
+        artifacts = filter.filter(artifacts);
+
         Set<DependableCoordinate> dependableCoordinates = artifacts.stream()
                 .map(this::createDependendableCoordinateFromArtifact)
                 .collect(Collectors.toSet());
@@ -150,6 +162,16 @@ public class GoOfflineMojo extends AbstractResolveMojo {
         ProjectBuildingRequest buildingRequest = newResolvePluginProjectBuildingRequest();
 
         return resolveDependableCoordinate(buildingRequest, dependableCoordinates, "plugins");
+    }
+
+    private Collection<Dependency> filterDependencies(Collection<Dependency> deps) throws ArtifactFilterException {
+
+        Set<Artifact> artifacts = createArtifactSetFromDependencies(deps);
+
+        final FilterArtifacts filter = getArtifactsFilter();
+        artifacts = filter.filter(artifacts);
+
+        return createDependencySetFromArtifacts(artifacts);
     }
 
     private DependableCoordinate createDependendableCoordinateFromArtifact(final Artifact artifact) {
@@ -172,6 +194,39 @@ public class GoOfflineMojo extends AbstractResolveMojo {
         result.setClassifier(dependency.getClassifier());
 
         return result;
+    }
+
+    private Set<Artifact> createArtifactSetFromDependencies(Collection<Dependency> deps) {
+        Set<Artifact> artifacts = new HashSet<>();
+        for (Dependency dep : deps) {
+            DefaultArtifactHandler handler = new DefaultArtifactHandler(dep.getType());
+            artifacts.add(new DefaultArtifact(
+                    dep.getGroupId(),
+                    dep.getArtifactId(),
+                    dep.getVersion(),
+                    dep.getScope(),
+                    dep.getType(),
+                    dep.getClassifier(),
+                    handler));
+        }
+        return artifacts;
+    }
+
+    private Collection<Dependency> createDependencySetFromArtifacts(Set<Artifact> artifacts) {
+        Set<Dependency> dependencies = new HashSet<>();
+
+        for (Artifact artifact : artifacts) {
+            Dependency d = new Dependency();
+            d.setGroupId(artifact.getGroupId());
+            d.setArtifactId(artifact.getArtifactId());
+            d.setVersion(artifact.getVersion());
+            d.setType(artifact.getType());
+            d.setClassifier(artifact.getClassifier());
+            d.setScope(artifact.getScope());
+            dependencies.add(d);
+        }
+
+        return dependencies;
     }
 
     @Override

@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.analyze;
 
+import javax.inject.Inject;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Collections;
@@ -34,7 +36,6 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -66,8 +67,12 @@ public class AnalyzeDuplicateMojo extends AbstractMojo {
     /**
      * The Maven project to analyze.
      */
-    @Component
     private MavenProject project;
+
+    @Inject
+    public AnalyzeDuplicateMojo(MavenProject project) {
+        this.project = project;
+    }
 
     /**
      * {@inheritDoc}

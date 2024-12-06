@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.analyze;
 
+import javax.inject.Inject;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -33,7 +35,6 @@ import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -51,11 +52,7 @@ import org.apache.maven.project.MavenProject;
 public class AnalyzeDepMgt extends AbstractMojo {
     // fields -----------------------------------------------------------------
 
-    /**
-     *
-     */
-    @Component
-    private MavenProject project;
+    private final MavenProject project;
 
     /**
      * Fail the build if a problem is detected.
@@ -76,6 +73,11 @@ public class AnalyzeDepMgt extends AbstractMojo {
      */
     @Parameter(property = "mdep.analyze.skip", defaultValue = "false")
     private boolean skip;
+
+    @Inject
+    public AnalyzeDepMgt(MavenProject project) {
+        this.project = project;
+    }
 
     // Mojo methods -----------------------------------------------------------
 
@@ -103,7 +105,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
     /**
      * Does the work of checking the DependencyManagement Section.
      *
-     * @return true if errors are found.
+     * @return true if errors are found
      * @throws MojoExecutionException
      */
     private boolean checkDependencyManagement() throws MojoExecutionException {
@@ -143,8 +145,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
             // log exclusion errors
             List<Artifact> exclusionErrors = getExclusionErrors(exclusions, allDependencyArtifacts);
             for (Artifact exclusion : exclusionErrors) {
-                String artifactManagementKey = getArtifactManagementKey(exclusion);
-                getLog().info(artifactManagementKey.substring(artifactManagementKey.lastIndexOf(":"))
+                getLog().info(getArtifactManagementKey(exclusion)
                         + " was excluded in DepMgt, but version " + exclusion.getVersion()
                         + " has been found in the dependency tree.");
                 foundError = true;
@@ -169,8 +170,8 @@ public class AnalyzeDepMgt extends AbstractMojo {
     /**
      * Returns a map of the exclusions using the Dependency ManagementKey as the keyset.
      *
-     * @param exclusionList to be added to the map.
-     * @return a map of the exclusions using the Dependency ManagementKey as the keyset.
+     * @param exclusionList to be added to the map
+     * @return a map of the exclusions using the Dependency ManagementKey as the keyset
      */
     public Map<String, Exclusion> addExclusions(List<Exclusion> exclusionList) {
         if (exclusionList != null) {
@@ -183,9 +184,9 @@ public class AnalyzeDepMgt extends AbstractMojo {
      * Returns a List of the artifacts that should have been excluded, but were found in the dependency tree.
      *
      * @param exclusions a map of the DependencyManagement exclusions, with the ManagementKey as the key and Dependency
-     *            as the value.
-     * @param allDependencyArtifacts resolved artifacts to be compared.
-     * @return list of artifacts that should have been excluded.
+     *            as the value
+     * @param allDependencyArtifacts resolved artifacts to be compared
+     * @return list of artifacts that should have been excluded
      */
     public List<Artifact> getExclusionErrors(Map<String, Exclusion> exclusions, Set<Artifact> allDependencyArtifacts) {
         return allDependencyArtifacts.stream()
@@ -195,7 +196,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
 
     /**
      * @param artifact {@link Artifact}
-     * @return The resulting GA.
+     * @return the resulting GA
      */
     public String getExclusionKey(Artifact artifact) {
         return artifact.getGroupId() + ":" + artifact.getArtifactId();
@@ -203,7 +204,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
 
     /**
      * @param ex The exclusion key.
-     * @return The resulting combination of groupId+artifactId.
+     * @return the resulting combination of groupId+artifactId
      */
     public String getExclusionKey(Exclusion ex) {
         return ex.getGroupId() + ":" + ex.getArtifactId();
@@ -236,9 +237,9 @@ public class AnalyzeDepMgt extends AbstractMojo {
      * This function displays the log to the screen showing the versions and information about the artifacts that don't
      * match.
      *
-     * @param dependencyArtifact the artifact that was resolved.
-     * @param dependencyFromDepMgt the dependency listed in the DependencyManagement section.
-     * @throws MojoExecutionException in case of errors.
+     * @param dependencyArtifact the artifact that was resolved
+     * @param dependencyFromDepMgt the dependency listed in the DependencyManagement section
+     * @throws MojoExecutionException in case of errors
      */
     public void logMismatch(Artifact dependencyArtifact, Dependency dependencyFromDepMgt)
             throws MojoExecutionException {
@@ -247,8 +248,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
                     "Invalid params: Artifact: " + dependencyArtifact + " Dependency: " + dependencyFromDepMgt);
         }
 
-        String managementKey = dependencyFromDepMgt.getManagementKey();
-        getLog().info("\tDependency: " + managementKey.substring(managementKey.lastIndexOf(":")));
+        getLog().info("\tDependency: " + dependencyFromDepMgt.getManagementKey());
         getLog().info("\t\tDepMgt  : " + dependencyFromDepMgt.getVersion());
         getLog().info("\t\tResolved: " + dependencyArtifact.getBaseVersion());
     }
@@ -283,13 +283,6 @@ public class AnalyzeDepMgt extends AbstractMojo {
      */
     protected final MavenProject getProject() {
         return this.project;
-    }
-
-    /**
-     * @param theProject the project to set
-     */
-    public void setProject(MavenProject theProject) {
-        this.project = theProject;
     }
 
     /**

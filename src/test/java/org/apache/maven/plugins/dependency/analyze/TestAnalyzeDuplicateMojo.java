@@ -76,56 +76,67 @@ public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
         StringBuilder sb = new StringBuilder();
 
         /** {@inheritDoc} */
+        @Override
         public void debug(CharSequence content) {
             print("debug", content);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void debug(CharSequence content, Throwable error) {
             print("debug", content, error);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void debug(Throwable error) {
             print("debug", error);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void info(CharSequence content) {
             print("info", content);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void info(CharSequence content, Throwable error) {
             print("info", content, error);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void info(Throwable error) {
             print("info", error);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void warn(CharSequence content) {
             print("warn", content);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void warn(CharSequence content, Throwable error) {
             print("warn", content, error);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void warn(Throwable error) {
             print("warn", error);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void error(CharSequence content) {
             System.err.println("[error] " + content.toString());
         }
 
         /** {@inheritDoc} */
+        @Override
         public void error(CharSequence content, Throwable error) {
             StringWriter sWriter = new StringWriter();
             PrintWriter pWriter = new PrintWriter(sWriter);
@@ -139,6 +150,7 @@ public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
         /**
          * @see org.apache.maven.plugin.logging.Log#error(java.lang.Throwable)
          */
+        @Override
         public void error(Throwable error) {
             StringWriter sWriter = new StringWriter();
             PrintWriter pWriter = new PrintWriter(sWriter);
@@ -151,14 +163,15 @@ public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
         /**
          * @see org.apache.maven.plugin.logging.Log#isDebugEnabled()
          */
+        @Override
         public boolean isDebugEnabled() {
-            // TODO: Not sure how best to set these for this implementation...
             return false;
         }
 
         /**
          * @see org.apache.maven.plugin.logging.Log#isInfoEnabled()
          */
+        @Override
         public boolean isInfoEnabled() {
             return true;
         }
@@ -166,6 +179,7 @@ public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
         /**
          * @see org.apache.maven.plugin.logging.Log#isWarnEnabled()
          */
+        @Override
         public boolean isWarnEnabled() {
             return true;
         }
@@ -173,6 +187,7 @@ public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
         /**
          * @see org.apache.maven.plugin.logging.Log#isErrorEnabled()
          */
+        @Override
         public boolean isErrorEnabled() {
             return true;
         }

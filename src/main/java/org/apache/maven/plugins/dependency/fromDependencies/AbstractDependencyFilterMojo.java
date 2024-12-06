@@ -136,7 +136,9 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
     /**
      * Scope threshold to exclude, if no value is defined for include.
-     * An empty string indicates no dependencies (default).<br>
+     * An empty string indicates no dependencies (default).  Unlike the other
+     * exclusion parameters, this property does not support a comma-delimited
+     * list of scope exclusions. Just one scope may be excluded at a time.<br>
      * The scope threshold value being interpreted is the scope as
      * Maven filters for creating a classpath, not as specified in the pom. In summary:
      * <ul>
@@ -478,7 +480,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
-     * @param theMarkersDirectory The markersDirectory to set.
+     * @param theMarkersDirectory the markersDirectory to set
      */
     public void setMarkersDirectory(File theMarkersDirectory) {
         this.markersDirectory = theMarkersDirectory;
@@ -487,14 +489,14 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     // TODO: Set marker files.
 
     /**
-     * @return true, if the groupId should be prepended to the filename.
+     * @return true, if the groupId should be prepended to the filename
      */
     public boolean isPrependGroupId() {
         return prependGroupId;
     }
 
     /**
-     * @param prependGroupId - true if the groupId must be prepended during the copy.
+     * @param prependGroupId true if the groupId must be prepended during the copy
      */
     public void setPrependGroupId(boolean prependGroupId) {
         this.prependGroupId = prependGroupId;

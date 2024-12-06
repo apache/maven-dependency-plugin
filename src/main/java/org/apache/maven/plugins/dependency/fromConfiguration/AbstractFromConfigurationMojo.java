@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
@@ -33,7 +34,6 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.plugins.dependency.utils.StringUtils;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
@@ -145,12 +145,13 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     protected List<ArtifactItem> getProcessedArtifactItems(ProcessArtifactItemsRequest processArtifactItemsRequest)
             throws MojoExecutionException {
 
-        boolean removeVersion = processArtifactItemsRequest.isRemoveVersion();
-        boolean prependGroupId = processArtifactItemsRequest.isPrependGroupId();
-        boolean useBaseVersion = processArtifactItemsRequest.isUseBaseVersion();
+        boolean removeVersion = processArtifactItemsRequest.isRemoveVersion(),
+                prependGroupId = processArtifactItemsRequest.isPrependGroupId(),
+                useBaseVersion = processArtifactItemsRequest.isUseBaseVersion();
+
         boolean removeClassifier = processArtifactItemsRequest.isRemoveClassifier();
 
-        if (artifactItems == null || artifactItems.isEmpty()) {
+        if (artifactItems == null || artifactItems.size() < 1) {
             throw new MojoExecutionException("There are no artifactItems configured.");
         }
 
@@ -163,13 +164,14 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             artifactItem.getOutputDirectory().mkdirs();
 
             // make sure we have a version.
-            if (StringUtils.isEmpty(artifactItem.getVersion())) {
+            if (artifactItem.getVersion() == null || artifactItem.getVersion().isEmpty()) {
                 fillMissingArtifactVersion(artifactItem);
             }
 
             artifactItem.setArtifact(this.getArtifact(artifactItem));
 
-            if (StringUtils.isEmpty(artifactItem.getDestFileName())) {
+            if (artifactItem.getDestFileName() == null
+                    || artifactItem.getDestFileName().length() == 0) {
                 artifactItem.setDestFileName(DependencyUtil.getFormattedFileName(
                         artifactItem.getArtifact(), removeVersion, prependGroupId, useBaseVersion, removeClassifier));
             }
@@ -183,8 +185,8 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
         return artifactItems;
     }
 
-    private boolean checkIfProcessingNeeded(ArtifactItem item) throws ArtifactFilterException {
-        return Boolean.parseBoolean(item.getOverWrite())
+    private boolean checkIfProcessingNeeded(ArtifactItem item) throws MojoExecutionException, ArtifactFilterException {
+        return "true".equalsIgnoreCase(item.getOverWrite())
                 || getMarkedArtifactFilter(item).isArtifactIncluded(item);
     }
 
@@ -215,6 +217,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             coordinate.setClassifier(artifactItem.getClassifier());
 
             final String extension;
+
             ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(artifactItem.getType());
             if (artifactHandler != null) {
                 extension = artifactHandler.getExtension();
@@ -366,7 +369,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
         if (artifact != null) {
             String packaging = "jar";
             String classifier;
-            String[] tokens = artifact.split(":");
+            String[] tokens = StringUtils.split(artifact, ":");
             if (tokens.length < 3 || tokens.length > 5) {
                 throw new MojoFailureException("Invalid artifact, "
                         + "you must specify groupId:artifactId:version[:packaging[:classifier]] " + artifact);

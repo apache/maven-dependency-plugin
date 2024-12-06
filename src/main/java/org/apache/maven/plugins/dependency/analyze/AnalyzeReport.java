@@ -18,10 +18,11 @@
  */
 package org.apache.maven.plugins.dependency.analyze;
 
+import javax.inject.Inject;
+
 import java.util.Locale;
 import java.util.Set;
 
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -48,8 +49,12 @@ public class AnalyzeReport extends AbstractMavenReport {
     /**
      * The Maven project dependency analyzer to use.
      */
-    @Component
-    private ProjectDependencyAnalyzer analyzer;
+    private final ProjectDependencyAnalyzer analyzer;
+
+    /**
+     * Internationalization component
+     */
+    private final I18N i18n;
 
     /**
      * Ignore Runtime/Provided/Test/System scopes for unused dependency analysis
@@ -84,11 +89,11 @@ public class AnalyzeReport extends AbstractMavenReport {
     @Parameter(property = "mdep.analyze.excludedClasses")
     private Set<String> excludedClasses;
 
-    /**
-     * Internationalization component
-     */
-    @Component
-    private I18N i18n;
+    @Inject
+    public AnalyzeReport(ProjectDependencyAnalyzer analyzer, I18N i18n) {
+        this.analyzer = analyzer;
+        this.i18n = i18n;
+    }
 
     // Mojo methods -----------------------------------------------------------
 
@@ -142,11 +147,13 @@ public class AnalyzeReport extends AbstractMavenReport {
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getName(Locale locale) {
         return getI18nString(locale, "name");
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getDescription(Locale locale) {
         return getI18nString(locale, "description");
     }

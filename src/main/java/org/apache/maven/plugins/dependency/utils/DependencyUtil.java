@@ -118,7 +118,9 @@ public final class DependencyUtil {
 
         String classifierString = "";
 
-        if (!removeClassifier && StringUtils.isNotEmpty(artifact.getClassifier())) {
+        if (!removeClassifier
+                && artifact.getClassifier() != null
+                && !artifact.getClassifier().isEmpty()) {
             classifierString = "-" + artifact.getClassifier();
         }
         destFileName.append(artifact.getArtifactId()).append(versionString);
@@ -185,7 +187,7 @@ public final class DependencyUtil {
             sb.append(artifact.getVersion());
         }
 
-        if (StringUtils.isNotEmpty(artifact.getClassifier())) {
+        if (artifact.getClassifier() != null && !artifact.getClassifier().isEmpty()) {
             sb.append("-");
             sb.append(artifact.getClassifier());
         }
@@ -256,20 +258,6 @@ public final class DependencyUtil {
         try (BufferedReader reader = new BufferedReader(new StringReader(string))) {
             reader.lines().forEach(log::info);
         }
-    }
-
-    /**
-     * Mainly used to parse excludes, includes configuration.
-     *
-     * @param str the string to split
-     * @return the result items
-     */
-    public static String[] tokenizer(String str) {
-        String s = cleanToBeTokenizedString(str);
-        if (s.isEmpty()) {
-            return new String[0];
-        }
-        return cleanToBeTokenizedString(str).split(",");
     }
 
     /**

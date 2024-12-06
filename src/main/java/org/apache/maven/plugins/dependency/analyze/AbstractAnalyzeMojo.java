@@ -36,7 +36,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.dependency.utils.StringUtils;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
@@ -512,9 +511,9 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                 writer.startElement("version");
                 writer.writeText(artifact.getBaseVersion());
                 String classifier = artifact.getClassifier();
-                if (!StringUtils.isEmpty(classifier)) {
+                if (classifier != null && !classifier.trim().isEmpty()) {
                     writer.startElement("classifier");
-                    writer.writeText(classifier);
+                    writer.writeText(artifact.getClassifier());
                     writer.endElement();
                 }
                 writer.endElement();

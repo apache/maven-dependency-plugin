@@ -70,7 +70,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.addAll(directArtifacts);
 
         project.setArtifacts(artifacts);
-        project.setDependencyArtifacts(directArtifacts);
         mojo.markersDirectory = new File(this.testDir, "markers");
     }
 
@@ -106,7 +105,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(release);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteIfNewer = false;
 
@@ -125,7 +123,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(release);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = true;
         mojo.overWriteIfNewer = false;
@@ -145,7 +142,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(snap);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = false;
         mojo.overWriteSnapshots = false;
@@ -166,7 +162,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(snap);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = false;
         mojo.overWriteSnapshots = true;
@@ -187,7 +182,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(snap);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = false;
         mojo.overWriteSnapshots = false;

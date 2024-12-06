@@ -130,7 +130,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
     }
 
     public void testMojoDefaults() {
-        CopyMojo themojo = new CopyMojo();
+        CopyMojo themojo = new CopyMojo(null);
 
         assertFalse(themojo.isStripVersion());
         assertFalse(themojo.isSkip());
