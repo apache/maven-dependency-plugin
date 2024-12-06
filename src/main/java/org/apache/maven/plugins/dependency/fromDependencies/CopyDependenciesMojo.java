@@ -23,6 +23,8 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.RepositoryUtils;
@@ -44,7 +46,10 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.util.artifact.SubArtifact;
 
 /**
- * Goal that copies the project dependencies from the repository to a defined location.
+ * Goal that copies the files for a project's dependencies from the repository to a directory.
+ * The default location to copy to is target/dependencies.
+ * Since all files are copied to the same directory by default, a dependency that
+ * has the same file name as another dependency will be overwritten.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 1.0
@@ -95,7 +100,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through calling copyArtifact.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      * @see #getDependencySets(boolean, boolean)
      * @see #copyArtifact(Artifact, boolean, boolean, boolean, boolean)
      */
@@ -105,6 +110,21 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         Set<Artifact> artifacts = dss.getResolvedDependencies();
 
         if (!useRepositoryLayout) {
+            Map<String, Integer> copies = new HashMap<>();
+            for (Artifact artifactItem : artifacts) {
+                String destFileName = DependencyUtil.getFormattedFileName(
+                        artifactItem, stripVersion, prependGroupId, useBaseVersion, stripClassifier);
+                int numCopies = copies.getOrDefault(destFileName, 0);
+                copies.put(destFileName, numCopies + 1);
+            }
+            for (Map.Entry<String, Integer> entry : copies.entrySet()) {
+                if (entry.getValue() > 1) {
+                    getLog().warn("Multiple files with the name " + entry.getKey() + " in the dependency tree.");
+                    getLog().warn(
+                                    "Not all JARs will be available. Consider using prependGroupId, useSubDirectoryPerArtifact, or useRepositoryLayout.");
+                }
+            }
+
             for (Artifact artifact : artifacts) {
                 copyArtifact(
                         artifact, isStripVersion(), this.prependGroupId, this.useBaseVersion, this.stripClassifier);
@@ -123,19 +143,13 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
 
         if (isCopyPom() && !useRepositoryLayout) {
             copyPoms(getOutputDirectory(), artifacts, this.stripVersion);
-            copyPoms(getOutputDirectory(), skippedArtifacts, this.stripVersion, this.stripClassifier); // Artifacts
-            // that already
-            // exist may
-            // not yet have
-            // poms
+            copyPoms(getOutputDirectory(), skippedArtifacts, this.stripVersion, this.stripClassifier);
+            // Artifacts that already exist may not yet have poms
         }
     }
 
     /**
-     * install the artifact and the corresponding pom if copyPoms=true
-     *
-     * @param artifact
-     * @param buildingRequest
+     * Install the artifact and the corresponding pom if copyPoms=true.
      */
     private void installArtifact(Artifact artifact, ProjectBuildingRequest buildingRequest) {
         try {
@@ -193,7 +207,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      * @param artifact representing the object to be copied.
      * @param removeVersion specifies if the version should be removed from the file name when copying.
      * @param prependGroupId specifies if the groupId should be prepend to the file while copying.
-     * @param theUseBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
+     * @param useBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
      * @param removeClassifier specifies if the classifier should be removed from the file name when copying.
      * @throws MojoExecutionException with a message if an error occurs.
      * @see CopyUtil#copyArtifactFile(Artifact, File)
@@ -203,12 +217,12 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
             Artifact artifact,
             boolean removeVersion,
             boolean prependGroupId,
-            boolean theUseBaseVersion,
+            boolean useBaseVersion,
             boolean removeClassifier)
             throws MojoExecutionException {
 
         String destFileName = DependencyUtil.getFormattedFileName(
-                artifact, removeVersion, prependGroupId, theUseBaseVersion, removeClassifier);
+                artifact, removeVersion, prependGroupId, useBaseVersion, removeClassifier);
 
         File destDir = DependencyUtil.getFormattedOutputDirectory(
                 useSubDirectoryPerScope,
@@ -220,7 +234,9 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                 outputDirectory,
                 artifact);
         File destFile = new File(destDir, destFileName);
-
+        if (destFile.exists()) {
+            getLog().warn("Overwriting " + destFile);
+        }
         try {
             copyUtil.copyArtifactFile(artifact, destFile);
         } catch (IOException e) {
@@ -323,7 +339,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     }
 
     /**
-     * @param copyPom - true if the pom of each artifact must be copied
+     * @param copyPom true if the pom of each artifact must be copied
      */
     public void setCopyPom(boolean copyPom) {
         this.copyPom = copyPom;

@@ -51,9 +51,9 @@ public class CopyUtil {
     }
 
     /**
-     * Copies the artifact (file).
+     * Copies the artifact (file)
      *
-     * @param sourceArtifact represents the artifact (file) to copy
+     * @param sourceArtifact the artifact (file) to copy
      * @param destination file name of destination file
      * @throws IOException if copy has failed
      * @throws MojoExecutionException if artifact file is a directory (which has not been packaged yet)
@@ -68,7 +68,7 @@ public class CopyUtil {
                     + "' has not been packaged yet (is a directory). When used on reactor artifact, "
                     + "copy should be executed after packaging: see MDEP-187.");
         }
-        logger.debug("Copying artifact '{}' ({}) to {}", sourceArtifact, sourceArtifact.getFile(), destination);
+        logger.debug("Copying artifact '{}' ({}) to {}", sourceArtifact.getId(), sourceArtifact.getFile(), destination);
         FileUtils.copyFile(source, destination);
         buildContext.refresh(destination);
     }
