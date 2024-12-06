@@ -24,7 +24,6 @@ import java.nio.file.Files;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
@@ -284,7 +283,7 @@ public class DestFileFilter extends AbstractArtifactsFilter implements ArtifactI
         }
 
         File destFile;
-        if (StringUtils.isEmpty(item.getDestFileName())) {
+        if (item.getDestFileName() == null || item.getDestFileName().isEmpty()) {
             String formattedFileName = DependencyUtil.getFormattedFileName(
                     artifact, removeVersion, prependGroupId, useBaseVersion, removeClassifier);
             destFile = new File(destFolder, formattedFileName);
@@ -298,13 +297,13 @@ public class DestFileFilter extends AbstractArtifactsFilter implements ArtifactI
     }
 
     /**
-     * Using simply {@code File.getLastModified} will return sometimes a wrong value see JDK bug for details.
+     * {@code File.getLastModified} sometimes returns a wrong value. See JDK bug for details.
      * <p>
      * https://bugs.openjdk.java.net/browse/JDK-8177809
      *
      * @param file {@link File}
      * @return the last modification time in milliseconds.
-     * @throws ArtifactFilterException in case of a IO Exception.
+     * @throws ArtifactFilterException in case of an IOException
      */
     private long getLastModified(File file) throws ArtifactFilterException {
         try {
