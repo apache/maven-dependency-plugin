@@ -526,7 +526,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                 writer.endElement();
             }
 
-            getLog().info(System.lineSeparator() + out.getBuffer());
+            getLog().info("\n" + out.getBuffer());
         }
     }
 
@@ -551,9 +551,9 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                         .append(artifact.getBaseVersion())
                         .append(":")
                         .append(artifact.getScope())
-                        .append(System.lineSeparator());
+                        .append("\n");
             }
-            getLog().info(System.lineSeparator() + buf);
+            getLog().info("\n" + buf);
         }
     }
 
