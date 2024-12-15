@@ -39,8 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class TestDependencyUtil {
 
-    private static final String TEST_CONTENT =
-            "Test line 1" + System.lineSeparator() + "Test line 2" + System.lineSeparator();
+    private static final String TEST_CONTENT = "Test line 1\n" + "Test line 2\n";
 
     @TempDir
     File temDir;
