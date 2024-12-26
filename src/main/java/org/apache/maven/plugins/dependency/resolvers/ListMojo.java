@@ -18,8 +18,15 @@
  */
 package org.apache.maven.plugins.dependency.resolvers;
 
+import javax.inject.Inject;
+
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
 
 /**
  * Displays the list of dependencies for this project.
@@ -29,5 +36,15 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
  */
 @Mojo(name = "list", requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class ListMojo extends ResolveDependenciesMojo {
+
+    @Inject
+    public ListMojo(
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+    }
     // alias for dependency:resolve
 }

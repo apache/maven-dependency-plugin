@@ -39,15 +39,19 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
 
 /**
@@ -160,17 +164,18 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     @Parameter(property = "mdep.useBaseVersion", defaultValue = "true")
     private boolean useBaseVersion = true;
 
-    /**
-     * Maven ProjectHelper
-     */
-    private MavenProjectHelper projectHelper;
-
-    private RepositoryManager repositoryManager;
+    private final MavenProjectHelper projectHelper;
 
     @Inject
-    public BuildClasspathMojo(MavenProjectHelper projectHelper, RepositoryManager repositoryManager) {
+    protected BuildClasspathMojo(
+            MavenProjectHelper projectHelper,
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
         this.projectHelper = projectHelper;
-        this.repositoryManager = repositoryManager;
     }
 
     /**
@@ -248,8 +253,8 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     }
 
     /**
-     * @param cpString The classpath.
-     * @throws MojoExecutionException in case of an error.
+     * @param cpString the classpath
+     * @throws MojoExecutionException in case of an error
      */
     protected void attachFile(String cpString) throws MojoExecutionException {
         File attachedFile = new File(getProject().getBuild().getDirectory(), "classpath");
@@ -259,7 +264,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     }
 
     /**
-     * Appends the artifact path into the specified StringBuilder.
+     * Appends the artifact path to the specified StringBuilder.
      *
      * @param art {@link Artifact}
      * @param sb {@link StringBuilder}
@@ -270,7 +275,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
             // substitute the property for the local repo path to make the classpath file portable.
             if (localRepoProperty != null && !localRepoProperty.isEmpty()) {
                 ProjectBuildingRequest projectBuildingRequest = session.getProjectBuildingRequest();
-                File localBasedir = repositoryManager.getLocalRepositoryBasedir(projectBuildingRequest);
+                File localBasedir = getRepositoryManager().getLocalRepositoryBasedir(projectBuildingRequest);
 
                 file = StringUtils.replace(file, localBasedir.getAbsolutePath(), localRepoProperty);
             }

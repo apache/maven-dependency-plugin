@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -37,11 +38,15 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.CopyUtil;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.transfer.artifact.install.ArtifactInstaller;
 import org.apache.maven.shared.transfer.artifact.install.ArtifactInstallerException;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.util.artifact.SubArtifact;
 
@@ -74,12 +79,6 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
 
     private final ArtifactInstaller installer;
 
-    @Inject
-    public CopyDependenciesMojo(CopyUtil copyUtil, ArtifactInstaller installer) {
-        this.copyUtil = copyUtil;
-        this.installer = installer;
-    }
-
     /**
      * Either append the artifact's baseVersion or uniqueVersion to the filename. Will only be used if
      * {@link #isStripVersion()} is {@code false}.
@@ -96,6 +95,20 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     @Parameter(property = "mdep.addParentPoms", defaultValue = "false")
     protected boolean addParentPoms;
+
+    @Inject
+    public CopyDependenciesMojo(
+            CopyUtil copyUtil,
+            ArtifactInstaller installer,
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+        this.copyUtil = copyUtil;
+        this.installer = installer;
+    }
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through calling copyArtifact.

@@ -20,15 +20,20 @@ package org.apache.maven.plugins.dependency.resolvers;
 
 import java.io.File;
 
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.fromDependencies.AbstractDependencyFilterMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ClassifierFilter;
 import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
 import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
@@ -59,6 +64,15 @@ public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
      */
     @Parameter(property = "excludeReactor", defaultValue = "true")
     protected boolean excludeReactor;
+
+    protected AbstractResolveMojo(
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+    }
 
     /**
      * @return {@link FilterArtifacts}

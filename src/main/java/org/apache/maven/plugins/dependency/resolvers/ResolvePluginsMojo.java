@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.resolvers;
 
+import javax.inject.Inject;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -26,11 +28,14 @@ import java.util.Set;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
@@ -39,7 +44,9 @@ import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverExcepti
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 
 /**
@@ -61,6 +68,16 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
      */
     @Parameter(property = "outputAbsoluteArtifactFilename", defaultValue = "false")
     private boolean outputAbsoluteArtifactFilename;
+
+    @Inject
+    public ResolvePluginsMojo(
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+    }
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.

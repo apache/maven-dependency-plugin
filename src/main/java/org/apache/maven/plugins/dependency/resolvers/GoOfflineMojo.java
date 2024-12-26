@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.resolvers;
 
+import javax.inject.Inject;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -27,11 +29,14 @@ import java.util.stream.Collectors;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
@@ -40,7 +45,9 @@ import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
 
 /**
  * Goal that resolves all project dependencies, including plugins and reports and their dependencies.
@@ -52,6 +59,17 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverE
  */
 @Mojo(name = "go-offline", threadSafe = true)
 public class GoOfflineMojo extends AbstractResolveMojo {
+
+    @Inject
+    public GoOfflineMojo(
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+    }
+
     /**
      * Main entry into mojo. Gets the list of dependencies, resolves all that are not in the Reactor, and iterates
      * through displaying the resolved versions.
@@ -84,8 +102,8 @@ public class GoOfflineMojo extends AbstractResolveMojo {
     /**
      * This method resolves the dependency artifacts from the project.
      *
-     * @return set of resolved dependency artifacts.
-     * @throws DependencyResolverException in case of an error while resolving the artifacts.
+     * @return set of resolved dependency artifacts
+     * @throws DependencyResolverException in case of an error while resolving the artifacts
      * @throws ArtifactFilterException
      */
     protected Set<Artifact> resolveDependencyArtifacts() throws DependencyResolverException, ArtifactFilterException {
@@ -139,8 +157,8 @@ public class GoOfflineMojo extends AbstractResolveMojo {
     /**
      * This method resolves the plugin artifacts from the project.
      *
-     * @return set of resolved plugin artifacts.
-     * @throws DependencyResolverException in case of an error while resolving the artifacts.
+     * @return set of resolved plugin artifacts
+     * @throws DependencyResolverException in case of an error while resolving the artifacts
      * @throws ArtifactFilterException
      */
     protected Set<Artifact> resolvePluginArtifacts() throws DependencyResolverException, ArtifactFilterException {

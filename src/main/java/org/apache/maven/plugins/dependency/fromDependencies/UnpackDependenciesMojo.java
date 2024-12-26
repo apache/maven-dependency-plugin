@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import java.io.File;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -30,10 +31,14 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.UnpackUtil;
 import org.apache.maven.plugins.dependency.utils.filters.MarkerFileFilter;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
 
 /**
@@ -50,13 +55,6 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
         threadSafe = true)
 // CHECKSTYLE_ON: LineLength
 public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
-
-    private final UnpackUtil unpackUtil;
-
-    @Inject
-    public UnpackDependenciesMojo(UnpackUtil unpackUtil) {
-        this.unpackUtil = unpackUtil;
-    }
 
     /**
      * A comma separated list of file patterns to include when unpacking the artifact. i.e.
@@ -101,6 +99,20 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     @Parameter(property = "mdep.unpack.filemappers")
     private FileMapper[] fileMappers;
+
+    private final UnpackUtil unpackUtil;
+
+    @Inject
+    public UnpackDependenciesMojo(
+            UnpackUtil unpackUtil,
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+        this.unpackUtil = unpackUtil;
+    }
 
     /**
      * Main entry into mojo. This method gets the dependencies and iterates through each one passing it to
