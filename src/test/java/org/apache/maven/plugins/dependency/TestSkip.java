@@ -142,7 +142,6 @@ public class TestSkip extends AbstractDependencyMojoTestCase {
     private void doConfigTest(String mojoName, String configFile, boolean addMojoExecution) throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/skip-test/" + configFile);
         Mojo mojo = lookupMojo(mojoName, testPom);
-        assertNotNull("Mojo not found.", mojo);
 
         if (addMojoExecution) {
             setVariableValueToObject(mojo, "mojoExecution", getMockMojoExecution(mojoName));
