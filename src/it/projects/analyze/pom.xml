@@ -58,6 +58,12 @@
       <artifactId>slf4j-simple</artifactId>
       <version>2.0.16</version>
     </dependency>
+    <!-- MDEP-964 javax.json is unused but should not be reported -->
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.json</artifactId>
+      <version>1.1.4</version>
+    </dependency>
   </dependencies>
 
   <build>
