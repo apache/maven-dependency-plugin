@@ -20,7 +20,12 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 
 import java.io.File;
 
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
 
 /**
  * Abstract Parent class used by mojos that get Artifact information from the project dependencies.
@@ -106,8 +111,17 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
     @Parameter(property = "mdep.failOnMissingClassifierArtifact", defaultValue = "false")
     protected boolean failOnMissingClassifierArtifact;
 
+    protected AbstractFromDependenciesMojo(
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+    }
+
     /**
-     * @return Returns the outputDirectory.
+     * @return returns the outputDirectory
      */
     public File getOutputDirectory() {
         return this.outputDirectory;

@@ -28,7 +28,6 @@ import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
@@ -59,15 +58,6 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
  * @see org.apache.maven.plugins.dependency.AbstractDependencyMojo
  */
 public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMojo {
-
-    @Component
-    private ResolverUtil resolverUtil;
-
-    @Component
-    private DependencyResolver dependencyResolver;
-
-    @Component
-    private RepositoryManager repositoryManager;
 
     /**
      * Overwrite release artifacts
@@ -239,11 +229,28 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     @Parameter(property = "mdep.prependGroupId", defaultValue = "false")
     protected boolean prependGroupId = false;
 
-    @Component
-    private ProjectBuilder projectBuilder;
+    private final ResolverUtil resolverUtil;
 
-    @Component
-    private ArtifactHandlerManager artifactHandlerManager;
+    private final DependencyResolver dependencyResolver;
+
+    private final RepositoryManager repositoryManager;
+
+    private final ProjectBuilder projectBuilder;
+
+    private final ArtifactHandlerManager artifactHandlerManager;
+
+    protected AbstractDependencyFilterMojo(
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        this.resolverUtil = resolverUtil;
+        this.dependencyResolver = dependencyResolver;
+        this.repositoryManager = repositoryManager;
+        this.projectBuilder = projectBuilder;
+        this.artifactHandlerManager = artifactHandlerManager;
+    }
 
     /**
      * Return an {@link ArtifactsFilter} indicating which artifacts must be filtered out.

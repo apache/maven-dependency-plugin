@@ -100,7 +100,7 @@ public class ResolveDependenciesMojoTest extends AbstractDependencyMojoTestCase 
     }
 
     private ResolveDependenciesMojo newMojo(final DependencyStatusSets dss) {
-        ResolveDependenciesMojo mojo = new ResolveDependenciesMojo();
+        ResolveDependenciesMojo mojo = new ResolveDependenciesMojo(null, null, null, null, null);
         mojo.results = dss;
         return mojo;
     }
