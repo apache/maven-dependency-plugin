@@ -34,6 +34,7 @@ import org.apache.maven.RepositoryUtils;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
 import org.eclipse.aether.collection.CollectRequest;
@@ -43,6 +44,7 @@ import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.graph.DependencyVisitor;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.util.graph.visitor.TreeDependencyVisitor;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Goal that collects all project dependencies and then lists the repositories used by the build and by the transitive
@@ -57,7 +59,12 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
     private final RepositorySystem repositorySystem;
 
     @Inject
-    public ListRepositoriesMojo(RepositorySystem repositorySystem) {
+    public ListRepositoriesMojo(
+            BuildContext buildContext,
+            boolean skipDuringIncrementalBuild,
+            MavenProject project,
+            RepositorySystem repositorySystem) {
+        super(buildContext, skipDuringIncrementalBuild, project);
         this.repositorySystem = repositorySystem;
     }
 

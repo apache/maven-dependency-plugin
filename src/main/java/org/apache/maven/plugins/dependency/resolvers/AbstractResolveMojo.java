@@ -25,6 +25,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.fromDependencies.AbstractDependencyFilterMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ClassifierFilter;
@@ -34,6 +35,7 @@ import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
@@ -65,14 +67,27 @@ public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
     @Parameter(property = "excludeReactor", defaultValue = "true")
     protected boolean excludeReactor;
 
+    // CHECKSTYLE_OFF: ParameterNumber
     protected AbstractResolveMojo(
+            BuildContext buildContext,
+            boolean skipDuringIncrementalBuild,
+            MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
             RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
-        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+        super(
+                buildContext,
+                skipDuringIncrementalBuild,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
     }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * @return {@link FilterArtifacts}

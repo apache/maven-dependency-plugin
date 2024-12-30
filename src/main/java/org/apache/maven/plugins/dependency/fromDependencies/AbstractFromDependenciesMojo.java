@@ -23,9 +23,11 @@ import java.io.File;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Abstract Parent class used by mojos that get Artifact information from the project dependencies.
@@ -111,14 +113,27 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
     @Parameter(property = "mdep.failOnMissingClassifierArtifact", defaultValue = "false")
     protected boolean failOnMissingClassifierArtifact;
 
+    // CHECKSTYLE_OFF: ParameterNumber
     protected AbstractFromDependenciesMojo(
+            BuildContext buildContext,
+            boolean skipDuringIncrementalBuild,
+            MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
             RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
-        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+        super(
+                buildContext,
+                skipDuringIncrementalBuild,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
     }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * @return returns the outputDirectory

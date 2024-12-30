@@ -25,9 +25,11 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * <p>
@@ -55,12 +57,26 @@ import org.apache.maven.shared.transfer.repository.RepositoryManager;
 public class CollectDependenciesMojo extends ResolveDependenciesMojo {
 
     @Inject
-    public CollectDependenciesMojo(
+    // CHECKSTYLE_OFF: ParameterNumber
+    protected CollectDependenciesMojo(
+            BuildContext buildContext,
+            boolean skipDuringIncrementalBuild,
+            MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
             RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
-        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+        super(
+                buildContext,
+                skipDuringIncrementalBuild,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
     }
+    // CHECKSTYLE_ON: ParameterNumber
+
 }

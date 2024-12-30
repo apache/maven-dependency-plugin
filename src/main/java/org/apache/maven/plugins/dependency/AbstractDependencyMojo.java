@@ -40,27 +40,6 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 public abstract class AbstractDependencyMojo extends AbstractMojo {
 
     /**
-     * For IDE build support
-     */
-    @Component
-    private BuildContext buildContext;
-
-    /**
-     * Skip plugin execution only during incremental builds (e.g. triggered from M2E).
-     *
-     * @since 3.4.0
-     * @see #skip
-     */
-    @Parameter(defaultValue = "false")
-    private boolean skipDuringIncrementalBuild;
-
-    /**
-     * POM
-     */
-    @Component
-    private MavenProject project;
-
-    /**
      * Remote repositories which will be searched for artifacts.
      */
     @Parameter(defaultValue = "${project.remoteArtifactRepositories}", readonly = true, required = true)
@@ -101,6 +80,32 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
      */
     @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
+
+    /**
+     * For IDE build support
+     */
+    private final BuildContext buildContext;
+
+    /**
+     * Skip plugin execution only during incremental builds (e.g. triggered from M2E).
+     *
+     * @since 3.4.0
+     * @see #skip
+     */
+    private final boolean skipDuringIncrementalBuild;
+
+    /**
+     * POM
+     */
+    @Component
+    private final MavenProject project;
+
+    protected AbstractDependencyMojo(
+            BuildContext buildContext, boolean skipDuringIncrementalBuild, MavenProject project) {
+        this.buildContext = buildContext;
+        this.skipDuringIncrementalBuild = skipDuringIncrementalBuild;
+        this.project = project;
+    }
 
     // Mojo methods -----------------------------------------------------------
 

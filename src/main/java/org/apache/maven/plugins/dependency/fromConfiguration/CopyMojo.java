@@ -18,13 +18,12 @@
  */
 package org.apache.maven.plugins.dependency.fromConfiguration;
 
-import javax.inject.Inject;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -33,6 +32,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.CopyUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Goal that copies a list of artifacts from the repository to defined locations.
@@ -81,8 +84,21 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     @Parameter(property = "artifact")
     private String artifact;
 
-    @Inject
-    public CopyMojo(CopyUtil copyUtil) {
+    protected CopyMojo(
+            BuildContext buildContext,
+            boolean skipDuringIncrementalBuild,
+            MavenProject project,
+            ArtifactResolver artifactResolver,
+            RepositoryManager repositoryManager,
+            ArtifactHandlerManager artifactHandlerManager,
+            CopyUtil copyUtil) {
+        super(
+                buildContext,
+                skipDuringIncrementalBuild,
+                project,
+                artifactResolver,
+                repositoryManager,
+                artifactHandlerManager);
         this.copyUtil = copyUtil;
     }
 

@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +52,7 @@ import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Class that encapsulates the plugin parameters, and contains methods that handle dependency filtering
@@ -239,23 +242,30 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
     private final ArtifactHandlerManager artifactHandlerManager;
 
+    @Inject
+    // CHECKSTYLE_OFF: ParameterNumber
     protected AbstractDependencyFilterMojo(
+            BuildContext buildContext,
+            boolean skipDuringIncrementalBuild,
+            MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
             RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
+        super(buildContext, skipDuringIncrementalBuild, project);
         this.resolverUtil = resolverUtil;
         this.dependencyResolver = dependencyResolver;
         this.repositoryManager = repositoryManager;
         this.projectBuilder = projectBuilder;
         this.artifactHandlerManager = artifactHandlerManager;
     }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Return an {@link ArtifactsFilter} indicating which artifacts must be filtered out.
      *
-     * @return an {@link ArtifactsFilter} indicating which artifacts must be filtered out.
+     * @return an {@link ArtifactsFilter} indicating which artifacts must be filtered out
      */
     protected abstract ArtifactsFilter getMarkedArtifactFilter();
 

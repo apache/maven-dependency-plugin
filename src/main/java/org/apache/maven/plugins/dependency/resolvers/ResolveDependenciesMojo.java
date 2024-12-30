@@ -45,12 +45,14 @@ import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ResolveFileFilter;
 import org.apache.maven.plugins.dependency.utils.markers.SourcesFileMarkerHandler;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.shared.utils.logging.MessageUtils;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Goal that resolves the project dependencies from the repository. When using this goal while running on Java 9 the
@@ -107,14 +109,27 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
     boolean includeParents;
 
     @Inject
+    // CHECKSTYLE_OFF: ParameterNumber
     public ResolveDependenciesMojo(
+            BuildContext buildContext,
+            boolean skipDuringIncrementalBuild,
+            MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
             RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
-        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+        super(
+                buildContext,
+                skipDuringIncrementalBuild,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
     }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.

@@ -130,11 +130,11 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
     }
 
     public void testMojoDefaults() {
-        CopyMojo themojo = new CopyMojo(null);
+        CopyMojo theMojo = new CopyMojo(null, null, null, null, null, null, null);
 
-        assertFalse(themojo.isStripVersion());
-        assertFalse(themojo.isSkip());
-        assertFalse(themojo.isStripClassifier());
+        assertFalse(theMojo.isStripVersion());
+        assertFalse(theMojo.isSkip());
+        assertFalse(theMojo.isStripClassifier());
     }
 
     public void testCopyFile() throws Exception {

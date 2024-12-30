@@ -35,11 +35,13 @@ import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.UnpackUtil;
 import org.apache.maven.plugins.dependency.utils.filters.MarkerFileFilter;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Goal that unpacks the project dependencies from the repository to a defined location.
@@ -103,16 +105,29 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
     private final UnpackUtil unpackUtil;
 
     @Inject
+    // CHECKSTYLE_OFF: ParameterNumber
     public UnpackDependenciesMojo(
-            UnpackUtil unpackUtil,
+            BuildContext buildContext,
+            boolean skipDuringIncrementalBuild,
+            MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
             RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
-            ArtifactHandlerManager artifactHandlerManager) {
-        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+            ArtifactHandlerManager artifactHandlerManager,
+            UnpackUtil unpackUtil) {
+        super(
+                buildContext,
+                skipDuringIncrementalBuild,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
         this.unpackUtil = unpackUtil;
     }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Main entry into mojo. This method gets the dependencies and iterates through each one passing it to
