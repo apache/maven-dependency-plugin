@@ -108,7 +108,7 @@ public class TreeMojo extends AbstractMojo {
     /**
      * If specified, this parameter will cause the dependency tree to be written using the specified format. Currently
      * supported formats are: <code>text</code> (default), <code>dot</code>, <code>graphml</code>, <code>tgf</code>
-     * and <code>json</code>(since 3.7.0).
+     * and <code>json</code> (since 3.7.0).
      * These additional formats can be plotted to image files.
      *
      * @since 2.2
