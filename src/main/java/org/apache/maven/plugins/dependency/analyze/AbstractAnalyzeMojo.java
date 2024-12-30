@@ -34,7 +34,6 @@ import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
@@ -54,19 +53,6 @@ import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
  */
 public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     // fields -----------------------------------------------------------------
-
-    /**
-     * The plexusContainer to look-up the right {@link ProjectDependencyAnalyzer} implementation depending on the mojo
-     * configuration.
-     */
-    @Component
-    private PlexusContainer plexusContainer;
-
-    /**
-     * The Maven project to analyze.
-     */
-    @Component
-    private MavenProject project;
 
     /**
      * Specify the project dependency analyzer to use (plexus component role-hint). By default,
@@ -270,6 +256,22 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      */
     @Parameter(property = "mdep.analyze.excludedClasses")
     private Set<String> excludedClasses;
+
+    /**
+     * The plexusContainer to look up the {@link ProjectDependencyAnalyzer} implementation depending on the mojo
+     * configuration.
+     */
+    private final PlexusContainer plexusContainer;
+
+    /**
+     * The Maven project to analyze.
+     */
+    private final MavenProject project;
+
+    protected AbstractAnalyzeMojo(PlexusContainer plexusContainer, MavenProject project) {
+        this.plexusContainer = plexusContainer;
+        this.project = project;
+    }
 
     // Mojo methods -----------------------------------------------------------
 
