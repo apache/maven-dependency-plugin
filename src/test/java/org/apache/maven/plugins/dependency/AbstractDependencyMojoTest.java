@@ -53,7 +53,7 @@ public class AbstractDependencyMojoTest extends TestCase {
         static ConcreteDependencyMojo createConcreteDependencyMojoWithArtifactRepositories(
                 MavenSession mavenSession, List<ArtifactRepository> artifactRepos)
                 throws NoSuchFieldException, IllegalAccessException {
-            ConcreteDependencyMojo cdm = new ConcreteDependencyMojo();
+            ConcreteDependencyMojo cdm = new ConcreteDependencyMojo(null, true, null);
             cdm.session = mavenSession;
 
             Field par = AbstractDependencyMojo.class.getDeclaredField("remoteRepositories");
