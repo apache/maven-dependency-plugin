@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
@@ -245,15 +246,15 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
     protected AbstractDependencyFilterMojo(
+            MavenSession session,
             BuildContext buildContext,
-            boolean skipDuringIncrementalBuild,
             MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
             RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
-        super(buildContext, skipDuringIncrementalBuild, project);
+        super(session, buildContext, project);
         this.resolverUtil = resolverUtil;
         this.dependencyResolver = dependencyResolver;
         this.repositoryManager = repositoryManager;

@@ -31,6 +31,7 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -65,8 +66,8 @@ public class GoOfflineMojo extends AbstractResolveMojo {
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
     public GoOfflineMojo(
+            MavenSession session,
             BuildContext buildContext,
-            boolean skipDuringIncrementalBuild,
             MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
@@ -74,8 +75,8 @@ public class GoOfflineMojo extends AbstractResolveMojo {
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
         super(
+                session,
                 buildContext,
-                skipDuringIncrementalBuild,
                 project,
                 resolverUtil,
                 dependencyResolver,

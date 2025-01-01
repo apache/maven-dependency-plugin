@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -60,18 +61,15 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
 
     @Inject
     public ListRepositoriesMojo(
-            BuildContext buildContext,
-            boolean skipDuringIncrementalBuild,
-            MavenProject project,
-            RepositorySystem repositorySystem) {
-        super(buildContext, skipDuringIncrementalBuild, project);
+            MavenSession session, BuildContext buildContext, MavenProject project, RepositorySystem repositorySystem) {
+        super(session, buildContext, project);
         this.repositorySystem = repositorySystem;
     }
 
     /**
      * Displays a list of the repositories used by this build.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      */
     @Override
     protected void doExecute() throws MojoExecutionException {

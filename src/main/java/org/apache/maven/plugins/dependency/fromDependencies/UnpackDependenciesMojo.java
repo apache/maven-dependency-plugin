@@ -24,6 +24,7 @@ import java.io.File;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -107,8 +108,8 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
     public UnpackDependenciesMojo(
+            MavenSession session,
             BuildContext buildContext,
-            boolean skipDuringIncrementalBuild,
             MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
@@ -117,8 +118,8 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
             ArtifactHandlerManager artifactHandlerManager,
             UnpackUtil unpackUtil) {
         super(
+                session,
                 buildContext,
-                skipDuringIncrementalBuild,
                 project,
                 resolverUtil,
                 dependencyResolver,

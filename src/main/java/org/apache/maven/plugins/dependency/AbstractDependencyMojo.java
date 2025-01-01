@@ -26,7 +26,6 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.SystemStreamLog;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
@@ -60,8 +59,7 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     /**
      * The Maven session
      */
-    @Component
-    protected MavenSession session;
+    protected final MavenSession session;
 
     /**
      * If the plugin should be silent.
@@ -82,28 +80,27 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     private boolean skip;
 
     /**
-     * For IDE build support
-     */
-    private final BuildContext buildContext;
-
-    /**
      * Skip plugin execution only during incremental builds (e.g. triggered from M2E).
      *
      * @since 3.4.0
      * @see #skip
      */
-    private final boolean skipDuringIncrementalBuild;
+    @Parameter(defaultValue = "false")
+    private boolean skipDuringIncrementalBuild;
+
+    /**
+     * For IDE build support
+     */
+    private final BuildContext buildContext;
 
     /**
      * POM
      */
-    @Component
     private final MavenProject project;
 
-    protected AbstractDependencyMojo(
-            BuildContext buildContext, boolean skipDuringIncrementalBuild, MavenProject project) {
+    protected AbstractDependencyMojo(MavenSession session, BuildContext buildContext, MavenProject project) {
+        this.session = session;
         this.buildContext = buildContext;
-        this.skipDuringIncrementalBuild = skipDuringIncrementalBuild;
         this.project = project;
     }
 

@@ -45,16 +45,14 @@ public class AbstractDependencyMojoTest extends TestCase {
 
     static class ConcreteDependencyMojo extends AbstractDependencyMojo {
 
-        protected ConcreteDependencyMojo(
-                BuildContext buildContext, boolean skipDuringIncrementalBuild, MavenProject project) {
-            super(buildContext, skipDuringIncrementalBuild, project);
+        protected ConcreteDependencyMojo(MavenSession session, BuildContext buildContext, MavenProject project) {
+            super(session, buildContext, project);
         }
 
         static ConcreteDependencyMojo createConcreteDependencyMojoWithArtifactRepositories(
                 MavenSession mavenSession, List<ArtifactRepository> artifactRepos)
                 throws NoSuchFieldException, IllegalAccessException {
-            ConcreteDependencyMojo cdm = new ConcreteDependencyMojo(null, true, null);
-            cdm.session = mavenSession;
+            ConcreteDependencyMojo cdm = new ConcreteDependencyMojo(mavenSession, null, null);
 
             Field par = AbstractDependencyMojo.class.getDeclaredField("remoteRepositories");
             par.setAccessible(true);
@@ -64,10 +62,9 @@ public class AbstractDependencyMojoTest extends TestCase {
         }
 
         static ConcreteDependencyMojo createConcreteDependencyMojoWithPluginRepositories(
-                MavenSession mavenSession, List<ArtifactRepository> pluginRepos)
+                MavenSession session, List<ArtifactRepository> pluginRepos)
                 throws NoSuchFieldException, IllegalAccessException {
-            ConcreteDependencyMojo cdm = new ConcreteDependencyMojo(null, false, null);
-            cdm.session = mavenSession;
+            ConcreteDependencyMojo cdm = new ConcreteDependencyMojo(session, null, null);
 
             Field par = AbstractDependencyMojo.class.getDeclaredField("remotePluginRepositories");
             par.setAccessible(true);

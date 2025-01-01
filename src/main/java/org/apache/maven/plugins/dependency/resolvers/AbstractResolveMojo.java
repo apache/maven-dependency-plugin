@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.resolvers;
 import java.io.File;
 
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.fromDependencies.AbstractDependencyFilterMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
@@ -69,8 +70,8 @@ public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
 
     // CHECKSTYLE_OFF: ParameterNumber
     protected AbstractResolveMojo(
+            MavenSession session,
             BuildContext buildContext,
-            boolean skipDuringIncrementalBuild,
             MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
@@ -78,8 +79,8 @@ public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
         super(
+                session,
                 buildContext,
-                skipDuringIncrementalBuild,
                 project,
                 resolverUtil,
                 dependencyResolver,
@@ -96,7 +97,6 @@ public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
         final FilterArtifacts filter = new FilterArtifacts();
 
         if (excludeReactor) {
-
             filter.addFilter(new ExcludeReactorProjectsArtifactFilter(reactorProjects, getLog()));
         }
 

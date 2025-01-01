@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -118,13 +119,13 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     private final ArtifactHandlerManager artifactHandlerManager;
 
     protected AbstractFromConfigurationMojo(
+            MavenSession session,
             BuildContext buildContext,
-            boolean skipDuringIncrementalBuild,
             MavenProject project,
             ArtifactResolver artifactResolver,
             RepositoryManager repositoryManager,
             ArtifactHandlerManager artifactHandlerManager) {
-        super(buildContext, skipDuringIncrementalBuild, project);
+        super(session, buildContext, project);
         this.artifactResolver = artifactResolver;
         this.repositoryManager = repositoryManager;
         this.artifactHandlerManager = artifactHandlerManager;

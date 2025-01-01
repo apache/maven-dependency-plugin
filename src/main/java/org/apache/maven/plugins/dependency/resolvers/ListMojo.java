@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.resolvers;
 import javax.inject.Inject;
 
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
@@ -42,8 +43,8 @@ public class ListMojo extends ResolveDependenciesMojo {
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
     public ListMojo(
+            MavenSession session,
             BuildContext buildContext,
-            boolean skipDuringIncrementalBuild,
             MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
@@ -51,8 +52,8 @@ public class ListMojo extends ResolveDependenciesMojo {
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
         super(
+                session,
                 buildContext,
-                skipDuringIncrementalBuild,
                 project,
                 resolverUtil,
                 dependencyResolver,

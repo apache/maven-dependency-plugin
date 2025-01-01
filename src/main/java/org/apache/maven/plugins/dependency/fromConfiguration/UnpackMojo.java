@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.List;
 
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -104,20 +105,14 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
 
     @Inject
     public UnpackMojo(
+            MavenSession session,
             BuildContext buildContext,
-            boolean skipDuringIncrementalBuild,
             MavenProject project,
             ArtifactResolver artifactResolver,
             RepositoryManager repositoryManager,
             ArtifactHandlerManager artifactHandlerManager,
             UnpackUtil unpackUtil) {
-        super(
-                buildContext,
-                skipDuringIncrementalBuild,
-                project,
-                artifactResolver,
-                repositoryManager,
-                artifactHandlerManager);
+        super(session, buildContext, project, artifactResolver, repositoryManager, artifactHandlerManager);
         this.unpackUtil = unpackUtil;
     }
 

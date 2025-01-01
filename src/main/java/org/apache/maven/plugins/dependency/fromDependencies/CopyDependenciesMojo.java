@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -61,13 +62,11 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 1.0
  */
-// CHECKSTYLE_OFF: LineLength
 @Mojo(
         name = "copy-dependencies",
         requiresDependencyResolution = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.PROCESS_SOURCES,
         threadSafe = true)
-// CHECKSTYLE_ON: LineLength
 public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     /**
      * Also copy the pom of each artifact.
@@ -101,8 +100,8 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
     public CopyDependenciesMojo(
+            MavenSession session,
             BuildContext buildContext,
-            boolean skipDuringIncrementalBuild,
             MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
@@ -112,8 +111,8 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
             CopyUtil copyUtil,
             ArtifactInstaller installer) {
         super(
+                session,
                 buildContext,
-                skipDuringIncrementalBuild,
                 project,
                 resolverUtil,
                 dependencyResolver,

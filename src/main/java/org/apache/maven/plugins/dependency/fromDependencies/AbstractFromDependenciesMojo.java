@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 import java.io.File;
 
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
@@ -115,8 +116,8 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
 
     // CHECKSTYLE_OFF: ParameterNumber
     protected AbstractFromDependenciesMojo(
+            MavenSession session,
             BuildContext buildContext,
-            boolean skipDuringIncrementalBuild,
             MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
@@ -124,8 +125,8 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
         super(
+                session,
                 buildContext,
-                skipDuringIncrementalBuild,
                 project,
                 resolverUtil,
                 dependencyResolver,
@@ -136,7 +137,7 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
     // CHECKSTYLE_ON: ParameterNumber
 
     /**
-     * @return returns the outputDirectory
+     * @return returns the output directory
      */
     public File getOutputDirectory() {
         return this.outputDirectory;

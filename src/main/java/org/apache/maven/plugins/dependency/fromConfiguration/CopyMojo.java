@@ -18,12 +18,15 @@
  */
 package org.apache.maven.plugins.dependency.fromConfiguration;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -84,21 +87,16 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     @Parameter(property = "artifact")
     private String artifact;
 
-    protected CopyMojo(
+    @Inject
+    public CopyMojo(
+            MavenSession session,
             BuildContext buildContext,
-            boolean skipDuringIncrementalBuild,
             MavenProject project,
             ArtifactResolver artifactResolver,
             RepositoryManager repositoryManager,
             ArtifactHandlerManager artifactHandlerManager,
             CopyUtil copyUtil) {
-        super(
-                buildContext,
-                skipDuringIncrementalBuild,
-                project,
-                artifactResolver,
-                repositoryManager,
-                artifactHandlerManager);
+        super(session, buildContext, project, artifactResolver, repositoryManager, artifactHandlerManager);
         this.copyUtil = copyUtil;
     }
 

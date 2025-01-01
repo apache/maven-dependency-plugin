@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -169,8 +170,8 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
     protected BuildClasspathMojo(
+            MavenSession session,
             BuildContext buildContext,
-            boolean skipDuringIncrementalBuild,
             MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
@@ -179,8 +180,8 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
             ArtifactHandlerManager artifactHandlerManager,
             MavenProjectHelper projectHelper) {
         super(
+                session,
                 buildContext,
-                skipDuringIncrementalBuild,
                 project,
                 resolverUtil,
                 dependencyResolver,
