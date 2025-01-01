@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -40,6 +41,7 @@ import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
@@ -49,6 +51,7 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.util.artifact.SubArtifact;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Goal that copies the files for a project's dependencies from the repository to a directory.
@@ -59,13 +62,11 @@ import org.eclipse.aether.util.artifact.SubArtifact;
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 1.0
  */
-// CHECKSTYLE_OFF: LineLength
 @Mojo(
         name = "copy-dependencies",
         requiresDependencyResolution = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.PROCESS_SOURCES,
         threadSafe = true)
-// CHECKSTYLE_ON: LineLength
 public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     /**
      * Also copy the pom of each artifact.
@@ -97,18 +98,31 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     protected boolean addParentPoms;
 
     @Inject
+    // CHECKSTYLE_OFF: ParameterNumber
     public CopyDependenciesMojo(
-            CopyUtil copyUtil,
-            ArtifactInstaller installer,
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
             RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
-            ArtifactHandlerManager artifactHandlerManager) {
-        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+            ArtifactHandlerManager artifactHandlerManager,
+            CopyUtil copyUtil,
+            ArtifactInstaller installer) {
+        super(
+                session,
+                buildContext,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
         this.copyUtil = copyUtil;
         this.installer = installer;
     }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through calling copyArtifact.

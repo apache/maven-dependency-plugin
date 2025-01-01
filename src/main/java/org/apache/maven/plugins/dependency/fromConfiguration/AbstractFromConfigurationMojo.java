@@ -27,10 +27,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
@@ -42,6 +42,7 @@ import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Abstract parent class used by mojos that get Artifact information from the plugin configuration as an ArrayList of
@@ -111,14 +112,24 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     @Parameter
     private File localRepositoryDirectory;
 
-    @Component
-    private ArtifactResolver artifactResolver;
+    private final ArtifactResolver artifactResolver;
 
-    @Component
-    private RepositoryManager repositoryManager;
+    private final RepositoryManager repositoryManager;
 
-    @Component
-    private ArtifactHandlerManager artifactHandlerManager;
+    private final ArtifactHandlerManager artifactHandlerManager;
+
+    protected AbstractFromConfigurationMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ArtifactResolver artifactResolver,
+            RepositoryManager repositoryManager,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(session, buildContext, project);
+        this.artifactResolver = artifactResolver;
+        this.repositoryManager = repositoryManager;
+        this.artifactHandlerManager = artifactHandlerManager;
+    }
 
     abstract ArtifactItemFilter getMarkedArtifactFilter(ArtifactItem item);
 
