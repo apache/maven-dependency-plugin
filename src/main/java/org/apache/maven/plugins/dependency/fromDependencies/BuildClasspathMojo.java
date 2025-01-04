@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -47,12 +48,14 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * This goal outputs a classpath string of dependencies from the local repository to a file or log.
@@ -60,13 +63,11 @@ import org.apache.maven.shared.transfer.repository.RepositoryManager;
  * @author ankostis
  * @since 2.0-alpha-2
  */
-// CHECKSTYLE_OFF: LineLength
 @Mojo(
         name = "build-classpath",
         requiresDependencyResolution = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.GENERATE_SOURCES,
         threadSafe = true)
-// CHECKSTYLE_ON: LineLength
 public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements Comparator<Artifact> {
 
     @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
@@ -167,16 +168,29 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     private final MavenProjectHelper projectHelper;
 
     @Inject
+    // CHECKSTYLE_OFF: ParameterNumber
     protected BuildClasspathMojo(
-            MavenProjectHelper projectHelper,
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
             RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
-            ArtifactHandlerManager artifactHandlerManager) {
-        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+            ArtifactHandlerManager artifactHandlerManager,
+            MavenProjectHelper projectHelper) {
+        super(
+                session,
+                buildContext,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
         this.projectHelper = projectHelper;
     }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates to create a classpath.

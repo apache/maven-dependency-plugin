@@ -23,6 +23,8 @@ import javax.inject.Inject;
 import java.io.File;
 import java.util.List;
 
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -33,7 +35,11 @@ import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.plugins.dependency.utils.filters.MarkerFileFilter;
 import org.apache.maven.plugins.dependency.utils.markers.MarkerHandler;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Goal that retrieves a list of artifacts from the repository and unpacks them in a defined location.
@@ -98,7 +104,15 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     private String artifact;
 
     @Inject
-    public UnpackMojo(UnpackUtil unpackUtil) {
+    public UnpackMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ArtifactResolver artifactResolver,
+            RepositoryManager repositoryManager,
+            ArtifactHandlerManager artifactHandlerManager,
+            UnpackUtil unpackUtil) {
+        super(session, buildContext, project, artifactResolver, repositoryManager, artifactHandlerManager);
         this.unpackUtil = unpackUtil;
     }
 

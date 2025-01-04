@@ -31,11 +31,13 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
@@ -48,6 +50,7 @@ import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Goal that resolves all project dependencies, including plugins and reports and their dependencies.
@@ -61,14 +64,27 @@ import org.apache.maven.shared.transfer.repository.RepositoryManager;
 public class GoOfflineMojo extends AbstractResolveMojo {
 
     @Inject
+    // CHECKSTYLE_OFF: ParameterNumber
     public GoOfflineMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
             RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
-        super(resolverUtil, dependencyResolver, repositoryManager, projectBuilder, artifactHandlerManager);
+        super(
+                session,
+                buildContext,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
     }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Main entry into mojo. Gets the list of dependencies, resolves all that are not in the Reactor, and iterates
