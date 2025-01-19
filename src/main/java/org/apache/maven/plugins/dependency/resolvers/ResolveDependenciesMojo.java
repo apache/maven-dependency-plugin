@@ -175,13 +175,10 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
      */
     public String getOutput(boolean outputAbsoluteArtifactFilename, boolean theOutputScope, boolean theSort) {
         StringBuilder sb = new StringBuilder();
-        sb.append(System.lineSeparator());
-        sb.append("The following files have been resolved:");
-        sb.append(System.lineSeparator());
+        sb.append("\nThe following files have been resolved:\n");
         if (results.getResolvedDependencies() == null
                 || results.getResolvedDependencies().isEmpty()) {
-            sb.append("   none");
-            sb.append(System.lineSeparator());
+            sb.append("   none\n");
         } else {
             sb.append(buildArtifactListOutput(
                     results.getResolvedDependencies(), outputAbsoluteArtifactFilename, theOutputScope, theSort));
@@ -189,9 +186,7 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
 
         if (results.getSkippedDependencies() != null
                 && !results.getSkippedDependencies().isEmpty()) {
-            sb.append(System.lineSeparator());
-            sb.append("The following files were skipped:");
-            sb.append(System.lineSeparator());
+            sb.append("\nThe following files were skipped:\n");
             Set<Artifact> skippedDependencies = new LinkedHashSet<>(results.getSkippedDependencies());
             sb.append(buildArtifactListOutput(
                     skippedDependencies, outputAbsoluteArtifactFilename, theOutputScope, theSort));
@@ -199,14 +194,12 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
 
         if (results.getUnResolvedDependencies() != null
                 && !results.getUnResolvedDependencies().isEmpty()) {
-            sb.append(System.lineSeparator());
-            sb.append("The following files have NOT been resolved:");
-            sb.append(System.lineSeparator());
+            sb.append("\nThe following files have NOT been resolved:\n");
             Set<Artifact> unResolvedDependencies = new LinkedHashSet<>(results.getUnResolvedDependencies());
             sb.append(buildArtifactListOutput(
                     unResolvedDependencies, outputAbsoluteArtifactFilename, theOutputScope, theSort));
         }
-        sb.append(System.lineSeparator());
+        sb.append("\n");
 
         return sb.toString();
     }
@@ -257,7 +250,7 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
                     }
                 }
             }
-            artifactStringList.add(messageBuilder + System.lineSeparator());
+            artifactStringList.add(messageBuilder + "\n");
         }
         if (theSort) {
             Collections.sort(artifactStringList);

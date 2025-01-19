@@ -109,7 +109,7 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
             }));
 
             if (repositories.isEmpty()) {
-                getLog().info("No remote repository is used by this build." + System.lineSeparator());
+                getLog().info("No remote repository is used by this build.\n");
                 return;
             }
 
@@ -142,15 +142,15 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
                 .append(repo)
                 .append(" mirrored by ")
                 .append(mirror)
-                .append(System.lineSeparator()));
+                .append("\n"));
     }
 
     private void prepareRemoteRepositoriesList(
             StringBuilder message, Collection<RemoteRepository> remoteProjectRepositories) {
 
-        message.append("Project remote repositories used by this build:").append(System.lineSeparator());
+        message.append("Project remote repositories used by this build:\n");
 
         remoteProjectRepositories.forEach(
-                repo -> message.append(" * ").append(repo).append(System.lineSeparator()));
+                repo -> message.append(" * ").append(repo).append("\n"));
     }
 }
