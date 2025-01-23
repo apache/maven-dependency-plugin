@@ -25,7 +25,9 @@ import java.util.List;
 import junit.framework.TestCase;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 import static org.apache.maven.plugins.dependency.AbstractDependencyMojoTest.ConcreteDependencyMojo.createConcreteDependencyMojoWithArtifactRepositories;
 import static org.apache.maven.plugins.dependency.AbstractDependencyMojoTest.ConcreteDependencyMojo.createConcreteDependencyMojoWithPluginRepositories;
@@ -42,11 +44,15 @@ public class AbstractDependencyMojoTest extends TestCase {
     private ArrayList<ArtifactRepository> pluginRepos = new ArrayList<>();
 
     static class ConcreteDependencyMojo extends AbstractDependencyMojo {
+
+        protected ConcreteDependencyMojo(MavenSession session, BuildContext buildContext, MavenProject project) {
+            super(session, buildContext, project);
+        }
+
         static ConcreteDependencyMojo createConcreteDependencyMojoWithArtifactRepositories(
                 MavenSession mavenSession, List<ArtifactRepository> artifactRepos)
                 throws NoSuchFieldException, IllegalAccessException {
-            ConcreteDependencyMojo cdm = new ConcreteDependencyMojo();
-            cdm.session = mavenSession;
+            ConcreteDependencyMojo cdm = new ConcreteDependencyMojo(mavenSession, null, null);
 
             Field par = AbstractDependencyMojo.class.getDeclaredField("remoteRepositories");
             par.setAccessible(true);
@@ -56,10 +62,9 @@ public class AbstractDependencyMojoTest extends TestCase {
         }
 
         static ConcreteDependencyMojo createConcreteDependencyMojoWithPluginRepositories(
-                MavenSession mavenSession, List<ArtifactRepository> pluginRepos)
+                MavenSession session, List<ArtifactRepository> pluginRepos)
                 throws NoSuchFieldException, IllegalAccessException {
-            ConcreteDependencyMojo cdm = new ConcreteDependencyMojo();
-            cdm.session = mavenSession;
+            ConcreteDependencyMojo cdm = new ConcreteDependencyMojo(session, null, null);
 
             Field par = AbstractDependencyMojo.class.getDeclaredField("remotePluginRepositories");
             par.setAccessible(true);
@@ -81,6 +86,7 @@ public class AbstractDependencyMojoTest extends TestCase {
         artifactRepos.add(newRepositoryWithId("ar-snapshots"));
         artifactRepos.add(newRepositoryWithId("ar-staging"));
 
+        when(buildingRequest.getRepositoryMerging()).thenReturn(ProjectBuildingRequest.RepositoryMerging.POM_DOMINANT);
         when(session.getProjectBuildingRequest()).thenReturn(buildingRequest);
     }
 

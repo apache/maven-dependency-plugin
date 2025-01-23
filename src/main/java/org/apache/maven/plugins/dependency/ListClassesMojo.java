@@ -18,132 +18,126 @@
  */
 package org.apache.maven.plugins.dependency;
 
+import javax.inject.Inject;
+
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.artifact.repository.MavenArtifactRepository;
-import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.repository.RepositorySystem;
-import org.apache.maven.settings.Settings;
-import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
-import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
-import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
-import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.apache.maven.plugins.dependency.utils.ParamArtifact;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.DependencyResolutionException;
 
 /**
  * Retrieves and lists all classes contained in the specified artifact from the specified remote repositories.
+ *
+ * @since 3.1.3
  */
 @Mojo(name = "list-classes", requiresProject = false, threadSafe = true)
 public class ListClassesMojo extends AbstractMojo {
-    private static final Pattern ALT_REPO_SYNTAX_PATTERN = Pattern.compile("(.+)::(.*)::(.+)");
 
-    @Parameter(defaultValue = "${session}", required = true, readonly = true)
-    private MavenSession session;
+    private final ResolverUtil resolverUtil;
 
-    @Component
-    private ArtifactResolver artifactResolver;
+    private ParamArtifact paramArtifact = new ParamArtifact();
 
-    @Component
-    private DependencyResolver dependencyResolver;
-
-    @Component
-    private ArtifactHandlerManager artifactHandlerManager;
+    @Inject
+    public ListClassesMojo(ResolverUtil resolverUtil) {
+        this.resolverUtil = resolverUtil;
+    }
 
     /**
-     * Map that contains the layouts.
-     */
-    @Component(role = ArtifactRepositoryLayout.class)
-    private Map<String, ArtifactRepositoryLayout> repositoryLayouts;
-
-    /**
-     * The repository system.
-     */
-    @Component
-    private RepositorySystem repositorySystem;
-
-    private DefaultDependableCoordinate coordinate = new DefaultDependableCoordinate();
-
-    /**
-     * The group ID of the artifact to download. Ignored if {@link #artifact} is used.
+     * The group ID of the artifact to download. Ignored if {@code artifact} is used.
+     *
+     * @since 3.1.3
      */
     @Parameter(property = "groupId")
-    private String groupId;
+    public void setGroupId(String groupId) {
+        paramArtifact.setGroupId(groupId);
+    }
 
     /**
-     * The artifact ID of the artifact to download. Ignored if {@link #artifact} is used.
+     * The artifact ID of the artifact to download. Ignored if {@code artifact} is used.
+     *
+     * @since 3.1.3
      */
     @Parameter(property = "artifactId")
-    private String artifactId;
+    public void setArtifactId(String artifactId) {
+        paramArtifact.setArtifactId(artifactId);
+    }
 
     /**
-     * The version of the artifact to download. Ignored if {@link #artifact} is used.
+     * The version of the artifact to download. Ignored if {@code artifact} is used.
+     *
+     * @since 3.1.3
      */
     @Parameter(property = "version")
-    private String version;
+    public void setVersion(String version) {
+        paramArtifact.setVersion(version);
+    }
 
     /**
-     * The classifier of the artifact to download. Ignored if {@link #artifact} is used.
+     * The classifier of the artifact to download. Ignored if {@code artifact} is used.
      *
-     * @since 2.3
+     * @since 3.1.3
      */
     @Parameter(property = "classifier")
-    private String classifier;
+    public void setClassifier(String classifier) {
+        paramArtifact.setClassifier(classifier);
+    }
 
     /**
-     * The packaging of the artifact to download. Ignored if {@link #artifact} is used.
+     * The packaging of the artifact to download. Ignored if {@code artifact} is used.
+     *
+     * @since 3.1.3
      */
     @Parameter(property = "packaging", defaultValue = "jar")
-    private String packaging = "jar";
+    public void setPackaging(String packaging) {
+        paramArtifact.setPackaging(packaging);
+    }
 
     /**
-     * Repositories in the format id::[layout]::url or just URLs, separated by comma. That is,
-     * central::default::https://repo.maven.apache.org/maven2,myrepo::::https://repo.acme.com,https://repo.acme2.com
-     */
-    @Parameter(property = "remoteRepositories")
-    private String remoteRepositories;
-
-    /**
-     * A string of the form groupId:artifactId:version[:packaging[:classifier]].
+     * A string of the form {@code groupId:artifactId:version[:packaging[:classifier]]}.
+     *
+     * @since 3.1.3
      */
     @Parameter(property = "artifact")
-    private String artifact;
+    public void setArtifact(String artifact) {
+        paramArtifact.setArtifact(artifact);
+    }
 
-    @Parameter(defaultValue = "${project.remoteArtifactRepositories}", readonly = true, required = true)
-    private List<ArtifactRepository> pomRemoteRepositories;
+    /**
+     * Repositories in the format {@code id::[layout::]url} or just URLs. That is,
+     * <code>
+     * central::default::https://repo.maven.apache.org/maven2,myrepo::https://repo.acme.com,https://repo.acme2.com
+     * </code>
+     *
+     * @since 3.1.3
+     */
+    @Parameter(property = "remoteRepositories")
+    private List<String> remoteRepositories;
 
     /**
      * Download transitively, retrieving the specified artifact and all of its dependencies.
+     *
+     * @since 3.1.3
      */
     @Parameter(property = "transitive", defaultValue = "false")
     private boolean transitive = false;
 
     /**
      * Skip plugin execution completely.
+     *
+     * @since 3.6.0
      */
     @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
@@ -155,30 +149,35 @@ public class ListClassesMojo extends AbstractMojo {
             return;
         }
 
-        ProjectBuildingRequest buildingRequest = makeBuildingRequest();
+        if (!paramArtifact.isDataSet()) {
+            throw new MojoExecutionException("You must specify an artifact OR GAV separately, "
+                    + "e.g. -Dartifact=org.apache.maven.plugins:maven-downloader-plugin:1.0 OR "
+                    + "-DgroupId=org.apache.maven.plugins -DartifactId=maven-downloader-plugin -Dversion=1.0");
+        }
+
+        Artifact artifact = resolverUtil.createArtifactFromParams(paramArtifact);
 
         try {
             if (transitive) {
-                Iterable<ArtifactResult> artifacts =
-                        dependencyResolver.resolveDependencies(buildingRequest, coordinate, null);
+                List<Artifact> artifacts =
+                        resolverUtil.resolveDependencies(artifact, resolverUtil.remoteRepositories(remoteRepositories));
 
-                for (ArtifactResult result : artifacts) {
-                    printClassesFromArtifactResult(result);
+                for (Artifact a : artifacts) {
+                    printClassesFromArtifactResult(a.getFile());
                 }
             } else {
-                ArtifactResult result =
-                        artifactResolver.resolveArtifact(buildingRequest, toArtifactCoordinate(coordinate));
-
-                printClassesFromArtifactResult(result);
+                Artifact a =
+                        resolverUtil.resolveArtifact(artifact, resolverUtil.remoteRepositories(remoteRepositories));
+                printClassesFromArtifactResult(a.getFile());
             }
-        } catch (ArtifactResolverException | DependencyResolverException | IOException e) {
+        } catch (IOException | ArtifactResolutionException | DependencyResolutionException e) {
             throw new MojoExecutionException("Couldn't download artifact: " + e.getMessage(), e);
         }
     }
 
-    private void printClassesFromArtifactResult(ArtifactResult result) throws IOException {
+    private void printClassesFromArtifactResult(File file) throws IOException {
         // open jar file in try-with-resources statement to guarantee the file closes after use regardless of errors
-        try (JarFile jarFile = new JarFile(result.getArtifact().getFile())) {
+        try (JarFile jarFile = new JarFile(file)) {
             Enumeration<JarEntry> entries = jarFile.entries();
 
             while (entries.hasMoreElements()) {
@@ -196,112 +195,5 @@ public class ListClassesMojo extends AbstractMojo {
                 getLog().info(className);
             }
         }
-    }
-
-    boolean hasGAVSpecified() {
-        return artifact != null || (groupId != null && artifactId != null && version != null);
-    }
-
-    private ProjectBuildingRequest makeBuildingRequest() throws MojoExecutionException, MojoFailureException {
-        if (!hasGAVSpecified()) {
-            throw new MojoFailureException("You must specify an artifact OR GAV separately, "
-                    + "e.g. -Dartifact=org.apache.maven.plugins:maven-downloader-plugin:1.0 OR "
-                    + "-DgroupId=org.apache.maven.plugins -DartifactId=maven-downloader-plugin -Dversion=1.0");
-        }
-
-        String[] tokens = artifact != null
-                ? artifact.split(":")
-                : classifier != null
-                        ? new String[] {groupId, artifactId, version, packaging, classifier}
-                        : packaging != null
-                                ? new String[] {groupId, artifactId, version, packaging}
-                                : new String[] {groupId, artifactId, version};
-        if (tokens.length < 3 || tokens.length > 5) {
-            throw new MojoFailureException("Invalid artifact, you must specify "
-                    + "groupId:artifactId:version[:packaging[:classifier]] " + artifact);
-        }
-        coordinate.setGroupId(tokens[0]);
-        coordinate.setArtifactId(tokens[1]);
-        coordinate.setVersion(tokens[2]);
-        if (tokens.length >= 4) {
-            coordinate.setType(tokens[3]);
-        }
-        if (tokens.length == 5) {
-            coordinate.setClassifier(tokens[4]);
-        }
-
-        ArtifactRepositoryPolicy always = new ArtifactRepositoryPolicy(
-                true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
-
-        List<ArtifactRepository> repoList = new ArrayList<>();
-
-        if (pomRemoteRepositories != null) {
-            repoList.addAll(pomRemoteRepositories);
-        }
-
-        if (remoteRepositories != null) {
-            // Use the same format as in the deploy plugin id::layout::url
-            String[] repos = remoteRepositories.split(",");
-            for (String repo : repos) {
-                repoList.add(parseRepository(repo, always));
-            }
-        }
-
-        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-
-        Settings settings = session.getSettings();
-        repositorySystem.injectMirror(repoList, settings.getMirrors());
-        repositorySystem.injectProxy(repoList, settings.getProxies());
-        repositorySystem.injectAuthentication(repoList, settings.getServers());
-
-        buildingRequest.setRemoteRepositories(repoList);
-
-        return buildingRequest;
-    }
-
-    private ArtifactCoordinate toArtifactCoordinate(DependableCoordinate dependableCoordinate) {
-        ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(dependableCoordinate.getType());
-        DefaultArtifactCoordinate artifactCoordinate = new DefaultArtifactCoordinate();
-        artifactCoordinate.setGroupId(dependableCoordinate.getGroupId());
-        artifactCoordinate.setArtifactId(dependableCoordinate.getArtifactId());
-        artifactCoordinate.setVersion(dependableCoordinate.getVersion());
-        artifactCoordinate.setClassifier(dependableCoordinate.getClassifier());
-        artifactCoordinate.setExtension(artifactHandler.getExtension());
-        return artifactCoordinate;
-    }
-
-    protected ArtifactRepository parseRepository(String repo, ArtifactRepositoryPolicy policy)
-            throws MojoFailureException {
-        // if it's a simple url
-        String id = "temp";
-        ArtifactRepositoryLayout layout = getLayout("default");
-
-        // if it's an extended repo URL of the form id::layout::url
-        if (repo.contains("::")) {
-            Matcher matcher = ALT_REPO_SYNTAX_PATTERN.matcher(repo);
-            if (!matcher.matches()) {
-                throw new MojoFailureException(
-                        repo,
-                        "Invalid syntax for repository: " + repo,
-                        "Invalid syntax for repository. Use \"id::layout::url\" or \"URL\".");
-            }
-
-            id = matcher.group(1).trim();
-            if (!(matcher.group(2) == null || matcher.group(2).trim().isEmpty())) {
-                layout = getLayout(matcher.group(2).trim());
-            }
-            repo = matcher.group(3).trim();
-        }
-        return new MavenArtifactRepository(id, repo, layout, policy, policy);
-    }
-
-    private ArtifactRepositoryLayout getLayout(String id) throws MojoFailureException {
-        ArtifactRepositoryLayout layout = repositoryLayouts.get(id);
-
-        if (layout == null) {
-            throw new MojoFailureException(id, "Invalid repository layout", "Invalid repository layout: " + id);
-        }
-
-        return layout;
     }
 }

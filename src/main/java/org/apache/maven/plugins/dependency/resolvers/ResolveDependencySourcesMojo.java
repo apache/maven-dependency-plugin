@@ -18,37 +18,61 @@
  */
 package org.apache.maven.plugins.dependency.resolvers;
 
-import org.apache.maven.plugin.MojoExecutionException;
+import javax.inject.Inject;
+
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Goal that resolves the project source dependencies from the repository.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
- * @since 2.0-alpha2
+ * @since 2.0-alpha2/3.7.0
  */
 @Mojo(
-        name = "sources",
+        name = "resolve-sources",
         defaultPhase = LifecyclePhase.GENERATE_SOURCES,
         requiresDependencyResolution = ResolutionScope.TEST,
         threadSafe = true)
 public class ResolveDependencySourcesMojo extends ResolveDependenciesMojo {
 
-    private static final String SOURCE_CLASSIFIER = "sources";
+    private static final String SOURCES_CLASSIFIER = "sources";
 
-    /**
-     * Main entry into mojo. Gets the list of dependencies and iterates through resolving the source jars.
-     *
-     * @throws MojoExecutionException with a message if an error occurs.
-     */
-    @Override
-    protected void doExecute() throws MojoExecutionException {
-        if (this.classifier == null || this.classifier.isEmpty()) {
-            this.classifier = SOURCE_CLASSIFIER;
-        }
+    @Inject
+    // CHECKSTYLE_OFF: ParameterNumber
+    public ResolveDependencySourcesMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(
+                session,
+                buildContext,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
+    }
+    // CHECKSTYLE_ON: ParameterNumber
 
-        super.doExecute();
+    @Parameter(name = "classifier", defaultValue = SOURCES_CLASSIFIER, readonly = true)
+    public void setClassifier(String classifier) {
+        this.classifier = classifier;
     }
 }

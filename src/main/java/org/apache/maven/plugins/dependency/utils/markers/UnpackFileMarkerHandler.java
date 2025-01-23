@@ -20,7 +20,6 @@ package org.apache.maven.plugins.dependency.utils.markers;
 
 import java.io.File;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
 
 /**
@@ -50,24 +49,24 @@ public class UnpackFileMarkerHandler extends DefaultFileMarkerHandler {
 
     @Override
     protected File getMarkerFile() {
-        /**
+        /*
          * Build a hash of all include/exclude strings, to determine if an artifactItem has been unpacked using the
-         * include/exclude parameters, this will allow an artifact to be included multiple times with different
-         * include/exclude parameters
+         * include/exclude parameters. This allows an artifact to be included multiple times with different
+         * include/exclude parameters.
          */
         File markerFile;
         if (this.artifactItem == null
-                || (StringUtils.isEmpty(this.artifactItem.getIncludes())
-                        && StringUtils.isEmpty(this.artifactItem.getExcludes()))) {
+                || this.artifactItem.getIncludes().isEmpty()
+                        && this.artifactItem.getExcludes().isEmpty()) {
             markerFile = super.getMarkerFile();
         } else {
             int includeExcludeHash = 0;
 
-            if (StringUtils.isNotEmpty(this.artifactItem.getIncludes())) {
+            if (!this.artifactItem.getIncludes().isEmpty()) {
                 includeExcludeHash += this.artifactItem.getIncludes().hashCode();
             }
 
-            if (StringUtils.isNotEmpty(this.artifactItem.getExcludes())) {
+            if (!this.artifactItem.getExcludes().isEmpty()) {
                 includeExcludeHash += this.artifactItem.getExcludes().hashCode();
             }
 

@@ -28,6 +28,7 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 
 public class ResolveDependenciesMojoTest extends AbstractDependencyMojoTestCase {
+    @Override
     protected void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp("dss", true);
@@ -45,7 +46,7 @@ public class ResolveDependenciesMojoTest extends AbstractDependencyMojoTestCase 
     }
 
     public void testDependencyStatusEmptySet() {
-        doTestDependencyStatusLog(new HashSet<Artifact>());
+        doTestDependencyStatusLog(new HashSet<>());
     }
 
     public void testOptionalDependencyFormatting() throws IOException {
@@ -60,8 +61,7 @@ public class ResolveDependenciesMojoTest extends AbstractDependencyMojoTestCase 
         assertTrue(output.contains("g:a:jar:1.0:test (optional)" + System.lineSeparator()));
     }
 
-    public void doTestDependencyStatusLog(Set<Artifact> artifacts) {
-        // TODO: implement logger to check correct output
+    private void doTestDependencyStatusLog(Set<Artifact> artifacts) {
         // this test is just looking for unexpected exceptions.
 
         ResolveDependenciesMojo mojo = newMojo(new DependencyStatusSets());
@@ -100,7 +100,7 @@ public class ResolveDependenciesMojoTest extends AbstractDependencyMojoTestCase 
     }
 
     private ResolveDependenciesMojo newMojo(final DependencyStatusSets dss) {
-        ResolveDependenciesMojo mojo = new ResolveDependenciesMojo();
+        ResolveDependenciesMojo mojo = new ResolveDependenciesMojo(null, null, null, null, null, null, null, null);
         mojo.results = dss;
         return mojo;
     }

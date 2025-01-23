@@ -18,25 +18,22 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.Restriction;
-import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -60,15 +57,14 @@ import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 import org.apache.maven.shared.dependency.graph.traversal.FilteringDependencyNodeVisitor;
 import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor;
 import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor.GraphTokens;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.repository.RemoteRepository;
 
 /**
  * Displays the dependency tree for this project. Multiple formats are supported: text (by default), but also
  * <a href="https://en.wikipedia.org/wiki/DOT_language">DOT</a>,
- * <a href="https://en.wikipedia.org/wiki/GraphML">GraphML</a>, and
- * <a href="https://en.wikipedia.org/wiki/Trivial_Graph_Format">TGF</a>.
+ * <a href="https://en.wikipedia.org/wiki/GraphML">GraphML</a>,
+ * <a href="https://en.wikipedia.org/wiki/Trivial_Graph_Format">TGF</a> and
+ * <a href="https://en.wikipedia.org/wiki/JSON">JSON</a>.
+ *
  *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @since 2.0-alpha-5
@@ -80,50 +76,22 @@ public class TreeMojo extends AbstractMojo {
     /**
      * The Maven project.
      */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
+    private final MavenProject project;
 
-    @Parameter(defaultValue = "${session}", readonly = true, required = true)
-    private MavenSession session;
-
-    @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
-    private String outputEncoding;
-
-    /**
-     * Contains the full list of projects in the reactor.
-     */
-    @Parameter(defaultValue = "${reactorProjects}", readonly = true, required = true)
-    private List<MavenProject> reactorProjects;
-
-    @Component
-    private RepositorySystem repositorySystem;
-
-    @Parameter(defaultValue = "${repositorySystem}")
-    RepositorySystem repositorySystemParam;
-
-    /**
-     * The current repository/network configuration of Maven.
-     */
-    @Parameter(defaultValue = "${repositorySystemSession}")
-    private RepositorySystemSession repoSession;
-
-    /**
-     * The project's remote repositories to use for the resolution of project dependencies.
-     */
-    @Parameter(defaultValue = "${project.remoteProjectRepositories}")
-    private List<RemoteRepository> projectRepos;
+    private final MavenSession session;
 
     /**
      * The dependency collector builder to use.
      */
-    @Component(hint = "default")
-    private DependencyCollectorBuilder dependencyCollectorBuilder;
+    private final DependencyCollectorBuilder dependencyCollectorBuilder;
 
     /**
      * The dependency graph builder to use.
      */
-    @Component(hint = "default")
-    private DependencyGraphBuilder dependencyGraphBuilder;
+    private final DependencyGraphBuilder dependencyGraphBuilder;
+
+    @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
+    private String outputEncoding;
 
     /**
      * If specified, this parameter will cause the dependency tree to be written to the path specified, instead of
@@ -136,7 +104,8 @@ public class TreeMojo extends AbstractMojo {
 
     /**
      * If specified, this parameter will cause the dependency tree to be written using the specified format. Currently
-     * supported format are: <code>text</code> (default), <code>dot</code>, <code>graphml</code> and <code>tgf</code>.
+     * supported formats are: <code>text</code> (default), <code>dot</code>, <code>graphml</code>, <code>tgf</code>
+     * and <code>json</code>.
      * These additional formats can be plotted to image files.
      *
      * @since 2.2
@@ -190,7 +159,7 @@ public class TreeMojo extends AbstractMojo {
      * @since 2.0-alpha-6
      */
     @Parameter(property = "includes")
-    private String includes;
+    private List<String> includes;
 
     /**
      * A comma-separated list of artifacts to filter from the serialized dependency tree, or <code>null</code> not to
@@ -211,7 +180,7 @@ public class TreeMojo extends AbstractMojo {
      * @since 2.0-alpha-6
      */
     @Parameter(property = "excludes")
-    private String excludes;
+    private List<String> excludes;
 
     /**
      * The computed dependency tree root node of the Maven project.
@@ -233,6 +202,19 @@ public class TreeMojo extends AbstractMojo {
      */
     @Parameter(property = "skip", defaultValue = "false")
     private boolean skip;
+
+    @Inject
+    public TreeMojo(
+            MavenProject project,
+            MavenSession session,
+            DependencyCollectorBuilder dependencyCollectorBuilder,
+            DependencyGraphBuilder dependencyGraphBuilder) {
+        this.project = project;
+        this.session = session;
+        this.dependencyCollectorBuilder = dependencyCollectorBuilder;
+        this.dependencyGraphBuilder = dependencyGraphBuilder;
+    }
+
     // Mojo methods -----------------------------------------------------------
 
     /*
@@ -380,6 +362,8 @@ public class TreeMojo extends AbstractMojo {
             return new TGFDependencyNodeVisitor(writer);
         } else if ("dot".equals(outputType)) {
             return new DOTDependencyNodeVisitor(writer);
+        } else if ("json".equals(outputType)) {
+            return new JsonDependencyNodeVisitor(writer);
         } else {
             return new SerializingDependencyNodeVisitor(writer, toGraphTokens(tokens));
         }
@@ -418,55 +402,23 @@ public class TreeMojo extends AbstractMojo {
         List<DependencyNodeFilter> filters = new ArrayList<>();
 
         // filter includes
-        if (includes != null) {
-            List<String> patterns = Arrays.asList(includes.split(","));
+        if (includes != null && !includes.isEmpty()) {
 
-            getLog().debug("+ Filtering dependency tree by artifact include patterns: " + patterns);
+            getLog().debug("+ Filtering dependency tree by artifact include patterns: " + includes);
 
-            ArtifactFilter artifactFilter = new StrictPatternIncludesArtifactFilter(patterns);
+            ArtifactFilter artifactFilter = new StrictPatternIncludesArtifactFilter(includes);
             filters.add(new ArtifactDependencyNodeFilter(artifactFilter));
         }
 
         // filter excludes
-        if (excludes != null) {
-            List<String> patterns = Arrays.asList(excludes.split(","));
+        if (excludes != null && !excludes.isEmpty()) {
 
-            getLog().debug("+ Filtering dependency tree by artifact exclude patterns: " + patterns);
+            getLog().debug("+ Filtering dependency tree by artifact exclude patterns: " + excludes);
 
-            ArtifactFilter artifactFilter = new StrictPatternExcludesArtifactFilter(patterns);
+            ArtifactFilter artifactFilter = new StrictPatternExcludesArtifactFilter(excludes);
             filters.add(new ArtifactDependencyNodeFilter(artifactFilter));
         }
 
         return filters.isEmpty() ? null : new AndDependencyNodeFilter(filters);
-    }
-
-    // following is required because the version handling in maven code
-    // doesn't work properly. I ripped it out of the enforcer rules.
-
-    /**
-     * Copied from Artifact.VersionRange. This is tweaked to handle singular ranges properly. Currently the default
-     * containsVersion method assumes a singular version means allow everything. This method assumes that "2.0.4" ==
-     * "[2.0.4,)"
-     *
-     * @param allowedRange range of allowed versions.
-     * @param theVersion the version to be checked.
-     * @return true if the version is contained by the range.
-     * @deprecated This method is unused in this project and will be removed in the future.
-     */
-    @Deprecated
-    public static boolean containsVersion(VersionRange allowedRange, ArtifactVersion theVersion) {
-        ArtifactVersion recommendedVersion = allowedRange.getRecommendedVersion();
-        if (recommendedVersion == null) {
-            List<Restriction> restrictions = allowedRange.getRestrictions();
-            for (Restriction restriction : restrictions) {
-                if (restriction.containsVersion(theVersion)) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            // only singular versions ever have a recommendedVersion
-            return recommendedVersion.compareTo(theVersion) <= 0;
-        }
     }
 }

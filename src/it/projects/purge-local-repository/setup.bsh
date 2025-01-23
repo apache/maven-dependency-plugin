@@ -24,6 +24,4 @@ File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency
 purgedJar.getParentFile().mkdirs();
 purgedJar.createNewFile();
 
-System.out.println( "Created dummy JAR " + purgedJar );
-
 return true;

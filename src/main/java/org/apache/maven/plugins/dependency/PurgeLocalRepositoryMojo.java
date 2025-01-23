@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,7 +42,6 @@ import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecution.Source;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -80,31 +81,38 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     private static final String GROUP_ID_FUZZINESS = "groupId";
 
     /**
+     * The current Maven project.
+     */
+    private final MavenProject project;
+
+    private final MavenSession session;
+
+    /**
+     * Artifact handler manager.
+     */
+    private final ArtifactHandlerManager artifactHandlerManager;
+
+    /**
+     * The dependency resolver
+     */
+    private final DependencyResolver dependencyResolver;
+
+    /**
+     * The artifact resolver used to re-resolve dependencies, if that option is enabled.
+     */
+    private final ArtifactResolver artifactResolver;
+
+    /**
      * The Maven projects in the reactor.
      */
     @Parameter(defaultValue = "${reactorProjects}", readonly = true, required = true)
     private List<MavenProject> reactorProjects;
 
     /**
-     * The current Maven project.
-     */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
-
-    @Parameter(defaultValue = "${session}", readonly = true, required = true)
-    private MavenSession session;
-
-    /**
      * This mojo execution, used to determine if it was launched from the lifecycle or the command-line.
      */
     @Parameter(defaultValue = "${mojo}", required = true, readonly = true)
     private MojoExecution mojoExecution;
-
-    /**
-     * Artifact handler manager.
-     */
-    @Component
-    private ArtifactHandlerManager artifactHandlerManager;
 
     /**
      * The list of dependencies in the form of groupId:artifactId which should BE deleted/purged from the local
@@ -173,18 +181,6 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     private ArtifactRepository localRepository;
 
     /**
-     * The dependency resolver
-     */
-    @Component
-    private DependencyResolver dependencyResolver;
-
-    /**
-     * The artifact resolver used to re-resolve dependencies, if that option is enabled.
-     */
-    @Component
-    private ArtifactResolver artifactResolver;
-
-    /**
      * Determines how liberally the plugin will delete an artifact from the local repository. Values are: <br/>
      * <ul>
      * <li><b>file</b> - Eliminate only the artifact's file.</li>
@@ -223,6 +219,20 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
      */
     @Parameter(property = "skip", defaultValue = "false")
     private boolean skip;
+
+    @Inject
+    public PurgeLocalRepositoryMojo(
+            MavenProject project,
+            MavenSession session,
+            ArtifactHandlerManager artifactHandlerManager,
+            DependencyResolver dependencyResolver,
+            ArtifactResolver artifactResolver) {
+        this.session = session;
+        this.project = project;
+        this.artifactHandlerManager = artifactHandlerManager;
+        this.dependencyResolver = dependencyResolver;
+        this.artifactResolver = artifactResolver;
+    }
 
     /**
      * Includes only direct project dependencies.
@@ -301,7 +311,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
             manualIncludes = this.parseIncludes(manualInclude);
         }
         // If it's a manual purge, the only step is to delete from the local repo
-        if (manualIncludes != null && manualIncludes.size() > 0) {
+        if (manualIncludes != null && !manualIncludes.isEmpty()) {
             manualPurge(manualIncludes);
             return;
         }
@@ -378,7 +388,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
                 .a(theIncludes.size() != 1 ? "dependencies" : "dependency")
                 .a(" from ")
                 .strong(localRepository.getBasedir())
-                .toString());
+                .build());
 
         for (String gavPattern : theIncludes) {
             if (gavPattern == null || gavPattern.isEmpty()) {
@@ -569,7 +579,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
                 .a(" with artifact ")
                 .strong(resolutionFuzziness)
                 .a(" resolution fuzziness")
-                .toString());
+                .build());
 
         for (Artifact artifact : artifacts) {
             verbose("Purging artifact: " + artifact.getId());
@@ -622,7 +632,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
             }
         }
 
-        if (missingArtifacts.size() > 0) {
+        if (!missingArtifacts.isEmpty()) {
             StringBuilder message = new StringBuilder("required artifacts missing:");
             message.append(System.lineSeparator());
             for (Artifact missingArtifact : missingArtifacts) {

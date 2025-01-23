@@ -18,17 +18,21 @@
  */
 package org.apache.maven.plugins.dependency.analyze;
 
+import javax.inject.Inject;
+
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.PlexusContainer;
 
 /**
  * Analyzes the dependencies of this project and determines which are: used and declared; used and undeclared; unused
- * and declared. This goal is intended to be used standalone, thus it always executes the <code>test-compile</code>
- * phase - use the <code>dependency:analyze-only</code> goal instead when participating in the build lifecycle.
+ * and declared. This goal is intended to be used standalone. Thus, it always executes the <code>test-compile</code>
+ * phase. Use the <code>dependency:analyze-only</code> goal instead when participating in the build lifecycle.
  * <p>
- * By default, <a href="http://maven.apache.org/shared/maven-dependency-analyzer/">maven-dependency-analyzer</a> is used
+ * By default, <a href="https://maven.apache.org/shared/maven-dependency-analyzer/">maven-dependency-analyzer</a> is used
  * to perform the analysis, with limitations due to the fact that it works at bytecode level, but any analyzer can be
  * plugged in through <code>analyzer</code> parameter.
  * </p>
@@ -41,4 +45,9 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 @Execute(phase = LifecyclePhase.TEST_COMPILE)
 public class AnalyzeMojo extends AbstractAnalyzeMojo {
     // subclassed to provide annotations
+
+    @Inject
+    public AnalyzeMojo(PlexusContainer plexusContainer, MavenProject project) {
+        super(plexusContainer, project);
+    }
 }

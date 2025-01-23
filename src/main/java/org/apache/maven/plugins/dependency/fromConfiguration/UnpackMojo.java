@@ -18,13 +18,15 @@
  */
 package org.apache.maven.plugins.dependency.fromConfiguration;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -33,7 +35,11 @@ import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.plugins.dependency.utils.filters.MarkerFileFilter;
 import org.apache.maven.plugins.dependency.utils.markers.MarkerHandler;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Goal that retrieves a list of artifacts from the repository and unpacks them in a defined location.
@@ -44,8 +50,7 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
 @Mojo(name = "unpack", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresProject = false, threadSafe = true)
 public class UnpackMojo extends AbstractFromConfigurationMojo {
 
-    @Component
-    UnpackUtil unpackUtil;
+    private final UnpackUtil unpackUtil;
 
     /**
      * Directory to store flag files after unpack
@@ -97,6 +102,19 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     @SuppressWarnings("unused") // marker-field, setArtifact(String) does the magic
     @Parameter(property = "artifact")
     private String artifact;
+
+    @Inject
+    public UnpackMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ArtifactResolver artifactResolver,
+            RepositoryManager repositoryManager,
+            ArtifactHandlerManager artifactHandlerManager,
+            UnpackUtil unpackUtil) {
+        super(session, buildContext, project, artifactResolver, repositoryManager, artifactHandlerManager);
+        this.unpackUtil = unpackUtil;
+    }
 
     /**
      * Main entry into mojo. This method gets the ArtifactItems and iterates through each one passing it to
@@ -165,10 +183,10 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
         List<ArtifactItem> items =
                 super.getProcessedArtifactItems(new ProcessArtifactItemsRequest(removeVersion, false, false, false));
         for (ArtifactItem artifactItem : items) {
-            if (StringUtils.isEmpty(artifactItem.getIncludes())) {
+            if (artifactItem.getIncludes().isEmpty()) {
                 artifactItem.setIncludes(getIncludes());
             }
-            if (StringUtils.isEmpty(artifactItem.getExcludes())) {
+            if (artifactItem.getExcludes().isEmpty()) {
                 artifactItem.setExcludes(getExcludes());
             }
         }

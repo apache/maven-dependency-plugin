@@ -29,13 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
@@ -55,19 +53,6 @@ import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
  */
 public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     // fields -----------------------------------------------------------------
-
-    /**
-     * The plexusContainer to look-up the right {@link ProjectDependencyAnalyzer} implementation depending on the mojo
-     * configuration.
-     */
-    @Component
-    private PlexusContainer plexusContainer;
-
-    /**
-     * The Maven project to analyze.
-     */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
 
     /**
      * Specify the project dependency analyzer to use (plexus component role-hint). By default,
@@ -94,7 +79,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
     /**
      * Ignore Runtime/Provided/Test/System scopes for unused dependency analysis.
-     *
+     * <p>
      * <code><b>Non-test scoped</b></code> list will be not affected.
      */
     @Parameter(property = "ignoreNonCompile", defaultValue = "false")
@@ -216,7 +201,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private String[] ignoredUsedUndeclaredDependencies = new String[0];
 
     /**
-     * List of dependencies that will be ignored if they are declared but unused. The filter syntax is:
+     * List of dependencies that are ignored if they are declared but unused. The filter syntax is:
      *
      * <pre>
      * [groupId]:[artifactId]:[type]:[version]
@@ -225,17 +210,17 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard. *
      * <p>
-     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
+     * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
      *
      * @since 2.10
      */
-    @Parameter
-    private String[] ignoredUnusedDeclaredDependencies = new String[0];
+    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    private String[] ignoredUnusedDeclaredDependencies;
 
     /**
-     * List of dependencies that will be ignored if they are in not test scope but are only used in test classes.
+     * List of dependencies that are ignored if they are in not test scope but are only used in test classes.
      * The filter syntax is:
      *
      * <pre>
@@ -245,14 +230,14 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
      * segment is treated as an implicit wildcard. *
      * <p>
-     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
+     * For example, <code>org.apache.*</code> matched all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
      *
      * @since 3.3.0
      */
-    @Parameter
-    private String[] ignoredNonTestScopedDependencies = new String[0];
+    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    private String[] ignoredNonTestScopedDependencies;
 
     /**
      * List of project packaging that will be ignored.
@@ -261,10 +246,32 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 3.2.1
      */
-    // defaultValue value on @Parameter - not work with Maven 3.2.5
-    // When is set defaultValue always win, and there is no possibility to override by plugin configuration.
-    @Parameter
-    private List<String> ignoredPackagings = Arrays.asList("pom", "ear");
+    @Parameter(defaultValue = "pom,ear")
+    private List<String> ignoredPackagings;
+
+    /**
+     * List of class patterns excluded from analyze. Java regular expression pattern is applied to full class name.
+     *
+     * @since 3.7.0
+     */
+    @Parameter(property = "mdep.analyze.excludedClasses")
+    private Set<String> excludedClasses;
+
+    /**
+     * The plexusContainer to look up the {@link ProjectDependencyAnalyzer} implementation depending on the mojo
+     * configuration.
+     */
+    private final PlexusContainer plexusContainer;
+
+    /**
+     * The Maven project to analyze.
+     */
+    private final MavenProject project;
+
+    protected AbstractAnalyzeMojo(PlexusContainer plexusContainer, MavenProject project) {
+        this.plexusContainer = plexusContainer;
+        this.project = project;
+    }
 
     // Mojo methods -----------------------------------------------------------
 
@@ -321,7 +328,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean checkDependencies() throws MojoExecutionException {
         ProjectDependencyAnalysis analysis;
         try {
-            analysis = createProjectDependencyAnalyzer().analyze(project);
+            analysis = createProjectDependencyAnalyzer().analyze(project, excludedClasses);
 
             if (usedDependencies != null) {
                 analysis = analysis.forceDeclaredDependenciesUsage(usedDependencies);
@@ -496,9 +503,6 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
             PrettyPrintXMLWriter writer = new PrettyPrintXMLWriter(out);
 
             for (Artifact artifact : artifacts) {
-                // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
-                artifact.isSnapshot();
-
                 writer.startElement("dependency");
                 writer.startElement("groupId");
                 writer.writeText(artifact.getGroupId());
@@ -509,7 +513,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                 writer.startElement("version");
                 writer.writeText(artifact.getBaseVersion());
                 String classifier = artifact.getClassifier();
-                if (StringUtils.isNotBlank(classifier)) {
+                if (classifier != null && !classifier.trim().isEmpty()) {
                     writer.startElement("classifier");
                     writer.writeText(artifact.getClassifier());
                     writer.endElement();

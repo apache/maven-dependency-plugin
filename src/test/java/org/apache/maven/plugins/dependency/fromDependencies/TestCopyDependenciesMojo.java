@@ -30,10 +30,14 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.testing.stubs.ArtifactStub;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.RepositorySystem;
 
 public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
@@ -44,17 +48,22 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         // required for mojo lookups to work
         super.setUp("copy-dependencies", true, false);
 
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
+
+        RepositorySystem repositorySystem = lookup(RepositorySystem.class);
+        ResolverUtil resolverUtil = new ResolverUtil(repositorySystem, () -> session);
+        getContainer().addComponent(resolverUtil, ResolverUtil.class.getName());
+
         File testPom = new File(getBasedir(), "target/test-classes/unit/copy-dependencies-test/plugin-config.xml");
         mojo = (CopyDependenciesMojo) lookupMojo("copy-dependencies", testPom);
         mojo.outputDirectory = new File(this.testDir, "outputDirectory");
-        // mojo.silent = true;
 
         assertNotNull(mojo);
         assertNotNull(mojo.getProject());
-        MavenProject project = mojo.getProject();
-
-        MavenSession session = newMavenSession(project);
-        setVariableValueToObject(mojo, "session", session);
 
         LegacySupport legacySupport = lookup(LegacySupport.class);
         legacySupport.setSession(session);
@@ -65,7 +74,6 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         artifacts.addAll(directArtifacts);
 
         project.setArtifacts(artifacts);
-        project.setDependencyArtifacts(directArtifacts);
         mojo.markersDirectory = new File(this.testDir, "markers");
 
         ArtifactHandlerManager manager = lookup(ArtifactHandlerManager.class);
@@ -77,14 +85,19 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         assertFalse(handle.isMarkerSet());
     }
 
-    public void testCopyFile() throws MojoExecutionException, IOException {
+    public void testCopyArtifactFile() throws Exception {
+        final Artifact srcArtifact = new ArtifactStub();
+        srcArtifact.setGroupId("org.apache.maven.plugins");
+        srcArtifact.setArtifactId("maven-dependency-plugin-dummy");
+        srcArtifact.setVersion("1.0");
         File src = File.createTempFile("copy", null);
+        srcArtifact.setFile(src);
 
         File dest = new File(mojo.outputDirectory, "toMe.jar");
 
         assertFalse(dest.exists());
 
-        copyFile(mojo, src, dest);
+        copyArtifactFile(srcArtifact, dest);
         assertTrue(dest.exists());
     }
 
@@ -146,7 +159,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         mojo.excludeTransitive = true;
         mojo.execute();
 
-        Set<Artifact> artifacts = mojo.getProject().getDependencyArtifacts();
+        Set<Artifact> artifacts = mojo.getProject().getArtifacts();
         for (Artifact artifact : artifacts) {
             String fileName = DependencyUtil.getFormattedFileName(artifact, false);
             File file = new File(mojo.outputDirectory, fileName);
@@ -156,7 +169,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testExcludeType() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getTypedArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
+
         mojo.excludeTypes = "jar";
         mojo.execute();
 
@@ -170,7 +183,6 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testIncludeType() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getTypedArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
 
         mojo.includeTypes = "jar";
         mojo.excludeTypes = "jar";
@@ -198,7 +210,6 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testExcludeArtifactId() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getArtifactArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
         mojo.excludeArtifactIds = "one";
         mojo.execute();
 
@@ -212,7 +223,6 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testIncludeArtifactId() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getArtifactArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
 
         mojo.includeArtifactIds = "one";
         mojo.excludeArtifactIds = "one";
@@ -240,7 +250,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testIncludeGroupId() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getGroupIdArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
+
         mojo.includeGroupIds = "one";
         mojo.excludeGroupIds = "one";
         // shouldn't get anything
@@ -267,7 +277,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testExcludeGroupId() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getGroupIdArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
+
         mojo.excludeGroupIds = "one";
         mojo.execute();
 
@@ -282,7 +292,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testExcludeMultipleGroupIds() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getGroupIdArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
+
         mojo.excludeGroupIds = "one,two";
         mojo.execute();
 
@@ -298,7 +308,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testExcludeClassifier() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getClassifiedArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
+
         mojo.excludeClassifiers = "one";
         mojo.execute();
 
@@ -312,7 +322,6 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testIncludeClassifier() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getClassifiedArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
 
         mojo.includeClassifiers = "one";
         mojo.excludeClassifiers = "one";
@@ -340,7 +349,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testSubPerType() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getTypedArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
+
         mojo.useSubDirectoryPerType = true;
         mojo.execute();
 
@@ -414,6 +423,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void dotestArtifactExceptions() throws MojoFailureException {
         mojo.classifier = "jdk";
+        mojo.failOnMissingClassifierArtifact = true;
         mojo.type = "java-sources";
 
         try {
@@ -440,7 +450,6 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         artifacts.add(release);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteIfNewer = false;
 
@@ -471,7 +480,6 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         artifacts.add(release);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = true;
         mojo.overWriteIfNewer = false;
@@ -499,7 +507,6 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         artifacts.add(snap);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = false;
         mojo.overWriteSnapshots = false;
@@ -548,16 +555,14 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
     }
 
     public void testGetDependencies() throws MojoExecutionException {
-        assertEquals(
-                mojo.getResolvedDependencies(true).toString(),
-                mojo.getDependencySets(true).getResolvedDependencies().toString());
+        assertTrue(mojo.getResolvedDependencies(true)
+                .containsAll(mojo.getDependencySets(true).getResolvedDependencies()));
     }
 
     public void testExcludeProvidedScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
+
         mojo.excludeScope = "provided";
-        // mojo.silent = false;
 
         mojo.execute();
 
@@ -573,9 +578,8 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testExcludeSystemScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
+
         mojo.excludeScope = "system";
-        // mojo.silent = false;
 
         mojo.execute();
 
@@ -591,7 +595,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testExcludeCompileScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
+
         mojo.excludeScope = "compile";
         mojo.execute();
         ScopeArtifactFilter saf = new ScopeArtifactFilter(mojo.excludeScope);
@@ -607,7 +611,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testExcludeTestScope() throws IOException, MojoFailureException {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
+
         mojo.excludeScope = "test";
 
         try {
@@ -620,7 +624,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
     public void testExcludeRuntimeScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
-        mojo.getProject().setDependencyArtifacts(new HashSet<Artifact>());
+
         mojo.excludeScope = "runtime";
         mojo.execute();
         ScopeArtifactFilter saf = new ScopeArtifactFilter(mojo.excludeScope);

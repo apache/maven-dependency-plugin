@@ -21,12 +21,12 @@ package org.apache.maven.plugins.dependency.utils.translators;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
-import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
+import org.eclipse.aether.util.artifact.SubArtifact;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
@@ -39,13 +39,13 @@ public class ClassifierTypeTranslator implements ArtifactTranslator {
     private String type;
 
     /**
-     * @param artifactHanderManager {@link ArtifactHandlerManager}.
+     * @param artifactHandlerManager {@link ArtifactHandlerManager}.
      * @param theClassifier The classifier to use.
      * @param theType The type.
      */
     public ClassifierTypeTranslator(
-            ArtifactHandlerManager artifactHanderManager, String theClassifier, String theType) {
-        this.artifactHandlerManager = artifactHanderManager;
+            ArtifactHandlerManager artifactHandlerManager, String theClassifier, String theType) {
+        this.artifactHandlerManager = artifactHandlerManager;
         this.classifier = theClassifier;
         this.type = theType;
     }
@@ -56,8 +56,8 @@ public class ClassifierTypeTranslator implements ArtifactTranslator {
      * org.apache.maven.plugin.logging.Log)
      */
     @Override
-    public Set<ArtifactCoordinate> translate(Set<Artifact> artifacts, Log log) {
-        Set<ArtifactCoordinate> results;
+    public Set<org.eclipse.aether.artifact.Artifact> translate(Set<Artifact> artifacts, Log log) {
+        Set<org.eclipse.aether.artifact.Artifact> results;
 
         log.debug("Translating Artifacts using Classifier: " + this.classifier + " and Type: " + this.type);
         results = new LinkedHashSet<>();
@@ -88,30 +88,7 @@ public class ClassifierTypeTranslator implements ArtifactTranslator {
                 useClassifier = artifact.getClassifier();
             }
 
-            DefaultArtifactCoordinate coordinate = new DefaultArtifactCoordinate();
-            coordinate.setGroupId(artifact.getGroupId());
-            coordinate.setArtifactId(artifact.getArtifactId());
-            coordinate.setVersion(artifact.getVersion());
-            coordinate.setClassifier(useClassifier);
-            coordinate.setExtension(extension);
-
-            // // Create a new artifact
-            // Artifact newArtifact = factory.createArtifactWithClassifier( artifact.getGroupId(), artifact
-            // .getArtifactId(), artifact.getVersion(), useType, useClassifier );
-            //
-            // // note the new artifacts will always have the scope set to null. We
-            // // should
-            // // reset it here so that it will pass other filters if needed
-            // newArtifact.setScope( artifact.getScope() );
-            //
-            // if ( Artifact.SCOPE_SYSTEM.equals( newArtifact.getScope() ) )
-            // {
-            // File baseDir = repositoryManager.getLocalRepositoryBasedir( buildingRequest );
-            // String path = repositoryManager.getPathForLocalArtifact( buildingRequest, newArtifact );
-            // newArtifact.setFile( new File( baseDir, path ) );
-            // }
-
-            results.add(coordinate);
+            results.add(new SubArtifact(RepositoryUtils.toArtifact(artifact), useClassifier, extension));
         }
 
         return results;

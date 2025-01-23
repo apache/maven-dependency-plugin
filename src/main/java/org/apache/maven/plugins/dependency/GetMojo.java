@@ -18,13 +18,14 @@
  */
 package org.apache.maven.plugins.dependency;
 
+import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -35,7 +36,6 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
@@ -59,31 +59,25 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverE
 public class GetMojo extends AbstractMojo {
     private static final Pattern ALT_REPO_SYNTAX_PATTERN = Pattern.compile("(.+)::(.*)::(.+)");
 
-    @Parameter(defaultValue = "${session}", required = true, readonly = true)
-    private MavenSession session;
+    private final MavenSession session;
 
-    @Component
-    private ArtifactResolver artifactResolver;
+    private final ArtifactResolver artifactResolver;
 
-    @Component
-    private DependencyResolver dependencyResolver;
+    private final DependencyResolver dependencyResolver;
 
-    @Component
-    private ArtifactHandlerManager artifactHandlerManager;
+    private final ArtifactHandlerManager artifactHandlerManager;
 
     /**
      * Map that contains the layouts.
      */
-    @Component(role = ArtifactRepositoryLayout.class)
-    private Map<String, ArtifactRepositoryLayout> repositoryLayouts;
+    private final Map<String, ArtifactRepositoryLayout> repositoryLayouts;
 
     /**
      * The repository system.
      */
-    @Component
-    private RepositorySystem repositorySystem;
+    private final RepositorySystem repositorySystem;
 
-    private DefaultDependableCoordinate coordinate = new DefaultDependableCoordinate();
+    private final DefaultDependableCoordinate coordinate = new DefaultDependableCoordinate();
 
     /**
      * Repositories in the format id::[layout]::url or just url, separated by comma. ie.
@@ -98,14 +92,11 @@ public class GetMojo extends AbstractMojo {
     @Parameter(property = "artifact")
     private String artifact;
 
-    /**
-     *
-     */
     @Parameter(defaultValue = "${project.remoteArtifactRepositories}", readonly = true, required = true)
     private List<ArtifactRepository> pomRemoteRepositories;
 
     /**
-     * Download transitively, retrieving the specified artifact and all of its dependencies.
+     * Resolve transitively, retrieving the specified artifact and all of its dependencies.
      */
     @Parameter(property = "transitive", defaultValue = "true")
     private boolean transitive = true;
@@ -117,6 +108,22 @@ public class GetMojo extends AbstractMojo {
      */
     @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
+
+    @Inject
+    public GetMojo(
+            MavenSession session,
+            ArtifactResolver artifactResolver,
+            DependencyResolver dependencyResolver,
+            ArtifactHandlerManager artifactHandlerManager,
+            Map<String, ArtifactRepositoryLayout> repositoryLayouts,
+            RepositorySystem repositorySystem) {
+        this.session = session;
+        this.artifactResolver = artifactResolver;
+        this.dependencyResolver = dependencyResolver;
+        this.artifactHandlerManager = artifactHandlerManager;
+        this.repositoryLayouts = repositoryLayouts;
+        this.repositorySystem = repositorySystem;
+    }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -130,7 +137,7 @@ public class GetMojo extends AbstractMojo {
                     + "e.g. -Dartifact=org.apache.maven.plugins:maven-downloader-plugin:1.0");
         }
         if (artifact != null) {
-            String[] tokens = StringUtils.split(artifact, ":");
+            String[] tokens = artifact.split(":");
             if (tokens.length < 3 || tokens.length > 5) {
                 throw new MojoFailureException("Invalid artifact, you must specify "
                         + "groupId:artifactId:version[:packaging[:classifier]] " + artifact);
@@ -157,7 +164,7 @@ public class GetMojo extends AbstractMojo {
 
         if (remoteRepositories != null) {
             // Use the same format as in the deploy plugin id::layout::url
-            String[] repos = StringUtils.split(remoteRepositories, ",");
+            String[] repos = remoteRepositories.split(",");
             for (String repo : repos) {
                 repoList.add(parseRepository(repo, always));
             }
@@ -214,7 +221,7 @@ public class GetMojo extends AbstractMojo {
             }
 
             id = matcher.group(1).trim();
-            if (!StringUtils.isEmpty(matcher.group(2))) {
+            if (matcher.group(2) != null && !matcher.group(2).isEmpty()) {
                 layout = getLayout(matcher.group(2).trim());
             }
             url = matcher.group(3).trim();
@@ -240,7 +247,7 @@ public class GetMojo extends AbstractMojo {
     }
 
     /**
-     * The groupId of the artifact to download. Ignored if {@link #artifact} is used.
+     * The groupId of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
      * @param groupId The groupId.
      */
@@ -250,7 +257,7 @@ public class GetMojo extends AbstractMojo {
     }
 
     /**
-     * The artifactId of the artifact to download. Ignored if {@link #artifact} is used.
+     * The artifactId of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
      * @param artifactId The artifactId.
      */
@@ -260,7 +267,7 @@ public class GetMojo extends AbstractMojo {
     }
 
     /**
-     * The version of the artifact to download. Ignored if {@link #artifact} is used.
+     * The version of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
      * @param version The version.
      */
@@ -270,7 +277,7 @@ public class GetMojo extends AbstractMojo {
     }
 
     /**
-     * The classifier of the artifact to download. Ignored if {@link #artifact} is used.
+     * The classifier of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
      * @param classifier The classifier to be used.
      *
@@ -282,7 +289,7 @@ public class GetMojo extends AbstractMojo {
     }
 
     /**
-     * The packaging of the artifact to download. Ignored if {@link #artifact} is used.
+     * The packaging of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
      * @param type packaging.
      */

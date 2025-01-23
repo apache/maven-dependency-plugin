@@ -31,25 +31,28 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
 
 public class TestCopyMojo extends AbstractDependencyMojoTestCase {
     private CopyMojo mojo;
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp("copy", false, false);
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
 
         File testPom = new File(getBasedir(), "target/test-classes/unit/copy-test/plugin-config.xml");
         mojo = (CopyMojo) lookupMojo("copy", testPom);
         mojo.setOutputDirectory(new File(this.testDir, "outputDirectory"));
-        mojo.setSilent(true);
 
         assertNotNull(mojo);
         assertNotNull(mojo.getProject());
-
-        MavenSession session = newMavenSession(mojo.getProject());
-        setVariableValueToObject(mojo, "session", session);
 
         LegacySupport legacySupport = lookup(LegacySupport.class);
         legacySupport.setSession(session);
@@ -127,11 +130,11 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
     }
 
     public void testMojoDefaults() {
-        CopyMojo themojo = new CopyMojo();
+        CopyMojo theMojo = new CopyMojo(null, null, null, null, null, null, null);
 
-        assertFalse(themojo.isStripVersion());
-        assertFalse(themojo.isSkip());
-        assertFalse(themojo.isStripClassifier());
+        assertFalse(theMojo.isStripVersion());
+        assertFalse(theMojo.isSkip());
+        assertFalse(theMojo.isStripClassifier());
     }
 
     public void testCopyFile() throws Exception {

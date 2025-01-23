@@ -49,23 +49,20 @@ public class TestAnalyzeDepMgt extends TestCase {
 
     Exclusion ex;
 
-    Artifact exclusionArtifact;
-
     DependencyManagement depMgt;
 
-    DependencyManagement depMgtNoExclusions;
-
+    @Override
     protected void setUp() throws Exception {
 
-        mojo = new AnalyzeDepMgt();
         MavenProject project = new DependencyProjectStub();
+        mojo = new AnalyzeDepMgt(project);
 
         stubFactory = new DependencyArtifactStubFactory(new File(""), false);
 
         Set<Artifact> allArtifacts = stubFactory.getMixedArtifacts();
         Set<Artifact> directArtifacts = stubFactory.getClassifiedArtifacts();
 
-        exclusionArtifact = stubFactory.getReleaseArtifact();
+        Artifact exclusionArtifact = stubFactory.getReleaseArtifact();
         directArtifacts.add(exclusionArtifact);
         ex = new Exclusion();
         ex.setArtifactId(exclusionArtifact.getArtifactId());
@@ -87,8 +84,6 @@ public class TestAnalyzeDepMgt extends TestCase {
 
         project.setArtifacts(allArtifacts);
         project.setDependencyArtifacts(directArtifacts);
-
-        mojo.setProject(project);
     }
 
     public void testGetManagementKey() throws IOException {
@@ -111,32 +106,41 @@ public class TestAnalyzeDepMgt extends TestCase {
         // sure it's ok before
         // testing the next one
         dep.setType("t");
+        dep.clearManagementKey();
         assertNotEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setType("type");
+        dep.clearManagementKey();
         assertEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setArtifactId("a");
+        dep.clearManagementKey();
         assertNotEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setArtifactId("artifact");
+        dep.clearManagementKey();
         assertEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setClassifier("c");
+        dep.clearManagementKey();
         assertNotEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setClassifier("class");
+        dep.clearManagementKey();
         assertEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setGroupId("g");
+        dep.clearManagementKey();
         assertNotEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setGroupId("group");
         dep.setClassifier(null);
+        dep.clearManagementKey();
         artifact = stubFactory.createArtifact("group", "artifact", "1.0", Artifact.SCOPE_COMPILE, "type", null);
         assertEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
 
         dep.setClassifier("");
+        dep.clearManagementKey();
         artifact = stubFactory.createArtifact("group", "artifact", "1.0", Artifact.SCOPE_COMPILE, "type", "");
         assertEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
     }

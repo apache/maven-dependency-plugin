@@ -70,7 +70,7 @@ public class BuildingDependencyNodeVisitor implements DependencyNodeVisitor {
     public BuildingDependencyNodeVisitor(DependencyNodeVisitor visitor) {
         this.visitor = visitor;
 
-        parentNodes = new Stack<DependencyNode>();
+        parentNodes = new Stack<>();
     }
 
     // DependencyNodeVisitor methods ------------------------------------------
@@ -90,7 +90,7 @@ public class BuildingDependencyNodeVisitor implements DependencyNodeVisitor {
                 node.getOptional(),
                 node.getExclusions(),
                 node.toNodeString());
-        newNode.setChildren(new ArrayList<DependencyNode>());
+        newNode.setChildren(new ArrayList<>());
 
         if (parentNodes.empty()) {
             rootNode = newNode;

@@ -34,9 +34,12 @@ import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
+
+import static org.junit.Assert.assertNotEquals;
 
 public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
 
@@ -45,11 +48,16 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
     protected void setUp() throws Exception {
         super.setUp("unpack", true, false);
 
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
+
         File testPom = new File(getBasedir(), "target/test-classes/unit/unpack-test/plugin-config.xml");
         mojo = (UnpackMojo) lookupMojo("unpack", testPom);
         mojo.setOutputDirectory(new File(this.testDir, "outputDirectory"));
         mojo.setMarkersDirectory(new File(this.testDir, "markers"));
-        mojo.setSilent(true);
 
         assertNotNull(mojo);
         assertNotNull(mojo.getProject());
@@ -61,9 +69,6 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         // programmatically.
         stubFactory.setSrcFile(new File(
                 getBasedir() + File.separatorChar + "target/test-classes/unit/unpack-dependencies-test/test.txt"));
-
-        MavenSession session = newMavenSession(mojo.getProject());
-        setVariableValueToObject(mojo, "session", session);
 
         LegacySupport legacySupport = lookup(LegacySupport.class);
 
@@ -471,7 +476,6 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
     public void testUnpackOverWriteIfNewer() throws Exception {
         final long now = System.currentTimeMillis();
 
-        mojo.setSilent(false);
         stubFactory.setCreateFiles(true);
         Artifact artifact = stubFactory.getSnapshotArtifact();
         assertTrue(artifact.getFile().setLastModified(now - 20000));
@@ -487,13 +491,13 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         // round down to the last second
         long time = now;
         time = time - (time % 1000);
-        // go back 10 more seconds for linux
-        time -= 10000;
+        // go back 30 more seconds for linux
+        time -= 30000;
         // set to known value
         assertTrue(unpackedFile.setLastModified(time));
         // set source to be newer about some seconds,
-        // especially on macOS it shouldn't be smaller than 8s in order to mitigate flapping test
-        assertTrue(artifact.getFile().setLastModified(time + 8000));
+        // especially on macOS it shouldn't be smaller than 16s in order to mitigate flapping test
+        assertTrue(artifact.getFile().setLastModified(time + 16000));
 
         // manually set markerfile (must match getMarkerFile in DefaultMarkerFileHandler)
         File marker = new File(mojo.getMarkersDirectory(), artifact.getId().replace(':', '-') + ".marker");
@@ -506,10 +510,11 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         long unpackedFileLastModifiedMillis =
                 Files.getLastModifiedTime(unpackedFile.toPath()).toMillis();
 
-        assertTrue(
+        assertNotEquals(
                 "unpackedFile '" + unpackedFile + "' lastModified() == " + markerLastModifiedMillis
                         + ": should be different",
-                markerLastModifiedMillis != unpackedFileLastModifiedMillis);
+                markerLastModifiedMillis,
+                unpackedFileLastModifiedMillis);
     }
 
     public void assertUnpacked(ArtifactItem item, boolean overWrite) throws Exception {
@@ -526,7 +531,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         mojo.execute();
 
         if (overWrite) {
-            assertTrue(time != unpackedFile.lastModified());
+            assertNotEquals(time, unpackedFile.lastModified());
         } else {
             assertEquals(time, unpackedFile.lastModified());
         }

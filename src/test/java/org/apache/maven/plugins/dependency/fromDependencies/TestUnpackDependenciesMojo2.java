@@ -24,10 +24,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
@@ -44,10 +46,15 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         // required for mojo lookups to work
         super.setUp("unpack-dependencies", true);
 
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
+
         File testPom = new File(getBasedir(), "target/test-classes/unit/unpack-dependencies-test/plugin-config.xml");
         mojo = (UnpackDependenciesMojo) lookupMojo("unpack-dependencies", testPom);
         mojo.outputDirectory = new File(this.testDir, "outputDirectory");
-        // mojo.silent = true;
 
         // it needs to get the archivermanager
         stubFactory.setUnpackableFile(lookup(ArchiverManager.class));
@@ -57,14 +64,12 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
 
         assertNotNull(mojo);
         assertNotNull(mojo.getProject());
-        MavenProject project = mojo.getProject();
 
         Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
         Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
         artifacts.addAll(directArtifacts);
 
         project.setArtifacts(artifacts);
-        project.setDependencyArtifacts(directArtifacts);
         mojo.markersDirectory = new File(this.testDir, "markers");
     }
 
@@ -100,7 +105,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(release);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteIfNewer = false;
 
@@ -119,7 +123,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(release);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = true;
         mojo.overWriteIfNewer = false;
@@ -139,7 +142,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(snap);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = false;
         mojo.overWriteSnapshots = false;
@@ -160,7 +162,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(snap);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = false;
         mojo.overWriteSnapshots = true;
@@ -181,7 +182,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(snap);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = false;
         mojo.overWriteSnapshots = false;

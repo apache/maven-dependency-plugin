@@ -20,14 +20,15 @@ package org.apache.maven.plugins.dependency.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.plugin.logging.Log;
@@ -106,20 +107,20 @@ public final class DependencyUtil {
             destFileName.append(artifact.getGroupId()).append(".");
         }
 
-        String versionString;
+        String versionString = "";
         if (!removeVersion) {
             if (useBaseVersion) {
                 versionString = "-" + ArtifactUtils.toSnapshotVersion(artifact.getVersion());
             } else {
                 versionString = "-" + artifact.getVersion();
             }
-        } else {
-            versionString = "";
         }
 
         String classifierString = "";
 
-        if (!removeClassifier && StringUtils.isNotEmpty(artifact.getClassifier())) {
+        if (!removeClassifier
+                && artifact.getClassifier() != null
+                && !artifact.getClassifier().isEmpty()) {
             classifierString = "-" + artifact.getClassifier();
         }
         destFileName.append(artifact.getArtifactId()).append(versionString);
@@ -135,8 +136,9 @@ public final class DependencyUtil {
      * @param useSubdirsPerScope if a new sub directory should be used for each scope.
      * @param useSubdirsPerType if a new sub directory should be used for each type.
      * @param useSubdirPerArtifact if a new sub directory should be used for each artifact.
-     * @param useRepositoryLayout if dependencies must be moved into a Maven repository layout, if set, other settings
-     *            will be ignored.
+     * @param useRepositoryLayout if dependencies must be moved into a Maven repository layout, if set, other
+     *         settings
+     *         will be ignored.
      * @param removeVersion if the version must not be mentioned in the filename
      * @param removeType if the type must not be mentioned in the filename
      * @param outputDirectory base outputDirectory.
@@ -185,7 +187,7 @@ public final class DependencyUtil {
             sb.append(artifact.getVersion());
         }
 
-        if (StringUtils.isNotEmpty(artifact.getClassifier())) {
+        if (artifact.getClassifier() != null && !artifact.getClassifier().isEmpty()) {
             sb.append("-");
             sb.append(artifact.getClassifier());
         }
@@ -227,40 +229,35 @@ public final class DependencyUtil {
      */
     public static synchronized void write(String string, File file, boolean append, String encoding)
             throws IOException {
-        file.getParentFile().mkdirs();
+        Files.createDirectories(file.getParentFile().toPath());
 
-        try (Writer writer = new OutputStreamWriter(new FileOutputStream(file, append), encoding)) {
+        OpenOption appendOption = append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING;
+
+        try (Writer writer = Files.newBufferedWriter(
+                file.toPath(),
+                Charset.forName(encoding),
+                appendOption,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE)) {
             writer.write(string);
         }
     }
 
     /**
-     * Writes the specified string to the log at info level.
+     * Writes each line in the specified string to the log at info level.
+     * The difference between calling
+     * {@code DependencyUtil.log(s, log)} and {@code log.info(s)} is that the latter
+     * will put "[INFO]" in front of each line in the string whereas the former only
+     * outputs it once at the front of the string.
      *
      * @param string the string to write
      * @param log where to log information
      * @throws IOException if an I/O error occurs
      */
     public static synchronized void log(String string, Log log) throws IOException {
-        BufferedReader reader = new BufferedReader(new StringReader(string));
-
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            log.info(line);
+        try (BufferedReader reader = new BufferedReader(new StringReader(string))) {
+            reader.lines().forEach(log::info);
         }
-
-        reader.close();
-    }
-
-    /**
-     * Mainly used to parse excludes, includes configuration.
-     *
-     * @param str the string to split
-     * @return the result items
-     */
-    public static String[] tokenizer(String str) {
-        return StringUtils.split(cleanToBeTokenizedString(str), ",");
     }
 
     /**
@@ -273,7 +270,7 @@ public final class DependencyUtil {
         String ret = "";
         if (!(str == null || str.isEmpty())) {
             // remove initial and ending spaces, plus all spaces next to commas
-            ret = str.trim().replaceAll("[\\s]*,[\\s]*", ",");
+            ret = str.trim().replaceAll("\\s*,\\s*", ",");
         }
 
         return ret;

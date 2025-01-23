@@ -22,7 +22,9 @@ import java.io.File;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
 
 public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
@@ -40,10 +42,15 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
         // required for mojo lookups to work
         super.setUp("unpack-dependencies", true);
 
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
+
         File testPom = new File(getBasedir(), "target/test-classes/unit/unpack-dependencies-test/plugin-config.xml");
         mojo = (UnpackDependenciesMojo) lookupMojo("unpack-dependencies", testPom);
         mojo.outputDirectory = new File(this.testDir, "outputDirectory");
-        // mojo.silent = true;
 
         // it needs to get the archivermanager
         // stubFactory.setUnpackableFile( mojo.getArchiverManager() );
@@ -53,7 +60,6 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
 
         assertNotNull(mojo);
         assertNotNull(mojo.getProject());
-        MavenProject project = mojo.getProject();
 
         Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
         Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();

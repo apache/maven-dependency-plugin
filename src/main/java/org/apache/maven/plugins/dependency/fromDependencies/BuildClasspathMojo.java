@@ -18,15 +18,14 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import javax.inject.Inject;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -35,20 +34,28 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * This goal outputs a classpath string of dependencies from the local repository to a file or log.
@@ -56,13 +63,11 @@ import org.apache.maven.shared.transfer.repository.RepositoryManager;
  * @author ankostis
  * @since 2.0-alpha-2
  */
-// CHECKSTYLE_OFF: LineLength
 @Mojo(
         name = "build-classpath",
         requiresDependencyResolution = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.GENERATE_SOURCES,
         threadSafe = true)
-// CHECKSTYLE_ON: LineLength
 public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements Comparator<Artifact> {
 
     @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
@@ -88,7 +93,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     private String prefix;
 
     /**
-     * A property to set to the content of the classpath string.
+     * If defined, the name of a property to which the classpath string will be written.
      */
     @Parameter(property = "mdep.outputProperty")
     private String outputProperty;
@@ -160,19 +165,37 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     @Parameter(property = "mdep.useBaseVersion", defaultValue = "true")
     private boolean useBaseVersion = true;
 
-    /**
-     * Maven ProjectHelper
-     */
-    @Component
-    private MavenProjectHelper projectHelper;
+    private final MavenProjectHelper projectHelper;
 
-    @Component
-    private RepositoryManager repositoryManager;
+    @Inject
+    // CHECKSTYLE_OFF: ParameterNumber
+    protected BuildClasspathMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager,
+            MavenProjectHelper projectHelper) {
+        super(
+                session,
+                buildContext,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
+        this.projectHelper = projectHelper;
+    }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates to create a classpath.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      * @see #getResolvedDependencies(boolean)
      */
     @Override
@@ -244,8 +267,8 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     }
 
     /**
-     * @param cpString The classpath.
-     * @throws MojoExecutionException in case of an error.
+     * @param cpString the classpath
+     * @throws MojoExecutionException in case of an error
      */
     protected void attachFile(String cpString) throws MojoExecutionException {
         File attachedFile = new File(getProject().getBuild().getDirectory(), "classpath");
@@ -255,7 +278,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     }
 
     /**
-     * Appends the artifact path into the specified StringBuilder.
+     * Appends the artifact path to the specified StringBuilder.
      *
      * @param art {@link Artifact}
      * @param sb {@link StringBuilder}
@@ -266,13 +289,12 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
             // substitute the property for the local repo path to make the classpath file portable.
             if (localRepoProperty != null && !localRepoProperty.isEmpty()) {
                 ProjectBuildingRequest projectBuildingRequest = session.getProjectBuildingRequest();
-                File localBasedir = repositoryManager.getLocalRepositoryBasedir(projectBuildingRequest);
+                File localBasedir = getRepositoryManager().getLocalRepositoryBasedir(projectBuildingRequest);
 
                 file = StringUtils.replace(file, localBasedir.getAbsolutePath(), localRepoProperty);
             }
             sb.append(file);
         } else {
-            // TODO: add param for prepending groupId and version.
             sb.append(prefix);
             sb.append(File.separator);
             sb.append(DependencyUtil.getFormattedFileName(
@@ -307,9 +329,8 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
         // make sure the parent path exists.
         out.getParentFile().mkdirs();
 
-        String encoding = Objects.toString(outputEncoding, "UTF-8");
-
-        try (Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(out), encoding))) {
+        String encoding = Objects.toString(outputEncoding, StandardCharsets.UTF_8.name());
+        try (Writer w = Files.newBufferedWriter(out.toPath(), Charset.forName(encoding))) {
             w.write(cpString);
             getLog().info("Wrote classpath file '" + out + "'.");
         } catch (IOException ex) {
@@ -333,15 +354,11 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
         if (!outputFile.isFile()) {
             return null;
         }
-        StringBuilder sb = new StringBuilder();
-        String encoding = Objects.toString(outputEncoding, "UTF-8");
 
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(outputFile), encoding))) {
-            for (String line = r.readLine(); line != null; line = r.readLine()) {
-                sb.append(line);
-            }
+        String encoding = Objects.toString(outputEncoding, StandardCharsets.UTF_8.name());
 
-            return sb.toString();
+        try (Stream<String> lines = Files.lines(outputFile.toPath(), Charset.forName(encoding))) {
+            return lines.collect(Collectors.joining());
         }
     }
 

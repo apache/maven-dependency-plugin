@@ -25,6 +25,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
 
@@ -35,6 +36,12 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
     protected void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp("build-classpath", true);
+
+        MavenProject project = new DependencyProjectStub();
+        getContainer().addComponent(project, MavenProject.class.getName());
+
+        MavenSession session = newMavenSession(project);
+        getContainer().addComponent(session, MavenSession.class.getName());
 
         File testPom = new File(getBasedir(), "target/test-classes/unit/build-classpath-test/plugin-config.xml");
         mojo = (BuildClasspathMojo) lookupMojo("build-classpath", testPom);
@@ -49,7 +56,6 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
     public void testEnvironment() throws Exception {
         MavenProject project = mojo.getProject();
 
-        // mojo.silent = true;
         Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
         Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
         artifacts.addAll(directArtifacts);
@@ -71,7 +77,7 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
 
         String file = mojo.readClasspathFile();
         assertNotNull(file);
-        assertTrue(file.length() > 0);
+        assertFalse(file.isEmpty());
 
         assertTrue(file.contains(File.pathSeparator));
         assertTrue(file.contains(File.separator));
@@ -85,7 +91,7 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
 
         file = mojo.readClasspathFile();
         assertNotNull(file);
-        assertTrue(file.length() > 0);
+        assertFalse(file.isEmpty());
 
         assertFalse(file.contains(File.pathSeparator));
         assertFalse(file.contains(File.separator));
@@ -101,11 +107,9 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
     }
 
     public void testPath() throws Exception {
-        MavenSession session = newMavenSession(mojo.getProject());
-        setVariableValueToObject(mojo, "session", session);
 
         LegacySupport legacySupport = lookup(LegacySupport.class);
-        legacySupport.setSession(session);
+        legacySupport.setSession(lookup(MavenSession.class));
         installLocalRepository(legacySupport);
 
         Artifact artifact = stubFactory.getReleaseArtifact();

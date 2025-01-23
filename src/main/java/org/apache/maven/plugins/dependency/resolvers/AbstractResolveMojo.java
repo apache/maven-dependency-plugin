@@ -19,28 +19,30 @@
 package org.apache.maven.plugins.dependency.resolvers;
 
 import java.io.File;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
-import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.fromDependencies.AbstractDependencyFilterMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ClassifierFilter;
 import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
 import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
-import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  */
 public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
+
     /**
      * If specified, this parameter causes the dependencies to be written to the path specified instead of
      * the console.
@@ -66,11 +68,27 @@ public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
     @Parameter(property = "excludeReactor", defaultValue = "true")
     protected boolean excludeReactor;
 
-    /**
-     * <i>not used in this goal</i>
-     */
-    @Parameter
-    protected boolean ignorePermissions;
+    // CHECKSTYLE_OFF: ParameterNumber
+    protected AbstractResolveMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(
+                session,
+                buildContext,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
+    }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * @return {@link FilterArtifacts}
@@ -79,7 +97,6 @@ public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
         final FilterArtifacts filter = new FilterArtifacts();
 
         if (excludeReactor) {
-
             filter.addFilter(new ExcludeReactorProjectsArtifactFilter(reactorProjects, getLog()));
         }
 
@@ -104,28 +121,5 @@ public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
                 DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
 
         return filter;
-    }
-
-    /**
-     * This method resolves all transitive dependencies of an artifact.
-     *
-     * @param artifact the artifact used to retrieve dependencies
-     * @return resolved set of dependencies
-     * @throws DependencyResolverException in case of error while resolving artifacts.
-     */
-    protected Set<Artifact> resolveArtifactDependencies(final DependableCoordinate artifact)
-            throws DependencyResolverException {
-        ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
-
-        Iterable<ArtifactResult> artifactResults =
-                getDependencyResolver().resolveDependencies(buildingRequest, artifact, null);
-
-        Set<Artifact> artifacts = new LinkedHashSet<>();
-
-        for (final ArtifactResult artifactResult : artifactResults) {
-            artifacts.add(artifactResult.getArtifact());
-        }
-
-        return artifacts;
     }
 }

@@ -27,10 +27,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
@@ -42,6 +42,7 @@ import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Abstract parent class used by mojos that get Artifact information from the plugin configuration as an ArrayList of
@@ -79,8 +80,18 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * Overwrite if newer
      *
      * @since 2.0
+     * @deprecated Use 'overWriteIfNewer' or 'mdep.overWriteIfNewer' as this does nothing now.
      */
+    @Deprecated
     @Parameter(property = "mdep.overIfNewer", defaultValue = "true")
+    private boolean overIfNewer;
+
+    /**
+     * Overwrite if newer
+     *
+     * @since 3.7.0
+     */
+    @Parameter(property = "mdep.overWriteIfNewer", defaultValue = "true")
     private boolean overWriteIfNewer;
 
     /**
@@ -101,14 +112,24 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     @Parameter
     private File localRepositoryDirectory;
 
-    @Component
-    private ArtifactResolver artifactResolver;
+    private final ArtifactResolver artifactResolver;
 
-    @Component
-    private RepositoryManager repositoryManager;
+    private final RepositoryManager repositoryManager;
 
-    @Component
-    private ArtifactHandlerManager artifactHandlerManager;
+    private final ArtifactHandlerManager artifactHandlerManager;
+
+    protected AbstractFromConfigurationMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ArtifactResolver artifactResolver,
+            RepositoryManager repositoryManager,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(session, buildContext, project);
+        this.artifactResolver = artifactResolver;
+        this.repositoryManager = repositoryManager;
+        this.artifactHandlerManager = artifactHandlerManager;
+    }
 
     abstract ArtifactItemFilter getMarkedArtifactFilter(ArtifactItem item);
 
@@ -154,13 +175,14 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             artifactItem.getOutputDirectory().mkdirs();
 
             // make sure we have a version.
-            if (StringUtils.isEmpty(artifactItem.getVersion())) {
+            if (artifactItem.getVersion() == null || artifactItem.getVersion().isEmpty()) {
                 fillMissingArtifactVersion(artifactItem);
             }
 
             artifactItem.setArtifact(this.getArtifact(artifactItem));
 
-            if (StringUtils.isEmpty(artifactItem.getDestFileName())) {
+            if (artifactItem.getDestFileName() == null
+                    || artifactItem.getDestFileName().length() == 0) {
                 artifactItem.setDestFileName(DependencyUtil.getFormattedFileName(
                         artifactItem.getArtifact(), removeVersion, prependGroupId, useBaseVersion, removeClassifier));
             }
@@ -175,7 +197,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     }
 
     private boolean checkIfProcessingNeeded(ArtifactItem item) throws MojoExecutionException, ArtifactFilterException {
-        return StringUtils.equalsIgnoreCase(item.getOverWrite(), "true")
+        return "true".equalsIgnoreCase(item.getOverWrite())
                 || getMarkedArtifactFilter(item).isArtifactIncluded(item);
     }
 
@@ -183,24 +205,14 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * Resolves the Artifact from the remote repository if necessary. If no version is specified, it will be retrieved
      * from the dependency list or from the DependencyManagement section of the pom.
      *
-     * @param artifactItem containing information about artifact from plugin configuration.
-     * @return Artifact object representing the specified file.
-     * @throws MojoExecutionException with a message if the version can't be found in DependencyManagement.
+     * @param artifactItem containing information about artifact from plugin configuration
+     * @return Artifact object representing the specified file
+     * @throws MojoExecutionException if the version can't be found in DependencyManagement
      */
     protected Artifact getArtifact(ArtifactItem artifactItem) throws MojoExecutionException {
         Artifact artifact;
 
         try {
-            // mdep-50 - rolledback for now because it's breaking some functionality.
-            /*
-             * List listeners = new ArrayList(); Set theSet = new HashSet(); theSet.add( artifact );
-             * ArtifactResolutionResult artifactResolutionResult = artifactCollector.collect( theSet, project
-             * .getArtifact(), managedVersions, this.local, project.getRemoteArtifactRepositories(),
-             * artifactMetadataSource, null, listeners ); Iterator iter =
-             * artifactResolutionResult.getArtifactResolutionNodes().iterator(); while ( iter.hasNext() ) {
-             * ResolutionNode node = (ResolutionNode) iter.next(); artifact = node.getArtifact(); }
-             */
-
             ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
 
             if (localRepositoryDirectory != null) {
@@ -216,6 +228,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             coordinate.setClassifier(artifactItem.getClassifier());
 
             final String extension;
+
             ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(artifactItem.getType());
             if (artifactHandler != null) {
                 extension = artifactHandler.getExtension();

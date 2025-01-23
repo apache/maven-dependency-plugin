@@ -24,8 +24,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.factory.DefaultArtifactFactory;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.handler.manager.DefaultArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -37,15 +35,12 @@ import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.plugin.testing.stubs.StubArtifactRepository;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
-import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
 
 /**
  * @author brianf
  */
 public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase {
     Set<Artifact> artifacts = new HashSet<>();
-
-    ArtifactFactory artifactFactory;
 
     ArtifactRepository artifactRepository;
 
@@ -59,9 +54,6 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
 
         artifactHandlerManager = new DefaultArtifactHandlerManager();
         this.setVariableValueToObject(artifactHandlerManager, "artifactHandlers", new HashMap<>());
-
-        artifactFactory = new DefaultArtifactFactory();
-        this.setVariableValueToObject(artifactFactory, "artifactHandlerManager", artifactHandlerManager);
 
         artifactRepository = new StubArtifactRepository(null);
 
@@ -87,18 +79,18 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
         String type = "zip";
 
         ArtifactTranslator at = new ClassifierTypeTranslator(artifactHandlerManager, classifier, type);
-        Set<ArtifactCoordinate> results = at.translate(artifacts, log);
+        Set<org.eclipse.aether.artifact.Artifact> results = at.translate(artifacts, log);
 
         for (Artifact artifact : artifacts) {
-            Iterator<ArtifactCoordinate> resultIter = results.iterator();
+            Iterator<org.eclipse.aether.artifact.Artifact> resultIter = results.iterator();
             boolean found = false;
             while (resultIter.hasNext()) {
-                ArtifactCoordinate translatedArtifact = resultIter.next();
+                org.eclipse.aether.artifact.Artifact translatedArtifact = resultIter.next();
                 if (artifact.getArtifactId().equals(translatedArtifact.getArtifactId())
                         && artifact.getGroupId().equals(translatedArtifact.getGroupId())
                 /* && artifact.getScope().equals(translatedArtifact.getScope()) */ ) {
-                    // classifier is null, should be the same as the artifact
-                    assertEquals(artifact.getClassifier(), translatedArtifact.getClassifier());
+                    // classifier is always empty for Resolver sub artifact
+                    assertEquals("", translatedArtifact.getClassifier());
                     assertEquals(type, translatedArtifact.getExtension());
 
                     found = true;
@@ -121,13 +113,13 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
         String classifier = "jdk5";
 
         ArtifactTranslator at = new ClassifierTypeTranslator(artifactHandlerManager, classifier, type);
-        Set<ArtifactCoordinate> results = at.translate(artifacts, log);
+        Set<org.eclipse.aether.artifact.Artifact> results = at.translate(artifacts, log);
 
         for (Artifact artifact : artifacts) {
-            Iterator<ArtifactCoordinate> resultIter = results.iterator();
+            Iterator<org.eclipse.aether.artifact.Artifact> resultIter = results.iterator();
             boolean found = false;
             while (!found && resultIter.hasNext()) {
-                ArtifactCoordinate translatedArtifact = resultIter.next();
+                org.eclipse.aether.artifact.Artifact translatedArtifact = resultIter.next();
                 if (artifact.getArtifactId() == translatedArtifact.getArtifactId()
                         && artifact.getGroupId() == translatedArtifact.getGroupId()
                 /* && artifact.getScope() == translatedArtifact.getScope() */ ) {
@@ -147,13 +139,13 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
         String classifier = "jdk14";
         String type = "sources";
         ArtifactTranslator at = new ClassifierTypeTranslator(artifactHandlerManager, classifier, type);
-        Set<ArtifactCoordinate> results = at.translate(artifacts, log);
+        Set<org.eclipse.aether.artifact.Artifact> results = at.translate(artifacts, log);
 
         for (Artifact artifact : artifacts) {
-            Iterator<ArtifactCoordinate> resultIter = results.iterator();
+            Iterator<org.eclipse.aether.artifact.Artifact> resultIter = results.iterator();
             boolean found = false;
             while (!found && resultIter.hasNext()) {
-                ArtifactCoordinate translatedArtifact = resultIter.next();
+                org.eclipse.aether.artifact.Artifact translatedArtifact = resultIter.next();
                 if (artifact.getArtifactId() == translatedArtifact.getArtifactId()
                         && artifact.getGroupId() == translatedArtifact.getGroupId()) {
                     assertEquals(translatedArtifact.getClassifier(), classifier);

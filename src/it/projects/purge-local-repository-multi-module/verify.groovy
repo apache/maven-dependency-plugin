@@ -19,17 +19,17 @@
 
 void checkFileAbsence( String path )
 {
-  File depJar = new File( localRepositoryPath, path );
+  File depJar = new File( localRepositoryPath, path )
   if ( depJar.exists() )
   {
-    throw new Exception( "Dependency jar was not purged: " + depJar );
+    throw new Exception( "Dependency jar was not purged: " + depJar )
   }
 }
 
-checkFileAbsence("purged-a" );
-checkFileAbsence("purged-b" );
+checkFileAbsence("purged-a" )
+checkFileAbsence("purged-b" )
 
-String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" );
-assert buildLog.contains( 'Deleting 1 transitive dependency for project child1 from ' );
-assert buildLog.contains( 'Deleting 1 transitive dependency for project child2 from ' );
-assert buildLog.contains( 'with artifact version resolution fuzziness' );
+String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" )
+assert buildLog.contains( 'Deleting 1 transitive dependency for project child1 from ' )
+assert buildLog.contains( 'Deleting 1 transitive dependency for project child2 from ' )
+assert buildLog.contains( 'with artifact version resolution fuzziness' )

@@ -20,7 +20,15 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 
 import java.io.File;
 
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Abstract Parent class used by mojos that get Artifact information from the project dependencies.
@@ -104,10 +112,32 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
      * @since 2.0-alpha-2
      */
     @Parameter(property = "mdep.failOnMissingClassifierArtifact", defaultValue = "false")
-    protected boolean failOnMissingClassifierArtifact = true;
+    protected boolean failOnMissingClassifierArtifact;
+
+    // CHECKSTYLE_OFF: ParameterNumber
+    protected AbstractFromDependenciesMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(
+                session,
+                buildContext,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
+    }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
-     * @return Returns the outputDirectory.
+     * @return returns the output directory
      */
     public File getOutputDirectory() {
         return this.outputDirectory;

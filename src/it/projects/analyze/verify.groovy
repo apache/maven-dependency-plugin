@@ -17,25 +17,27 @@
  * under the License.
  */
 
-File classFile = new File( basedir, "target/classes/Main.class" );
-assert classFile.exists();
+File classFile = new File( basedir, "target/classes/Main.class" )
+assert classFile.exists()
 if ( !classFile.isFile() )
 {
-    throw new Exception( "Build was not forked, class missing " + classFile );
+    throw new Exception( "Build was not forked, class missing " + classFile )
 }
 
-File file = new File( basedir, "build.log" );
-assert file.exists();
+File file = new File( basedir, "build.log" )
+assert file.exists()
 
-String buildLog = file.getText( "UTF-8" );
-assert buildLog.contains( '[INFO] Used declared dependencies found:');
-assert buildLog.contains( '[INFO]    org.apache.maven:maven-artifact:jar:2.0.6:compile');
-assert buildLog.contains( '[INFO]    org.apache.maven:maven-model:jar:2.0.6:compile');
-assert buildLog.contains( '[WARNING] Used undeclared dependencies found:');
-assert buildLog.contains( '[WARNING]    org.apache.maven:maven-repository-metadata:jar:2.0.6:compile');
-assert buildLog.contains( '[WARNING]       class org.apache.maven.artifact.repository.metadata.Metadata');
-assert buildLog.contains( '[WARNING] Unused declared dependencies found:');
-assert buildLog.contains( '[WARNING]    org.apache.maven:maven-project:jar:2.0.6:compile');
+String buildLog = file.getText( "UTF-8" )
+assert buildLog.contains( '[INFO] Used declared dependencies found:')
+assert buildLog.contains( '[INFO]    org.apache.maven:maven-artifact:jar:2.0.6:compile')
+assert buildLog.contains( '[INFO]    org.apache.maven:maven-model:jar:2.0.6:compile')
+assert buildLog.contains( '[WARNING] Used undeclared dependencies found:')
+assert buildLog.contains( '[WARNING]    org.apache.maven:maven-repository-metadata:jar:2.0.6:compile')
+assert buildLog.contains( '[WARNING]       class org.apache.maven.artifact.repository.metadata.Metadata')
+assert buildLog.contains( '[WARNING] Unused declared dependencies found:')
+assert buildLog.contains( '[WARNING]    org.apache.maven:maven-project:jar:2.0.6:compile')
+assert buildLog.contains( '[INFO] Ignored unused declared dependencies:')
+assert buildLog.contains( '[INFO]    org.slf4j:slf4j-simple:jar:2.0.16:compile')
+assert !buildLog.contains( '[WARNING]    org.slf4j:slf4j-simple:jar:2.0.16:compile')
 
-
-return true;
+return true

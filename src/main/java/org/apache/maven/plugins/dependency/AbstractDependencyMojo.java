@@ -18,8 +18,6 @@
  */
 package org.apache.maven.plugins.dependency;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -27,40 +25,18 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
-import org.codehaus.plexus.util.FileUtils;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  */
 public abstract class AbstractDependencyMojo extends AbstractMojo {
-
-    /**
-     * For IDE build support
-     */
-    @Component
-    private BuildContext buildContext;
-
-    /**
-     * Skip plugin execution only during incremental builds (e.g. triggered from M2E).
-     *
-     * @since 3.4.0
-     * @see #skip
-     */
-    @Parameter(defaultValue = "false")
-    private boolean skipDuringIncrementalBuild;
-
-    /**
-     * POM
-     */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
 
     /**
      * Remote repositories which will be searched for artifacts.
@@ -83,24 +59,17 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     /**
      * The Maven session
      */
-    @Parameter(defaultValue = "${session}", readonly = true, required = true)
-    protected MavenSession session;
+    protected final MavenSession session;
 
     /**
      * If the plugin should be silent.
      *
+     * @deprecated to be removed in 4.0; use -q command line option instead
      * @since 2.0
      */
+    @Deprecated
     @Parameter(property = "silent", defaultValue = "false")
     private boolean silent;
-
-    /**
-     * Output absolute filename for resolved artifacts
-     *
-     * @since 2.0
-     */
-    @Parameter(property = "outputAbsoluteArtifactFilename", defaultValue = "false")
-    protected boolean outputAbsoluteArtifactFilename;
 
     /**
      * Skip plugin execution completely.
@@ -109,6 +78,31 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
      */
     @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
+
+    /**
+     * Skip plugin execution only during incremental builds (e.g. triggered from M2E).
+     *
+     * @since 3.4.0
+     * @see #skip
+     */
+    @Parameter(defaultValue = "false")
+    private boolean skipDuringIncrementalBuild;
+
+    /**
+     * For IDE build support
+     */
+    private final BuildContext buildContext;
+
+    /**
+     * POM
+     */
+    private final MavenProject project;
+
+    protected AbstractDependencyMojo(MavenSession session, BuildContext buildContext, MavenProject project) {
+        this.session = session;
+        this.buildContext = buildContext;
+        this.project = project;
+    }
 
     // Mojo methods -----------------------------------------------------------
 
@@ -130,32 +124,6 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
      * @throws MojoFailureException {@link MojoFailureException}
      */
     protected abstract void doExecute() throws MojoExecutionException, MojoFailureException;
-
-    /**
-     * Does the actual copy of the file and logging.
-     *
-     * @param artifact represents the file to copy.
-     * @param destFile file name of destination file.
-     * @throws MojoExecutionException with a message if an error occurs.
-     */
-    protected void copyFile(File artifact, File destFile) throws MojoExecutionException {
-        try {
-            getLog().info("Copying "
-                    + (this.outputAbsoluteArtifactFilename ? artifact.getAbsolutePath() : artifact.getName()) + " to "
-                    + destFile);
-
-            if (artifact.isDirectory()) {
-                // usual case is a future jar packaging, but there are special cases: classifier and other packaging
-                throw new MojoExecutionException("Artifact has not been packaged yet. When used on reactor artifact, "
-                        + "copy should be executed after packaging: see MDEP-187.");
-            }
-
-            FileUtils.copyFile(artifact, destFile);
-            buildContext.refresh(destFile);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error copying artifact from " + artifact + " to " + destFile, e);
-        }
-    }
 
     /**
      * @return Returns a new ProjectBuildingRequest populated from the current session and the current project remote
@@ -207,18 +175,24 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
 
     /**
      * @return {@link #silent}
+     * @deprecated to be removed in 4.0
      */
+    @Deprecated
     protected final boolean isSilent() {
         return silent;
     }
 
     /**
      * @param silent {@link #silent}
+     * @deprecated to be removed in 4.0; no API replacement, use -q command line option instead
      */
+    @Deprecated
     public void setSilent(boolean silent) {
         this.silent = silent;
         if (silent) {
             setLog(new DependencySilentLog());
+        } else if (getLog() instanceof DependencySilentLog) {
+            setLog(new SystemStreamLog());
         }
     }
 }

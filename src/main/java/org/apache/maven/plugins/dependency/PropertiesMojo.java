@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency;
 
+import javax.inject.Inject;
+
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
@@ -49,8 +51,12 @@ public class PropertiesMojo extends AbstractMojo {
     /**
      * The current Maven project
      */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
+    private final MavenProject project;
+
+    @Inject
+    public PropertiesMojo(MavenProject project) {
+        this.project = project;
+    }
 
     /**
      * Skip plugin execution completely.
