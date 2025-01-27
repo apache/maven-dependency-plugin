@@ -21,7 +21,7 @@ File file = new File( basedir, "classpath.txt" )
 assert file.exists() : "output file $file does not exist"
 
 String output = file.getText( "UTF-8" )
-assert output.contains( 'The following files have been resolved:')
+assert output.startsWith( 'The following files have been resolved:')
 // no escape codes
 assert !output.contains( '\u001B' ) 
 
