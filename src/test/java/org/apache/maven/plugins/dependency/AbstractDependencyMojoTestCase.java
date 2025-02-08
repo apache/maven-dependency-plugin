@@ -51,9 +51,6 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
         // required for mojo lookups to work
         super.setUp();
 
-        testDir = new File(
-                getBasedir(),
-                "target" + File.separatorChar + "unit-tests" + File.separatorChar + testDirStr + File.separatorChar);
         testDir = Files.createTempDirectory("testDirStr").toFile();
         testDir.deleteOnExit();
 
