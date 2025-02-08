@@ -153,16 +153,16 @@ mvn dependency:copy
 
    The artifacts can be placed in subfolders based on type. For example:
 
-   \outputDirectory
+   /outputDirectory
 
-   \outputDirectory\jars
+   /outputDirectory/jars
 
-   \outputDirectory\wars
+   /outputDirectory/wars
 
    The artifacts can be placed in a subfolder per artifact. For example:
-   \outputDirectory\junit-junit-3.8.1\
+   /outputDirectory/junit-junit-3.8.1/
    This feature also works with the subfolders per type. For example:
-   \outputDirectory\jars\junit-junit-3.8.1\
+   /outputDirectory/jars/junit-junit-3.8.1/
 
    Artifacts can also be resolved by specifying the classifier and optionally
    type. Type is only used with the classifier and defaults to java-sources.
@@ -219,7 +219,7 @@ mvn dependency:copy
    ArtifactItem by setting the optional outputDirectory field.
 
    A single artifact can be unpacked multiple times if different include/exclude parameters
-   are defined for each artifactItem
+   are defined for each artifact item.
 
    See the {{{#Overwrite_Rules}Overwrite Rules}} section for rules about how overwriting is handled.
 
@@ -311,16 +311,16 @@ mvn dependency:unpack
 
    The artifacts can be unpacked in subfolders based on type. For example:
 
-   \outputDirectory
+   /outputDirectory
 
-   \outputDirectory\jars
+   /outputDirectory/jars
 
-   \outputDirectory\wars
+   /outputDirectory/wars
 
    The artifacts can be placed in a subfolder per artifact. For example:
-   \outputDirectory\junit-junit-3.8.1\
+   /outputDirectory/junit-junit-3.8.1/
    This feature also works with the subfolders per type. For example:
-   \outputDirectory\jars\junit-junit-3.8.1\
+   /outputDirectory/jars/junit-junit-3.8.1/
 
    Artifacts can also be resolved by specifying the classifier and optionally
    type. Type is only used with the classifier and defaults to java-sources.
@@ -395,7 +395,7 @@ mvn dependency:unpack
 
      * If <<<overWriteSnapshots>>> = true, then a snapshot artifact (e.g. <<<foo-1.0-SNAPSHOT.jar>>>) will always overwrite.
 
-     * If all of the values are false, then a copy/unpack will only occur if it doesn't exist in the destination (or <<<markersDirectory>>> if unpacking).
+     * If all of the values are false, then a copy/unpack will only occur if the artifact doesn't exist in the destination (or <<<markersDirectory>>> if unpacking).
 
 
 
