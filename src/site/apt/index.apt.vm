@@ -55,7 +55,7 @@ ${project.name}
   Maven to output the path of the dependencies from the local repository in a classpath format to be used in java -cp.
   The classpath file may also be attached and installed/deployed along with the main artifact.
 
-  *{{{./collect-dependencies-mojo.html}dependency:collect}} collects the project dependencies from the repository.
+  *{{{./collect-mojo.html}dependency:collect}} collects the project dependencies from the repository.
   It lists the groupId:artifactId:version information by downloading the pom files without downloading the actual
   artifacts such as jar files.
 
