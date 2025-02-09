@@ -317,8 +317,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
 
             error.printStackTrace(pWriter);
 
-            System.err.println(
-                    "[error] " + content.toString() + System.lineSeparator() + System.lineSeparator() + sWriter);
+            System.err.println("[error] " + content + "\n\n" + sWriter);
         }
 
         /**
@@ -371,7 +370,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
                     .append(prefix)
                     .append("] ")
                     .append(content.toString())
-                    .append(System.lineSeparator());
+                    .append("\n");
         }
 
         private void print(String prefix, Throwable error) {
@@ -380,7 +379,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
 
             error.printStackTrace(pWriter);
 
-            sb.append("[").append(prefix).append("] ").append(sWriter).append(System.lineSeparator());
+            sb.append("[").append(prefix).append("] ").append(sWriter).append("\n\n");
         }
 
         private void print(String prefix, CharSequence content, Throwable error) {
@@ -389,13 +388,8 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
 
             error.printStackTrace(pWriter);
 
-            sb.append("[")
-                    .append(prefix)
-                    .append("] ")
-                    .append(content.toString())
-                    .append(System.lineSeparator())
-                    .append(System.lineSeparator());
-            sb.append(sWriter).append(System.lineSeparator());
+            sb.append("[").append(prefix).append("] ").append(content).append("\n\n");
+            sb.append(sWriter).append("\n");
         }
 
         protected String getContent() {
