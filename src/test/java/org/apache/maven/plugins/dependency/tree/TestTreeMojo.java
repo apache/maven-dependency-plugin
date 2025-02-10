@@ -160,7 +160,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      * Test the JSON format serialization on DependencyNodes with circular dependence
      */
     public void testTreeJsonCircularDependency() throws IOException {
-        String outputFileName = testDir.getAbsolutePath() + "tree1.json";
+        String outputFileName = testDir.getAbsolutePath() + File.separator + "tree1.json";
         File outputFile = new File(outputFileName);
         Files.createDirectories(outputFile.getParentFile().toPath());
         outputFile.createNewFile();
@@ -176,10 +176,11 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
         node1.getChildren().add(node2);
         node2.getChildren().add(node1);
 
-        JsonDependencyNodeVisitor jsonDependencyNodeVisitor =
-                new JsonDependencyNodeVisitor(new OutputStreamWriter(new FileOutputStream(outputFile)));
+        try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(outputFile))) {
+            JsonDependencyNodeVisitor jsonDependencyNodeVisitor = new JsonDependencyNodeVisitor(outputStreamWriter);
 
-        jsonDependencyNodeVisitor.visit(node1);
+            jsonDependencyNodeVisitor.visit(node1);
+        }
     }
 
     /*
@@ -239,7 +240,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      */
     private List<String> runTreeMojo(String outputFile, String format) throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/tree-test/plugin-config.xml");
-        Path outputFilePath = Paths.get(testDir.getAbsolutePath() + outputFile);
+        Path outputFilePath = Paths.get(testDir.getAbsolutePath(), outputFile);
         TreeMojo mojo = (TreeMojo) lookupMojo("tree", testPom);
         setVariableValueToObject(mojo, "outputEncoding", "UTF-8");
         setVariableValueToObject(mojo, "outputType", format);
