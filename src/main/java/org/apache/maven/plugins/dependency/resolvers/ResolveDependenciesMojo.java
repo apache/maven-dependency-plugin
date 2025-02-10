@@ -175,7 +175,9 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
      */
     public String getOutput(boolean outputAbsoluteArtifactFilename, boolean theOutputScope, boolean theSort) {
         StringBuilder sb = new StringBuilder();
-        sb.append(System.lineSeparator());
+        if (outputFile == null) {
+            sb.append(System.lineSeparator());
+        }
         sb.append("The following files have been resolved:");
         sb.append(System.lineSeparator());
         if (results.getResolvedDependencies() == null
@@ -215,9 +217,13 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
             Set<Artifact> artifacts, boolean outputAbsoluteArtifactFilename, boolean theOutputScope, boolean theSort) {
         StringBuilder sb = new StringBuilder();
         List<String> artifactStringList = new ArrayList<>();
+        /* if (outputFile != null) {
+            MessageUtils.setColorEnabled(false);
+        } else {
+            MessageUtils.setColorEnabled(true);
+        } */
         for (Artifact artifact : artifacts) {
             MessageBuilder messageBuilder = MessageUtils.buffer();
-
             messageBuilder.a("   ");
 
             if (theOutputScope) {
@@ -257,7 +263,7 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
                     }
                 }
             }
-            artifactStringList.add(messageBuilder + System.lineSeparator());
+            artifactStringList.add(messageBuilder.build() + System.lineSeparator());
         }
         if (theSort) {
             Collections.sort(artifactStringList);
