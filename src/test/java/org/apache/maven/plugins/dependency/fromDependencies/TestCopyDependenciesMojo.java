@@ -102,6 +102,61 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
     }
 
     /**
+     * Tests the copying of signature files associated with artifacts.
+     *
+     * @throws Exception if an error occurs during the test
+     */
+    public void testCopySignatureFiles() throws Exception {
+        // Enable the copySignatures parameter
+        mojo.copySignatures = true;
+
+        if (!mojo.outputDirectory.exists()) {
+            assertTrue("Failed to create output directory", mojo.outputDirectory.mkdirs());
+        }
+
+        File sourceDirectory = new File(System.getProperty("java.io.tmpdir"), "test-source-" + System.currentTimeMillis());
+        if (!sourceDirectory.exists()) {
+            assertTrue("Failed to create source directory", sourceDirectory.mkdirs());
+        }
+
+        File artifactFile = new File(sourceDirectory, "maven-dependency-plugin-1.0.jar");
+        if (!artifactFile.getParentFile().exists()) {
+            assertTrue("Failed to create parent directory", artifactFile.getParentFile().mkdirs());
+        }
+        if (artifactFile.exists()) {
+            assertTrue("Failed to delete existing artifact file", artifactFile.delete());
+        }
+        assertTrue("Failed to create artifact file", artifactFile.createNewFile());
+
+        File signatureFile = new File(sourceDirectory, "maven-dependency-plugin-1.0.jar.asc");
+        if (!signatureFile.getParentFile().exists()) {
+            assertTrue("Failed to create parent directory", signatureFile.getParentFile().mkdirs());
+        }
+        if (signatureFile.exists()) {
+            assertTrue("Failed to delete existing signature file", signatureFile.delete());
+        }
+        assertTrue("Failed to create signature file", signatureFile.createNewFile());
+
+        Artifact artifact = stubFactory.createArtifact(
+                "org.apache.maven.plugins", "maven-dependency-plugin", "1.0", Artifact.SCOPE_COMPILE);
+        artifact.setFile(artifactFile);
+
+        Set<Artifact> artifacts = new HashSet<>();
+        artifacts.add(artifact);
+        mojo.getProject().setArtifacts(artifacts);
+
+        mojo.execute();
+
+        File copiedSignatureFile = new File(mojo.outputDirectory, "maven-dependency-plugin-1.0.jar.asc");
+        assertTrue("Signature file was not copied", copiedSignatureFile.exists());
+
+        // Clean up
+        artifactFile.delete();
+        signatureFile.delete();
+        sourceDirectory.delete();
+    }
+
+    /**
      * Tests the proper discovery and configuration of the mojo.
      *
      * @throws Exception in case of an error
