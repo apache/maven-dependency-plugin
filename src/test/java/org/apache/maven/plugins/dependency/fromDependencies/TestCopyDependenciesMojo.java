@@ -114,14 +114,17 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
             assertTrue("Failed to create output directory", mojo.outputDirectory.mkdirs());
         }
 
-        File sourceDirectory = new File(System.getProperty("java.io.tmpdir"), "test-source-" + System.currentTimeMillis());
+        File sourceDirectory =
+                new File(System.getProperty("java.io.tmpdir"), "test-source-" + System.currentTimeMillis());
         if (!sourceDirectory.exists()) {
             assertTrue("Failed to create source directory", sourceDirectory.mkdirs());
         }
 
         File artifactFile = new File(sourceDirectory, "maven-dependency-plugin-1.0.jar");
         if (!artifactFile.getParentFile().exists()) {
-            assertTrue("Failed to create parent directory", artifactFile.getParentFile().mkdirs());
+            assertTrue(
+                    "Failed to create parent directory",
+                    artifactFile.getParentFile().mkdirs());
         }
         if (artifactFile.exists()) {
             assertTrue("Failed to delete existing artifact file", artifactFile.delete());
@@ -130,7 +133,9 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
         File signatureFile = new File(sourceDirectory, "maven-dependency-plugin-1.0.jar.asc");
         if (!signatureFile.getParentFile().exists()) {
-            assertTrue("Failed to create parent directory", signatureFile.getParentFile().mkdirs());
+            assertTrue(
+                    "Failed to create parent directory",
+                    signatureFile.getParentFile().mkdirs());
         }
         if (signatureFile.exists()) {
             assertTrue("Failed to delete existing signature file", signatureFile.delete());
