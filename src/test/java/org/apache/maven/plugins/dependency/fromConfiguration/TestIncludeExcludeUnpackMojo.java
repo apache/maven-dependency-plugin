@@ -33,13 +33,13 @@ import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler
 import org.apache.maven.project.MavenProject;
 
 public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase {
-    private final String PACKED_FILE = "test.zip";
+    private static final String PACKED_FILE = "test.zip";
 
-    private final String UNPACKED_FILE_PREFIX = "test";
+    private static final String UNPACKED_FILE_PREFIX = "test";
 
-    private final String UNPACKED_FILE_SUFFIX = ".txt";
+    private static final String UNPACKED_FILE_SUFFIX = ".txt";
 
-    private final String PACKED_FILE_PATH = "target/test-classes/unit/unpack-dependencies-test/" + PACKED_FILE;
+    private static final String PACKED_FILE_PATH = "target/test-classes/unit/unpack-dependencies-test/" + PACKED_FILE;
 
     private UnpackMojo mojo;
 

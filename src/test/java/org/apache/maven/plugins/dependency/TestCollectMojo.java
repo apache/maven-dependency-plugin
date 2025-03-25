@@ -74,7 +74,7 @@ public class TestCollectMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception if a problem occurs
      */
-    public void testCollectTestEnvironment_excludeTransitive() throws Exception {
+    public void testCollectTestEnvironmentExcludeTransitive() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/collect-test/plugin-config.xml");
         CollectDependenciesMojo mojo = (CollectDependenciesMojo) lookupMojo("collect", testPom);
 

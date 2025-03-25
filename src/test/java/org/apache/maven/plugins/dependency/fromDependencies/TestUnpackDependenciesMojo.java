@@ -43,9 +43,10 @@ import org.eclipse.aether.RepositorySystem;
 
 public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
 
-    private final String UNPACKABLE_FILE = "test.txt";
+    private static final String UNPACKABLE_FILE = "test.txt";
 
-    private final String UNPACKABLE_FILE_PATH = "target/test-classes/unit/unpack-dependencies-test/" + UNPACKABLE_FILE;
+    private static final String UNPACKABLE_FILE_PATH =
+            "target/test-classes/unit/unpack-dependencies-test/" + UNPACKABLE_FILE;
 
     UnpackDependenciesMojo mojo;
 

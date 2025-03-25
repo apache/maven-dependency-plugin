@@ -44,19 +44,19 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         getContainer().addComponent(session, MavenSession.class.getName());
     }
 
-    String GROUP_EXCLUDE_PREFIX = "skip.this.groupid";
+    private static final String GROUP_EXCLUDE_PREFIX = "skip.this.groupid";
 
-    String ARTIFACT_EXCLUDE_PREFIX = "skip-this-artifact";
+    private static final String ARTIFACT_EXCLUDE_PREFIX = "skip-this-artifact";
 
-    String CLASSIFIER_EXCLUDE_PREFIX = "skipThisClassifier";
+    private static final String CLASSIFIER_EXCLUDE_PREFIX = "skipThisClassifier";
 
-    String DUMMY_ARTIFACT_NAME = "dummy-artifact";
+    private static final String DUMMY_ARTIFACT_NAME = "dummy-artifact";
 
-    String STUB_ARTIFACT_VERSION = "3.14";
+    private static final String STUB_ARTIFACT_VERSION = "3.14";
 
-    String VALID_GROUP = "org.junit.jupiter";
+    private static final String VALID_GROUP = "org.junit.jupiter";
 
-    public void test_excludeGroupIds() throws Exception {
+    public void testExcludeGroupIds() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/exclude-plugin-config.xml");
 
         subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
@@ -91,7 +91,7 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertFalse(artifacts.contains(artifact2));
     }
 
-    public void test_excludeArtifactIds() throws Exception {
+    public void testExcludeArtifactIds() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/exclude-plugin-config.xml");
 
         subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
@@ -126,7 +126,7 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertFalse(artifacts.contains(artifact2));
     }
 
-    public void test_excludeScope() throws Exception {
+    public void testExcludeScope() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/exclude-plugin-config.xml");
 
         subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
@@ -162,7 +162,7 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertFalse(artifacts.contains(artifact2));
     }
 
-    public void test_excludeTypes() throws Exception {
+    public void testExcludeTypes() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/exclude-plugin-config.xml");
 
         subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
@@ -208,7 +208,7 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
      * @throws Exception
      */
     @Disabled("Requires update to maven-plugin-test-harness to support this test")
-    public void xtest_excludeClassifiers() throws Exception {
+    public void xtestExcludeClassifiers() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/exclude-plugin-config.xml");
 
         subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
@@ -245,13 +245,13 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertTrue(artifacts.contains(artifact3));
     }
 
-    String GROUP_INCLUDE_PREFIX = "include.this.groupid";
+    private static final String GROUP_INCLUDE_PREFIX = "include.this.groupid";
 
-    String ARTIFACT_INCLUDE_PREFIX = "include-this-artifact";
+    private static final String ARTIFACT_INCLUDE_PREFIX = "include-this-artifact";
 
-    String CLASSIFIER_INCLUDE_PREFIX = "includeThisClassifier";
+    private static final String CLASSIFIER_INCLUDE_PREFIX = "includeThisClassifier";
 
-    public void test_includeGroupIds() throws Exception {
+    public void testIncludeGroupIds() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/include-gid-plugin-config.xml");
 
         subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
@@ -287,7 +287,7 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertTrue(artifacts.contains(artifact2));
     }
 
-    public void test_includeArtifactIds() throws Exception {
+    public void testIncludeArtifactIds() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/include-aid-plugin-config.xml");
 
         subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
@@ -323,7 +323,7 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertTrue(artifacts.contains(artifact2));
     }
 
-    public void test_includeScope() throws Exception {
+    public void testIncludeScope() throws Exception {
         File testPom =
                 new File(getBasedir(), "target/test-classes/unit/go-offline-test/include-scope-plugin-config.xml");
 
@@ -363,7 +363,7 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertFalse(artifacts.contains(artifact3));
     }
 
-    public void test_includeTypes() throws Exception {
+    public void testIncludeTypes() throws Exception {
         File testPom =
                 new File(getBasedir(), "target/test-classes/unit/go-offline-test/include-types-plugin-config.xml");
 

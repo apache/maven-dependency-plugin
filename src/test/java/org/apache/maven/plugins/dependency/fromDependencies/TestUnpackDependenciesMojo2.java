@@ -36,9 +36,10 @@ import org.codehaus.plexus.archiver.manager.ArchiverManager;
 
 public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase {
 
-    private final String UNPACKABLE_FILE = "test.txt";
+    private static final String UNPACKABLE_FILE = "test.txt";
 
-    private final String UNPACKABLE_FILE_PATH = "target/test-classes/unit/unpack-dependencies-test/" + UNPACKABLE_FILE;
+    private static final String UNPACKABLE_FILE_PATH =
+            "target/test-classes/unit/unpack-dependencies-test/" + UNPACKABLE_FILE;
 
     private UnpackDependenciesMojo mojo;
 
