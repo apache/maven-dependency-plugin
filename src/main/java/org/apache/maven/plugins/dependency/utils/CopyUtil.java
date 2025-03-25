@@ -72,4 +72,19 @@ public class CopyUtil {
         FileUtils.copyFile(source, destination);
         buildContext.refresh(destination);
     }
+
+    /**
+     * Copies a file to a destination and refreshes the build context for the new file.
+     *
+     * @param source the source file to copy
+     * @param destination the destination file
+     * @throws IOException if copy has failed
+     *
+     * @since 3.2.0
+     */
+    public void copyFile(File source, File destination) throws IOException {
+        logger.debug("Copying file '{}' to {}", source, destination);
+        FileUtils.copyFile(source, destination);
+        buildContext.refresh(destination);
+    }
 }
