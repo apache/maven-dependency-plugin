@@ -24,5 +24,7 @@ String buildLog = file.getText( "UTF-8" )
 assert buildLog.contains( 'Project remote repositories used by this build:')
 assert buildLog.contains( '* fake-remote-repository (http://localhost:2345, default, releases+snapshots)')
 assert buildLog.contains( '* sonatype-nexus-snapshots (https://oss.sonatype.org/content/repositories/snapshots, default, snapshots) mirrored by mrm-maven-plugin')
-assert buildLog.contains( '* central (https://repo.maven.apache.org/maven2, default, releases) mirrored by mrm-maven-plugin')
-
+// should I do it ...
+// if (!mavenVersion.startsWith('4.')) {
+assert buildLog.contains('* central (https://repo.maven.apache.org/maven2, default, releases) mirrored by mrm-maven-plugin')
+//}
