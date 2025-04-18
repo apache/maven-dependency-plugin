@@ -34,6 +34,8 @@ import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 
+import static org.junit.Assert.assertNotEquals;
+
 public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase {
 
     private final String UNPACKABLE_FILE = "test.txt";
@@ -71,13 +73,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
 
         project.setArtifacts(artifacts);
         mojo.markersDirectory = new File(this.testDir, "markers");
-    }
-
-    protected void tearDown() {
-        super.tearDown();
-
-        mojo = null;
-        System.gc();
     }
 
     public File getUnpackedFile(Artifact artifact) {
@@ -211,9 +206,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
 
         mojo.execute();
 
-        assertTrue(time != unpackedFile.lastModified());
-
-        System.gc();
+        assertNotEquals(time, unpackedFile.lastModified());
     }
 
     public void assertUnpacked(Artifact artifact, boolean overWrite)
