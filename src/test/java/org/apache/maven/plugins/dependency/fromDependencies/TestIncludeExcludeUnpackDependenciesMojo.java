@@ -54,7 +54,7 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
 
         // it needs to get the archivermanager
         // stubFactory.setUnpackableFile( mojo.getArchiverManager() );
-        // i'm using one file repeatedly to archive so I can test the name
+        // I'm using one file repeatedly to archive so I can test the name
         // programmatically.
         stubFactory.setSrcFile(new File(getBasedir() + File.separatorChar + PACKED_FILE_PATH));
 
@@ -68,13 +68,6 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
         project.setArtifacts(artifacts);
         project.setDependencyArtifacts(directArtifacts);
         mojo.markersDirectory = new File(this.testDir, "markers");
-    }
-
-    protected void tearDown() {
-        super.tearDown();
-
-        mojo = null;
-        System.gc();
     }
 
     private void assertUnpacked(boolean unpacked, String fileName) {

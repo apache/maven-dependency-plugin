@@ -43,31 +43,27 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
 
     protected DependencyArtifactStubFactory stubFactory;
 
-    protected void setUp(String testDirStr, boolean createFiles) throws Exception {
-        setUp(testDirStr, createFiles, true);
+    protected void setUp(String testDirectoryName, boolean createFiles) throws Exception {
+        setUp(testDirectoryName, createFiles, true);
     }
 
-    protected void setUp(String testDirStr, boolean createFiles, boolean flattenedPath) throws Exception {
+    protected void setUp(String testDirectoryName, boolean createFiles, boolean flattenedPath) throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
-        testDir = Files.createTempDirectory("testDirStr").toFile();
+        testDir = Files.createTempDirectory(testDirectoryName).toFile();
         testDir.deleteOnExit();
 
         stubFactory = new DependencyArtifactStubFactory(this.testDir, createFiles, flattenedPath);
     }
 
     @Override
-    protected void tearDown() {
+    protected void tearDown() throws Exception {
         if (testDir != null) {
-            try {
-                FileUtils.deleteDirectory(testDir);
-            } catch (IOException e) {
-                e.printStackTrace();
-                fail("Trying to remove directory: " + testDir + System.lineSeparator() + e);
-            }
+            FileUtils.deleteDirectory(testDir);
             assertFalse(testDir.exists());
         }
+        super.tearDown();
     }
 
     protected void copyArtifactFile(Artifact sourceArtifact, File destFile) throws MojoExecutionException, IOException {

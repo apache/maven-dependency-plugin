@@ -57,7 +57,7 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
         mojo = (UnpackMojo) lookupMojo("unpack", testPom);
         mojo.setOutputDirectory(new File(this.testDir, "outputDirectory"));
 
-        // i'm using one file repeatedly to archive so I can test the name
+        // I'm using one file repeatedly to archive so I can test the name
         // programmatically.
         stubFactory.setSrcFile(new File(getBasedir() + File.separatorChar + PACKED_FILE_PATH));
         Artifact artifact = stubFactory.createArtifact("test", "test", "1.0", Artifact.SCOPE_COMPILE, "jar", null);
@@ -73,13 +73,6 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
         LegacySupport legacySupport = lookup(LegacySupport.class);
         legacySupport.setSession(session);
         installLocalRepository(legacySupport);
-    }
-
-    protected void tearDown() {
-        super.tearDown();
-
-        mojo = null;
-        System.gc();
     }
 
     public void assertMarkerFiles(Collection<ArtifactItem> items, boolean exist) {
