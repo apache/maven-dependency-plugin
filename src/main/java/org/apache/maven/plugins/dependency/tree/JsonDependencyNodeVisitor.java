@@ -56,7 +56,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param node  the node to write
      */
     private void writeRootNode(DependencyNode node) {
-        Set<DependencyNode> visited = new HashSet<DependencyNode>();
+        Set<DependencyNode> visited = new HashSet<>();
         int indent = 2;
         StringBuilder sb = new StringBuilder();
         sb.append("{").append("\n");

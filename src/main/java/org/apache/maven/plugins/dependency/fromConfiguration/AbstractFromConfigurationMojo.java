@@ -162,7 +162,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
 
         boolean removeClassifier = processArtifactItemsRequest.isRemoveClassifier();
 
-        if (artifactItems == null || artifactItems.size() < 1) {
+        if (artifactItems == null || artifactItems.isEmpty()) {
             throw new MojoExecutionException("There are no artifactItems configured.");
         }
 
@@ -182,7 +182,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             artifactItem.setArtifact(this.getArtifact(artifactItem));
 
             if (artifactItem.getDestFileName() == null
-                    || artifactItem.getDestFileName().length() == 0) {
+                    || artifactItem.getDestFileName().isEmpty()) {
                 artifactItem.setDestFileName(DependencyUtil.getFormattedFileName(
                         artifactItem.getArtifact(), removeVersion, prependGroupId, useBaseVersion, removeClassifier));
             }
