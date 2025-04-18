@@ -110,7 +110,7 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
             sb.append(System.lineSeparator());
             sb.append("The following plugins have been resolved:");
             sb.append(System.lineSeparator());
-            if (plugins == null || plugins.isEmpty()) {
+            if (plugins.isEmpty()) {
                 sb.append("   none");
                 sb.append(System.lineSeparator());
             } else {

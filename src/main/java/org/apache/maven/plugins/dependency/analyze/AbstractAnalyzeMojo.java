@@ -383,7 +383,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
             logDependencyWarning("Used undeclared dependencies found:");
 
             if (verbose) {
-                logArtifacts(usedUndeclaredWithClasses, true);
+                logArtifacts(usedUndeclaredWithClasses);
             } else {
                 logArtifacts(usedUndeclaredWithClasses.keySet(), true);
             }
@@ -464,7 +464,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         }
     }
 
-    private void logArtifacts(Map<Artifact, Set<String>> artifacts, boolean warn) {
+    private void logArtifacts(Map<Artifact, Set<String>> artifacts) {
         if (artifacts.isEmpty()) {
             getLog().info("   None");
         } else {
@@ -472,16 +472,9 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                 // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
                 entry.getKey().isSnapshot();
 
-                if (warn) {
-                    logDependencyWarning("   " + entry.getKey());
-                    for (String clazz : entry.getValue()) {
-                        logDependencyWarning("      class " + clazz);
-                    }
-                } else {
-                    getLog().info("   " + entry.getKey());
-                    for (String clazz : entry.getValue()) {
-                        getLog().info("      class " + clazz);
-                    }
+                logDependencyWarning("   " + entry.getKey());
+                for (String clazz : entry.getValue()) {
+                    logDependencyWarning("      class " + clazz);
                 }
             }
         }
