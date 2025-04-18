@@ -75,12 +75,6 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
         installLocalRepository(legacySupport);
     }
 
-    protected void tearDown() throws Exception {
-        mojo = null;
-        System.gc();
-        super.tearDown();
-    }
-
     public void assertMarkerFiles(Collection<ArtifactItem> items, boolean exist) {
         for (ArtifactItem item : items) {
             assertMarkerFile(exist, item);

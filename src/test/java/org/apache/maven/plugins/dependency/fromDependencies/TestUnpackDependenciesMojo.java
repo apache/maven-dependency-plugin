@@ -91,12 +91,6 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         setVariableValueToObject(mojo, "artifactHandlerManager", manager);
     }
 
-    protected void tearDown() throws Exception {
-        mojo = null;
-        System.gc();
-        super.tearDown();
-    }
-
     public void assertUnpacked(Artifact artifact) {
         assertUnpacked(true, artifact);
     }
