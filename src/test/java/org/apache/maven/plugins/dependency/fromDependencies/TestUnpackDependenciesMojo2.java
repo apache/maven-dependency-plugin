@@ -198,7 +198,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
 
         assertEquals(time, unpackedFile.lastModified());
         mojo.execute();
-        System.gc();
+
         // make sure it didn't overwrite
         assertEquals(time, unpackedFile.lastModified());
 
@@ -226,7 +226,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         mojo.execute();
 
         if (overWrite) {
-            assertTrue(time != unpackedFile.lastModified());
+            assertNotEquals(time, unpackedFile.lastModified());
         } else {
             assertEquals(time, unpackedFile.lastModified());
         }
