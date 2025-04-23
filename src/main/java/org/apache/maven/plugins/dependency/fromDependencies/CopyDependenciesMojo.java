@@ -105,6 +105,15 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     @Parameter(property = "mdep.copySignatures", defaultValue = "false")
     protected boolean copySignatures;
 
+    /**
+     * Prepend the groupId to the output filename by default to avoid conflicts when artifactIds are not globally unique.
+     * Set to false to retain the original behavior.
+     *
+     * @since 3.8.2
+     */
+    @Parameter(property = "mdep.prependGroupIdByDefault", defaultValue = "true")
+    protected boolean prependGroupIdByDefault;
+
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
     public CopyDependenciesMojo(
@@ -144,11 +153,13 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         DependencyStatusSets dss = getDependencySets(this.failOnMissingClassifierArtifact, addParentPoms);
         Set<Artifact> artifacts = dss.getResolvedDependencies();
 
+        boolean effectivePrependGroupId = prependGroupId || prependGroupIdByDefault;
+
         if (!useRepositoryLayout) {
             Map<String, Integer> copies = new HashMap<>();
             for (Artifact artifactItem : artifacts) {
                 String destFileName = DependencyUtil.getFormattedFileName(
-                        artifactItem, stripVersion, prependGroupId, useBaseVersion, stripClassifier);
+                        artifactItem, stripVersion, effectivePrependGroupId, useBaseVersion, stripClassifier);
                 int numCopies = copies.getOrDefault(destFileName, 0);
                 copies.put(destFileName, numCopies + 1);
             }
@@ -162,7 +173,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
 
             for (Artifact artifact : artifacts) {
                 copyArtifact(
-                        artifact, isStripVersion(), this.prependGroupId, this.useBaseVersion, this.stripClassifier);
+                        artifact, isStripVersion(), effectivePrependGroupId, this.useBaseVersion, this.stripClassifier);
             }
         } else {
             ProjectBuildingRequest buildingRequest = getRepositoryManager()
