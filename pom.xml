@@ -75,8 +75,8 @@ under the License.
     <url>https://github.com/apache/maven-dependency-plugin/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
-    <system>JIRA</system>
-    <url>https://issues.apache.org/jira/browse/MDEP</url>
+    <system>GitHub Issues</system>
+    <url>https://github.com/apache/maven-dependency-plugin/issues</url>
   </issueManagement>
   <ciManagement>
     <system>Jenkins</system>
