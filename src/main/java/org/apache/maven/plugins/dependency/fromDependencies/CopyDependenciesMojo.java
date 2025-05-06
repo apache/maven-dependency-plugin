@@ -111,7 +111,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      *
      * @since 3.8.2
      */
-    @Parameter(property = "mdep.prependGroupIdByDefault", defaultValue = "true")
+    @Parameter(property = "mdep.prependGroupIdByDefault", defaultValue = "false")
     protected boolean prependGroupIdByDefault;
 
     @Inject
@@ -167,7 +167,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                 if (entry.getValue() > 1) {
                     getLog().warn("Multiple files with the name " + entry.getKey() + " in the dependency tree.");
                     getLog().warn(
-                                    "Not all JARs will be available. Consider using prependGroupId, useSubDirectoryPerArtifact, or useRepositoryLayout.");
+                                    "Not all JARs will be available. To avoid this, consider setting -Dmdep.prependGroupId=true or enabling useSubDirectoryPerArtifact or useRepositoryLayout.");
                 }
             }
 
