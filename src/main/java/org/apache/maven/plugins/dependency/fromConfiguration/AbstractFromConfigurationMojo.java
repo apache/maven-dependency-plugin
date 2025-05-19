@@ -167,7 +167,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
         }
 
         for (ArtifactItem artifactItem : artifactItems) {
-            this.getLog().info("Configured Artifact: " + artifactItem.toString());
+            this.getLog().debug("Configured Artifact: " + artifactItem.toString());
 
             if (artifactItem.getOutputDirectory() == null) {
                 artifactItem.setOutputDirectory(this.outputDirectory);
