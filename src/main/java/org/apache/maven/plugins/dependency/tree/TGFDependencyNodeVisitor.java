@@ -18,6 +18,7 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,31 +102,43 @@ public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor impleme
      * {@inheritDoc}
      */
     @Override
-    public boolean endVisit(DependencyNode node) {
-        if (node.getParent() == null || node.getParent() == node) {
-            // dump edges on last node endVisit
-            writer.println("#");
-            for (EdgeAppender edge : edges) {
-                writer.println(edge.toString());
-            }
-        } else {
-            DependencyNode p = node.getParent();
-            // using scope as edge label.
-            edges.add(new EdgeAppender(p, node, node.getArtifact().getScope()));
+    public boolean visit(DependencyNode node) {
+        try {
+            // write node
+            writer.write(generateId(node));
+            writer.write(" ");
+            writer.write(node.toNodeString());
+            writer.write(System.lineSeparator());
+            writer.flush();
+            return true;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write TGF node", e);
         }
-        return true;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean visit(DependencyNode node) {
-        // write node
-        writer.write(generateId(node));
-        writer.write(" ");
-        writer.println(node.toNodeString());
-        return true;
+    public boolean endVisit(DependencyNode node) {
+        try {
+            if (node.getParent() == null || node.getParent() == node) {
+                // dump edges on last node endVisit
+                writer.write("#" + System.lineSeparator());
+                for (EdgeAppender edge : edges) {
+                    writer.write(edge.toString());
+                    writer.write(System.lineSeparator());
+                }
+                writer.flush();
+            } else {
+                DependencyNode p = node.getParent();
+                // using scope as edge label.
+                edges.add(new EdgeAppender(p, node, node.getArtifact().getScope()));
+            }
+            return true;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write TGF edges or footer", e);
+        }
     }
 
     /**
