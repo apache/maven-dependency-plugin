@@ -18,7 +18,6 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
-import java.io.PrintWriter;
 import java.io.Writer;
 
 /**
@@ -31,7 +30,7 @@ public abstract class AbstractSerializingVisitor {
     /**
      * The writer to serialize to.
      */
-    protected final PrintWriter writer;
+    protected final Writer writer;
 
     /**
      * Constructor.
@@ -42,10 +41,6 @@ public abstract class AbstractSerializingVisitor {
      * @param writer the writer to serialize to.
      */
     public AbstractSerializingVisitor(Writer writer) {
-        if (writer instanceof PrintWriter) {
-            this.writer = (PrintWriter) writer;
-        } else {
-            this.writer = new PrintWriter(writer, true);
-        }
+        this.writer = writer;
     }
 }

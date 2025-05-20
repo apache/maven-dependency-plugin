@@ -18,6 +18,7 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.io.IOException;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
@@ -56,13 +57,18 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param node  the node to write
      */
     private void writeRootNode(DependencyNode node) {
-        Set<DependencyNode> visited = new HashSet<>();
-        int indent = 2;
-        StringBuilder sb = new StringBuilder();
-        sb.append("{").append("\n");
-        writeNode(indent, node, sb, visited);
-        sb.append("}").append("\n");
-        writer.write(sb.toString());
+        try {
+            Set<DependencyNode> visited = new HashSet<>();
+            int indent = 2;
+            StringBuilder sb = new StringBuilder();
+            sb.append("{").append("\n");
+            writeNode(indent, node, sb, visited);
+            sb.append("}").append("\n");
+            writer.write(sb.toString());
+            writer.flush();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write JSON output", e);
+        }
     }
     /**
      * Appends the node and its children to the string builder.
@@ -110,7 +116,14 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
 
     @Override
     public boolean endVisit(DependencyNode node) {
-        return true;
+        try {
+            if (node.getParent() == null || node.getParent() == node) {
+                writer.flush();
+            }
+            return true;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to flush JSON output", e);
+        }
     }
     /**
      * Appends the artifact values to the string builder.
