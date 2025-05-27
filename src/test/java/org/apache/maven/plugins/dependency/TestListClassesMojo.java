@@ -32,14 +32,19 @@ import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
 import org.junit.Assert;
+import org.junit.Before;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
     private ListClassesMojo mojo;
 
-    protected void setUp() throws Exception {
-        super.setUp("markers", false);
+    @Before
+    @Override
+    public void setUp() throws Exception {
+        // Call superclass setup (initializes mojo lookups and default test directory)
+        super.setUp();
+        customizeSetUp("markers", false, true);
 
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());

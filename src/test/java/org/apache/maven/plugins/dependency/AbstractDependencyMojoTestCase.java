@@ -35,26 +35,49 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.LocalRepositoryManager;
+import org.junit.Before;
 import org.sonatype.plexus.build.incremental.DefaultBuildContext;
 
 public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCase {
 
     protected File testDir;
-
     protected DependencyArtifactStubFactory stubFactory;
 
-    protected void setUp(String testDirectoryName, boolean createFiles) throws Exception {
-        setUp(testDirectoryName, createFiles, true);
-    }
-
-    protected void setUp(String testDirectoryName, boolean createFiles, boolean flattenedPath) throws Exception {
-        // required for mojo lookups to work
+    @Before
+    public void setUp() throws Exception {
+        // Initialize mojo lookups as required by AbstractMojoTestCase
         super.setUp();
 
+        // Create temporary test directory
+        testDir = Files.createTempDirectory("test-dependency").toFile();
+        testDir.deleteOnExit();
+
+        // Initialize stub factory with default settings
+        stubFactory = new DependencyArtifactStubFactory(testDir, true, true);
+    }
+
+    /**
+     * Allows subclasses to customize the setup with specific test directory name and stub factory settings.
+     *
+     * @param testDirectoryName The name for the temporary test directory.
+     * @param createFiles Whether to create files in the stub factory.
+     * @param flattenedPath Whether to use flattened paths in the stub factory.
+     * @throws Exception If setup fails.
+     */
+    protected void customizeSetUp(String testDirectoryName, boolean createFiles, boolean flattenedPath)
+            throws Exception {
+        // Clean up existing test directory if present
+        if (testDir != null) {
+            FileUtils.deleteDirectory(testDir);
+            assertFalse(testDir.exists());
+        }
+
+        // Create new test directory with specified name
         testDir = Files.createTempDirectory(testDirectoryName).toFile();
         testDir.deleteOnExit();
 
-        stubFactory = new DependencyArtifactStubFactory(this.testDir, createFiles, flattenedPath);
+        // Reinitialize stub factory with custom settings
+        stubFactory = new DependencyArtifactStubFactory(testDir, createFiles, flattenedPath);
     }
 
     @Override

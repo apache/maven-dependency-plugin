@@ -40,6 +40,7 @@ import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandle
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.eclipse.aether.RepositorySystem;
+import org.junit.Before;
 
 public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
 
@@ -48,11 +49,13 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
     private static final String UNPACKABLE_FILE_PATH =
             "target/test-classes/unit/unpack-dependencies-test/" + UNPACKABLE_FILE;
 
-    UnpackDependenciesMojo mojo;
+    private UnpackDependenciesMojo mojo;
 
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp("unpack-dependencies", true, false);
+    @Before
+    public void setUp() throws Exception {
+        // Call superclass setup (initializes mojo lookups and default test directory)
+        super.setUp();
+        customizeSetUp("unpack-dependencies", true, false);
 
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());

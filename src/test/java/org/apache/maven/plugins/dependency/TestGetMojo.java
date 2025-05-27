@@ -43,13 +43,17 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.security.Constraint;
+import org.junit.Before;
 
 public class TestGetMojo extends AbstractDependencyMojoTestCase {
     private GetMojo mojo;
 
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp("markers", false);
+    @Before
+    public void setUp() throws Exception {
+        // Call superclass setup (initializes mojo lookups and default test directory)
+        super.setUp();
+        customizeSetUp("markers", false, true);
+
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());
 

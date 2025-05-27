@@ -29,6 +29,7 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
+import org.junit.Before;
 import org.mockito.ArgumentCaptor;
 
 import static org.mockito.Mockito.atLeastOnce;
@@ -37,9 +38,12 @@ import static org.mockito.Mockito.verify;
 
 public class TestSkip extends AbstractDependencyMojoTestCase {
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
+        // Call superclass setup (initializes mojo lookups and default test directory)
         super.setUp();
+        customizeSetUp("markers", true, true);
+
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());
 

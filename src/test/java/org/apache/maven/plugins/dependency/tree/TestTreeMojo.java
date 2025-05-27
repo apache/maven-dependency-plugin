@@ -45,6 +45,7 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
+import org.junit.Before;
 
 /**
  * Tests <code>TreeMojo</code>.
@@ -60,9 +61,11 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      * @see org.apache.maven.plugin.testing.AbstractMojoTestCase#setUp()
      */
     @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         // required for mojo lookups to work
-        super.setUp("tree", false);
+        super.setUp();
+        customizeSetUp("tree", false, false);
 
         MavenProject project = new MavenProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());

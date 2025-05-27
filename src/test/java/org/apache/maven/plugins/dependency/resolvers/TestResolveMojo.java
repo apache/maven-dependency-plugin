@@ -28,13 +28,16 @@ import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub
 import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.project.MavenProject;
+import org.junit.Before;
 
 public class TestResolveMojo extends AbstractDependencyMojoTestCase {
 
     @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         // required for mojo lookups to work
-        super.setUp("markers", false);
+        super.setUp();
+        customizeSetUp("makers", true, true);
 
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());

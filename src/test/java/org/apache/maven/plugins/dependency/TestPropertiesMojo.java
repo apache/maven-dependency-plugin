@@ -25,11 +25,15 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
+import org.junit.Before;
 
 public class TestPropertiesMojo extends AbstractDependencyMojoTestCase {
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp("markers", true);
+
+    @Before
+    public void setUp() throws Exception {
+        // Call superclass setup (initializes mojo lookups and default test directory)
+        super.setUp();
+        customizeSetUp("markers", true, true);
 
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());

@@ -35,6 +35,7 @@ import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.plugin.testing.stubs.StubArtifactRepository;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
+import org.junit.Before;
 
 /**
  * @author brianf
@@ -48,9 +49,11 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
 
     private ArtifactHandlerManager artifactHandlerManager;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp("classifiertype-translator", false);
+    @Before
+    public void setUp() throws Exception {
+        // Initialize parent setup and customize with test directory
+        super.setUp();
+        customizeSetUp("classifiertype-translator", false, false);
 
         artifactHandlerManager = new DefaultArtifactHandlerManager();
         this.setVariableValueToObject(artifactHandlerManager, "artifactHandlers", new HashMap<>());

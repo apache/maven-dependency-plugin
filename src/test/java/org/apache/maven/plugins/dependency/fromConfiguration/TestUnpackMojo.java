@@ -38,15 +38,19 @@ import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
+import org.junit.Before;
 
 import static org.junit.Assert.assertNotEquals;
 
 public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
 
-    UnpackMojo mojo;
+    private UnpackMojo mojo;
 
-    protected void setUp() throws Exception {
-        super.setUp("unpack", true, false);
+    @Before
+    public void setUp() throws Exception {
+        // Call superclass setup (initializes mojo lookups and default test directory)
+        super.setUp();
+        customizeSetUp("unpack", true, false);
 
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());

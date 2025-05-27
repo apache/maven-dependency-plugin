@@ -29,14 +29,18 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
+import org.junit.Before;
 import org.junit.jupiter.api.Disabled;
 
 public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
     private GoOfflineMojo subject;
 
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         // required for mojo lookups to work
-        super.setUp("go-offline", true);
+        super.setUp();
+        customizeSetUp("go-offline", true, true);
+
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());
 

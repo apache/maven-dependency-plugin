@@ -26,12 +26,15 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
+import org.junit.Before;
 
 public class ResolveDependenciesMojoTest extends AbstractDependencyMojoTestCase {
     @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         // required for mojo lookups to work
-        super.setUp("dss", true);
+        super.setUp();
+        customizeSetUp("dss", true, true);
     }
 
     public void testDependencyStatusLog() throws IOException {

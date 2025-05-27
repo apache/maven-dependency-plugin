@@ -22,11 +22,15 @@ import java.io.IOException;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.junit.Before;
 
 public class TestArtifactItem extends AbstractDependencyMojoTestCase {
 
-    protected void setUp() throws Exception {
-        setUp("artifactItems", false);
+    @Before
+    public void setUp() throws Exception {
+        // Call superclass setup (initializes mojo lookups and default test directory)
+        super.setUp();
+        customizeSetUp("artifactItems", false, true);
     }
 
     public void testArtifactItemConstructor() throws IOException {
