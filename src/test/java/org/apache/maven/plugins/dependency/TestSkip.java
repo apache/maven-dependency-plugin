@@ -38,6 +38,7 @@ import static org.mockito.Mockito.verify;
 
 public class TestSkip extends AbstractDependencyMojoTestCase {
 
+    @Override
     @Before
     public void setUp() throws Exception {
         // Call superclass setup (initializes mojo lookups and default test directory)

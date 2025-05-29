@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
@@ -48,8 +49,9 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
         // Initialize mojo lookups as required by AbstractMojoTestCase
         super.setUp();
 
-        // Create temporary test directory
-        testDir = Files.createTempDirectory("test-dependency").toFile();
+        // Create a unique temporary test directory to avoid parallel test conflicts
+        String uniqueDirName = "test-dependency" + UUID.randomUUID();
+        testDir = Files.createTempDirectory(uniqueDirName).toFile();
         testDir.deleteOnExit();
 
         // Initialize stub factory with default settings
@@ -59,19 +61,13 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
     /**
      * Allows subclasses to customize the setup with specific test directory name and stub factory settings.
      *
-     * @param testDirectoryName The name for the temporary test directory.
-     * @param createFiles Whether to create files in the stub factory.
-     * @param flattenedPath Whether to use flattened paths in the stub factory.
+     * @param testDirectoryName the name for the temporary test directory.
+     * @param createFiles whether to create files in the stub factory.
+     * @param flattenedPath whether to use flattened paths in the stub factory.
      * @throws Exception If setup fails.
      */
-    protected void customizeSetUp(String testDirectoryName, boolean createFiles, boolean flattenedPath)
+    protected final void customizeSetUp(String testDirectoryName, boolean createFiles, boolean flattenedPath)
             throws Exception {
-        // Clean up existing test directory if present
-        if (testDir != null) {
-            FileUtils.deleteDirectory(testDir);
-            assertFalse(testDir.exists());
-        }
-
         // Create new test directory with specified name
         testDir = Files.createTempDirectory(testDirectoryName).toFile();
         testDir.deleteOnExit();
@@ -84,7 +80,7 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
     protected void tearDown() throws Exception {
         if (testDir != null) {
             FileUtils.deleteDirectory(testDir);
-            assertFalse(testDir.exists());
+            testDir = null;
         }
         super.tearDown();
     }

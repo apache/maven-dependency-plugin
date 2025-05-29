@@ -44,6 +44,7 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
 
     private UnpackMojo mojo;
 
+    @Override
     @Before
     public void setUp() throws Exception {
         // Call superclass setup (initializes mojo lookups and default test directory)

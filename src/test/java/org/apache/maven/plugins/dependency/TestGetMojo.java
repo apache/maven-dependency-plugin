@@ -48,6 +48,7 @@ import org.junit.Before;
 public class TestGetMojo extends AbstractDependencyMojoTestCase {
     private GetMojo mojo;
 
+    @Override
     @Before
     public void setUp() throws Exception {
         // Call superclass setup (initializes mojo lookups and default test directory)

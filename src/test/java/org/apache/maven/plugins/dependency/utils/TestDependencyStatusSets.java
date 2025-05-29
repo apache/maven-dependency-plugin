@@ -23,6 +23,7 @@ import org.junit.Before;
 
 public class TestDependencyStatusSets extends AbstractDependencyMojoTestCase {
 
+    @Override
     @Before
     public void setUp() throws Exception {
         // Initialize the parent setup
