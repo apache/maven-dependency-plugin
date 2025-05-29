@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Disabled;
 public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
     private GoOfflineMojo subject;
 
+    @Override
     @Before
     public void setUp() throws Exception {
         // required for mojo lookups to work
