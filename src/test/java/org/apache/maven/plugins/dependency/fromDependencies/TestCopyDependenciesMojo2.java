@@ -52,6 +52,7 @@ public class TestCopyDependenciesMojo2 extends AbstractDependencyMojoTestCase {
 
     private CopyDependenciesMojo mojo;
 
+    @Override
     @Before
     public void setUp() throws Exception {
         // Call superclass setup (initializes mojo lookups and default test directory)
