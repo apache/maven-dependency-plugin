@@ -44,6 +44,7 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
     protected File testDir;
     protected DependencyArtifactStubFactory stubFactory;
 
+    @Override
     @Before
     public void setUp() throws Exception {
         // Initialize mojo lookups as required by AbstractMojoTestCase
