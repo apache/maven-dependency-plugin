@@ -49,6 +49,7 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
 
     private ArtifactHandlerManager artifactHandlerManager;
 
+    @Override
     @Before
     public void setUp() throws Exception {
         // Initialize parent setup and customize with test directory
