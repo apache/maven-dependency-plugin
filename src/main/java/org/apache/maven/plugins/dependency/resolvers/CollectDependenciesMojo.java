@@ -34,8 +34,8 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * <p>
- * Goal that collects the project dependencies from the repository. This goal requires Maven 3.0 or higher to function
- * because it uses "requiresDependencyCollection". This means that it lists the groupId:artifactId:version information
+ * Goal that collects the project dependencies from the repository. This goal
+ * uses "requiresDependencyCollection" to list the groupId:artifactId:version information
  * by downloading the pom files without downloading the actual artifacts such as jar files.
  * </p>
  * <p>
