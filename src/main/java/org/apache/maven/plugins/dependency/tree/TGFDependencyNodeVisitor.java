@@ -18,6 +18,9 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +38,7 @@ import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor implements DependencyNodeVisitor {
 
     /**
-     * Utiity class to write an Edge.
+     * Utility class to write an Edge.
      *
      * @author <a href="mailto:jerome.creignou@gmail.com">Jerome Creignou</a>
      */
@@ -101,31 +104,50 @@ public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor impleme
      * {@inheritDoc}
      */
     @Override
-    public boolean endVisit(DependencyNode node) {
-        if (node.getParent() == null || node.getParent() == node) {
-            // dump edges on last node endVisit
-            writer.println("#");
-            for (EdgeAppender edge : edges) {
-                writer.println(edge.toString());
-            }
-        } else {
-            DependencyNode p = node.getParent();
-            // using scope as edge label.
-            edges.add(new EdgeAppender(p, node, node.getArtifact().getScope()));
+    public boolean visit(DependencyNode node) {
+        try {
+            StringWriter stringWriter = new StringWriter();
+            // write node
+            stringWriter.write(generateId(node));
+            stringWriter.write(" ");
+            stringWriter.write(node.toNodeString());
+            stringWriter.write("\n");
+
+            // Write the accumulated output to the provided writer
+            writer.write(stringWriter.toString());
+            writer.flush();
+            return true;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write TGF node", e);
         }
-        return true;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean visit(DependencyNode node) {
-        // write node
-        writer.write(generateId(node));
-        writer.write(" ");
-        writer.println(node.toNodeString());
-        return true;
+    public boolean endVisit(DependencyNode node) {
+        try {
+            StringWriter stringWriter = new StringWriter();
+            if (node.getParent() == null || node.getParent() == node) {
+                // dump edges on last node endVisit
+                stringWriter.write("#\n");
+                for (EdgeAppender edge : edges) {
+                    stringWriter.write(edge.toString());
+                }
+
+                // Write the accumulated output to the provided writer
+                writer.write(stringWriter.toString());
+                writer.flush();
+            } else {
+                DependencyNode parent = node.getParent();
+                // using scope as edge label.
+                edges.add(new EdgeAppender(parent, node, node.getArtifact().getScope()));
+            }
+            return true;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write TGF edges or footer", e);
+        }
     }
 
     /**

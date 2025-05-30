@@ -18,6 +18,9 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.List;
 
@@ -47,19 +50,26 @@ public class DOTDependencyNodeVisitor extends AbstractSerializingVisitor impleme
      */
     @Override
     public boolean visit(DependencyNode node) {
-        if (node.getParent() == null || node.getParent() == node) {
-            writer.write("digraph \"" + node.toNodeString() + "\" { " + System.lineSeparator());
+        try {
+            StringWriter stringWriter = new StringWriter();
+            if (node.getParent() == null || node.getParent() == node) {
+                writer.write("digraph \"" + node.toNodeString() + "\" { " + System.lineSeparator());
+            }
+
+            // Generate "currentNode -> Child" lines
+
+            List<DependencyNode> children = node.getChildren();
+            for (DependencyNode child : children) {
+                stringWriter.write("\t\"" + node.toNodeString() + "\" -> \"" + child.toNodeString() + "\" ;\n");
+            }
+
+            // Write the accumulated output to the provided writer
+            writer.write(stringWriter.toString());
+            writer.flush();
+            return true;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write to DOT output", e);
         }
-
-        // Generate "currentNode -> Child" lines
-
-        List<DependencyNode> children = node.getChildren();
-
-        for (DependencyNode child : children) {
-            writer.println("\t\"" + node.toNodeString() + "\" -> \"" + child.toNodeString() + "\" ; ");
-        }
-
-        return true;
     }
 
     /**
@@ -67,9 +77,18 @@ public class DOTDependencyNodeVisitor extends AbstractSerializingVisitor impleme
      */
     @Override
     public boolean endVisit(DependencyNode node) {
-        if (node.getParent() == null || node.getParent() == node) {
-            writer.write(" } ");
+        try {
+            StringWriter stringWriter = new StringWriter();
+            if (node.getParent() == null || node.getParent() == node) {
+                stringWriter.write("}\n");
+            }
+
+            // Write the accumulated output to the provided writer
+            writer.write(stringWriter.toString());
+            writer.flush();
+            return true;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write to DOT output", e);
         }
-        return true;
     }
 }

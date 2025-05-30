@@ -18,6 +18,9 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 
 import org.apache.maven.shared.dependency.graph.DependencyNode;
@@ -63,37 +66,55 @@ public class GraphmlDependencyNodeVisitor extends AbstractSerializingVisitor imp
      * {@inheritDoc}
      */
     @Override
-    public boolean endVisit(DependencyNode node) {
-        if (node.getParent() == null || node.getParent() == node) {
-            writer.write(GRAPHML_FOOTER);
-        } else {
-            DependencyNode p = node.getParent();
-            writer.print("<edge source=\"" + generateId(p) + "\" target=\"" + generateId(node) + "\">");
-            if (node.getArtifact().getScope() != null) {
-                // add Edge label
-                writer.print("<data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>"
-                        + node.getArtifact().getScope() + "</y:EdgeLabel></y:PolyLineEdge></data>");
+    public boolean visit(DependencyNode node) {
+        try {
+            StringWriter stringWriter = new StringWriter();
+            if (node.getParent() == null || node.getParent() == node) {
+                stringWriter.write(GRAPHML_HEADER);
             }
-            writer.println("</edge>");
+            // write node
+            stringWriter.write("<node id=\"" + generateId(node) + "\">");
+            // add node label
+            stringWriter.write("<data key=\"d0\"><y:ShapeNode><y:NodeLabel>" + node.toNodeString()
+                    + "</y:NodeLabel></y:ShapeNode></data>");
+            stringWriter.write("</node>\n");
+
+            // Write the accumulated output to the provided writer
+            writer.write(stringWriter.toString());
+            writer.flush();
+            return true;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write GraphML node", e);
         }
-        return true;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean visit(DependencyNode node) {
-        if (node.getParent() == null || node.getParent() == node) {
-            writer.write(GRAPHML_HEADER);
+    public boolean endVisit(DependencyNode node) {
+        try {
+            StringWriter stringWriter = new StringWriter();
+            if (node.getParent() == null || node.getParent() == node) {
+                stringWriter.write(GRAPHML_FOOTER);
+            } else {
+                DependencyNode p = node.getParent();
+                stringWriter.write("<edge source=\"" + generateId(p) + "\" target=\"" + generateId(node) + "\">");
+                if (node.getArtifact().getScope() != null) {
+                    // add Edge label
+                    stringWriter.write("<data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>"
+                            + node.getArtifact().getScope() + "</y:EdgeLabel></y:PolyLineEdge></data>");
+                }
+                stringWriter.write("</edge>\n");
+            }
+
+            // Write the accumulated output to the provided writer
+            writer.write(stringWriter.toString());
+            writer.flush();
+            return true;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write GraphML edge or footer", e);
         }
-        // write node
-        writer.print("<node id=\"" + generateId(node) + "\">");
-        // add node label
-        writer.print("<data key=\"d0\"><y:ShapeNode><y:NodeLabel>" + node.toNodeString()
-                + "</y:NodeLabel></y:ShapeNode></data>");
-        writer.println("</node>");
-        return true;
     }
 
     /**
