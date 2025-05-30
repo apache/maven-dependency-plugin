@@ -56,7 +56,7 @@ import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
- * Goal that resolves the project dependencies from the repository. When using this goal while running on Java 9 the
+ * Goal that resolves the project dependencies from the repository. When running on Java 9, the
  * module names will be visible as well.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
