@@ -38,15 +38,18 @@ import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
+import org.junit.Before;
 
 public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
-    CopyDependenciesMojo mojo;
+    private CopyDependenciesMojo mojo;
 
     @Override
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp("copy-dependencies", true, false);
+    @Before
+    public void setUp() throws Exception {
+        // Call superclass setup (initializes mojo lookups and default test directory)
+        super.setUp();
+        customizeSetUp("copy-dependencies", true, false);
 
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());
