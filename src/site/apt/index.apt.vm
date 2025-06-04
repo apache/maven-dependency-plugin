@@ -106,8 +106,6 @@ ${project.name}
   *{{{./unpack-dependencies-mojo.html}dependency:unpack-dependencies}} like
   copy-dependencies but unpacks.
 
-  * {{{./examples/tree-mojo.html}Tree Mojo}} testing
-
   []
 
 * Usage

@@ -42,7 +42,7 @@ under the License.
       <item name="Exclude Dependencies from Dependency Analysis" href="examples/exclude-dependencies-from-dependency-analysis.html"/>
       <item name="Filtering the dependency tree" href="examples/filtering-the-dependency-tree.html"/>
       <item name="Purging local repository dependencies" href="examples/purging-local-repository.html"/>
-      <item name="Dependency Tree Output Formats" href="examples/tree-mojo.html"/>
+      <item name="Dependency tree output formats" href="examples/tree-mojo.html"/>
     </menu>
     <menu name="Resources">
       <item name="Dependency Mechanism" href="../../guides/introduction/introduction-to-dependency-mechanism.html"/>
