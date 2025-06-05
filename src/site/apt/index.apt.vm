@@ -150,6 +150,8 @@ ${project.name}
 
   * {{{./examples/purging-local-repository.html}Purging the local repository}}
 
+  * {{{./examples/tree-mojo.html}Tree Mojo}}
+
   []
 
 * Resources
