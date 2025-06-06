@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
@@ -56,14 +58,20 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param node  the node to write
      */
     private void writeRootNode(DependencyNode node) {
-        Set<DependencyNode> visited = new HashSet<>();
-        int indent = 2;
-        StringBuilder sb = new StringBuilder();
-        sb.append("{").append("\n");
-        writeNode(indent, node, sb, visited);
-        sb.append("}").append("\n");
-        writer.write(sb.toString());
+        try {
+            StringBuilder sb = new StringBuilder();
+            Set<DependencyNode> visited = new HashSet<>();
+            int indent = 2;
+            sb.append("{").append("\n");
+            writeNode(indent, node, sb, visited);
+            sb.append("}").append("\n");
+            writer.write(sb.toString());
+            writer.flush();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write JSON output", e);
+        }
     }
+
     /**
      * Appends the node and its children to the string builder.
      *
@@ -83,6 +91,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
             writeChildren(indent, node, sb, visited);
         }
     }
+
     /**
      * Writes the children of the node to the string builder. And each children of each node will be written recursively.
      *
@@ -110,8 +119,16 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
 
     @Override
     public boolean endVisit(DependencyNode node) {
-        return true;
+        try {
+            if (node.getParent() == null || node.getParent() == node) {
+                writer.flush();
+            }
+            return true;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to flush JSON output", e);
+        }
     }
+
     /**
      * Appends the artifact values to the string builder.
      *
@@ -133,6 +150,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
             appendKeyWithoutComma(sb, indent, "optional", String.valueOf(artifact.isOptional()));
         }
     }
+
     /**
      * Appends a key value pair to the string builder.
      *
@@ -158,6 +176,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
                 .append(",")
                 .append("\n");
     }
+
     /**
      * Appends a key value pair to the string builder without a comma at the end. This is used for the last children of a node.
      *
