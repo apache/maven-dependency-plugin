@@ -19,12 +19,16 @@
 package org.apache.maven.plugins.dependency.utils;
 
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.junit.Before;
 
 public class TestDependencyStatusSets extends AbstractDependencyMojoTestCase {
 
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp("dss", true);
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        // Initialize the parent setup
+        super.setUp();
+        customizeSetUp("dss", true, true);
     }
 
     public void testDependencyStatusSettersGetters() {
