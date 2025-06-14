@@ -55,7 +55,9 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     /**
      * Directory to store flag files after unpack
      */
-    @Parameter(defaultValue = "${project.build.directory}/dependency-maven-plugin-markers")
+    @Parameter(
+            property = "markersDirectory",
+            defaultValue = "${project.build.directory}/dependency-maven-plugin-markers")
     private File markersDirectory;
 
     /**
