@@ -56,7 +56,7 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
- * Class that encapsulates the plugin parameters, and contains methods that handle dependency filtering
+ * Class that encapsulates the plugin parameters, and contains methods that handle dependency filtering.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @see org.apache.maven.plugins.dependency.AbstractDependencyMojo
@@ -96,7 +96,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected boolean excludeTransitive;
 
     /**
-     * Comma Separated list of Types to include. Empty String indicates include everything (default).
+     * Comma-separated list of Types to include. Empty String indicates include everything (default).
      *
      * @since 2.0
      */
@@ -104,7 +104,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String includeTypes;
 
     /**
-     * Comma Separated list of Types to exclude. Empty String indicates don't exclude anything (default).
+     * Comma-separated list of Types to exclude. Empty String indicates don't exclude anything (default).
      *
      * @since 2.0
      */
@@ -150,7 +150,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String excludeScope;
 
     /**
-     * Comma Separated list of Classifiers to include. Empty String indicates include everything (default).
+     * Comma-separated list of Classifiers to include. Empty string indicates include everything (default).
      *
      * @since 2.0
      */
@@ -158,7 +158,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String includeClassifiers;
 
     /**
-     * Comma Separated list of Classifiers to exclude. Empty String indicates don't exclude anything (default).
+     * Comma-separated list of Classifiers to exclude. Empty String indicates don't exclude anything (default).
      *
      * @since 2.0
      */
@@ -182,7 +182,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String type;
 
     /**
-     * Comma separated list of Artifact names to exclude.
+     * Comma-separated list of artifact IDs to exclude.
      *
      * @since 2.0
      */
@@ -190,7 +190,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String excludeArtifactIds;
 
     /**
-     * Comma separated list of Artifact names to include. Empty String indicates include everything (default).
+     * Comma-separated list of artifact IDs to include. Empty String indicates include everything (default).
      *
      * @since 2.0
      */
@@ -198,7 +198,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String includeArtifactIds;
 
     /**
-     * Comma separated list of GroupId Names to exclude.
+     * Comma-separated list of group IDs to exclude.
      *
      * @since 2.0
      */
@@ -206,7 +206,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String excludeGroupIds;
 
     /**
-     * Comma separated list of GroupIds to include. Empty String indicates include everything (default).
+     * Comma-separated list of group IDs to include. Empty string indicates include everything (default).
      *
      * @since 2.0
      */
@@ -218,15 +218,13 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
      *
      * @since 2.0
      */
-    // CHECKSTYLE_OFF: LineLength
     @Parameter(
             property = "markersDirectory",
             defaultValue = "${project.build.directory}/dependency-maven-plugin-markers")
-    // CHECKSTYLE_ON: LineLength
     protected File markersDirectory;
 
     /**
-     * Prepend the groupId during copy.
+     * Prepend the group ID during copy.
      *
      * @since 2.2
      */
