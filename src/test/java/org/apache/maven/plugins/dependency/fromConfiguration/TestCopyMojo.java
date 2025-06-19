@@ -34,13 +34,18 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
+import org.junit.Before;
 
 public class TestCopyMojo extends AbstractDependencyMojoTestCase {
     private CopyMojo mojo;
 
+    @Before
     @Override
-    protected void setUp() throws Exception {
-        super.setUp("copy", false, false);
+    public void setUp() throws Exception {
+        // Call superclass setup (initializes mojo lookups and default test directory)
+        super.setUp();
+        customizeSetUp("copy", false, false);
+
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());
 

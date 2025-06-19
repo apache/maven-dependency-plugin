@@ -41,6 +41,7 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
+import org.junit.Before;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -59,9 +60,12 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
 
     private ResolverUtil resolverUtil;
 
+    @Before
     @Override
     public void setUp() throws Exception {
-        super.setUp("analyze-exclusions", true, false);
+        // Call superclass setup (initializes mojo lookups and default test directory)
+        super.setUp();
+        customizeSetUp("analyze-exclusions", true, false);
 
         project = new DependencyProjectStub();
         project.setName("projectName");
