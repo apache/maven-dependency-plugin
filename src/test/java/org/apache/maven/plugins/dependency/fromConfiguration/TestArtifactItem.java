@@ -25,8 +25,20 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 
 public class TestArtifactItem extends AbstractDependencyMojoTestCase {
 
+    @Override
+    protected String getTestDirectoryName() {
+        return "artifactItems";
+    }
+
+    @Override
+    protected boolean shouldCreateFiles() {
+        return false;
+    }
+
+    @Override
     protected void setUp() throws Exception {
-        setUp("artifactItems", false);
+        // required for mojo lookups to work
+        super.setUp();
     }
 
     public void testArtifactItemConstructor() throws IOException {

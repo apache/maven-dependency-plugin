@@ -43,9 +43,25 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
 
     private UnpackMojo mojo;
 
+    @Override
+    protected String getTestDirectoryName() {
+        return "unpack";
+    }
+
+    @Override
+    protected boolean shouldCreateFiles() {
+        return true;
+    }
+
+    @Override
+    protected boolean shouldUseFlattenedPath() {
+        return false;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         // required for mojo lookups to work
-        super.setUp("unpack", true, false);
+        super.setUp();
 
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());

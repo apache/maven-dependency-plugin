@@ -39,8 +39,25 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
     private CopyMojo mojo;
 
     @Override
+    protected String getTestDirectoryName() {
+        return "copy";
+    }
+
+    @Override
+    protected boolean shouldCreateFiles() {
+        return false;
+    }
+
+    @Override
+    protected boolean shouldUseFlattenedPath() {
+        return false;
+    }
+
+    @Override
     protected void setUp() throws Exception {
-        super.setUp("copy", false, false);
+        // required for mojo lookups to work
+        super.setUp();
+
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());
 
