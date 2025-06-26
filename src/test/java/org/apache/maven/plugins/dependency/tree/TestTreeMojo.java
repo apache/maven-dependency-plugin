@@ -56,13 +56,23 @@ import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
 public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     // TestCase methods -------------------------------------------------------
 
+    @Override
+    protected String getTestDirectoryName() {
+        return "tree";
+    }
+
+    @Override
+    protected boolean shouldUseFlattenedPath() {
+        return false;
+    }
+
     /*
      * @see org.apache.maven.plugin.testing.AbstractMojoTestCase#setUp()
      */
     @Override
     protected void setUp() throws Exception {
         // required for mojo lookups to work
-        super.setUp("tree", false);
+        super.setUp();
 
         MavenProject project = new MavenProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());

@@ -34,9 +34,20 @@ import org.junit.jupiter.api.Disabled;
 public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
     private GoOfflineMojo subject;
 
+    @Override
+    protected String getTestDirectoryName() {
+        return "go-offline";
+    }
+
+    @Override
+    protected boolean shouldCreateFiles() {
+        return true;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         // required for mojo lookups to work
-        super.setUp("go-offline", true);
+        super.setUp();
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());
 
