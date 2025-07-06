@@ -33,9 +33,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>net.java.dev.msv</groupId>
-      <artifactId>xsdlib</artifactId>
-      <version>2022.7</version>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-shared-utils</artifactId>
+      <version>3.4.2</version>
     </dependency>
   </dependencies>
   <build>

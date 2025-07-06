@@ -21,5 +21,5 @@ package usedUndeclaredReference;
 
 public class Project
 {
-    public static final Class CLASS_REF = org.apache.xmlcommons.Version.class;
+    public static final Class CLASS_REF = org.apache.commons.io.IOUtils.class;
 }
