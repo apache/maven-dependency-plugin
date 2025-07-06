@@ -84,7 +84,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
         }
     }
     /**
-     * Writes the children of the node to the string builder. And each children of each node will be written recursively.
+     * Writes the children of the node to the string builder. Each child of each node will be written recursively.
      *
      * @param indent  the current indent level
      * @param node  the node to write

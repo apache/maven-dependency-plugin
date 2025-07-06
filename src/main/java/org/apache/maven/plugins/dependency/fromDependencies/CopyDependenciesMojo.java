@@ -222,11 +222,11 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      * Copies the Artifact after building the destination file name if overridden. This method also checks if the
      * classifier is set and adds it to the destination file name if needed.
      *
-     * @param artifact representing the object to be copied.
-     * @param removeVersion specifies if the version should be removed from the file name when copying.
-     * @param prependGroupId specifies if the groupId should be prepend to the file while copying.
-     * @param theUseBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @param artifact the object to be copied
+     * @param removeVersion specifies if the version should be removed from the file name when copying
+     * @param prependGroupId specifies if the group ID should be prefixed to the file while copying
+     * @param theUseBaseVersion specifies if the baseVersion of the artifact should be used instead of the version
+     * @throws MojoExecutionException with a message if an error occurs
      * @see #copyArtifact(Artifact, boolean, boolean, boolean, boolean)
      */
     protected void copyArtifact(
@@ -239,12 +239,12 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      * Copies the Artifact after building the destination file name if overridden. This method also checks if the
      * classifier is set and adds it to the destination file name if needed.
      *
-     * @param artifact representing the object to be copied.
-     * @param removeVersion specifies if the version should be removed from the file name when copying.
-     * @param prependGroupId specifies if the groupId should be prepend to the file while copying.
-     * @param useBaseVersion specifies if the baseVersion of the artifact should be used instead of the version.
-     * @param removeClassifier specifies if the classifier should be removed from the file name when copying.
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @param artifact the object to be copied
+     * @param removeVersion specifies if the version should be removed from the file name when copying
+     * @param prependGroupId specifies if the groupId should be prefixed to the file while copying
+     * @param useBaseVersion specifies if the baseVersion of the artifact should be used instead of the version
+     * @param removeClassifier specifies if the classifier should be removed from the file name when copying
+     * @throws MojoExecutionException with a message if an error occurs
      * @see CopyUtil#copyArtifactFile(Artifact, File)
      * @see DependencyUtil#getFormattedOutputDirectory(boolean, boolean, boolean, boolean, boolean, boolean, File, Artifact)
      */
