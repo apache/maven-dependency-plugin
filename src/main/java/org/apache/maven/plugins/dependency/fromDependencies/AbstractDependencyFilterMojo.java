@@ -478,7 +478,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
                         resolverUtil.resolveArtifact(artifact, getProject().getRemoteProjectRepositories());
                 resolvedArtifacts.add(RepositoryUtils.toArtifact(resolveArtifact));
             } catch (ArtifactResolutionException ex) {
-                // an error occurred during resolution, log it an continue
+                // an error occurred during resolution, log it and continue
                 getLog().debug("error resolving: " + artifact, ex);
                 if (stopOnFailure) {
                     throw new MojoExecutionException("error resolving: " + artifact, ex);

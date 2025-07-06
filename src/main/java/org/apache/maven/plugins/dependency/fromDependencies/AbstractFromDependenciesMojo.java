@@ -83,7 +83,7 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
 
     /**
      * Place each type of file in a separate subdirectory. (example /outputDirectory/runtime /outputDirectory/provided
-     * etc)
+     * etc.)
      *
      * @since 2.2
      */
@@ -91,7 +91,7 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
     protected boolean useSubDirectoryPerScope;
 
     /**
-     * Place each type of file in a separate subdirectory. (example /outputDirectory/jars /outputDirectory/wars etc)
+     * Place each type of file in a separate subdirectory. (example /outputDirectory/jars /outputDirectory/wars etc.)
      *
      * @since 2.0-alpha-1
      */

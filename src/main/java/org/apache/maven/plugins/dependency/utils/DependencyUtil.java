@@ -133,17 +133,16 @@ public final class DependencyUtil {
     /**
      * Formats the outputDirectory based on type.
      *
-     * @param useSubdirsPerScope if a new sub directory should be used for each scope.
-     * @param useSubdirsPerType if a new sub directory should be used for each type.
-     * @param useSubdirPerArtifact if a new sub directory should be used for each artifact.
-     * @param useRepositoryLayout if dependencies must be moved into a Maven repository layout, if set, other
-     *         settings
-     *         will be ignored.
+     * @param useSubdirsPerScope if a new subdirectory should be used for each scope
+     * @param useSubdirsPerType if a new subdirectory should be used for each type
+     * @param useSubdirPerArtifact if a new subdirectory should be used for each artifact
+     * @param useRepositoryLayout if dependencies must be moved into a Maven repository layout.
+     *         If set, other settings will be ignored.
      * @param removeVersion if the version must not be mentioned in the filename
      * @param removeType if the type must not be mentioned in the filename
-     * @param outputDirectory base outputDirectory.
-     * @param artifact information about the artifact.
-     * @return a formatted File object to use for output.
+     * @param outputDirectory base outputDirectory
+     * @param artifact information about the artifact
+     * @return a formatted File object to use for output
      */
     public static File getFormattedOutputDirectory(
             boolean useSubdirsPerScope,
