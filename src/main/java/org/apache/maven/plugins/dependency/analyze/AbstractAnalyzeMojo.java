@@ -78,7 +78,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean verbose;
 
     /**
-     * Ignore Runtime/Provided/Test/System scopes for unused dependency analysis.
+     * Ignore runtime/provided/test/system scopes for unused dependency analysis.
      * <p>
      * <code><b>Non-test scoped</b></code> list will be not affected.
      */
@@ -86,7 +86,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean ignoreNonCompile;
 
     /**
-     * Ignore Runtime scope for unused dependency analysis.
+     * Ignore runtime scope for unused dependency analysis.
      *
      * @since 3.2.0
      */
@@ -211,13 +211,18 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * segment is treated as an implicit wildcard. *
      * <p>
      * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
-     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
+     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
      * </p>
+     *
+     * <p>Certain dependencies that are known to be used and loaded by reflection
+     * are always ignored. This includes {@code org.slf4j:slf4j-simple::}.</p>
      *
      * @since 2.10
      */
-    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
-    private String[] ignoredUnusedDeclaredDependencies;
+    @Parameter
+    private String[] ignoredUnusedDeclaredDependencies = new String[0];
+
+    private String[] unconditionallyIgnoredDeclaredDependencies = {"org.slf4j:slf4j-simple::"};
 
     /**
      * List of dependencies that are ignored if they are in not test scope but are only used in test classes.
@@ -361,6 +366,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
         ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, ignoredDependencies));
         ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, ignoredUnusedDeclaredDependencies));
+        ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, unconditionallyIgnoredDeclaredDependencies));
 
         if (ignoreAllNonTestScoped) {
             ignoredNonTestScope.addAll(filterDependencies(nonTestScope, new String[] {"*"}));
