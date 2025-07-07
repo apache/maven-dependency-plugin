@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -32,7 +34,6 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -75,26 +76,22 @@ public class TreeMojo extends AbstractMojo {
     /**
      * The Maven project.
      */
-    @Component
-    private MavenProject project;
+    private final MavenProject project;
 
-    @Component
-    private MavenSession session;
-
-    @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
-    private String outputEncoding;
+    private final MavenSession session;
 
     /**
      * The dependency collector builder to use.
      */
-    @Component(hint = "default")
-    private DependencyCollectorBuilder dependencyCollectorBuilder;
+    private final DependencyCollectorBuilder dependencyCollectorBuilder;
 
     /**
      * The dependency graph builder to use.
      */
-    @Component(hint = "default")
-    private DependencyGraphBuilder dependencyGraphBuilder;
+    private final DependencyGraphBuilder dependencyGraphBuilder;
+
+    @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
+    private String outputEncoding;
 
     /**
      * If specified, this parameter will cause the dependency tree to be written to the path specified, instead of
@@ -108,7 +105,7 @@ public class TreeMojo extends AbstractMojo {
     /**
      * If specified, this parameter will cause the dependency tree to be written using the specified format. Currently
      * supported formats are: <code>text</code> (default), <code>dot</code>, <code>graphml</code>, <code>tgf</code>
-     * and <code>json</code>.
+     * and <code>json</code> (since 3.7.0).
      * These additional formats can be plotted to image files.
      *
      * @since 2.2
@@ -205,6 +202,19 @@ public class TreeMojo extends AbstractMojo {
      */
     @Parameter(property = "skip", defaultValue = "false")
     private boolean skip;
+
+    @Inject
+    public TreeMojo(
+            MavenProject project,
+            MavenSession session,
+            DependencyCollectorBuilder dependencyCollectorBuilder,
+            DependencyGraphBuilder dependencyGraphBuilder) {
+        this.project = project;
+        this.session = session;
+        this.dependencyCollectorBuilder = dependencyCollectorBuilder;
+        this.dependencyGraphBuilder = dependencyGraphBuilder;
+    }
+
     // Mojo methods -----------------------------------------------------------
 
     /*

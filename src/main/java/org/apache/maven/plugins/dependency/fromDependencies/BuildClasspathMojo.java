@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -35,18 +37,25 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * This goal outputs a classpath string of dependencies from the local repository to a file or log.
@@ -54,13 +63,11 @@ import org.apache.maven.shared.transfer.repository.RepositoryManager;
  * @author ankostis
  * @since 2.0-alpha-2
  */
-// CHECKSTYLE_OFF: LineLength
 @Mojo(
         name = "build-classpath",
         requiresDependencyResolution = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.GENERATE_SOURCES,
         threadSafe = true)
-// CHECKSTYLE_ON: LineLength
 public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements Comparator<Artifact> {
 
     @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
@@ -158,19 +165,37 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     @Parameter(property = "mdep.useBaseVersion", defaultValue = "true")
     private boolean useBaseVersion = true;
 
-    /**
-     * Maven ProjectHelper
-     */
-    @Component
-    private MavenProjectHelper projectHelper;
+    private final MavenProjectHelper projectHelper;
 
-    @Component
-    private RepositoryManager repositoryManager;
+    @Inject
+    // CHECKSTYLE_OFF: ParameterNumber
+    protected BuildClasspathMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager,
+            MavenProjectHelper projectHelper) {
+        super(
+                session,
+                buildContext,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
+        this.projectHelper = projectHelper;
+    }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates to create a classpath.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      * @see #getResolvedDependencies(boolean)
      */
     @Override
@@ -242,8 +267,8 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     }
 
     /**
-     * @param cpString The classpath.
-     * @throws MojoExecutionException in case of an error.
+     * @param cpString the classpath
+     * @throws MojoExecutionException in case of an error
      */
     protected void attachFile(String cpString) throws MojoExecutionException {
         File attachedFile = new File(getProject().getBuild().getDirectory(), "classpath");
@@ -253,7 +278,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     }
 
     /**
-     * Appends the artifact path into the specified StringBuilder.
+     * Appends the artifact path to the specified StringBuilder.
      *
      * @param art {@link Artifact}
      * @param sb {@link StringBuilder}
@@ -264,13 +289,12 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
             // substitute the property for the local repo path to make the classpath file portable.
             if (localRepoProperty != null && !localRepoProperty.isEmpty()) {
                 ProjectBuildingRequest projectBuildingRequest = session.getProjectBuildingRequest();
-                File localBasedir = repositoryManager.getLocalRepositoryBasedir(projectBuildingRequest);
+                File localBasedir = getRepositoryManager().getLocalRepositoryBasedir(projectBuildingRequest);
 
-                file = file.replace(localBasedir.getAbsolutePath(), localRepoProperty);
+                file = StringUtils.replace(file, localBasedir.getAbsolutePath(), localRepoProperty);
             }
             sb.append(file);
         } else {
-            // TODO: add param for prepending groupId and version.
             sb.append(prefix);
             sb.append(File.separator);
             sb.append(DependencyUtil.getFormattedFileName(

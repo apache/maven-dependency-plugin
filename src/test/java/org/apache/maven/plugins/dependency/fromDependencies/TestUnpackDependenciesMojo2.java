@@ -34,11 +34,14 @@ import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 
+import static org.junit.Assert.assertNotEquals;
+
 public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase {
 
-    private final String UNPACKABLE_FILE = "test.txt";
+    private static final String UNPACKABLE_FILE = "test.txt";
 
-    private final String UNPACKABLE_FILE_PATH = "target/test-classes/unit/unpack-dependencies-test/" + UNPACKABLE_FILE;
+    private static final String UNPACKABLE_FILE_PATH =
+            "target/test-classes/unit/unpack-dependencies-test/" + UNPACKABLE_FILE;
 
     private UnpackDependenciesMojo mojo;
 
@@ -70,15 +73,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.addAll(directArtifacts);
 
         project.setArtifacts(artifacts);
-        project.setDependencyArtifacts(directArtifacts);
         mojo.markersDirectory = new File(this.testDir, "markers");
-    }
-
-    protected void tearDown() {
-        super.tearDown();
-
-        mojo = null;
-        System.gc();
     }
 
     public File getUnpackedFile(Artifact artifact) {
@@ -106,7 +101,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(release);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteIfNewer = false;
 
@@ -125,7 +119,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(release);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = true;
         mojo.overWriteIfNewer = false;
@@ -145,7 +138,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(snap);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = false;
         mojo.overWriteSnapshots = false;
@@ -166,7 +158,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(snap);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = false;
         mojo.overWriteSnapshots = true;
@@ -187,7 +178,6 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         artifacts.add(snap);
 
         mojo.getProject().setArtifacts(artifacts);
-        mojo.getProject().setDependencyArtifacts(artifacts);
 
         mojo.overWriteReleases = false;
         mojo.overWriteSnapshots = false;
@@ -209,7 +199,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
 
         assertEquals(time, unpackedFile.lastModified());
         mojo.execute();
-        System.gc();
+
         // make sure it didn't overwrite
         assertEquals(time, unpackedFile.lastModified());
 
@@ -217,9 +207,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
 
         mojo.execute();
 
-        assertTrue(time != unpackedFile.lastModified());
-
-        System.gc();
+        assertNotEquals(time, unpackedFile.lastModified());
     }
 
     public void assertUnpacked(Artifact artifact, boolean overWrite)
@@ -239,7 +227,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         mojo.execute();
 
         if (overWrite) {
-            assertTrue(time != unpackedFile.lastModified());
+            assertNotEquals(time, unpackedFile.lastModified());
         } else {
             assertEquals(time, unpackedFile.lastModified());
         }

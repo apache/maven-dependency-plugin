@@ -40,7 +40,7 @@ ${project.name}
   *{{{./analyze-dep-mgt-mojo.html}dependency:analyze-dep-mgt}} analyzes the project's dependencies and lists mismatches
   between resolved dependencies and those listed in your dependencyManagement section.
 
-  *{{{./analyze-exclusions.html}dependency:analyze-exclusions}} analyzes the exclusions on dependencies and checks if the artifact actually brings in the given dependency.
+  *{{{./analyze-exclusions-mojo.html}dependency:analyze-exclusions}} analyzes the exclusions on dependencies and checks if the artifact actually brings in the given dependency.
 
   *{{{./analyze-only-mojo.html}dependency:analyze-only}} is the same as analyze, but is meant to be bound in a pom. It
   does not fork the build and execute test-compile.
@@ -55,7 +55,7 @@ ${project.name}
   Maven to output the path of the dependencies from the local repository in a classpath format to be used in java -cp.
   The classpath file may also be attached and installed/deployed along with the main artifact.
 
-  *{{{./collect-dependencies-mojo.html}dependency:collect}} collects the project dependencies from the repository.
+  *{{{./collect-mojo.html}dependency:collect}} collects the project dependencies from the repository.
   It lists the groupId:artifactId:version information by downloading the pom files without downloading the actual
   artifacts such as jar files.
 
@@ -106,8 +106,6 @@ ${project.name}
   *{{{./unpack-dependencies-mojo.html}dependency:unpack-dependencies}} like
   copy-dependencies but unpacks.
 
-  *{{{./analyze-exclusions-mojo.html}dependency:analyze-exclusions}} displays invalid exclusions for this project.
-
   []
 
 * Usage
@@ -151,6 +149,8 @@ ${project.name}
   * {{{./examples/filtering-the-dependency-tree.html}Filtering the Dependency Tree}}
 
   * {{{./examples/purging-local-repository.html}Purging the local repository}}
+
+  * {{{./examples/tree-mojo.html}Tree Mojo}}
 
   []
 

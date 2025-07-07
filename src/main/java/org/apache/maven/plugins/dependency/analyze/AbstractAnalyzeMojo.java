@@ -34,9 +34,7 @@ import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.dependency.utils.StringUtils;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
@@ -55,19 +53,6 @@ import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
  */
 public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     // fields -----------------------------------------------------------------
-
-    /**
-     * The plexusContainer to look-up the right {@link ProjectDependencyAnalyzer} implementation depending on the mojo
-     * configuration.
-     */
-    @Component
-    private PlexusContainer plexusContainer;
-
-    /**
-     * The Maven project to analyze.
-     */
-    @Component
-    private MavenProject project;
 
     /**
      * Specify the project dependency analyzer to use (plexus component role-hint). By default,
@@ -93,7 +78,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean verbose;
 
     /**
-     * Ignore Runtime/Provided/Test/System scopes for unused dependency analysis.
+     * Ignore runtime/provided/test/system scopes for unused dependency analysis.
      * <p>
      * <code><b>Non-test scoped</b></code> list will be not affected.
      */
@@ -101,7 +86,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean ignoreNonCompile;
 
     /**
-     * Ignore Runtime scope for unused dependency analysis.
+     * Ignore runtime scope for unused dependency analysis.
      *
      * @since 3.2.0
      */
@@ -226,13 +211,19 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * segment is treated as an implicit wildcard. *
      * <p>
      * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
-     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
+     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
      * </p>
+     *
+     * <p>Certain dependencies that are known to be used and loaded by reflection
+     * are always ignored. This includes {@code org.slf4j:slf4j-simple::}
+     * and {@code org.glassfish:javax.json::}.</p>
      *
      * @since 2.10
      */
-    @Parameter(defaultValue = "org.slf4j:slf4j-simple::,org.glassfish:javax.json::")
-    private String[] ignoredUnusedDeclaredDependencies;
+    @Parameter
+    private String[] ignoredUnusedDeclaredDependencies = new String[0];
+
+    private String[] unconditionallyIgnoredDeclaredDependencies = {"org.slf4j:slf4j-simple::,org.glassfish:javax.json::"};
 
     /**
      * List of dependencies that are ignored if they are in not test scope but are only used in test classes.
@@ -271,6 +262,22 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      */
     @Parameter(property = "mdep.analyze.excludedClasses")
     private Set<String> excludedClasses;
+
+    /**
+     * The plexusContainer to look up the {@link ProjectDependencyAnalyzer} implementation depending on the mojo
+     * configuration.
+     */
+    private final PlexusContainer plexusContainer;
+
+    /**
+     * The Maven project to analyze.
+     */
+    private final MavenProject project;
+
+    protected AbstractAnalyzeMojo(PlexusContainer plexusContainer, MavenProject project) {
+        this.plexusContainer = plexusContainer;
+        this.project = project;
+    }
 
     // Mojo methods -----------------------------------------------------------
 
@@ -360,6 +367,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
         ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, ignoredDependencies));
         ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, ignoredUnusedDeclaredDependencies));
+        ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, unconditionallyIgnoredDeclaredDependencies));
 
         if (ignoreAllNonTestScoped) {
             ignoredNonTestScope.addAll(filterDependencies(nonTestScope, new String[] {"*"}));
@@ -382,7 +390,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
             logDependencyWarning("Used undeclared dependencies found:");
 
             if (verbose) {
-                logArtifacts(usedUndeclaredWithClasses, true);
+                logArtifacts(usedUndeclaredWithClasses);
             } else {
                 logArtifacts(usedUndeclaredWithClasses.keySet(), true);
             }
@@ -463,7 +471,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         }
     }
 
-    private void logArtifacts(Map<Artifact, Set<String>> artifacts, boolean warn) {
+    private void logArtifacts(Map<Artifact, Set<String>> artifacts) {
         if (artifacts.isEmpty()) {
             getLog().info("   None");
         } else {
@@ -471,16 +479,9 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                 // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
                 entry.getKey().isSnapshot();
 
-                if (warn) {
-                    logDependencyWarning("   " + entry.getKey());
-                    for (String clazz : entry.getValue()) {
-                        logDependencyWarning("      class " + clazz);
-                    }
-                } else {
-                    getLog().info("   " + entry.getKey());
-                    for (String clazz : entry.getValue()) {
-                        getLog().info("      class " + clazz);
-                    }
+                logDependencyWarning("   " + entry.getKey());
+                for (String clazz : entry.getValue()) {
+                    logDependencyWarning("      class " + clazz);
                 }
             }
         }
@@ -512,9 +513,9 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                 writer.startElement("version");
                 writer.writeText(artifact.getBaseVersion());
                 String classifier = artifact.getClassifier();
-                if (!StringUtils.isEmpty(classifier)) {
+                if (classifier != null && !classifier.trim().isEmpty()) {
                     writer.startElement("classifier");
-                    writer.writeText(classifier);
+                    writer.writeText(artifact.getClassifier());
                     writer.endElement();
                 }
                 writer.endElement();

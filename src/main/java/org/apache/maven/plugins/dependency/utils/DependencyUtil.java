@@ -118,7 +118,9 @@ public final class DependencyUtil {
 
         String classifierString = "";
 
-        if (!removeClassifier && StringUtils.isNotEmpty(artifact.getClassifier())) {
+        if (!removeClassifier
+                && artifact.getClassifier() != null
+                && !artifact.getClassifier().isEmpty()) {
             classifierString = "-" + artifact.getClassifier();
         }
         destFileName.append(artifact.getArtifactId()).append(versionString);
@@ -131,17 +133,16 @@ public final class DependencyUtil {
     /**
      * Formats the outputDirectory based on type.
      *
-     * @param useSubdirsPerScope if a new sub directory should be used for each scope.
-     * @param useSubdirsPerType if a new sub directory should be used for each type.
-     * @param useSubdirPerArtifact if a new sub directory should be used for each artifact.
-     * @param useRepositoryLayout if dependencies must be moved into a Maven repository layout, if set, other
-     *         settings
-     *         will be ignored.
+     * @param useSubdirsPerScope if a new subdirectory should be used for each scope
+     * @param useSubdirsPerType if a new subdirectory should be used for each type
+     * @param useSubdirPerArtifact if a new subdirectory should be used for each artifact
+     * @param useRepositoryLayout if dependencies must be moved into a Maven repository layout.
+     *         If set, other settings will be ignored.
      * @param removeVersion if the version must not be mentioned in the filename
      * @param removeType if the type must not be mentioned in the filename
-     * @param outputDirectory base outputDirectory.
-     * @param artifact information about the artifact.
-     * @return a formatted File object to use for output.
+     * @param outputDirectory base outputDirectory
+     * @param artifact information about the artifact
+     * @return a formatted File object to use for output
      */
     public static File getFormattedOutputDirectory(
             boolean useSubdirsPerScope,
@@ -185,7 +186,7 @@ public final class DependencyUtil {
             sb.append(artifact.getVersion());
         }
 
-        if (StringUtils.isNotEmpty(artifact.getClassifier())) {
+        if (artifact.getClassifier() != null && !artifact.getClassifier().isEmpty()) {
             sb.append("-");
             sb.append(artifact.getClassifier());
         }
@@ -256,20 +257,6 @@ public final class DependencyUtil {
         try (BufferedReader reader = new BufferedReader(new StringReader(string))) {
             reader.lines().forEach(log::info);
         }
-    }
-
-    /**
-     * Mainly used to parse excludes, includes configuration.
-     *
-     * @param str the string to split
-     * @return the result items
-     */
-    public static String[] tokenizer(String str) {
-        String s = cleanToBeTokenizedString(str);
-        if (s.isEmpty()) {
-            return new String[0];
-        }
-        return cleanToBeTokenizedString(str).split(",");
     }
 
     /**

@@ -30,8 +30,6 @@ import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.shared.artifact.filter.collection.AbstractArtifactsFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 
-import static org.apache.maven.plugins.dependency.utils.StringUtils.isEmpty;
-
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  */
@@ -285,8 +283,7 @@ public class DestFileFilter extends AbstractArtifactsFilter implements ArtifactI
         }
 
         File destFile;
-
-        if (isEmpty(item.getDestFileName())) {
+        if (item.getDestFileName() == null || item.getDestFileName().isEmpty()) {
             String formattedFileName = DependencyUtil.getFormattedFileName(
                     artifact, removeVersion, prependGroupId, useBaseVersion, removeClassifier);
             destFile = new File(destFolder, formattedFileName);
@@ -300,13 +297,13 @@ public class DestFileFilter extends AbstractArtifactsFilter implements ArtifactI
     }
 
     /**
-     * Using simply {@code File.getLastModified} will return sometimes a wrong value see JDK bug for details.
+     * {@code File.getLastModified} sometimes returns a wrong value. See JDK bug for details.
      * <p>
      * https://bugs.openjdk.java.net/browse/JDK-8177809
      *
      * @param file {@link File}
      * @return the last modification time in milliseconds.
-     * @throws ArtifactFilterException in case of a IO Exception.
+     * @throws ArtifactFilterException in case of an IOException
      */
     private long getLastModified(File file) throws ArtifactFilterException {
         try {

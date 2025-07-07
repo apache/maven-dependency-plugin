@@ -65,6 +65,7 @@ public class TestMarkerFileFilter {
         assertEquals(2, result.size());
     }
 
+    @Test
     public void testMarkerSnapshots() throws ArtifactFilterException, MojoExecutionException, IOException {
         DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler(fact.getSnapshotArtifact(), outputFolder);
         handler.setMarker();
@@ -79,6 +80,7 @@ public class TestMarkerFileFilter {
         assertTrue(handler.clearMarker());
     }
 
+    @Test
     public void testMarkerRelease() throws IOException, ArtifactFilterException, MojoExecutionException {
         DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler(fact.getReleaseArtifact(), outputFolder);
         handler.setMarker();

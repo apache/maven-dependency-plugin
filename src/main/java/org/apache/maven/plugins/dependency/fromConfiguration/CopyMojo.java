@@ -18,20 +18,27 @@
  */
 package org.apache.maven.plugins.dependency.fromConfiguration;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.CopyUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Goal that copies a list of artifacts from the repository to defined locations.
@@ -42,8 +49,8 @@ import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
 @Mojo(name = "copy", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresProject = false, threadSafe = true)
 public class CopyMojo extends AbstractFromConfigurationMojo {
 
-    @Component
-    private CopyUtil copyUtil;
+    private final CopyUtil copyUtil;
+
     /**
      * Strip artifact version during copy
      */
@@ -80,6 +87,19 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     @Parameter(property = "artifact")
     private String artifact;
 
+    @Inject
+    public CopyMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ArtifactResolver artifactResolver,
+            RepositoryManager repositoryManager,
+            ArtifactHandlerManager artifactHandlerManager,
+            CopyUtil copyUtil) {
+        super(session, buildContext, project, artifactResolver, repositoryManager, artifactHandlerManager);
+        this.copyUtil = copyUtil;
+    }
+
     /**
      * Main entry into mojo. This method gets the ArtifactItems and iterates through each one passing it to
      * copyArtifact.
@@ -95,11 +115,12 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
 
         List<ArtifactItem> theArtifactItems = getProcessedArtifactItems(
                 new ProcessArtifactItemsRequest(stripVersion, prependGroupId, useBaseVersion, stripClassifier));
+
         for (ArtifactItem artifactItem : theArtifactItems) {
             if (artifactItem.isNeedsProcessing()) {
                 copyArtifact(artifactItem);
             } else {
-                this.getLog().info(artifactItem + " already exists in " + artifactItem.getOutputDirectory());
+                getLog().info(artifactItem + " already exists in " + artifactItem.getOutputDirectory());
             }
         }
     }
@@ -107,13 +128,15 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     /**
      * Resolves the artifact from the repository and copies it to the specified location.
      *
-     * @param artifactItem containing the information about the Artifact to copy.
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @param artifactItem containing the information about the artifact to copy
+     * @throws MojoExecutionException with a message if an error occurs
      * @see CopyUtil#copyArtifactFile(Artifact, File)
      */
     protected void copyArtifact(ArtifactItem artifactItem) throws MojoExecutionException {
         File destFile = new File(artifactItem.getOutputDirectory(), artifactItem.getDestFileName());
-
+        if (destFile.exists()) {
+            getLog().warn("Overwriting " + destFile);
+        }
         try {
             copyUtil.copyArtifactFile(artifactItem.getArtifact(), destFile);
         } catch (IOException e) {

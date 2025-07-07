@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.resolvers;
 
+import javax.inject.Inject;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -26,26 +28,29 @@ import java.util.Set;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
-import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
-import org.apache.maven.shared.artifact.filter.collection.ClassifierFilter;
 import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
-import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
-import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
-import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Goal that resolves all project plugins and reports and their dependencies.
@@ -67,6 +72,29 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
     @Parameter(property = "outputAbsoluteArtifactFilename", defaultValue = "false")
     private boolean outputAbsoluteArtifactFilename;
 
+    @Inject
+    // CHECKSTYLE_OFF: ParameterNumber
+    public ResolvePluginsMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(
+                session,
+                buildContext,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
+    }
+    // CHECKSTYLE_ON: ParameterNumber
+
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.
      *
@@ -82,7 +110,7 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
             sb.append(System.lineSeparator());
             sb.append("The following plugins have been resolved:");
             sb.append(System.lineSeparator());
-            if (plugins == null || plugins.isEmpty()) {
+            if (plugins.isEmpty()) {
                 sb.append("   none");
                 sb.append(System.lineSeparator());
             } else {
@@ -172,40 +200,6 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
         }
 
         return artifacts;
-    }
-
-    /**
-     * @return {@link FilterArtifacts}
-     */
-    private FilterArtifacts getArtifactsFilter() {
-        final FilterArtifacts filter = new FilterArtifacts();
-
-        if (excludeReactor) {
-
-            filter.addFilter(new ExcludeReactorProjectsArtifactFilter(reactorProjects, getLog()));
-        }
-
-        filter.addFilter(new ScopeFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeScope),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeScope)));
-
-        filter.addFilter(new TypeFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeTypes),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeTypes)));
-
-        filter.addFilter(new ClassifierFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeClassifiers),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeClassifiers)));
-
-        filter.addFilter(new GroupIdFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeGroupIds),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeGroupIds)));
-
-        filter.addFilter(new ArtifactIdFilter(
-                DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
-
-        return filter;
     }
 
     /**

@@ -49,23 +49,20 @@ public class TestAnalyzeDepMgt extends TestCase {
 
     Exclusion ex;
 
-    Artifact exclusionArtifact;
-
     DependencyManagement depMgt;
 
-    DependencyManagement depMgtNoExclusions;
-
+    @Override
     protected void setUp() throws Exception {
 
-        mojo = new AnalyzeDepMgt();
         MavenProject project = new DependencyProjectStub();
+        mojo = new AnalyzeDepMgt(project);
 
         stubFactory = new DependencyArtifactStubFactory(new File(""), false);
 
         Set<Artifact> allArtifacts = stubFactory.getMixedArtifacts();
         Set<Artifact> directArtifacts = stubFactory.getClassifiedArtifacts();
 
-        exclusionArtifact = stubFactory.getReleaseArtifact();
+        Artifact exclusionArtifact = stubFactory.getReleaseArtifact();
         directArtifacts.add(exclusionArtifact);
         ex = new Exclusion();
         ex.setArtifactId(exclusionArtifact.getArtifactId());
@@ -87,8 +84,6 @@ public class TestAnalyzeDepMgt extends TestCase {
 
         project.setArtifacts(allArtifacts);
         project.setDependencyArtifacts(directArtifacts);
-
-        mojo.setProject(project);
     }
 
     public void testGetManagementKey() throws IOException {

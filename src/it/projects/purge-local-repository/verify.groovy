@@ -20,7 +20,6 @@
 void checkFileAbsence( String path )
 {
   File depJar = new File( localRepositoryPath, path )
-  System.out.println( "Checking for absence of dummy JAR " + depJar )
   if ( depJar.exists() )
   {
     throw new Exception( "Dependency jar was not purged: " + depJar )

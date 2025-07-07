@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,8 +29,8 @@ import java.util.Set;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
@@ -51,23 +53,15 @@ import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
- * Class that encapsulates the plugin parameters, and contains methods that handle dependency filtering
+ * Class that encapsulates the plugin parameters, and contains methods that handle dependency filtering.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @see org.apache.maven.plugins.dependency.AbstractDependencyMojo
  */
 public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMojo {
-
-    @Component
-    private ResolverUtil resolverUtil;
-
-    @Component
-    private DependencyResolver dependencyResolver;
-
-    @Component
-    private RepositoryManager repositoryManager;
 
     /**
      * Overwrite release artifacts
@@ -102,7 +96,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected boolean excludeTransitive;
 
     /**
-     * Comma Separated list of Types to include. Empty String indicates include everything (default).
+     * Comma-separated list of Types to include. Empty String indicates include everything (default).
      *
      * @since 2.0
      */
@@ -110,7 +104,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String includeTypes;
 
     /**
-     * Comma Separated list of Types to exclude. Empty String indicates don't exclude anything (default).
+     * Comma-separated list of Types to exclude. Empty String indicates don't exclude anything (default).
      *
      * @since 2.0
      */
@@ -136,7 +130,9 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
     /**
      * Scope threshold to exclude, if no value is defined for include.
-     * An empty string indicates no dependencies (default).<br>
+     * An empty string indicates no dependencies (default).  Unlike the other
+     * exclusion parameters, this property does not support a comma-delimited
+     * list of scope exclusions. Just one scope may be excluded at a time.<br>
      * The scope threshold value being interpreted is the scope as
      * Maven filters for creating a classpath, not as specified in the pom. In summary:
      * <ul>
@@ -154,7 +150,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String excludeScope;
 
     /**
-     * Comma Separated list of Classifiers to include. Empty String indicates include everything (default).
+     * Comma-separated list of Classifiers to include. Empty string indicates include everything (default).
      *
      * @since 2.0
      */
@@ -162,7 +158,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String includeClassifiers;
 
     /**
-     * Comma Separated list of Classifiers to exclude. Empty String indicates don't exclude anything (default).
+     * Comma-separated list of Classifiers to exclude. Empty String indicates don't exclude anything (default).
      *
      * @since 2.0
      */
@@ -186,7 +182,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String type;
 
     /**
-     * Comma separated list of Artifact names to exclude.
+     * Comma-separated list of artifact IDs to exclude.
      *
      * @since 2.0
      */
@@ -194,7 +190,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String excludeArtifactIds;
 
     /**
-     * Comma separated list of Artifact names to include. Empty String indicates include everything (default).
+     * Comma-separated list of artifact IDs to include. Empty String indicates include everything (default).
      *
      * @since 2.0
      */
@@ -202,7 +198,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String includeArtifactIds;
 
     /**
-     * Comma separated list of GroupId Names to exclude.
+     * Comma-separated list of group IDs to exclude.
      *
      * @since 2.0
      */
@@ -210,7 +206,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String excludeGroupIds;
 
     /**
-     * Comma separated list of GroupIds to include. Empty String indicates include everything (default).
+     * Comma-separated list of group IDs to include. Empty string indicates include everything (default).
      *
      * @since 2.0
      */
@@ -222,31 +218,53 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
      *
      * @since 2.0
      */
-    // CHECKSTYLE_OFF: LineLength
     @Parameter(
             property = "markersDirectory",
             defaultValue = "${project.build.directory}/dependency-maven-plugin-markers")
-    // CHECKSTYLE_ON: LineLength
     protected File markersDirectory;
 
     /**
-     * Prepend the groupId during copy.
+     * Prepend the group ID during copy.
      *
      * @since 2.2
      */
     @Parameter(property = "mdep.prependGroupId", defaultValue = "false")
     protected boolean prependGroupId = false;
 
-    @Component
-    private ProjectBuilder projectBuilder;
+    private final ResolverUtil resolverUtil;
 
-    @Component
-    private ArtifactHandlerManager artifactHandlerManager;
+    private final DependencyResolver dependencyResolver;
+
+    private final RepositoryManager repositoryManager;
+
+    private final ProjectBuilder projectBuilder;
+
+    private final ArtifactHandlerManager artifactHandlerManager;
+
+    @Inject
+    // CHECKSTYLE_OFF: ParameterNumber
+    protected AbstractDependencyFilterMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(session, buildContext, project);
+        this.resolverUtil = resolverUtil;
+        this.dependencyResolver = dependencyResolver;
+        this.repositoryManager = repositoryManager;
+        this.projectBuilder = projectBuilder;
+        this.artifactHandlerManager = artifactHandlerManager;
+    }
+    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Return an {@link ArtifactsFilter} indicating which artifacts must be filtered out.
      *
-     * @return an {@link ArtifactsFilter} indicating which artifacts must be filtered out.
+     * @return an {@link ArtifactsFilter} indicating which artifacts must be filtered out
      */
     protected abstract ArtifactsFilter getMarkedArtifactFilter();
 
@@ -460,7 +478,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
                         resolverUtil.resolveArtifact(artifact, getProject().getRemoteProjectRepositories());
                 resolvedArtifacts.add(RepositoryUtils.toArtifact(resolveArtifact));
             } catch (ArtifactResolutionException ex) {
-                // an error occurred during resolution, log it an continue
+                // an error occurred during resolution, log it and continue
                 getLog().debug("error resolving: " + artifact, ex);
                 if (stopOnFailure) {
                     throw new MojoExecutionException("error resolving: " + artifact, ex);
@@ -478,7 +496,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
-     * @param theMarkersDirectory The markersDirectory to set.
+     * @param theMarkersDirectory the markersDirectory to set
      */
     public void setMarkersDirectory(File theMarkersDirectory) {
         this.markersDirectory = theMarkersDirectory;
@@ -487,14 +505,14 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     // TODO: Set marker files.
 
     /**
-     * @return true, if the groupId should be prepended to the filename.
+     * @return true, if the groupId should be prepended to the filename
      */
     public boolean isPrependGroupId() {
         return prependGroupId;
     }
 
     /**
-     * @param prependGroupId - true if the groupId must be prepended during the copy.
+     * @param prependGroupId true if the groupId must be prepended during the copy
      */
     public void setPrependGroupId(boolean prependGroupId) {
         this.prependGroupId = prependGroupId;

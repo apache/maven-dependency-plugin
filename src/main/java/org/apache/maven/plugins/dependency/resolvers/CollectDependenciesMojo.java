@@ -18,14 +18,24 @@
  */
 package org.apache.maven.plugins.dependency.resolvers;
 
+import javax.inject.Inject;
+
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * <p>
- * Goal that collects the project dependencies from the repository. This goal requires Maven 3.0 or higher to function
- * because it uses "requiresDependencyCollection". This means that it lists the groupId:artifactId:version information
+ * Goal that collects the project dependencies from the repository. This goal
+ * uses "requiresDependencyCollection" to list the groupId:artifactId:version information
  * by downloading the pom files without downloading the actual artifacts such as jar files.
  * </p>
  * <p>
@@ -45,4 +55,29 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
         requiresDependencyCollection = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.GENERATE_SOURCES,
         threadSafe = true)
-public class CollectDependenciesMojo extends ResolveDependenciesMojo {}
+public class CollectDependenciesMojo extends ResolveDependenciesMojo {
+
+    @Inject
+    // CHECKSTYLE_OFF: ParameterNumber
+    protected CollectDependenciesMojo(
+            MavenSession session,
+            BuildContext buildContext,
+            MavenProject project,
+            ResolverUtil resolverUtil,
+            DependencyResolver dependencyResolver,
+            RepositoryManager repositoryManager,
+            ProjectBuilder projectBuilder,
+            ArtifactHandlerManager artifactHandlerManager) {
+        super(
+                session,
+                buildContext,
+                project,
+                resolverUtil,
+                dependencyResolver,
+                repositoryManager,
+                projectBuilder,
+                artifactHandlerManager);
+    }
+    // CHECKSTYLE_ON: ParameterNumber
+
+}

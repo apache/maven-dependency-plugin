@@ -28,16 +28,18 @@ Exclude dependencies from dependency analysis
   A project's dependencies can be analyzed as part of the build process by binding the <<<dependency:analyze-only>>>
   goal to the lifecycle.  By default, the analysis will be performed during the <<<verify>>> lifecycle phase.  
 
-  In rare cases it is possible to have dependencies that are
-  legitimate on the classpath but cause either "Declared but unused"
-  or "Undeclared but used" warnings. The most common case is with jars
-  that contain annotations and the byte code analysis is unable to
-  determine whether a jar is actually required or not.
+  It is possible to have necessary dependencies on the classpath that
+  cause either "Declared but unused" or "Undeclared but used" warnings.
+  One common cause of byte code analysis being unable to
+  determine whether a jar is required are annotations with
+  source retention. Another common cause is
+  a class that is loaded by reflection at runtime.
 
-  The plugin can then be configured to ignore dependencies that are
-  "declared but unused", "undeclared but used", and "non-test scoped"
-  in selected list or in all simultaneously.
+  The dependency plugin does not warn about a few common dependencies
+  where its analysis is known to be unreliable, most notably SLF4J.
 
+  If you encounter other false positives, you can configure the plugin to ignore particular
+  dependencies that are "declared but unused", "undeclared but used", and "non-test scoped".
   See the following POM configuration for an example:
 
 +---+

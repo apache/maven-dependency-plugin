@@ -24,7 +24,7 @@ for (item in expected)
     def file = new File(basedir, 'target/dependency/' + item)
     if (!file.exists())
     {
-       throw new RuntimeException("Missing "+file.name)
+       throw new RuntimeException("Missing " + file.name)
     }
 }
 
@@ -35,7 +35,7 @@ for (item in notExpected)
     def file = new File(basedir, 'target/dependency/' + item)
     if (file.exists())
     {
-       throw new RuntimeException("This file shouldn't be here: "+file.name)
+       throw new RuntimeException("This file shouldn't be here: " + file.name)
     }
 }
 

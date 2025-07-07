@@ -26,7 +26,6 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.SystemStreamLog;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
@@ -38,27 +37,6 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  */
 public abstract class AbstractDependencyMojo extends AbstractMojo {
-
-    /**
-     * For IDE build support
-     */
-    @Component
-    private BuildContext buildContext;
-
-    /**
-     * Skip plugin execution only during incremental builds (e.g. triggered from M2E).
-     *
-     * @since 3.4.0
-     * @see #skip
-     */
-    @Parameter(defaultValue = "false")
-    private boolean skipDuringIncrementalBuild;
-
-    /**
-     * POM
-     */
-    @Component
-    private MavenProject project;
 
     /**
      * Remote repositories which will be searched for artifacts.
@@ -81,8 +59,7 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     /**
      * The Maven session
      */
-    @Component
-    protected MavenSession session;
+    protected final MavenSession session;
 
     /**
      * If the plugin should be silent.
@@ -101,6 +78,31 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
      */
     @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
+
+    /**
+     * Skip plugin execution only during incremental builds (e.g. triggered from M2E).
+     *
+     * @since 3.4.0
+     * @see #skip
+     */
+    @Parameter(defaultValue = "false")
+    private boolean skipDuringIncrementalBuild;
+
+    /**
+     * For IDE build support
+     */
+    private final BuildContext buildContext;
+
+    /**
+     * POM
+     */
+    private final MavenProject project;
+
+    protected AbstractDependencyMojo(MavenSession session, BuildContext buildContext, MavenProject project) {
+        this.session = session;
+        this.buildContext = buildContext;
+        this.project = project;
+    }
 
     // Mojo methods -----------------------------------------------------------
 

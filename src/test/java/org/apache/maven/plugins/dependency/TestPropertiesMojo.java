@@ -56,9 +56,7 @@ public class TestPropertiesMojo extends AbstractDependencyMojoTestCase {
         artifacts.addAll(directArtifacts);
 
         project.setArtifacts(artifacts);
-        project.setDependencyArtifacts(directArtifacts);
 
-        // this.assertNull( project.getProperties().getProperty( "org.apacha ) )
         mojo.execute();
 
         for (Artifact artifact : artifacts) {

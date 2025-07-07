@@ -56,7 +56,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param node  the node to write
      */
     private void writeRootNode(DependencyNode node) {
-        Set<DependencyNode> visited = new HashSet<DependencyNode>();
+        Set<DependencyNode> visited = new HashSet<>();
         int indent = 2;
         StringBuilder sb = new StringBuilder();
         sb.append("{").append("\n");
@@ -84,7 +84,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
         }
     }
     /**
-     * Writes the children of the node to the string builder. And each children of each node will be written recursively.
+     * Writes the children of the node to the string builder. Each child of each node will be written recursively.
      *
      * @param indent  the current indent level
      * @param node  the node to write
