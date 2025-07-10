@@ -99,6 +99,7 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
                 @Override
                 public boolean visitEnter(DependencyNode node) {
                     repositories.addAll(node.getRepositories());
+                    debugLogNodeRepo(node);
                     return true;
                 }
 
@@ -129,6 +130,22 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
         } catch (DependencyCollectionException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    private void debugLogNodeRepo(DependencyNode node) {
+        if (!getLog().isDebugEnabled()) {
+            return;
+        }
+
+        getLog().debug("Node: " + node + " resolved from:");
+        node.getRepositories().forEach(repo -> {
+            if (repo.getMirroredRepositories().isEmpty()) {
+                getLog().debug(" - " + repo);
+            } else {
+                getLog().debug(" - " + repo + " as mirror for:");
+                repo.getMirroredRepositories().forEach(mrepo -> getLog().debug("    - " + mrepo));
+            }
+        });
     }
 
     private void prepareRemoteMirrorRepositoriesList(
