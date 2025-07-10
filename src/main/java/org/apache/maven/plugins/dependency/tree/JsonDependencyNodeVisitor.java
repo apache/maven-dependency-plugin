@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,18 +46,23 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
 
     @Override
     public boolean visit(DependencyNode node) {
-        if (node.getParent() == null || node.getParent() == node) {
-            writeRootNode(node);
+        try {
+            if (node.getParent() == null || node.getParent() == node) {
+                writeRootNode(node);
+            }
+            return true;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write JSON format output", e);
         }
-        return true;
     }
 
     /**
      * Writes the node to the writer. This method is recursive and will write all children nodes.
      *
      * @param node  the node to write
+     * @throws IOException if an I/O error occurs while writing
      */
-    private void writeRootNode(DependencyNode node) {
+    private void writeRootNode(DependencyNode node) throws IOException {
         Set<DependencyNode> visited = new HashSet<>();
         int indent = 2;
         StringBuilder sb = new StringBuilder();
@@ -63,6 +70,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
         writeNode(indent, node, sb, visited);
         sb.append("}").append("\n");
         writer.write(sb.toString());
+        writer.flush();
     }
     /**
      * Appends the node and its children to the string builder.
