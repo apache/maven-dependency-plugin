@@ -107,7 +107,7 @@ public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor impleme
         try {
             if (node.getParent() == null || node.getParent() == node) {
                 // dump edges on last node endVisit
-                writer.write("#\n");
+                writer.write("#" + System.lineSeparator());
                 for (EdgeAppender edge : edges) {
                     writer.write(edge.toString() + "\n");
                 }
