@@ -33,9 +33,20 @@ import org.apache.maven.project.MavenProject;
 public class TestCollectMojo extends AbstractDependencyMojoTestCase {
 
     @Override
+    protected String getTestDirectoryName() {
+        return "markers";
+    }
+
+    @Override
+    protected boolean shouldCreateFiles() {
+        return false;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         // required for mojo lookups to work
-        super.setUp("markers", false);
+        super.setUp();
+
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());
 
