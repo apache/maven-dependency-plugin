@@ -190,7 +190,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
         List<String> contents = runTreeMojo("tree2.json", "json");
 
         System.setProperty("jakarta.json.provider", "org.glassfish.json.JsonProviderImpl");
-        try (JsonReader reader = Json.createReader(new StringReader(String.join("\n", contents)))) {
+        try (JsonReader reader = Json.createReader(new StringReader(String.join(System.lineSeparator(), contents)))) {
             JsonObject root = reader.readObject();
 
             assertEquals(root.getString("groupId"), "testGroupId");
