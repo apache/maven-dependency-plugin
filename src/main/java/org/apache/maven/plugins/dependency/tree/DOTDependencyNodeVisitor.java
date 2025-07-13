@@ -60,7 +60,8 @@ public class DOTDependencyNodeVisitor extends AbstractSerializingVisitor impleme
             List<DependencyNode> children = node.getChildren();
 
             for (DependencyNode child : children) {
-                writer.write("\t\"" + node.toNodeString() + "\" -> \"" + child.toNodeString() + "\" ; " + "\n");
+                writer.write("\t\"" + node.toNodeString() + "\" -> \"" + child.toNodeString() + "\" ; "
+                        + System.lineSeparator());
             }
             writer.flush();
         } catch (IOException e) {
@@ -77,7 +78,7 @@ public class DOTDependencyNodeVisitor extends AbstractSerializingVisitor impleme
     public boolean endVisit(DependencyNode node) {
         try {
             if (node.getParent() == null || node.getParent() == node) {
-                writer.write(" } " + "\n");
+                writer.write(" } " + System.lineSeparator());
                 writer.flush();
             }
         } catch (IOException e) {

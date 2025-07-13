@@ -77,7 +77,7 @@ public class GraphmlDependencyNodeVisitor extends AbstractSerializingVisitor imp
                     writer.write("<data key=\"d1\"><y:PolyLineEdge><y:EdgeLabel>"
                             + node.getArtifact().getScope() + "</y:EdgeLabel></y:PolyLineEdge></data>");
                 }
-                writer.write("</edge>" + "\n");
+                writer.write("</edge>" + System.lineSeparator());
             }
             writer.flush();
             return true;
@@ -101,7 +101,7 @@ public class GraphmlDependencyNodeVisitor extends AbstractSerializingVisitor imp
             // add node label
             writer.write("<data key=\"d0\"><y:ShapeNode><y:NodeLabel>" + node.toNodeString()
                     + "</y:NodeLabel></y:ShapeNode></data>");
-            writer.write("</node>" + "\n");
+            writer.write("</node>" + System.lineSeparator());
             writer.flush();
             return true;
         } catch (IOException e) {

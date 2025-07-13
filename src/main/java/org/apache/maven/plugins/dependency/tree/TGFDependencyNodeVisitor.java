@@ -109,7 +109,7 @@ public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor impleme
                 // dump edges on last node endVisit
                 writer.write("#" + System.lineSeparator());
                 for (EdgeAppender edge : edges) {
-                    writer.write(edge.toString() + "\n");
+                    writer.write(edge.toString() + System.lineSeparator());
                 }
                 writer.flush();
             } else {
@@ -133,7 +133,7 @@ public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor impleme
             writer.write(generateId(node));
             writer.write(" ");
             writer.write(node.toNodeString());
-            writer.write("\n");
+            writer.write(System.lineSeparator());
             writer.flush();
             return true;
         } catch (IOException e) {

@@ -66,9 +66,9 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
         Set<DependencyNode> visited = new HashSet<>();
         int indent = 2;
         StringBuilder sb = new StringBuilder();
-        sb.append("{").append("\n");
+        sb.append("{").append(System.lineSeparator());
         writeNode(indent, node, sb, visited);
-        sb.append("}").append("\n");
+        sb.append("}").append(System.lineSeparator());
         writer.write(sb.toString());
         writer.flush();
     }
@@ -99,21 +99,21 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param sb  the string builder to append to
      */
     private void writeChildren(int indent, DependencyNode node, StringBuilder sb, Set<DependencyNode> visited) {
-        sb.append(indent(indent)).append("\"children\": [").append("\n");
+        sb.append(indent(indent)).append("\"children\": [").append(System.lineSeparator());
         indent += 2;
         for (int i = 0; i < node.getChildren().size(); i++) {
             DependencyNode child = node.getChildren().get(i);
             sb.append(indent(indent));
-            sb.append("{").append("\n");
+            sb.append("{").append(System.lineSeparator());
             writeNode(indent + 2, child, sb, visited);
             sb.append(indent(indent)).append("}");
             // we skip the comma for the last child
             if (i != node.getChildren().size() - 1) {
                 sb.append(",");
             }
-            sb.append("\n");
+            sb.append(System.lineSeparator());
         }
-        sb.append(indent(indent)).append("]").append("\n");
+        sb.append(indent(indent)).append("]").append(System.lineSeparator());
     }
 
     @Override
@@ -164,7 +164,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
                 .append(value)
                 .append("\"")
                 .append(",")
-                .append("\n");
+                .append(System.lineSeparator());
     }
     /**
      * Appends a key value pair to the string builder without a comma at the end. This is used for the last children of a node.
@@ -188,7 +188,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
                 .append("\"")
                 .append(value)
                 .append("\"")
-                .append("\n");
+                .append(System.lineSeparator());
     }
 
     /**
