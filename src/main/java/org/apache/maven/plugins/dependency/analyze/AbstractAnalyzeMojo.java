@@ -223,7 +223,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     @Parameter
     private String[] ignoredUnusedDeclaredDependencies = new String[0];
 
-    private String[] unconditionallyIgnoredDeclaredDependencies = {"org.slf4j:slf4j-simple::,org.glassfish:javax.json::"};
+    private String[] unconditionallyIgnoredDeclaredDependencies = {"org.slf4j:slf4j-simple::,org.glassfish:javax.json::"
+    };
 
     /**
      * List of dependencies that are ignored if they are in not test scope but are only used in test classes.
