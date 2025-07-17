@@ -35,10 +35,12 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerException;
+import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 
@@ -254,6 +256,22 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      */
     @Parameter(property = "mdep.analyze.excludedClasses")
     private Set<String> excludedClasses;
+
+    /**
+     * The plexusContainer to look up the {@link ProjectDependencyAnalyzer} implementation depending on the mojo
+     * configuration.
+     */
+    private final PlexusContainer plexusContainer;
+
+    /**
+     * The Maven project to analyze.
+     */
+    private final MavenProject project;
+
+    protected AbstractAnalyzeMojo(PlexusContainer plexusContainer, MavenProject project) {
+        this.plexusContainer = plexusContainer;
+        this.project = project;
+    }
 
     // Mojo methods -----------------------------------------------------------
 
