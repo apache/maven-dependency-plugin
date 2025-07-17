@@ -139,12 +139,6 @@ under the License.
       <version>${mavenVersion}</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-resolver-provider</artifactId>
-      <version>${mavenVersion}</version>
-      <scope>provided</scope>
-    </dependency>
 
     <!-- doxia -->
     <dependency>
@@ -180,7 +174,7 @@ under the License.
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.17.0</version>
+      <version>3.18.0</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -319,12 +313,6 @@ under the License.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>jakarta.json</groupId>
-      <artifactId>jakarta.json-api</artifactId>
-      <version>2.0.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.glassfish</groupId>
       <artifactId>jakarta.json</artifactId>
       <version>2.0.1</version>
@@ -441,6 +429,25 @@ under the License.
           <configuration>
             <suppressionsLocation>src/config/checkstyle-suppressions.xml</suppressionsLocation>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>analyze</id>
+              <configuration>
+                <failOnWarning>true</failOnWarning>
+                <ignoredUnusedDeclaredDependencies combine.children="append">
+                  <!-- used in tests runtime -->
+                  <ignoredUnusedDeclaredDependency>org.apache.maven.resolver:maven-resolver-connector-basic</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.apache.maven.resolver:maven-resolver-transport-file</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.apache.maven.resolver:maven-resolver-transport-http</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine</ignoredUnusedDeclaredDependency>
+                </ignoredUnusedDeclaredDependencies>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>
