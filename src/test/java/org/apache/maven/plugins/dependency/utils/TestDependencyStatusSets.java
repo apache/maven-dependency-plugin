@@ -22,9 +22,20 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 
 public class TestDependencyStatusSets extends AbstractDependencyMojoTestCase {
 
+    @Override
+    protected String getTestDirectoryName() {
+        return "dss";
+    }
+
+    @Override
+    protected boolean shouldCreateFiles() {
+        return true;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         // required for mojo lookups to work
-        super.setUp("dss", true);
+        super.setUp();
     }
 
     public void testDependencyStatusSettersGetters() {
