@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.List;
 
@@ -47,16 +49,23 @@ public class DOTDependencyNodeVisitor extends AbstractSerializingVisitor impleme
      */
     @Override
     public boolean visit(DependencyNode node) {
-        if (node.getParent() == null || node.getParent() == node) {
-            writer.write("digraph \"" + node.toNodeString() + "\" { " + System.lineSeparator());
-        }
+        try {
+            if (node.getParent() == null || node.getParent() == node) {
+                writer.write("digraph \"" + node.toNodeString() + "\" { " + System.lineSeparator());
+                writer.flush();
+            }
 
-        // Generate "currentNode -> Child" lines
+            // Generate "currentNode -> Child" lines
 
-        List<DependencyNode> children = node.getChildren();
+            List<DependencyNode> children = node.getChildren();
 
-        for (DependencyNode child : children) {
-            writer.println("\t\"" + node.toNodeString() + "\" -> \"" + child.toNodeString() + "\" ; ");
+            for (DependencyNode child : children) {
+                writer.write("\t\"" + node.toNodeString() + "\" -> \"" + child.toNodeString() + "\" ; "
+                        + System.lineSeparator());
+            }
+            writer.flush();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write DOT format output", e);
         }
 
         return true;
@@ -67,8 +76,13 @@ public class DOTDependencyNodeVisitor extends AbstractSerializingVisitor impleme
      */
     @Override
     public boolean endVisit(DependencyNode node) {
-        if (node.getParent() == null || node.getParent() == node) {
-            writer.write(" } ");
+        try {
+            if (node.getParent() == null || node.getParent() == node) {
+                writer.write(" } " + System.lineSeparator());
+                writer.flush();
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write DOT format output", e);
         }
         return true;
     }

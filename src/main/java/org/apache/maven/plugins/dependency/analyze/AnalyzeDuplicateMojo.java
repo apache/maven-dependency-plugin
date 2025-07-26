@@ -122,7 +122,7 @@ public class AnalyzeDuplicateMojo extends AbstractMojo {
             Set<String> duplicateDependencies, StringBuilder sb, String messageDuplicateDepInDependencies) {
         if (!duplicateDependencies.isEmpty()) {
             if (sb.length() > 0) {
-                sb.append("\n");
+                sb.append(System.lineSeparator());
             }
             sb.append(messageDuplicateDepInDependencies);
             for (Iterator<String> it = duplicateDependencies.iterator(); it.hasNext(); ) {
@@ -130,7 +130,7 @@ public class AnalyzeDuplicateMojo extends AbstractMojo {
 
                 sb.append("\to ").append(dup);
                 if (it.hasNext()) {
-                    sb.append("\n");
+                    sb.append(System.lineSeparator());
                 }
             }
         }
