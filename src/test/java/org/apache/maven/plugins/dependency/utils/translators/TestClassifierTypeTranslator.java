@@ -49,8 +49,18 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
     private ArtifactHandlerManager artifactHandlerManager;
 
     @Override
+    protected String getTestDirectoryName() {
+        return "classifiertype-translator";
+    }
+
+    @Override
+    protected boolean shouldUseFlattenedPath() {
+        return false;
+    }
+
+    @Override
     protected void setUp() throws Exception {
-        super.setUp("classifiertype-translator", false);
+        super.setUp();
 
         artifactHandlerManager = new DefaultArtifactHandlerManager();
         this.setVariableValueToObject(artifactHandlerManager, "artifactHandlers", new HashMap<>());

@@ -28,10 +28,21 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 
 public class ResolveDependenciesMojoTest extends AbstractDependencyMojoTestCase {
+
+    @Override
+    protected String getTestDirectoryName() {
+        return "dss";
+    }
+
+    @Override
+    protected boolean shouldCreateFiles() {
+        return true;
+    }
+
     @Override
     protected void setUp() throws Exception {
         // required for mojo lookups to work
-        super.setUp("dss", true);
+        super.setUp();
     }
 
     public void testDependencyStatusLog() throws IOException {

@@ -43,25 +43,62 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
 
     protected DependencyArtifactStubFactory stubFactory;
 
-    protected void setUp(String testDirectoryName, boolean createFiles) throws Exception {
-        setUp(testDirectoryName, createFiles, true);
-    }
-
-    protected void setUp(String testDirectoryName, boolean createFiles, boolean flattenedPath) throws Exception {
-        // required for mojo lookups to work
+    /**
+     * Initializes the test environment by creating a temporary directory and setting up the stub factory.
+     * Subclasses must call super.setUp() in their own setUp method to ensure proper initialization.
+     * To customize the test directory name, file creation, or path structure, override getTestDirectoryName(),
+     * shouldCreateFiles(), and shouldUseFlattenedPath() respectively.
+     *
+     * @throws Exception if setup fails
+     */
+    protected void setUp() throws Exception {
+        // Required for mojo lookups to work
         super.setUp();
 
-        testDir = Files.createTempDirectory(testDirectoryName).toFile();
+        testDir = Files.createTempDirectory(getTestDirectoryName()).toFile();
         testDir.deleteOnExit();
 
-        stubFactory = new DependencyArtifactStubFactory(this.testDir, createFiles, flattenedPath);
+        stubFactory = new DependencyArtifactStubFactory(testDir, shouldCreateFiles(), shouldUseFlattenedPath());
     }
 
+    /**
+     * Returns the name of the temporary test directory. Subclasses can override to customize.
+     *
+     * @return the test directory name
+     */
+    protected String getTestDirectoryName() {
+        return "test-dir";
+    }
+
+    /**
+     * Determines whether files should be created by the stub factory. Subclasses can override to customize.
+     *
+     * @return true if files should be created, false otherwise
+     */
+    protected boolean shouldCreateFiles() {
+        return true;
+    }
+
+    /**
+     * Determines whether the stub factory should use flattened paths. Subclasses can override to customize.
+     *
+     * @return true if flattened paths should be used, false otherwise
+     */
+    protected boolean shouldUseFlattenedPath() {
+        return true;
+    }
+
+    /**
+     * Cleans up the test environment by deleting the temporary directory.
+     * Subclasses must call super.tearDown() in their own tearDown method to ensure proper cleanup.
+     *
+     * @throws Exception if cleanup fails
+     */
     @Override
     protected void tearDown() throws Exception {
         if (testDir != null) {
             FileUtils.deleteDirectory(testDir);
-            assertFalse(testDir.exists());
+            assertFalse("Test directory should not exist after cleanup", testDir.exists());
         }
         super.tearDown();
     }

@@ -60,8 +60,24 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
     private ResolverUtil resolverUtil;
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp("analyze-exclusions", true, false);
+    protected String getTestDirectoryName() {
+        return "analyze-exclusions";
+    }
+
+    @Override
+    protected boolean shouldCreateFiles() {
+        return true;
+    }
+
+    @Override
+    protected boolean shouldUseFlattenedPath() {
+        return false;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        // required for mojo lookups to work
+        super.setUp();
 
         project = new DependencyProjectStub();
         project.setName("projectName");
