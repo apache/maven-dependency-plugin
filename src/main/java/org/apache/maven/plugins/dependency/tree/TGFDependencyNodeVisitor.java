@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +37,7 @@ import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor implements DependencyNodeVisitor {
 
     /**
-     * Utiity class to write an Edge.
+     * Utility class to write an Edge.
      *
      * @author <a href="mailto:jerome.creignou@gmail.com">Jerome Creignou</a>
      */
@@ -102,18 +104,23 @@ public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor impleme
      */
     @Override
     public boolean endVisit(DependencyNode node) {
-        if (node.getParent() == null || node.getParent() == node) {
-            // dump edges on last node endVisit
-            writer.println("#");
-            for (EdgeAppender edge : edges) {
-                writer.println(edge.toString());
+        try {
+            if (node.getParent() == null || node.getParent() == node) {
+                // dump edges on last node endVisit
+                writer.write("#" + System.lineSeparator());
+                for (EdgeAppender edge : edges) {
+                    writer.write(edge.toString() + System.lineSeparator());
+                }
+                writer.flush();
+            } else {
+                DependencyNode parent = node.getParent();
+                // using scope as edge label.
+                edges.add(new EdgeAppender(parent, node, node.getArtifact().getScope()));
             }
-        } else {
-            DependencyNode p = node.getParent();
-            // using scope as edge label.
-            edges.add(new EdgeAppender(p, node, node.getArtifact().getScope()));
+            return true;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write TGF format output", e);
         }
-        return true;
     }
 
     /**
@@ -121,11 +128,17 @@ public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor impleme
      */
     @Override
     public boolean visit(DependencyNode node) {
-        // write node
-        writer.write(generateId(node));
-        writer.write(" ");
-        writer.println(node.toNodeString());
-        return true;
+        try {
+            // Write node
+            writer.write(generateId(node));
+            writer.write(" ");
+            writer.write(node.toNodeString());
+            writer.write(System.lineSeparator());
+            writer.flush();
+            return true;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write TGF format output", e);
+        }
     }
 
     /**

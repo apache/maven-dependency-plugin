@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,25 +46,31 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
 
     @Override
     public boolean visit(DependencyNode node) {
-        if (node.getParent() == null || node.getParent() == node) {
-            writeRootNode(node);
+        try {
+            if (node.getParent() == null || node.getParent() == node) {
+                writeRootNode(node);
+            }
+            return true;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write JSON format output", e);
         }
-        return true;
     }
 
     /**
      * Writes the node to the writer. This method is recursive and will write all children nodes.
      *
      * @param node  the node to write
+     * @throws IOException if an I/O error occurs while writing
      */
-    private void writeRootNode(DependencyNode node) {
+    private void writeRootNode(DependencyNode node) throws IOException {
         Set<DependencyNode> visited = new HashSet<>();
         int indent = 2;
         StringBuilder sb = new StringBuilder();
-        sb.append("{").append("\n");
+        sb.append("{").append(System.lineSeparator());
         writeNode(indent, node, sb, visited);
-        sb.append("}").append("\n");
+        sb.append("}").append(System.lineSeparator());
         writer.write(sb.toString());
+        writer.flush();
     }
     /**
      * Appends the node and its children to the string builder.
@@ -91,21 +99,21 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      * @param sb  the string builder to append to
      */
     private void writeChildren(int indent, DependencyNode node, StringBuilder sb, Set<DependencyNode> visited) {
-        sb.append(indent(indent)).append("\"children\": [").append("\n");
+        sb.append(indent(indent)).append("\"children\": [").append(System.lineSeparator());
         indent += 2;
         for (int i = 0; i < node.getChildren().size(); i++) {
             DependencyNode child = node.getChildren().get(i);
             sb.append(indent(indent));
-            sb.append("{").append("\n");
+            sb.append("{").append(System.lineSeparator());
             writeNode(indent + 2, child, sb, visited);
             sb.append(indent(indent)).append("}");
             // we skip the comma for the last child
             if (i != node.getChildren().size() - 1) {
                 sb.append(",");
             }
-            sb.append("\n");
+            sb.append(System.lineSeparator());
         }
-        sb.append(indent(indent)).append("]").append("\n");
+        sb.append(indent(indent)).append("]").append(System.lineSeparator());
     }
 
     @Override
@@ -156,7 +164,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
                 .append(value)
                 .append("\"")
                 .append(",")
-                .append("\n");
+                .append(System.lineSeparator());
     }
     /**
      * Appends a key value pair to the string builder without a comma at the end. This is used for the last children of a node.
@@ -180,7 +188,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
                 .append("\"")
                 .append(value)
                 .append("\"")
-                .append("\n");
+                .append(System.lineSeparator());
     }
 
     /**
