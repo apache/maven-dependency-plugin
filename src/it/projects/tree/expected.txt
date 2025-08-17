@@ -35,4 +35,4 @@ org.apache.maven.its.dependency:test:jar:1.0-SNAPSHOT
 |  +- org.codehaus.plexus:plexus-utils:jar:3.2.1:compile
 |  +- org.codehaus.plexus:plexus-classworlds:jar:2.6.0:compile
 |  \- org.codehaus.plexus:plexus-component-annotations:jar:2.1.0:compile
-\- org.apache.commons:commons-lang3:jar:3.14.0:compile (optional)
+\- org.apache.commons:commons-lang3:jar:3.18.0:compile (optional)
