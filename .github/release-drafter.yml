@@ -18,3 +18,4 @@
 # under the License.
 
 _extends: maven-gh-actions-shared
+tag-template: maven-dependency-plugin-$RESOLVED_VERSION
