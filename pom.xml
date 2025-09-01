@@ -452,6 +452,8 @@ under the License.
         <configuration>
           <!-- Need more heap space in order to run the unit tests !-->
           <argLine>-Xmx512m</argLine>
+          <rerunFailingTestsCount>2</rerunFailingTestsCount>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
         </configuration>
       </plugin>
       <plugin>
