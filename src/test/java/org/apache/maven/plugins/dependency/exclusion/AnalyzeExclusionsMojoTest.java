@@ -34,7 +34,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
-import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
@@ -96,10 +95,6 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         File testPom = new File(getBasedir(), "target/test-classes/unit/analyze-exclusions/plugin-config.xml");
         mojo = (AnalyzeExclusionsMojo) lookupMojo("analyze-exclusions", testPom);
         assertNotNull(mojo);
-
-        LegacySupport legacySupport = lookup(LegacySupport.class);
-        legacySupport.setSession(session);
-        installLocalRepository(legacySupport);
 
         testLog = new TestLog();
         mojo.setLog(testLog);

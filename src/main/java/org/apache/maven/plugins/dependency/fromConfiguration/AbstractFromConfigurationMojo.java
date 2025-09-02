@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
@@ -36,12 +37,17 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
-import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.eclipse.aether.DefaultRepositoryCache;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.LocalRepositoryManager;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -112,23 +118,19 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     @Parameter
     private File localRepositoryDirectory;
 
-    private final ArtifactResolver artifactResolver;
-
-    private final RepositoryManager repositoryManager;
-
     private final ArtifactHandlerManager artifactHandlerManager;
+
+    private final RepositorySystem repositorySystem;
 
     protected AbstractFromConfigurationMojo(
             MavenSession session,
             BuildContext buildContext,
             MavenProject project,
-            ArtifactResolver artifactResolver,
-            RepositoryManager repositoryManager,
-            ArtifactHandlerManager artifactHandlerManager) {
+            ArtifactHandlerManager artifactHandlerManager,
+            RepositorySystem repositorySystem) {
         super(session, buildContext, project);
-        this.artifactResolver = artifactResolver;
-        this.repositoryManager = repositoryManager;
         this.artifactHandlerManager = artifactHandlerManager;
+        this.repositorySystem = repositorySystem;
     }
 
     abstract ArtifactItemFilter getMarkedArtifactFilter(ArtifactItem item);
@@ -156,9 +158,9 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     protected List<ArtifactItem> getProcessedArtifactItems(ProcessArtifactItemsRequest processArtifactItemsRequest)
             throws MojoExecutionException {
 
-        boolean removeVersion = processArtifactItemsRequest.isRemoveVersion(),
-                prependGroupId = processArtifactItemsRequest.isPrependGroupId(),
-                useBaseVersion = processArtifactItemsRequest.isUseBaseVersion();
+        boolean removeVersion = processArtifactItemsRequest.isRemoveVersion();
+        boolean prependGroupId = processArtifactItemsRequest.isPrependGroupId();
+        boolean useBaseVersion = processArtifactItemsRequest.isUseBaseVersion();
 
         boolean removeClassifier = processArtifactItemsRequest.isRemoveClassifier();
 
@@ -196,9 +198,29 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
         return artifactItems;
     }
 
-    private boolean checkIfProcessingNeeded(ArtifactItem item) throws MojoExecutionException, ArtifactFilterException {
+    private boolean checkIfProcessingNeeded(ArtifactItem item) throws ArtifactFilterException {
         return "true".equalsIgnoreCase(item.getOverWrite())
                 || getMarkedArtifactFilter(item).isArtifactIncluded(item);
+    }
+
+    private RepositorySystemSession createSystemSessionForLocalRepo() {
+        RepositorySystemSession repositorySystemSession = session.getRepositorySession();
+        if (localRepositoryDirectory != null) {
+            // "clone" repository session and replace localRepository
+            DefaultRepositorySystemSession newSession =
+                    new DefaultRepositorySystemSession(session.getRepositorySession());
+            // Clear cache, since we're using a new local repository
+            newSession.setCache(new DefaultRepositoryCache());
+            LocalRepositoryManager localRepositoryManager = repositorySystem.newLocalRepositoryManager(
+                    newSession, new LocalRepository(localRepositoryDirectory));
+
+            newSession.setLocalRepositoryManager(localRepositoryManager);
+            repositorySystemSession = newSession;
+            getLog().debug("localRepoPath: "
+                    + localRepositoryManager.getRepository().getBasedir());
+        }
+
+        return repositorySystemSession;
     }
 
     /**
@@ -210,23 +232,8 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * @throws MojoExecutionException if the version can't be found in DependencyManagement
      */
     protected Artifact getArtifact(ArtifactItem artifactItem) throws MojoExecutionException {
-        Artifact artifact;
 
         try {
-            ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
-
-            if (localRepositoryDirectory != null) {
-                buildingRequest =
-                        repositoryManager.setLocalRepositoryBasedir(buildingRequest, localRepositoryDirectory);
-            }
-
-            // Map dependency to artifact coordinate
-            DefaultArtifactCoordinate coordinate = new DefaultArtifactCoordinate();
-            coordinate.setGroupId(artifactItem.getGroupId());
-            coordinate.setArtifactId(artifactItem.getArtifactId());
-            coordinate.setVersion(artifactItem.getVersion());
-            coordinate.setClassifier(artifactItem.getClassifier());
-
             final String extension;
 
             ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(artifactItem.getType());
@@ -235,16 +242,23 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             } else {
                 extension = artifactItem.getType();
             }
-            coordinate.setExtension(extension);
 
-            artifact = artifactResolver
-                    .resolveArtifact(buildingRequest, coordinate)
-                    .getArtifact();
-        } catch (ArtifactResolverException e) {
+            DefaultArtifact artifact = new DefaultArtifact(
+                    artifactItem.getGroupId(),
+                    artifactItem.getArtifactId(),
+                    artifactItem.getClassifier(),
+                    extension,
+                    artifactItem.getVersion());
+
+            RepositorySystemSession repositorySession = createSystemSessionForLocalRepo();
+
+            ArtifactRequest request = new ArtifactRequest(artifact, getProject().getRemoteProjectRepositories(), null);
+            ArtifactResult artifactResult = repositorySystem.resolveArtifact(repositorySession, request);
+            return RepositoryUtils.toArtifact(artifactResult.getArtifact());
+
+        } catch (ArtifactResolutionException e) {
             throw new MojoExecutionException("Unable to find/resolve artifact.", e);
         }
-
-        return artifact;
     }
 
     /**
