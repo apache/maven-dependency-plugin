@@ -36,8 +36,7 @@ import org.apache.maven.plugins.dependency.utils.CopyUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.eclipse.aether.RepositorySystem;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -92,11 +91,10 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
             MavenSession session,
             BuildContext buildContext,
             MavenProject project,
-            ArtifactResolver artifactResolver,
-            RepositoryManager repositoryManager,
             ArtifactHandlerManager artifactHandlerManager,
-            CopyUtil copyUtil) {
-        super(session, buildContext, project, artifactResolver, repositoryManager, artifactHandlerManager);
+            CopyUtil copyUtil,
+            RepositorySystem repositorySystem) {
+        super(session, buildContext, project, artifactHandlerManager, repositorySystem);
         this.copyUtil = copyUtil;
     }
 

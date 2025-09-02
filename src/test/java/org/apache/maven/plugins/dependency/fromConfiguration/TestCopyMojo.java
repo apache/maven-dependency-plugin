@@ -28,7 +28,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
@@ -71,9 +70,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertNotNull(mojo);
         assertNotNull(mojo.getProject());
 
-        LegacySupport legacySupport = lookup(LegacySupport.class);
-        legacySupport.setSession(session);
-        installLocalRepository(legacySupport);
+        installLocalRepository(session.getRepositorySession());
     }
 
     private ArtifactItem getSingleArtifactItem(boolean removeVersion, boolean useBaseVersion)
@@ -147,7 +144,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
     }
 
     public void testMojoDefaults() {
-        CopyMojo theMojo = new CopyMojo(null, null, null, null, null, null, null);
+        CopyMojo theMojo = new CopyMojo(null, null, null, null, null, null);
 
         assertFalse(theMojo.isStripVersion());
         assertFalse(theMojo.isSkip());
@@ -507,14 +504,6 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
     }
 
     public void testArtifactNotFound() throws Exception {
-        dotestArtifactExceptions(false, true);
-    }
-
-    public void testArtifactResolutionException() throws Exception {
-        dotestArtifactExceptions(true, false);
-    }
-
-    public void dotestArtifactExceptions(boolean are, boolean anfe) throws Exception {
         ArtifactItem item = new ArtifactItem();
 
         item.setArtifactId("artifactId");

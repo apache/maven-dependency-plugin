@@ -36,9 +36,8 @@ import org.apache.maven.plugins.dependency.utils.filters.MarkerFileFilter;
 import org.apache.maven.plugins.dependency.utils.markers.MarkerHandler;
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
+import org.eclipse.aether.RepositorySystem;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -110,11 +109,10 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
             MavenSession session,
             BuildContext buildContext,
             MavenProject project,
-            ArtifactResolver artifactResolver,
-            RepositoryManager repositoryManager,
             ArtifactHandlerManager artifactHandlerManager,
-            UnpackUtil unpackUtil) {
-        super(session, buildContext, project, artifactResolver, repositoryManager, artifactHandlerManager);
+            UnpackUtil unpackUtil,
+            RepositorySystem repositorySystem) {
+        super(session, buildContext, project, artifactHandlerManager, repositorySystem);
         this.unpackUtil = unpackUtil;
     }
 
