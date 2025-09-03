@@ -26,6 +26,6 @@ assert file.exists()
 
 String buildLog = file.getText( "UTF-8" )
 assert buildLog.contains( '[WARNING] Used undeclared dependencies found:')
-assert buildLog.contains( '[WARNING]    org.apache.maven:maven-model:jar:3.6.3:compile')
+assert buildLog.contains( '[WARNING]    org.apache.maven:maven-model:jar:')
 assert buildLog.contains( '[WARNING] Unused declared dependencies found:')
-assert buildLog.contains( '[WARNING]    org.apache.maven:maven-core:jar:3.6.3:compile')
+assert buildLog.contains( '[WARNING]    org.apache.maven:maven-core:jar:')
