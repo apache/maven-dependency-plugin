@@ -51,10 +51,7 @@ import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.project.ProjectBuilder;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -168,29 +165,17 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     private final MavenProjectHelper projectHelper;
 
     @Inject
-    // CHECKSTYLE_OFF: ParameterNumber
     protected BuildClasspathMojo(
             MavenSession session,
             BuildContext buildContext,
             MavenProject project,
             ResolverUtil resolverUtil,
-            DependencyResolver dependencyResolver,
-            RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager,
             MavenProjectHelper projectHelper) {
-        super(
-                session,
-                buildContext,
-                project,
-                resolverUtil,
-                dependencyResolver,
-                repositoryManager,
-                projectBuilder,
-                artifactHandlerManager);
+        super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
         this.projectHelper = projectHelper;
     }
-    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates to create a classpath.
@@ -288,9 +273,8 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
             String file = art.getFile().getPath();
             // substitute the property for the local repo path to make the classpath file portable.
             if (localRepoProperty != null && !localRepoProperty.isEmpty()) {
-                ProjectBuildingRequest projectBuildingRequest = session.getProjectBuildingRequest();
-                File localBasedir = getRepositoryManager().getLocalRepositoryBasedir(projectBuildingRequest);
-
+                File localBasedir =
+                        session.getRepositorySession().getLocalRepository().getBasedir();
                 file = StringUtils.replace(file, localBasedir.getAbsolutePath(), localRepoProperty);
             }
             sb.append(file);

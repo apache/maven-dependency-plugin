@@ -50,8 +50,6 @@ import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ProjectTransitivityFilter;
 import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -233,33 +231,23 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
     private final ResolverUtil resolverUtil;
 
-    private final DependencyResolver dependencyResolver;
-
-    private final RepositoryManager repositoryManager;
-
     private final ProjectBuilder projectBuilder;
 
     private final ArtifactHandlerManager artifactHandlerManager;
 
     @Inject
-    // CHECKSTYLE_OFF: ParameterNumber
     protected AbstractDependencyFilterMojo(
             MavenSession session,
             BuildContext buildContext,
             MavenProject project,
             ResolverUtil resolverUtil,
-            DependencyResolver dependencyResolver,
-            RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
         super(session, buildContext, project);
         this.resolverUtil = resolverUtil;
-        this.dependencyResolver = dependencyResolver;
-        this.repositoryManager = repositoryManager;
         this.projectBuilder = projectBuilder;
         this.artifactHandlerManager = artifactHandlerManager;
     }
-    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Return an {@link ArtifactsFilter} indicating which artifacts must be filtered out.
@@ -523,19 +511,5 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
      */
     protected final ResolverUtil getResolverUtil() {
         return resolverUtil;
-    }
-
-    /**
-     * @return {@link #dependencyResolver}
-     */
-    protected final DependencyResolver getDependencyResolver() {
-        return dependencyResolver;
-    }
-
-    /**
-     * @return {@link #repositoryManager}
-     */
-    protected final RepositoryManager getRepositoryManager() {
-        return repositoryManager;
     }
 }

@@ -48,7 +48,6 @@ import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -72,6 +71,8 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
     @Parameter(property = "outputAbsoluteArtifactFilename", defaultValue = "false")
     private boolean outputAbsoluteArtifactFilename;
 
+    private final DependencyResolver dependencyResolver;
+
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
     public ResolvePluginsMojo(
@@ -80,18 +81,10 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
             MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
-            RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
-        super(
-                session,
-                buildContext,
-                project,
-                resolverUtil,
-                dependencyResolver,
-                repositoryManager,
-                projectBuilder,
-                artifactHandlerManager);
+        super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
+        this.dependencyResolver = dependencyResolver;
     }
     // CHECKSTYLE_ON: ParameterNumber
 
@@ -191,7 +184,7 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
         ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
 
         Iterable<ArtifactResult> artifactResults =
-                getDependencyResolver().resolveDependencies(buildingRequest, artifact, null);
+                dependencyResolver.resolveDependencies(buildingRequest, artifact, null);
 
         Set<Artifact> artifacts = new LinkedHashSet<>();
 
