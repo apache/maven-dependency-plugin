@@ -51,19 +51,19 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     private final CopyUtil copyUtil;
 
     /**
-     * Strip artifact version during copy
+     * Strip artifact version during copy.
      */
     @Parameter(property = "mdep.stripVersion", defaultValue = "false")
     private boolean stripVersion = false;
 
     /**
-     * Strip artifact classifier during copy
+     * Strip artifact classifier during copy.
      */
     @Parameter(property = "mdep.stripClassifier", defaultValue = "false")
     private boolean stripClassifier = false;
 
     /**
-     * Prepend artifact groupId during copy
+     * Prepend artifact groupId during copy.
      *
      * @since 2.7
      */
@@ -71,7 +71,7 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     private boolean prependGroupId = false;
 
     /**
-     * Use artifact baseVersion during copy
+     * Use artifact baseVersion during copy.
      *
      * @since 2.7
      */
@@ -102,7 +102,7 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
      * Main entry into mojo. This method gets the ArtifactItems and iterates through each one passing it to
      * copyArtifact.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      * @see ArtifactItem
      * @see #getArtifactItems
      * @see #copyArtifact(ArtifactItem)
@@ -162,35 +162,35 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     }
 
     /**
-     * @return Returns the stripVersion.
+     * @return returns the stripVersion
      */
     public boolean isStripVersion() {
         return this.stripVersion;
     }
 
     /**
-     * @param stripVersion The stripVersion to set.
+     * @param stripVersion the stripVersion to set
      */
     public void setStripVersion(boolean stripVersion) {
         this.stripVersion = stripVersion;
     }
 
     /**
-     * @return Returns the stripClassifier.
+     * @return returns the stripClassifier
      */
     public boolean isStripClassifier() {
         return this.stripClassifier;
     }
 
     /**
-     * @param stripClassifier The stripClassifier to set.
+     * @param stripClassifier the stripClassifier to set
      */
     public void setStripClassifier(boolean stripClassifier) {
         this.stripClassifier = stripClassifier;
     }
 
     /**
-     * @param useBaseVersion The useBaseVersion to set.
+     * @param useBaseVersion the useBaseVersion to set
      */
     public void setUseBaseVersion(boolean useBaseVersion) {
         this.useBaseVersion = useBaseVersion;

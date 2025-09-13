@@ -44,9 +44,9 @@ public final class DependencyUtil {
      * Builds the file name. If removeVersion is set, then the file name must be reconstructed from the artifactId,
      * Classifier (if used) and Type. Otherwise, this method returns the artifact file name.
      *
-     * @param artifact File to be formatted.
-     * @param removeVersion Specifies if the version should be removed from the file name.
-     * @return Formatted file name in the format artifactId-[version]-[classifier].[type]
+     * @param artifact file to be formatted
+     * @param removeVersion specifies if the version should be removed from the file name
+     * @return formatted file name in the format artifactId-[version]-[classifier].[type]
      * @see #getFormattedFileName(Artifact, boolean, boolean)
      */
     public static String getFormattedFileName(Artifact artifact, boolean removeVersion) {
@@ -58,10 +58,10 @@ public final class DependencyUtil {
      * <b>prependGroupId</b> is true) artifactId, Classifier (if used) and Type. Otherwise, this method returns the
      * artifact file name.
      *
-     * @param artifact File to be formatted.
-     * @param removeVersion Specifies if the version should be removed from the file name.
-     * @param prependGroupId Specifies if the groupId should be prepended to the file name.
-     * @return Formatted file name in the format [groupId].artifactId-[version]-[classifier].[type]
+     * @param artifact file to be formatted
+     * @param removeVersion specifies if the version should be removed from the file name
+     * @param prependGroupId specifies if the groupId should be prepended to the file name
+     * @return formatted file name in the format [groupId].artifactId-[version]-[classifier].[type]
      */
     public static String getFormattedFileName(Artifact artifact, boolean removeVersion, boolean prependGroupId) {
         return getFormattedFileName(artifact, removeVersion, prependGroupId, false);
@@ -73,10 +73,10 @@ public final class DependencyUtil {
      * artifact file name.
      *
      * @param artifact file to be formatted
-     * @param removeVersion Specifies if the version should be removed from the file name
-     * @param prependGroupId Specifies if the groupId should be prepended to the file name
-     * @param useBaseVersion Specifies if the baseVersion of the artifact should be used instead of the version
-     * @return Formatted file name in the format [groupId].artifactId-[version]-[classifier].[type]
+     * @param removeVersion specifies if the version should be removed from the file name
+     * @param prependGroupId specifies if the groupId should be prepended to the file name
+     * @param useBaseVersion specifies if the baseVersion of the artifact should be used instead of the version
+     * @return formatted file name in the format [groupId].artifactId-[version]-[classifier].[type]
      */
     public static String getFormattedFileName(
             Artifact artifact, boolean removeVersion, boolean prependGroupId, boolean useBaseVersion) {
@@ -88,12 +88,12 @@ public final class DependencyUtil {
      * <b>prependGroupId</b> is true) artifactId, Classifier (if used) and Type. Otherwise, this method returns the
      * artifact file name.
      *
-     * @param artifact File to be formatted.
-     * @param removeVersion Specifies if the version should be removed from the file name.
-     * @param prependGroupId Specifies if the groupId should be prepended to the file name.
-     * @param useBaseVersion Specifies if the baseVersion of the artifact should be used instead of the version.
-     * @param removeClassifier Specifies if the classifier of the artifact should be remved from the file name.
-     * @return Formatted file name in the format [groupId].artifactId-[version]-[classifier].[type]
+     * @param artifact file to be formatted
+     * @param removeVersion specifies if the version should be removed from the file name
+     * @param prependGroupId specifies if the groupId should be prepended to the file name
+     * @param useBaseVersion specifies if the baseVersion of the artifact should be used instead of the version
+     * @param removeClassifier specifies if the classifier of the artifact should be remved from the file name
+     * @return formatted file name in the format [groupId].artifactId-[version]-[classifier].[type]
      */
     public static String getFormattedFileName(
             Artifact artifact,

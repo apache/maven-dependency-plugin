@@ -80,7 +80,7 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
     private String excludes;
 
     /**
-     * ignore to set file permissions when unpacking a dependency
+     * Ignore to set file permissions when unpacking a dependency.
      *
      * @since 2.7
      */
@@ -134,7 +134,7 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
      * Main entry into mojo. This method gets the dependencies and iterates through each one passing it to
      * DependencyUtil.unpackFile().
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      * @see #getDependencySets(boolean)
      */
     @Override
@@ -180,35 +180,35 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
     }
 
     /**
-     * @return Returns a comma separated list of excluded items
+     * @return returns a comma separated list of excluded items
      */
     public String getExcludes() {
         return DependencyUtil.cleanToBeTokenizedString(this.excludes);
     }
 
     /**
-     * @param excludes A comma separated list of items to exclude i.e. <code>**\/*.xml, **\/*.properties</code>
+     * @param excludes a comma separated list of items to exclude i.e. <code>**\/*.xml, **\/*.properties</code>
      */
     public void setExcludes(String excludes) {
         this.excludes = excludes;
     }
 
     /**
-     * @return Returns a comma separated list of included items
+     * @return returns a comma separated list of included items
      */
     public String getIncludes() {
         return DependencyUtil.cleanToBeTokenizedString(this.includes);
     }
 
     /**
-     * @param includes A comma separated list of items to include i.e. <code>**\/*.xml, **\/*.properties</code>
+     * @param includes a comma separated list of items to include i.e. <code>**\/*.xml, **\/*.properties</code>
      */
     public void setIncludes(String includes) {
         this.includes = includes;
     }
 
     /**
-     * @param encoding The encoding to set.
+     * @param encoding the encoding to set
      * @since 3.0
      */
     public void setEncoding(String encoding) {
@@ -216,7 +216,7 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
     }
 
     /**
-     * @return Returns the encoding.
+     * @return returns the encoding
      * @since 3.0
      */
     public String getEncoding() {
@@ -225,8 +225,7 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
 
     /**
      * @return {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting shall
-     *         happen.
-     *
+     *         happen
      * @since 3.1.2
      */
     public FileMapper[] getFileMappers() {
@@ -235,8 +234,7 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
 
     /**
      * @param fileMappers {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
-     *                   rewriting shall happen.
-     *
+     *                   rewriting shall happen
      * @since 3.1.2
      */
     public void setFileMappers(FileMapper[] fileMappers) {

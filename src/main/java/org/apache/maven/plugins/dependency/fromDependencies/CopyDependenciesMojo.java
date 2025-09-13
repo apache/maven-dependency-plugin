@@ -291,6 +291,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     /**
      * Copies the signature file of the artifact to the destination directory, if it exists or can be resolved.
      * If the signature file does not exist and cannot be resolved, a warning is logged.
+     *
      * @param artifact the artifact whose signature file should be copied
      * @param destDir the destination directory
      * @param destFileName the destination file name without the extension
@@ -326,10 +327,10 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     /**
      * Copy the pom files associated with the artifacts.
      *
-     * @param destDir The destination directory {@link File}.
-     * @param artifacts The artifacts {@link Artifact}.
-     * @param removeVersion remove version or not.
-     * @throws MojoExecutionException in case of errors.
+     * @param destDir the destination directory {@link File}
+     * @param artifacts the artifacts {@link Artifact}
+     * @param removeVersion remove version or not
+     * @throws MojoExecutionException in case of errors
      */
     public void copyPoms(File destDir, Set<Artifact> artifacts, boolean removeVersion) throws MojoExecutionException {
 
@@ -339,11 +340,11 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     /**
      * Copy the pom files associated with the artifacts.
      *
-     * @param destDir The destination directory {@link File}.
-     * @param artifacts The artifacts {@link Artifact}.
-     * @param removeVersion remove version or not.
-     * @param removeClassifier remove the classifier or not.
-     * @throws MojoExecutionException in case of errors.
+     * @param destDir the destination directory {@link File}
+     * @param artifacts the artifacts {@link Artifact}
+     * @param removeVersion remove version or not
+     * @param removeClassifier remove the classifier or not
+     * @throws MojoExecutionException in case of errors
      */
     public void copyPoms(File destDir, Set<Artifact> artifacts, boolean removeVersion, boolean removeClassifier)
             throws MojoExecutionException {

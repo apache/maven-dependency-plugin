@@ -28,8 +28,8 @@ public interface ArtifactItemFilter {
 
     /**
      * @param item {@link ArtifactItem}
-     * @return true/false.
-     * @throws ArtifactFilterException in case of an error.
+     * @return true/false
+     * @throws ArtifactFilterException in case of an error
      */
     boolean isArtifactIncluded(ArtifactItem item) throws ArtifactFilterException;
 }

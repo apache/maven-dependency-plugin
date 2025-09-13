@@ -39,7 +39,7 @@ public class DefaultFileMarkerHandler implements MarkerHandler {
     protected File markerFilesDirectory;
 
     /**
-     * @param theMarkerFilesDirectory The marker directory.
+     * @param theMarkerFilesDirectory the marker directory
      */
     public DefaultFileMarkerHandler(File theMarkerFilesDirectory) {
         this.markerFilesDirectory = theMarkerFilesDirectory;
@@ -47,7 +47,7 @@ public class DefaultFileMarkerHandler implements MarkerHandler {
 
     /**
      * @param theArtifact {@link Artifact}
-     * @param theMarkerFilesDirectory The marker directory.
+     * @param theMarkerFilesDirectory the marker directory
      */
     public DefaultFileMarkerHandler(Artifact theArtifact, File theMarkerFilesDirectory) {
         this.artifact = theArtifact;
@@ -55,9 +55,9 @@ public class DefaultFileMarkerHandler implements MarkerHandler {
     }
 
     /**
-     * Returns properly formatted File
+     * Returns properly formatted File.
      *
-     * @return File object for marker. The file is not guaranteed to exist.
+     * @return file object for marker. The file is not guaranteed to exist.
      */
     protected File getMarkerFile() {
         return new File(this.markerFilesDirectory, this.artifact.getId().replace(':', '-') + ".marker");
@@ -68,7 +68,7 @@ public class DefaultFileMarkerHandler implements MarkerHandler {
      *
      * @return <code>true</code> if and only if the file or directory denoted by this abstract pathname exists;
      *         <code>false</code> otherwise
-     * @throws SecurityException If a security manager exists and its <code>{@link
+     * @throws SecurityException if a security manager exists and its <code>{@link
      *          java.lang.SecurityManager#checkRead(java.lang.String)}</code> method denies read access to the file or
      *             directory
      */
@@ -128,7 +128,7 @@ public class DefaultFileMarkerHandler implements MarkerHandler {
      *
      * @return <code>true</code> if and only if the file or directory is successfully deleted; <code>false</code>
      *         otherwise
-     * @throws SecurityException If a security manager exists and its <code>{@link
+     * @throws SecurityException if a security manager exists and its <code>{@link
      *          java.lang.SecurityManager#checkDelete}</code> method denies delete access to the file
      */
     @Override
@@ -138,14 +138,14 @@ public class DefaultFileMarkerHandler implements MarkerHandler {
     }
 
     /**
-     * @return Returns the artifact.
+     * @return returns the artifact
      */
     public Artifact getArtifact() {
         return this.artifact;
     }
 
     /**
-     * @param artifact The artifact to set.
+     * @param artifact the artifact to set
      */
     @Override
     public void setArtifact(Artifact artifact) {
@@ -153,14 +153,14 @@ public class DefaultFileMarkerHandler implements MarkerHandler {
     }
 
     /**
-     * @return Returns the markerFilesDirectory.
+     * @return returns the markerFilesDirectory
      */
     public File getMarkerFilesDirectory() {
         return this.markerFilesDirectory;
     }
 
     /**
-     * @param markerFilesDirectory The markerFilesDirectory to set.
+     * @param markerFilesDirectory the markerFilesDirectory to set
      */
     public void setMarkerFilesDirectory(File markerFilesDirectory) {
         this.markerFilesDirectory = markerFilesDirectory;

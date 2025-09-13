@@ -19,7 +19,7 @@
 package org.apache.maven.plugins.dependency.utils;
 
 /**
- * Represent artifact data collected from Mojo parameters
+ * Represent artifact data collected from Mojo parameters.
  */
 public class ParamArtifact {
     private String groupId;
@@ -83,7 +83,7 @@ public class ParamArtifact {
     }
 
     /**
-     * Determinate if all needed data is set
+     * Determinate if all needed data is set.
      */
     public boolean isDataSet() {
         return artifact != null || (groupId != null && artifactId != null && version != null);

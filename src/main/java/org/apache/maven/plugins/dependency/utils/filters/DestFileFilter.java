@@ -61,24 +61,24 @@ public class DestFileFilter extends AbstractArtifactsFilter implements ArtifactI
     private File outputFileDirectory;
 
     /**
-     * @param outputFileDirectory the output directory.
+     * @param outputFileDirectory the output directory
      */
     public DestFileFilter(File outputFileDirectory) {
         this(false, false, false, false, false, false, false, false, false, false, outputFileDirectory);
     }
 
     /**
-     * @param overWriteReleases true/false.
-     * @param overWriteSnapshots true/false.
-     * @param overWriteIfNewer true/false.
-     * @param useSubDirectoryPerArtifact true/false.
-     * @param useSubDirectoryPerType true/false.
-     * @param useSubDirectoryPerScope true/false.
-     * @param useRepositoryLayout true/false.
-     * @param removeVersion true/false.
-     * @param prependGroupId true/false.
-     * @param useBaseVersion true/false.
-     * @param outputFileDirectory the output directory.
+     * @param overWriteReleases true/false
+     * @param overWriteSnapshots true/false
+     * @param overWriteIfNewer true/false
+     * @param useSubDirectoryPerArtifact true/false
+     * @param useSubDirectoryPerType true/false
+     * @param useSubDirectoryPerScope true/false
+     * @param useRepositoryLayout true/false
+     * @param removeVersion true/false
+     * @param prependGroupId true/false
+     * @param useBaseVersion true/false
+     * @param outputFileDirectory the output directory
      */
     public DestFileFilter(
             boolean overWriteReleases,
@@ -123,133 +123,133 @@ public class DestFileFilter extends AbstractArtifactsFilter implements ArtifactI
     }
 
     /**
-     * @return Returns the overWriteReleases.
+     * @return returns the overWriteReleases
      */
     public boolean isOverWriteReleases() {
         return this.overWriteReleases;
     }
 
     /**
-     * @param overWriteReleases The overWriteReleases to set.
+     * @param overWriteReleases the overWriteReleases to set
      */
     public void setOverWriteReleases(boolean overWriteReleases) {
         this.overWriteReleases = overWriteReleases;
     }
 
     /**
-     * @return Returns the overWriteSnapshots.
+     * @return returns the overWriteSnapshots
      */
     public boolean isOverWriteSnapshots() {
         return this.overWriteSnapshots;
     }
 
     /**
-     * @param overWriteSnapshots The overWriteSnapshots to set.
+     * @param overWriteSnapshots the overWriteSnapshots to set
      */
     public void setOverWriteSnapshots(boolean overWriteSnapshots) {
         this.overWriteSnapshots = overWriteSnapshots;
     }
 
     /**
-     * @return Returns the overWriteIfNewer.
+     * @return returns the overWriteIfNewer
      */
     public boolean isOverWriteIfNewer() {
         return this.overWriteIfNewer;
     }
 
     /**
-     * @param overWriteIfNewer The overWriteIfNewer to set.
+     * @param overWriteIfNewer the overWriteIfNewer to set
      */
     public void setOverWriteIfNewer(boolean overWriteIfNewer) {
         this.overWriteIfNewer = overWriteIfNewer;
     }
 
     /**
-     * @return Returns the outputFileDirectory.
+     * @return returns the outputFileDirectory
      */
     public File getOutputFileDirectory() {
         return this.outputFileDirectory;
     }
 
     /**
-     * @param outputFileDirectory The outputFileDirectory to set.
+     * @param outputFileDirectory the outputFileDirectory to set
      */
     public void setOutputFileDirectory(File outputFileDirectory) {
         this.outputFileDirectory = outputFileDirectory;
     }
 
     /**
-     * @return Returns the removeVersion.
+     * @return returns the removeVersion
      */
     public boolean isRemoveVersion() {
         return this.removeVersion;
     }
 
     /**
-     * @param removeType The removeType to set.
+     * @param removeType the removeType to set
      */
     public void setRemoveType(boolean removeType) {
         this.removeType = removeType;
     }
 
     /**
-     * @return Returns the removeType.
+     * @return returns the removeType
      */
     public boolean isRemoveType() {
         return this.removeType;
     }
 
     /**
-     * @param removeVersion The removeVersion to set.
+     * @param removeVersion the removeVersion to set
      */
     public void setRemoveVersion(boolean removeVersion) {
         this.removeVersion = removeVersion;
     }
 
     /**
-     * @return Returns the removeClassifier.
+     * @return returns the removeClassifier
      */
     public boolean isRemoveClassifier() {
         return this.removeClassifier;
     }
 
     /**
-     * @param removeClassifier The removeClassifier to set.
+     * @param removeClassifier the removeClassifier to set
      */
     public void setRemoveClassifier(boolean removeClassifier) {
         this.removeClassifier = removeClassifier;
     }
 
     /**
-     * @return Returns the useSubDirectoryPerArtifact.
+     * @return returns the useSubDirectoryPerArtifact
      */
     public boolean isUseSubDirectoryPerArtifact() {
         return this.useSubDirectoryPerArtifact;
     }
 
     /**
-     * @param useSubDirectoryPerArtifact The useSubDirectoryPerArtifact to set.
+     * @param useSubDirectoryPerArtifact the useSubDirectoryPerArtifact to set
      */
     public void setUseSubDirectoryPerArtifact(boolean useSubDirectoryPerArtifact) {
         this.useSubDirectoryPerArtifact = useSubDirectoryPerArtifact;
     }
 
     /**
-     * @return Returns the useSubDirectoryPerType.
+     * @return returns the useSubDirectoryPerType
      */
     public boolean isUseSubDirectoryPerType() {
         return this.useSubDirectoryPerType;
     }
 
     /**
-     * @param useSubDirectoryPerType The useSubDirectoryPerType to set.
+     * @param useSubDirectoryPerType the useSubDirectoryPerType to set
      */
     public void setUseSubDirectoryPerType(boolean useSubDirectoryPerType) {
         this.useSubDirectoryPerType = useSubDirectoryPerType;
     }
 
     /**
-     * @return Returns the useRepositoryLayout
+     * @return returns the useRepositoryLayout
      */
     public boolean isUseRepositoryLayout() {
         return useRepositoryLayout;
@@ -299,10 +299,10 @@ public class DestFileFilter extends AbstractArtifactsFilter implements ArtifactI
     /**
      * {@code File.getLastModified} sometimes returns a wrong value. See JDK bug for details.
      * <p>
-     * https://bugs.openjdk.java.net/browse/JDK-8177809
+     * https://bugs.openjdk.java.net/browse/JDK-8177809.
      *
      * @param file {@link File}
-     * @return the last modification time in milliseconds.
+     * @return the last modification time in milliseconds
      * @throws ArtifactFilterException in case of an IOException
      */
     private long getLastModified(File file) throws ArtifactFilterException {

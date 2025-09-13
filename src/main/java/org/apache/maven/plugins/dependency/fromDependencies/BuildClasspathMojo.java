@@ -113,7 +113,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     /**
      * Override the char used between the paths. This field is initialized to contain the first character of the value
      * of the system property file.separator. On UNIX systems the value of this field is '/'; on Microsoft Windows
-     * systems it is '\'. The default is File.separator
+     * systems it is '\'. The default is File.separator.
      *
      * @since 2.0
      */
@@ -306,7 +306,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
      * Checks that new classpath differs from that found inside the old classpathFile.
      *
      * @return true if the specified classpath equals the one found inside the file, false otherwise (including when
-     *         file does not exist but new classpath does).
+     *         file does not exist but new classpath does)
      */
     private boolean isUpToDate(String cpString) {
         try {
@@ -369,7 +369,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
      * @param art2 second object
      * @return the value <code>0</code> if the argument string is equal to this string; a value less than <code>0</code>
      *         if this string is lexicographically less than the string argument; and a value greater than
-     *         <code>0</code> if this string is lexicographically greater than the string argument.
+     *         <code>0</code> if this string is lexicographically greater than the string argument
      */
     @Override
     public int compare(Artifact art1, Artifact art2) {

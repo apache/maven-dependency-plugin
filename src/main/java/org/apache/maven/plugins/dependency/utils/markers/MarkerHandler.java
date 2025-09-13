@@ -26,26 +26,26 @@ import org.apache.maven.plugin.MojoExecutionException;
  */
 public interface MarkerHandler {
     /**
-     * @return true/false.
-     * @throws MojoExecutionException in case of an error.
+     * @return true/false
+     * @throws MojoExecutionException in case of an error
      */
     boolean isMarkerSet() throws MojoExecutionException;
 
     /**
-     * @throws MojoExecutionException in case of an error.
+     * @throws MojoExecutionException in case of an error
      */
     void setMarker() throws MojoExecutionException;
 
     /**
-     * @return true/false.
-     * @throws MojoExecutionException in case of an error.
+     * @return true/false
+     * @throws MojoExecutionException in case of an error
      */
     boolean clearMarker() throws MojoExecutionException;
 
     /**
      * @param artifact {@link Artifact}
-     * @return true/false.
-     * @throws MojoExecutionException in case of an error.
+     * @return true/false
+     * @throws MojoExecutionException in case of an error
      */
     boolean isMarkerOlder(Artifact artifact) throws MojoExecutionException;
 

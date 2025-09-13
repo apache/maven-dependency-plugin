@@ -49,7 +49,7 @@ import org.apache.maven.project.MavenProject;
 public class PropertiesMojo extends AbstractMojo {
 
     /**
-     * The current Maven project
+     * The current Maven project.
      */
     private final MavenProject project;
 
@@ -69,7 +69,7 @@ public class PropertiesMojo extends AbstractMojo {
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through setting a property for each artifact.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      */
     @Override
     public void execute() throws MojoExecutionException {

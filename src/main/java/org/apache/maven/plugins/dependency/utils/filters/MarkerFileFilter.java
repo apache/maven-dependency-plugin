@@ -45,9 +45,9 @@ public class MarkerFileFilter extends AbstractArtifactsFilter implements Artifac
     protected final MarkerHandler handler;
 
     /**
-     * @param overWriteReleases true/false.
-     * @param overWriteSnapshots true/false.
-     * @param overWriteIfNewer true/false.
+     * @param overWriteReleases true/false
+     * @param overWriteSnapshots true/false
+     * @param overWriteIfNewer true/false
      * @param handler {@link MarkerHandler}
      */
     public MarkerFileFilter(
@@ -93,42 +93,42 @@ public class MarkerFileFilter extends AbstractArtifactsFilter implements Artifac
     }
 
     /**
-     * @return Returns the overWriteReleases.
+     * @return returns the overWriteReleases
      */
     public boolean isOverWriteReleases() {
         return this.overWriteReleases;
     }
 
     /**
-     * @param overWriteReleases The overWriteReleases to set.
+     * @param overWriteReleases the overWriteReleases to set
      */
     public void setOverWriteReleases(boolean overWriteReleases) {
         this.overWriteReleases = overWriteReleases;
     }
 
     /**
-     * @return Returns the overWriteSnapshots.
+     * @return returns the overWriteSnapshots
      */
     public boolean isOverWriteSnapshots() {
         return this.overWriteSnapshots;
     }
 
     /**
-     * @param overWriteSnapshots The overWriteSnapshots to set.
+     * @param overWriteSnapshots the overWriteSnapshots to set
      */
     public void setOverWriteSnapshots(boolean overWriteSnapshots) {
         this.overWriteSnapshots = overWriteSnapshots;
     }
 
     /**
-     * @return Returns the overWriteIfNewer.
+     * @return returns the overWriteIfNewer
      */
     public boolean isOverWriteIfNewer() {
         return this.overWriteIfNewer;
     }
 
     /**
-     * @param overWriteIfNewer The overWriteIfNewer to set.
+     * @param overWriteIfNewer the overWriteIfNewer to set
      */
     public void setOverWriteIfNewer(boolean overWriteIfNewer) {
         this.overWriteIfNewer = overWriteIfNewer;

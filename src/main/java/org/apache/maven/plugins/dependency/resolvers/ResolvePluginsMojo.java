@@ -65,7 +65,7 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
     private String outputEncoding;
 
     /**
-     * Output absolute filename for resolved artifacts
+     * Output absolute filename for resolved artifacts.
      *
      * @since 2.0
      */
@@ -98,7 +98,7 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      */
     @Override
     protected void doExecute() throws MojoExecutionException {
@@ -184,7 +184,7 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
      *
      * @param artifact the artifact used to retrieve dependencies
      * @return resolved set of dependencies
-     * @throws DependencyResolverException in case of error while resolving artifacts.
+     * @throws DependencyResolverException in case of error while resolving artifacts
      */
     private Set<Artifact> resolveArtifactDependencies(final DependableCoordinate artifact)
             throws DependencyResolverException {

@@ -52,7 +52,7 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     private final UnpackUtil unpackUtil;
 
     /**
-     * Directory to store flag files after unpack
+     * Directory to store flag files after unpack.
      */
     @Parameter(
             property = "markersDirectory",
@@ -80,7 +80,7 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     private String excludes;
 
     /**
-     * ignore to set file permissions when unpacking a dependency
+     * Ignore to set file permissions when unpacking a dependency.
      *
      * @since 2.7
      */
@@ -120,7 +120,7 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
      * Main entry into mojo. This method gets the ArtifactItems and iterates through each one passing it to
      * unpackArtifact.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      * @see ArtifactItem
      * @see #getArtifactItems
      * @see #unpackArtifact(ArtifactItem)
@@ -146,8 +146,8 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     /**
      * This method gets the Artifact object and calls DependencyUtil.unpackFile.
      *
-     * @param artifactItem containing the information about the Artifact to unpack.
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @param artifactItem containing the information about the Artifact to unpack
+     * @throws MojoExecutionException with a message if an error occurs
      * @see #getArtifact
      */
     private void unpackArtifact(ArtifactItem artifactItem) throws MojoExecutionException {
@@ -175,9 +175,9 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     }
 
     /**
-     * @param removeVersion removeVersion.
+     * @param removeVersion removeVersion
      * @return list of {@link ArtifactItem}
-     * @throws MojoExecutionException in case of an error.
+     * @throws MojoExecutionException in case of an error
      */
     protected List<ArtifactItem> getProcessedArtifactItems(boolean removeVersion) throws MojoExecutionException {
         List<ArtifactItem> items =
@@ -194,42 +194,42 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     }
 
     /**
-     * @return Returns the markersDirectory.
+     * @return returns the markersDirectory
      */
     public File getMarkersDirectory() {
         return this.markersDirectory;
     }
 
     /**
-     * @param theMarkersDirectory The markersDirectory to set.
+     * @param theMarkersDirectory the markersDirectory to set
      */
     public void setMarkersDirectory(File theMarkersDirectory) {
         this.markersDirectory = theMarkersDirectory;
     }
 
     /**
-     * @return Returns a comma separated list of excluded items
+     * @return returns a comma separated list of excluded items
      */
     public String getExcludes() {
         return this.excludes;
     }
 
     /**
-     * @param excludes A comma separated list of items to exclude i.e. **\/*.xml, **\/*.properties
+     * @param excludes a comma separated list of items to exclude i.e. **\/*.xml, **\/*.properties
      */
     public void setExcludes(String excludes) {
         this.excludes = excludes;
     }
 
     /**
-     * @return Returns a comma separated list of included items
+     * @return returns a comma separated list of included items
      */
     public String getIncludes() {
         return this.includes;
     }
 
     /**
-     * @param includes A comma separated list of items to include i.e. **\/*.xml, **\/*.properties
+     * @param includes a comma separated list of items to include i.e. **\/*.xml, **\/*.properties
      */
     public void setIncludes(String includes) {
         this.includes = includes;
@@ -237,8 +237,7 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
 
     /**
      * @return {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting shall
-     *         happen.
-     *
+     *         happen
      * @since 3.1.2
      */
     public FileMapper[] getFileMappers() {
@@ -247,8 +246,7 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
 
     /**
      * @param fileMappers {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
-     * rewriting shall happen.
-     *
+     * rewriting shall happen
      * @since 3.1.2
      */
     public void setFileMappers(FileMapper[] fileMappers) {

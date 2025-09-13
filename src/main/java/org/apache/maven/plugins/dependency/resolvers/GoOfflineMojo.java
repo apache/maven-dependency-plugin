@@ -90,7 +90,7 @@ public class GoOfflineMojo extends AbstractResolveMojo {
      * Main entry into mojo. Gets the list of dependencies, resolves all that are not in the Reactor, and iterates
      * through displaying the resolved versions.
      *
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @throws MojoExecutionException with a message if an error occurs
      */
     @Override
     protected void doExecute() throws MojoExecutionException {
@@ -119,8 +119,8 @@ public class GoOfflineMojo extends AbstractResolveMojo {
      * This method resolves the dependency artifacts from the project.
      *
      * @return set of resolved dependency artifacts
-     * @throws DependencyResolverException in case of an error while resolving the artifacts
      * @throws ArtifactFilterException
+     * @throws DependencyResolverException in case of an error while resolving the artifacts
      */
     protected Set<Artifact> resolveDependencyArtifacts() throws DependencyResolverException, ArtifactFilterException {
         Collection<Dependency> dependencies = getProject().getDependencies();
@@ -174,8 +174,8 @@ public class GoOfflineMojo extends AbstractResolveMojo {
      * This method resolves the plugin artifacts from the project.
      *
      * @return set of resolved plugin artifacts
-     * @throws DependencyResolverException in case of an error while resolving the artifacts
      * @throws ArtifactFilterException
+     * @throws DependencyResolverException in case of an error while resolving the artifacts
      */
     protected Set<Artifact> resolvePluginArtifacts() throws DependencyResolverException, ArtifactFilterException {
 

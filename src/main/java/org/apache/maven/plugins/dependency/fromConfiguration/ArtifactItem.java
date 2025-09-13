@@ -31,24 +31,24 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
 /**
  * ArtifactItem represents information specified in the plugin configuration section for each artifact.
  *
- * @since 1.0
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
+ * @since 1.0
  */
 public class ArtifactItem implements DependableCoordinate {
     /**
-     * Group ID of artifact
+     * Group ID of artifact.
      */
     @Parameter(required = true)
     private String groupId;
 
     /**
-     * Name of artifact
+     * Name of artifact.
      */
     @Parameter(required = true)
     private String artifactId;
 
     /**
-     * Version of artifact
+     * Version of artifact.
      */
     @Parameter
     private String version = null;
@@ -72,7 +72,7 @@ public class ArtifactItem implements DependableCoordinate {
     private File outputDirectory;
 
     /**
-     * Provides ability to change destination file name
+     * Provides ability to change destination file name.
      */
     @Parameter
     private String destFileName;
@@ -91,7 +91,7 @@ public class ArtifactItem implements DependableCoordinate {
     private boolean needsProcessing;
 
     /**
-     * Artifact Item
+     * Artifact Item.
      */
     private Artifact artifact;
 
@@ -207,7 +207,7 @@ public class ArtifactItem implements DependableCoordinate {
     }
 
     /**
-     * @return Classifier
+     * @return classifier
      */
     @Override
     public String getClassifier() {
@@ -347,7 +347,6 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * @return {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting shall
      *         happen
-     *
      * @since 3.1.2
      */
     public FileMapper[] getFileMappers() {
@@ -357,7 +356,6 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * @param fileMappers {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
      * rewriting shall happen
-     *
      * @since 3.1.2
      */
     public void setFileMappers(FileMapper[] fileMappers) {

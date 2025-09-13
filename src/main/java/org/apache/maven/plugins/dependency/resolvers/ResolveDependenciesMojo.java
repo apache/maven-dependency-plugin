@@ -73,7 +73,7 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
     private String outputEncoding;
 
     /**
-     * If we should display the scope when resolving
+     * If we should display the scope when resolving.
      *
      * @since 2.0-alpha-2
      */
@@ -81,7 +81,7 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
     protected boolean outputScope;
 
     /**
-     * Output absolute filename for resolved artifacts
+     * Output absolute filename for resolved artifacts.
      *
      * @since 2.0
      */
@@ -89,7 +89,7 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
     private boolean outputAbsoluteArtifactFilename;
 
     /**
-     * Only used to store results for integration test validation
+     * Only used to store results for integration test validation.
      */
     DependencyStatusSets results;
 

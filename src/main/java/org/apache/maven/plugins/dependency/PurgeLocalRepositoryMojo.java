@@ -93,7 +93,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     private final ArtifactHandlerManager artifactHandlerManager;
 
     /**
-     * The dependency resolver
+     * The dependency resolver.
      */
     private final DependencyResolver dependencyResolver;
 
@@ -243,9 +243,9 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
         private final List<Dependency> directDependencies;
 
         /**
-         * Default constructor
+         * Default constructor.
          *
-         * @param directDependencies Set of dependencies objects which represent the direct dependencies of the project
+         * @param directDependencies set of dependencies objects which represent the direct dependencies of the project
          */
         DirectDependencyFilter(Artifact projectArtifact, List<Dependency> directDependencies) {
             this.projectArtifact = projectArtifact;
@@ -287,7 +287,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     }
 
     /**
-     * Includes only snapshot artifacts
+     * Includes only snapshot artifacts.
      */
     private static class SnapshotsFilter extends AbstractFilter {
         @Override
@@ -330,7 +330,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
      * Determines if all projects in the reactor should be purged from their dependencies. When this goal is started on
      * the command-line, it is always the case. When it is bound to a phase in the lifecycle, it is never the case.
      *
-     * @return <code>true</code> if all projects in the reactor should be purged, <code>false</code> otherwise.
+     * @return <code>true</code> if all projects in the reactor should be purged, <code>false</code> otherwise
      */
     private boolean shouldPurgeAllProjectsInReactor() {
         Source source = mojoExecution.getSource();
@@ -340,9 +340,9 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     /**
      * Purges the local repository for the dependencies in the given Maven project.
      *
-     * @param theProject Maven project.
-     * @param purgedArtifacts The artifacts that were already purged.
-     * @throws MojoFailureException in case of errors during the purge.
+     * @param theProject maven project
+     * @param purgedArtifacts the artifacts that were already purged
+     * @throws MojoFailureException in case of errors during the purge
      */
     private void purgeLocalRepository(MavenProject theProject, Set<Artifact> purgedArtifacts)
             throws MojoFailureException {
@@ -375,8 +375,8 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     /**
      * Purge/Delete artifacts from the local repository according to the given patterns.
      *
-     * @param theIncludes The includes.
-     * @throws MojoExecutionException in case of an error.
+     * @param theIncludes the includes
+     * @throws MojoExecutionException in case of an error
      */
     private void manualPurge(List<String> theIncludes) throws MojoExecutionException {
         MessageBuilder messageBuilder = MessageUtils.buffer();
@@ -417,7 +417,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     }
 
     /**
-     * Convert a groupId:artifactId:version to a file system path
+     * Convert a groupId:artifactId:version to a file system path.
      *
      * @param gav the groupId:artifactId:version string
      * @return the corresponding path
@@ -440,11 +440,11 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
 
     /**
      * Create the includes exclude filter to use when resolving and purging dependencies Also excludes any "system"
-     * scope dependencies
+     * scope dependencies.
      *
-     * @param theProject The Maven project.
-     * @param dependencies The dependencies to use as a reference if we're excluding transitive dependencies
-     * @param purgedArtifacts The artifacts already purged.
+     * @param theProject the Maven project
+     * @param dependencies the dependencies to use as a reference if we're excluding transitive dependencies
+     * @param purgedArtifacts the artifacts already purged
      * @return the created filter
      */
     private TransformableFilter createPurgeArtifactsFilter(
@@ -494,8 +494,8 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     /**
      * Returns a string that represents a pattern for an exclude filter for the given artifact.
      *
-     * @param artifact Artifact.
-     * @return String representation of a pattern for an exclude filter for the given artifact.
+     * @param artifact artifact
+     * @return string representation of a pattern for an exclude filter for the given artifact
      */
     private String toPatternExcludes(Artifact artifact) {
         return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":"
@@ -503,9 +503,9 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     }
 
     /**
-     * Convert comma separated list of includes to List object
+     * Convert comma separated list of includes to List object.
      *
-     * @param theInclude The list of includes
+     * @param theInclude the list of includes
      * @return the includes list
      */
     private List<String> parseIncludes(String theInclude) {
