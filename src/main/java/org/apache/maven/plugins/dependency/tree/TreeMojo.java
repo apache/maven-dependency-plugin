@@ -65,7 +65,6 @@ import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyN
  * <a href="https://en.wikipedia.org/wiki/Trivial_Graph_Format">TGF</a> and
  * <a href="https://en.wikipedia.org/wiki/JSON">JSON</a>.
  *
- *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @since 2.0-alpha-5
  */

@@ -43,13 +43,13 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
     protected File outputDirectory;
 
     /**
-     * Strip artifact version during copy
+     * Strip artifact version during copy.
      */
     @Parameter(property = "mdep.stripVersion", defaultValue = "false")
     protected boolean stripVersion = false;
 
     /**
-     * Strip artifact type during copy
+     * Strip artifact type during copy.
      *
      * @since 3.4.0
      */
@@ -57,7 +57,7 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
     protected boolean stripType = false;
 
     /**
-     * Strip artifact classifier during copy
+     * Strip artifact classifier during copy.
      */
     @Parameter(property = "mdep.stripClassifier", defaultValue = "false")
     protected boolean stripClassifier = false;
@@ -130,49 +130,49 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
     }
 
     /**
-     * @param theOutputDirectory The outputDirectory to set.
+     * @param theOutputDirectory the outputDirectory to set
      */
     public void setOutputDirectory(File theOutputDirectory) {
         this.outputDirectory = theOutputDirectory;
     }
 
     /**
-     * @return Returns the useSubDirectoryPerArtifact.
+     * @return returns the useSubDirectoryPerArtifact
      */
     public boolean isUseSubDirectoryPerArtifact() {
         return this.useSubDirectoryPerArtifact;
     }
 
     /**
-     * @param theUseSubDirectoryPerArtifact The useSubDirectoryPerArtifact to set.
+     * @param theUseSubDirectoryPerArtifact the useSubDirectoryPerArtifact to set
      */
     public void setUseSubDirectoryPerArtifact(boolean theUseSubDirectoryPerArtifact) {
         this.useSubDirectoryPerArtifact = theUseSubDirectoryPerArtifact;
     }
 
     /**
-     * @return Returns the useSubDirectoryPerScope
+     * @return returns the useSubDirectoryPerScope
      */
     public boolean isUseSubDirectoryPerScope() {
         return this.useSubDirectoryPerScope;
     }
 
     /**
-     * @param theUseSubDirectoryPerScope The useSubDirectoryPerScope to set.
+     * @param theUseSubDirectoryPerScope the useSubDirectoryPerScope to set
      */
     public void setUseSubDirectoryPerScope(boolean theUseSubDirectoryPerScope) {
         this.useSubDirectoryPerScope = theUseSubDirectoryPerScope;
     }
 
     /**
-     * @return Returns the useSubDirectoryPerType.
+     * @return returns the useSubDirectoryPerType
      */
     public boolean isUseSubDirectoryPerType() {
         return this.useSubDirectoryPerType;
     }
 
     /**
-     * @param theUseSubDirectoryPerType The useSubDirectoryPerType to set.
+     * @param theUseSubDirectoryPerType the useSubDirectoryPerType to set
      */
     public void setUseSubDirectoryPerType(boolean theUseSubDirectoryPerType) {
         this.useSubDirectoryPerType = theUseSubDirectoryPerType;
@@ -228,7 +228,7 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
     }
 
     /**
-     * @param useRepositoryLayout - true if dependencies must be planted in a repository layout
+     * @param useRepositoryLayout true if dependencies must be planted in a repository layout
      */
     public void setUseRepositoryLayout(boolean useRepositoryLayout) {
         this.useRepositoryLayout = useRepositoryLayout;

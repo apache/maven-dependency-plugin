@@ -129,7 +129,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private String scriptableFlag;
 
     /**
-     * Flag to use for scriptable output
+     * Flag to use for scriptable output.
      *
      * @since 2.0-alpha-5
      */
@@ -137,7 +137,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private File baseDir;
 
     /**
-     * Target folder
+     * Target folder.
      *
      * @since 2.0-alpha-5
      */
@@ -309,7 +309,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
     /**
      * @return {@link ProjectDependencyAnalyzer}
-     * @throws MojoExecutionException in case of an error.
+     * @throws MojoExecutionException in case of an error
      */
     protected ProjectDependencyAnalyzer createProjectDependencyAnalyzer() throws MojoExecutionException {
 

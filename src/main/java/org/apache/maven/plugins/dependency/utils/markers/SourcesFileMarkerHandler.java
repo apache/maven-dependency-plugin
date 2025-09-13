@@ -32,7 +32,7 @@ public class SourcesFileMarkerHandler extends DefaultFileMarkerHandler {
     boolean resolved;
 
     /**
-     * @param markerFilesDirectory the marker files directory.
+     * @param markerFilesDirectory the marker files directory
      */
     public SourcesFileMarkerHandler(File markerFilesDirectory) {
         super(markerFilesDirectory);
@@ -40,8 +40,8 @@ public class SourcesFileMarkerHandler extends DefaultFileMarkerHandler {
 
     /**
      * @param artifact {@link Artifact}
-     * @param markerFilesDirectory marker files directory.
-     * @param isResolved true/false.
+     * @param markerFilesDirectory marker files directory
+     * @param isResolved true/false
      */
     public SourcesFileMarkerHandler(Artifact artifact, File markerFilesDirectory, boolean isResolved) {
         super(artifact, markerFilesDirectory);
@@ -49,9 +49,9 @@ public class SourcesFileMarkerHandler extends DefaultFileMarkerHandler {
     }
 
     /**
-     * Returns properly formatted File
+     * Returns properly formatted File.
      *
-     * @return File object for marker. The file is not guaranteed to exist.
+     * @return file object for marker. The file is not guaranteed to exist.
      */
     @Override
     public File getMarkerFile() {
@@ -59,10 +59,10 @@ public class SourcesFileMarkerHandler extends DefaultFileMarkerHandler {
     }
 
     /**
-     * Get MarkerFile, exposed for unit testing purposes
+     * Get MarkerFile, exposed for unit testing purposes.
      *
-     * @param res resolved or not.
-     * @return marker file for this artifact.
+     * @param res resolved or not
+     * @return marker file for this artifact
      */
     protected File getMarkerFile(boolean res) {
         String suffix;
@@ -80,7 +80,7 @@ public class SourcesFileMarkerHandler extends DefaultFileMarkerHandler {
      *
      * @return <code>true</code> if and only if the file or directory denoted by this abstract pathname exists;
      *         <code>false</code> otherwise
-     * @throws MojoExecutionException If a security manager exists and its <code>{@link
+     * @throws MojoExecutionException if a security manager exists and its <code>{@link
      *          java.lang.SecurityManager#checkRead(java.lang.String)}</code> method denies read access to the file or
      *             directory
      */
@@ -142,7 +142,7 @@ public class SourcesFileMarkerHandler extends DefaultFileMarkerHandler {
      *
      * @return <code>true</code> if and only if the file or directory is successfully deleted; <code>false</code>
      *         otherwise
-     * @throws SecurityException If a security manager exists and its <code>{@link
+     * @throws SecurityException if a security manager exists and its <code>{@link
      *          java.lang.SecurityManager#checkDelete}</code> method denies delete access to the file
      */
     @Override
@@ -155,14 +155,14 @@ public class SourcesFileMarkerHandler extends DefaultFileMarkerHandler {
     }
 
     /**
-     * @return Returns the resolved.
+     * @return returns the resolved
      */
     public boolean isResolved() {
         return this.resolved;
     }
 
     /**
-     * @param isResolved The resolved to set.
+     * @param isResolved the resolved to set
      */
     public void setResolved(boolean isResolved) {
         this.resolved = isResolved;

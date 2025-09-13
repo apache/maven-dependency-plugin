@@ -44,12 +44,12 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 public class UnpackUtil {
 
     /**
-     * To look up Archiver/UnArchiver implementations
+     * To look up Archiver/UnArchiver implementations.
      */
     private final ArchiverManager archiverManager;
 
     /**
-     * For IDE build support
+     * For IDE build support.
      */
     private final BuildContext buildContext;
 
@@ -68,16 +68,16 @@ public class UnpackUtil {
     /**
      * @param file              file to unpack
      * @param type              file / artifact type
-     * @param location          The location.
-     * @param includes          includes list.
-     * @param excludes          excludes list.
-     * @param encoding          the encoding.
+     * @param location          the location
+     * @param includes          includes list
+     * @param excludes          excludes list
+     * @param encoding          the encoding
      * @param ignorePermissions ignore permissions
      * @param fileMappers       {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
      *                          rewriting
-     *                          shall happen.
+     *                          shall happen
      * @param logger            a Mojo logger
-     * @throws MojoExecutionException in case of an error.
+     * @throws MojoExecutionException in case of an error
      */
     public void unpack(
             File file,

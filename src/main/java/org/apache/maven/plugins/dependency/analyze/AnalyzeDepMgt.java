@@ -203,7 +203,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
     }
 
     /**
-     * @param ex The exclusion key.
+     * @param ex the exclusion key
      * @return the resulting combination of groupId+artifactId
      */
     public String getExclusionKey(Exclusion ex) {
@@ -211,7 +211,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
     }
 
     /**
-     * Calculate the mismatches between the DependencyManagement and resolved artifacts
+     * Calculate the mismatches between the DependencyManagement and resolved artifacts.
      *
      * @param depMgtMap a keyset of the Dependency.GetManagementKey for quick lookup
      * @param allDependencyArtifacts the set of all artifacts to compare

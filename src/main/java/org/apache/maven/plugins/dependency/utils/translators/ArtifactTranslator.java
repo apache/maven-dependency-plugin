@@ -28,7 +28,7 @@ import org.apache.maven.plugin.logging.Log;
  */
 public interface ArtifactTranslator {
     /**
-     * @param artifacts set of {@link Artifact}s.
+     * @param artifacts set of {@link Artifact}s
      * @param log {@link Log}
      * @return set of {@link org.eclipse.aether.artifact.Artifact}
      */

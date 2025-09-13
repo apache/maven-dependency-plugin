@@ -57,7 +57,6 @@ public class CopyUtil {
      * @param destination file name of destination file
      * @throws IOException if copy has failed
      * @throws MojoExecutionException if artifact file is a directory (which has not been packaged yet)
-     *
      * @since 3.7.0
      */
     public void copyArtifactFile(Artifact sourceArtifact, File destination) throws IOException, MojoExecutionException {
@@ -79,7 +78,6 @@ public class CopyUtil {
      * @param source the source file to copy
      * @param destination the destination file
      * @throws IOException if copy has failed
-     *
      * @since 3.2.0
      */
     public void copyFile(File source, File destination) throws IOException {

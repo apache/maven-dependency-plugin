@@ -56,14 +56,14 @@ public class DependencyStatusSets {
     }
 
     /**
-     * @return Returns the resolvedDependencies.
+     * @return returns the resolvedDependencies
      */
     public Set<Artifact> getResolvedDependencies() {
         return this.resolvedDependencies;
     }
 
     /**
-     * @param resolvedDependencies The resolvedDependencies to set.
+     * @param resolvedDependencies the resolvedDependencies to set
      */
     public void setResolvedDependencies(Set<Artifact> resolvedDependencies) {
         if (resolvedDependencies != null) {
@@ -74,14 +74,14 @@ public class DependencyStatusSets {
     }
 
     /**
-     * @return Returns the skippedDependencies.
+     * @return returns the skippedDependencies
      */
     public Set<Artifact> getSkippedDependencies() {
         return this.skippedDependencies;
     }
 
     /**
-     * @param skippedDependencies The skippedDependencies to set.
+     * @param skippedDependencies the skippedDependencies to set
      */
     public void setSkippedDependencies(Set<Artifact> skippedDependencies) {
         if (skippedDependencies != null) {
@@ -92,14 +92,14 @@ public class DependencyStatusSets {
     }
 
     /**
-     * @return Returns the unResolvedDependencies.
+     * @return returns the unResolvedDependencies
      */
     public Set<Artifact> getUnResolvedDependencies() {
         return this.unResolvedDependencies;
     }
 
     /**
-     * @param unResolvedDependencies The unResolvedDependencies to set.
+     * @param unResolvedDependencies the unResolvedDependencies to set
      */
     public void setUnResolvedDependencies(Set<Artifact> unResolvedDependencies) {
         if (unResolvedDependencies != null) {

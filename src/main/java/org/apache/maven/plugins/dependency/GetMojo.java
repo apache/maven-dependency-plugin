@@ -81,7 +81,7 @@ public class GetMojo extends AbstractMojo {
 
     /**
      * Repositories in the format id::[layout]::url or just url, separated by comma. ie.
-     * central::default::https://repo.maven.apache.org/maven2,myrepo::::https://repo.acme.com,https://repo.acme2.com
+     * central::default::https://repo.maven.apache.org/maven2,myrepo::::https://repo.acme.com,https://repo.acme2.com.
      */
     @Parameter(property = "remoteRepositories")
     private String remoteRepositories;
@@ -249,7 +249,7 @@ public class GetMojo extends AbstractMojo {
     /**
      * The groupId of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
-     * @param groupId The groupId.
+     * @param groupId the groupId
      */
     @Parameter(property = "groupId")
     public void setGroupId(String groupId) {
@@ -259,7 +259,7 @@ public class GetMojo extends AbstractMojo {
     /**
      * The artifactId of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
-     * @param artifactId The artifactId.
+     * @param artifactId the artifactId
      */
     @Parameter(property = "artifactId")
     public void setArtifactId(String artifactId) {
@@ -269,7 +269,7 @@ public class GetMojo extends AbstractMojo {
     /**
      * The version of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
-     * @param version The version.
+     * @param version the version
      */
     @Parameter(property = "version")
     public void setVersion(String version) {
@@ -279,8 +279,7 @@ public class GetMojo extends AbstractMojo {
     /**
      * The classifier of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
-     * @param classifier The classifier to be used.
-     *
+     * @param classifier the classifier to be used
      * @since 2.3
      */
     @Parameter(property = "classifier")
@@ -291,7 +290,7 @@ public class GetMojo extends AbstractMojo {
     /**
      * The packaging of the artifact to resolve. Ignored if {@link #artifact} is used.
      *
-     * @param type packaging.
+     * @param type packaging
      */
     @Parameter(property = "packaging", defaultValue = "jar")
     public void setPackaging(String type) {

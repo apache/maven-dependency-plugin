@@ -38,7 +38,7 @@ public class DOTDependencyNodeVisitor extends AbstractSerializingVisitor impleme
     /**
      * Constructor.
      *
-     * @param writer the writer to write to.
+     * @param writer the writer to write to
      */
     public DOTDependencyNodeVisitor(Writer writer) {
         super(writer);

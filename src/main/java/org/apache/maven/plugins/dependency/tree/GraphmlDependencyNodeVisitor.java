@@ -55,7 +55,7 @@ public class GraphmlDependencyNodeVisitor extends AbstractSerializingVisitor imp
     /**
      * Constructor.
      *
-     * @param writer the writer to write to.
+     * @param writer the writer to write to
      */
     public GraphmlDependencyNodeVisitor(Writer writer) {
         super(writer);
@@ -115,8 +115,8 @@ public class GraphmlDependencyNodeVisitor extends AbstractSerializingVisitor imp
      * Current implementation is rather simple and uses hashcode.
      * </p>
      *
-     * @param node the DependencyNode to use.
-     * @return the unique id.
+     * @param node the DependencyNode to use
+     * @return the unique id
      */
     private static String generateId(DependencyNode node) {
         return String.valueOf(node.hashCode());

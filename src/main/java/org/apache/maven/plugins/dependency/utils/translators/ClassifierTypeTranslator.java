@@ -39,9 +39,9 @@ public class ClassifierTypeTranslator implements ArtifactTranslator {
     private String type;
 
     /**
-     * @param artifactHandlerManager {@link ArtifactHandlerManager}.
-     * @param theClassifier The classifier to use.
-     * @param theType The type.
+     * @param artifactHandlerManager {@link ArtifactHandlerManager}
+     * @param theClassifier the classifier to use
+     * @param theType the type
      */
     public ClassifierTypeTranslator(
             ArtifactHandlerManager artifactHandlerManager, String theClassifier, String theType) {
@@ -95,28 +95,28 @@ public class ClassifierTypeTranslator implements ArtifactTranslator {
     }
 
     /**
-     * @return Returns the type.
+     * @return returns the type
      */
     public String getType() {
         return this.type;
     }
 
     /**
-     * @param theType The type to set.
+     * @param theType the type to set
      */
     public void setType(String theType) {
         this.type = theType;
     }
 
     /**
-     * @return Returns the classifier.
+     * @return returns the classifier
      */
     public String getClassifier() {
         return this.classifier;
     }
 
     /**
-     * @param theClassifier The classifier to set.
+     * @param theClassifier the classifier to set
      */
     public void setClassifier(String theClassifier) {
         this.classifier = theClassifier;

@@ -87,12 +87,12 @@ public class ResolverUtil {
     }
 
     /**
-     * Resolve given artifact
+     * Resolve given artifact.
      *
      * @param artifact     an artifact to resolve
      * @param repositories remote repositories list
      * @return resolved artifact
-     * @throws ArtifactResolutionException If the artifact could not be resolved.
+     * @throws ArtifactResolutionException if the artifact could not be resolved
      */
     public Artifact resolveArtifact(Artifact artifact, List<RemoteRepository> repositories)
             throws ArtifactResolutionException {
@@ -108,8 +108,8 @@ public class ResolverUtil {
      * @param artifact     an artifact to resolve
      * @param repositories remote repositories list
      * @return list of transitive dependencies for artifact
-     * @throws DependencyResolutionException If the dependency tree could not be built or any dependency artifact could
-     *                                       not be resolved.
+     * @throws DependencyResolutionException if the dependency tree could not be built or any dependency artifact could
+     *                                       not be resolved
      */
     public List<Artifact> resolveDependencies(Artifact artifact, List<RemoteRepository> repositories)
             throws DependencyResolutionException {

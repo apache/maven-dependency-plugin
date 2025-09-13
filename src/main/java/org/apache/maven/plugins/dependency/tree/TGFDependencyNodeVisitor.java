@@ -60,9 +60,9 @@ public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor impleme
         /**
          * Build a new EdgeAppender.
          *
-         * @param from edge start.
+         * @param from edge start
          * @param to edge end
-         * @param label optional label.
+         * @param label optional label
          */
         EdgeAppender(DependencyNode from, DependencyNode to, String label) {
             super();
@@ -72,7 +72,7 @@ public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor impleme
         }
 
         /**
-         * build a string representing the edge.
+         * Build a string representing the edge.
          */
         @Override
         public String toString() {
@@ -93,7 +93,7 @@ public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor impleme
     /**
      * Constructor.
      *
-     * @param writer the writer to write to.
+     * @param writer the writer to write to
      */
     public TGFDependencyNodeVisitor(Writer writer) {
         super(writer);
@@ -147,8 +147,8 @@ public class TGFDependencyNodeVisitor extends AbstractSerializingVisitor impleme
      * Current implementation is rather simple and uses hashcode.
      * </p>
      *
-     * @param node the DependencyNode to use.
-     * @return the unique id.
+     * @param node the DependencyNode to use
+     * @return the unique id
      */
     private static String generateId(DependencyNode node) {
         return String.valueOf(node.hashCode());

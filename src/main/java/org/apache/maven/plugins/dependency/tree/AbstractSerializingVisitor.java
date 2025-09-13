@@ -38,7 +38,7 @@ public abstract class AbstractSerializingVisitor {
      * Build a new AbstractSerializingDependencyNodeVisitor with the writer to serialize to.
      * </p>
      *
-     * @param writer the writer to serialize to.
+     * @param writer the writer to serialize to
      */
     public AbstractSerializingVisitor(Writer writer) {
         this.writer = writer;

@@ -24,22 +24,22 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
  */
 public class ProcessArtifactItemsRequest {
     /**
-     * remove the version from the filename.
+     * Remove the version from the filename.
      */
     private boolean removeVersion;
 
     /**
-     * remove the classifier from the filename.
+     * Remove the classifier from the filename.
      */
     private boolean removeClassifier;
 
     /**
-     * prepend the groupId to the filename.
+     * Prepend the groupId to the filename.
      */
     private boolean prependGroupId;
 
     /**
-     * use the baseVersion of the artifact instead of version for the filename.
+     * Use the baseVersion of the artifact instead of version for the filename.
      */
     private boolean useBaseVersion;
 

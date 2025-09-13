@@ -52,7 +52,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Abstract parent class used by mojos that get Artifact information from the plugin configuration as an ArrayList of
- * ArtifactItems
+ * ArtifactItems.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @see ArtifactItem
@@ -67,7 +67,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     private File outputDirectory;
 
     /**
-     * Overwrite release artifacts
+     * Overwrite release artifacts.
      *
      * @since 1.0
      */
@@ -75,7 +75,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     private boolean overWriteReleases;
 
     /**
-     * Overwrite snapshot artifacts
+     * Overwrite snapshot artifacts.
      *
      * @since 1.0
      */
@@ -83,17 +83,17 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     private boolean overWriteSnapshots;
 
     /**
-     * Overwrite if newer
+     * Overwrite if newer.
      *
      * @since 2.0
-     * @deprecated Use 'overWriteIfNewer' or 'mdep.overWriteIfNewer' as this does nothing now.
+     * @deprecated use 'overWriteIfNewer' or 'mdep.overWriteIfNewer' as this does nothing now
      */
     @Deprecated
     @Parameter(property = "mdep.overIfNewer", defaultValue = "true")
     private boolean overIfNewer;
 
     /**
-     * Overwrite if newer
+     * Overwrite if newer.
      *
      * @since 3.7.0
      */
@@ -111,7 +111,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
 
     /**
      * Path to override default local repository during plugin's execution. To remove all downloaded artifacts as part
-     * of the build, set this value to a location under your project's target directory
+     * of the build, set this value to a location under your project's target directory.
      *
      * @since 2.2
      */
@@ -136,9 +136,9 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     abstract ArtifactItemFilter getMarkedArtifactFilter(ArtifactItem item);
 
     /**
-     * artifactItems is filled by either field injection or by setArtifact().
+     * ArtifactItems is filled by either field injection or by setArtifact().
      *
-     * @throws MojoFailureException in case of an error.
+     * @throws MojoFailureException in case of an error
      */
     protected void verifyRequirements() throws MojoFailureException {
         if (artifactItems == null || artifactItems.isEmpty()) {
@@ -151,8 +151,8 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * output Directory if it doesn't exist.
      *
      * @param processArtifactItemsRequest preprocessing instructions
-     * @return An ArrayList of preprocessed ArtifactItems
-     * @throws MojoExecutionException with a message if an error occurs.
+     * @return an ArrayList of preprocessed ArtifactItems
+     * @throws MojoExecutionException with a message if an error occurs
      * @see ArtifactItem
      */
     protected List<ArtifactItem> getProcessedArtifactItems(ProcessArtifactItemsRequest processArtifactItemsRequest)
@@ -228,7 +228,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * from the dependency list or from the DependencyManagement section of the pom.
      *
      * @param artifactItem containing information about artifact from plugin configuration
-     * @return Artifact object representing the specified file
+     * @return artifact object representing the specified file
      * @throws MojoExecutionException if the version can't be found in DependencyManagement
      */
     protected Artifact getArtifact(ArtifactItem artifactItem) throws MojoExecutionException {
@@ -266,7 +266,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * with the correct version. It will first look for an exact match on artifactId/groupId/classifier/type and if it
      * doesn't find a match, it will try again looking for artifactId and groupId only.
      *
-     * @param artifact representing configured file.
+     * @param artifact representing configured file
      * @throws MojoExecutionException
      */
     private void fillMissingArtifactVersion(ArtifactItem artifact) throws MojoExecutionException {
@@ -289,8 +289,8 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * Tries to find missing version from a list of dependencies. If found, the artifact is updated with the correct
      * version.
      *
-     * @param artifact representing configured file.
-     * @param dependencies list of dependencies to search.
+     * @param artifact representing configured file
+     * @param dependencies list of dependencies to search
      * @param looseMatch only look at artifactId and groupId
      * @return the found dependency
      */
@@ -310,70 +310,70 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     }
 
     /**
-     * @return Returns the artifactItems.
+     * @return returns the artifactItems
      */
     public List<ArtifactItem> getArtifactItems() {
         return this.artifactItems;
     }
 
     /**
-     * @param theArtifactItems The artifactItems to set.
+     * @param theArtifactItems the artifactItems to set
      */
     public void setArtifactItems(List<ArtifactItem> theArtifactItems) {
         this.artifactItems = theArtifactItems;
     }
 
     /**
-     * @return Returns the outputDirectory.
+     * @return returns the outputDirectory
      */
     public File getOutputDirectory() {
         return this.outputDirectory;
     }
 
     /**
-     * @param theOutputDirectory The outputDirectory to set.
+     * @param theOutputDirectory the outputDirectory to set
      */
     public void setOutputDirectory(File theOutputDirectory) {
         this.outputDirectory = theOutputDirectory;
     }
 
     /**
-     * @return Returns the overWriteIfNewer.
+     * @return returns the overWriteIfNewer
      */
     public boolean isOverWriteIfNewer() {
         return this.overWriteIfNewer;
     }
 
     /**
-     * @param theOverWriteIfNewer The overWriteIfNewer to set.
+     * @param theOverWriteIfNewer the overWriteIfNewer to set
      */
     public void setOverWriteIfNewer(boolean theOverWriteIfNewer) {
         this.overWriteIfNewer = theOverWriteIfNewer;
     }
 
     /**
-     * @return Returns the overWriteReleases.
+     * @return returns the overWriteReleases
      */
     public boolean isOverWriteReleases() {
         return this.overWriteReleases;
     }
 
     /**
-     * @param theOverWriteReleases The overWriteReleases to set.
+     * @param theOverWriteReleases the overWriteReleases to set
      */
     public void setOverWriteReleases(boolean theOverWriteReleases) {
         this.overWriteReleases = theOverWriteReleases;
     }
 
     /**
-     * @return Returns the overWriteSnapshots.
+     * @return returns the overWriteSnapshots
      */
     public boolean isOverWriteSnapshots() {
         return this.overWriteSnapshots;
     }
 
     /**
-     * @param theOverWriteSnapshots The overWriteSnapshots to set.
+     * @param theOverWriteSnapshots the overWriteSnapshots to set
      */
     public void setOverWriteSnapshots(boolean theOverWriteSnapshots) {
         this.overWriteSnapshots = theOverWriteSnapshots;
@@ -387,8 +387,8 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     }
 
     /**
-     * @param artifact The artifact.
-     * @throws MojoFailureException in case of an error.
+     * @param artifact the artifact
+     * @throws MojoFailureException in case of an error
      */
     public void setArtifact(String artifact) throws MojoFailureException {
         if (artifact != null) {

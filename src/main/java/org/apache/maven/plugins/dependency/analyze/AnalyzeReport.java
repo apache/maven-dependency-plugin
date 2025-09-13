@@ -52,12 +52,12 @@ public class AnalyzeReport extends AbstractMavenReport {
     private final ProjectDependencyAnalyzer analyzer;
 
     /**
-     * Internationalization component
+     * Internationalization component.
      */
     private final I18N i18n;
 
     /**
-     * Ignore Runtime/Provided/Test/System scopes for unused dependency analysis
+     * Ignore Runtime/Provided/Test/System scopes for unused dependency analysis.
      *
      * @since 2.2
      */
@@ -140,19 +140,25 @@ public class AnalyzeReport extends AbstractMavenReport {
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getOutputName() {
         return "dependency-analysis";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName(Locale locale) {
         return getI18nString(locale, "name");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription(Locale locale) {
         return getI18nString(locale, "description");
@@ -161,9 +167,9 @@ public class AnalyzeReport extends AbstractMavenReport {
     // protected methods ------------------------------------------------------
 
     /**
-     * @param locale The locale
-     * @param key The key to search for
-     * @return The text appropriate for the locale.
+     * @param locale the locale
+     * @param key the key to search for
+     * @return the text appropriate for the locale
      */
     protected String getI18nString(Locale locale, String key) {
         return i18n.getString("analyze-report", locale, "report.analyze." + key);

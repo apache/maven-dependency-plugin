@@ -62,7 +62,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMojo {
 
     /**
-     * Overwrite release artifacts
+     * Overwrite release artifacts.
      *
      * @since 1.0
      */
@@ -70,7 +70,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected boolean overWriteReleases;
 
     /**
-     * Overwrite snapshot artifacts
+     * Overwrite snapshot artifacts.
      *
      * @since 1.0
      */
@@ -86,7 +86,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected boolean overWriteIfNewer;
 
     /**
-     * If we should exclude transitive dependencies
+     * If we should exclude transitive dependencies.
      *
      * @since 2.0
      */
@@ -164,7 +164,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String excludeClassifiers;
 
     /**
-     * Specify classifier to look for. Example: sources
+     * Specify classifier to look for. Example: sources.
      *
      * @since 2.0
      */
@@ -172,7 +172,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String classifier;
 
     /**
-     * Specify type to look for when constructing artifact based on classifier. Example: java-source,jar,war
+     * Specify type to look for when constructing artifact based on classifier. Example: java-source,jar,war.
      *
      * @since 2.0
      */
@@ -212,7 +212,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String includeGroupIds;
 
     /**
-     * Directory to store flag files
+     * Directory to store flag files.
      *
      * @since 2.0
      */
@@ -259,9 +259,9 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     /**
      * Retrieves dependencies, either direct only or all including transitive.
      *
-     * @param stopOnFailure true to fail if resolution does not work or false not to fail.
-     * @return A set of artifacts
-     * @throws MojoExecutionException in case of errors.
+     * @param stopOnFailure true to fail if resolution does not work or false not to fail
+     * @return a set of artifacts
+     * @throws MojoExecutionException in case of errors
      */
     protected Set<Artifact> getResolvedDependencies(boolean stopOnFailure) throws MojoExecutionException {
 
@@ -271,9 +271,9 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
-     * @param stopOnFailure true/false.
+     * @param stopOnFailure true/false
      * @return {@link DependencyStatusSets}
-     * @throws MojoExecutionException in case of an error.
+     * @throws MojoExecutionException in case of an error
      */
     protected DependencyStatusSets getDependencySets(boolean stopOnFailure) throws MojoExecutionException {
         return getDependencySets(stopOnFailure, false);
@@ -281,12 +281,12 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
     /**
      * Method creates filters and filters the projects dependencies. This method also transforms the dependencies if
-     * classifier is set. The dependencies are filtered in least specific to most specific order
+     * classifier is set. The dependencies are filtered in least specific to most specific order.
      *
-     * @param stopOnFailure true to fail if artifacts can't be resolved false otherwise.
-     * @param includeParents <code>true</code> if parents should be included or not <code>false</code>.
+     * @param stopOnFailure true to fail if artifacts can't be resolved false otherwise
+     * @param includeParents <code>true</code> if parents should be included or not <code>false</code>
      * @return DependencyStatusSets - Bean of TreeSets that contains information on the projects dependencies
-     * @throws MojoExecutionException in case of errors.
+     * @throws MojoExecutionException in case of errors
      */
     protected DependencyStatusSets getDependencySets(boolean stopOnFailure, boolean includeParents)
             throws MojoExecutionException {
@@ -381,12 +381,12 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
-     * Transform artifacts
+     * Transform artifacts.
      *
-     * @param artifacts set of artifacts {@link Artifact}.
-     * @param stopOnFailure true/false.
+     * @param artifacts set of artifacts {@link Artifact}
+     * @param stopOnFailure true/false
      * @return DependencyStatusSets - Bean of TreeSets that contains information on the projects dependencies
-     * @throws MojoExecutionException in case of an error.
+     * @throws MojoExecutionException in case of an error
      */
     private DependencyStatusSets getClassifierTranslatedDependencies(Set<Artifact> artifacts, boolean stopOnFailure)
             throws MojoExecutionException {
@@ -423,11 +423,11 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
-     * Filter the marked dependencies
+     * Filter the marked dependencies.
      *
-     * @param artifacts The artifacts set {@link Artifact}.
-     * @return status set {@link DependencyStatusSets}.
-     * @throws MojoExecutionException in case of an error.
+     * @param artifacts the artifacts set {@link Artifact}
+     * @return status set {@link DependencyStatusSets}
+     * @throws MojoExecutionException in case of an error
      */
     protected DependencyStatusSets filterMarkedDependencies(Set<Artifact> artifacts) throws MojoExecutionException {
         // remove files that have markers already
@@ -450,11 +450,11 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
-     * @param artifacts The set of artifacts
+     * @param artifacts the set of artifacts
      * @param stopOnFailure <code>true</code> if we should fail with exception if an artifact couldn't be resolved
-     *            <code>false</code> otherwise.
+     *            <code>false</code> otherwise
      * @return the resolved artifacts. {@link Artifact}.
-     * @throws MojoExecutionException in case of error.
+     * @throws MojoExecutionException in case of error
      */
     private Set<Artifact> resolve(Set<org.eclipse.aether.artifact.Artifact> artifacts, boolean stopOnFailure)
             throws MojoExecutionException {
@@ -477,7 +477,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
-     * @return Returns the markersDirectory.
+     * @return returns the markersDirectory
      */
     public File getMarkersDirectory() {
         return this.markersDirectory;

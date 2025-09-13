@@ -32,7 +32,7 @@ public class UnpackFileMarkerHandler extends DefaultFileMarkerHandler {
     protected ArtifactItem artifactItem;
 
     /**
-     * @param markerFilesDirectory The marker files directory.
+     * @param markerFilesDirectory the marker files directory
      */
     public UnpackFileMarkerHandler(File markerFilesDirectory) {
         super(markerFilesDirectory);
@@ -40,7 +40,7 @@ public class UnpackFileMarkerHandler extends DefaultFileMarkerHandler {
 
     /**
      * @param artifactItem {@link ArtifactItem}
-     * @param markerFilesDirectory the marker files directory.
+     * @param markerFilesDirectory the marker files directory
      */
     public UnpackFileMarkerHandler(ArtifactItem artifactItem, File markerFilesDirectory) {
         this(markerFilesDirectory);

@@ -57,15 +57,15 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     protected List<MavenProject> reactorProjects;
 
     /**
-     * The Maven session
+     * The Maven session.
      */
     protected final MavenSession session;
 
     /**
      * If the plugin should be silent.
      *
-     * @deprecated to be removed in 4.0; use -q command line option instead
      * @since 2.0
+     * @deprecated to be removed in 4.0; use -q command line option instead
      */
     @Deprecated
     @Parameter(property = "silent", defaultValue = "false")
@@ -82,19 +82,19 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     /**
      * Skip plugin execution only during incremental builds (e.g. triggered from M2E).
      *
-     * @since 3.4.0
      * @see #skip
+     * @since 3.4.0
      */
     @Parameter(defaultValue = "false")
     private boolean skipDuringIncrementalBuild;
 
     /**
-     * For IDE build support
+     * For IDE build support.
      */
     private final BuildContext buildContext;
 
     /**
-     * POM
+     * POM.
      */
     private final MavenProject project;
 
@@ -126,16 +126,16 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     protected abstract void doExecute() throws MojoExecutionException, MojoFailureException;
 
     /**
-     * @return Returns a new ProjectBuildingRequest populated from the current session and the current project remote
-     *         repositories, used to resolve artifacts.
+     * @return returns a new ProjectBuildingRequest populated from the current session and the current project remote
+     *         repositories, used to resolve artifacts
      */
     public ProjectBuildingRequest newResolveArtifactProjectBuildingRequest() {
         return newProjectBuildingRequest(remoteRepositories);
     }
 
     /**
-     * @return Returns a new ProjectBuildingRequest populated from the current session and the current project remote
-     *         repositories, used to resolve plugins.
+     * @return returns a new ProjectBuildingRequest populated from the current session and the current project remote
+     *         repositories, used to resolve plugins
      */
     protected ProjectBuildingRequest newResolvePluginProjectBuildingRequest() {
         return newProjectBuildingRequest(remotePluginRepositories);
@@ -150,7 +150,7 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     }
 
     /**
-     * @return Returns the project.
+     * @return returns the project
      */
     public MavenProject getProject() {
         return this.project;
