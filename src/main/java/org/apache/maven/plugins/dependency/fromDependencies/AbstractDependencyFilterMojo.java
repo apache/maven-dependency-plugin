@@ -38,9 +38,11 @@ import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.translators.ArtifactTranslator;
 import org.apache.maven.plugins.dependency.utils.translators.ClassifierTypeTranslator;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
@@ -353,9 +355,10 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
     private MavenProject buildProjectFromArtifact(Artifact artifact) throws MojoExecutionException {
         try {
-            return projectBuilder
-                    .build(artifact, session.getProjectBuildingRequest().setProcessPlugins(false))
-                    .getProject();
+            ProjectBuildingRequest buildingRequest =
+                    new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+            buildingRequest.setProcessPlugins(false);
+            return projectBuilder.build(artifact, buildingRequest).getProject();
         } catch (ProjectBuildingException e) {
             throw new MojoExecutionException("Coud not build project for " + artifact.getId(), e);
         }
