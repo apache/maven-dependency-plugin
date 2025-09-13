@@ -39,8 +39,6 @@ import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandle
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -106,29 +104,17 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
     private final UnpackUtil unpackUtil;
 
     @Inject
-    // CHECKSTYLE_OFF: ParameterNumber
     public UnpackDependenciesMojo(
             MavenSession session,
             BuildContext buildContext,
             MavenProject project,
             ResolverUtil resolverUtil,
-            DependencyResolver dependencyResolver,
-            RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager,
             UnpackUtil unpackUtil) {
-        super(
-                session,
-                buildContext,
-                project,
-                resolverUtil,
-                dependencyResolver,
-                repositoryManager,
-                projectBuilder,
-                artifactHandlerManager);
+        super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
         this.unpackUtil = unpackUtil;
     }
-    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Main entry into mojo. This method gets the dependencies and iterates through each one passing it to

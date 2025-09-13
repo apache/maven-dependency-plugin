@@ -34,8 +34,6 @@ import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
 import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -68,27 +66,15 @@ public abstract class AbstractResolveMojo extends AbstractDependencyFilterMojo {
     @Parameter(property = "excludeReactor", defaultValue = "true")
     protected boolean excludeReactor;
 
-    // CHECKSTYLE_OFF: ParameterNumber
     protected AbstractResolveMojo(
             MavenSession session,
             BuildContext buildContext,
             MavenProject project,
             ResolverUtil resolverUtil,
-            DependencyResolver dependencyResolver,
-            RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
-        super(
-                session,
-                buildContext,
-                project,
-                resolverUtil,
-                dependencyResolver,
-                repositoryManager,
-                projectBuilder,
-                artifactHandlerManager);
+        super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
     }
-    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * @return {@link FilterArtifacts}

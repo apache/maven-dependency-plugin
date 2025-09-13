@@ -49,8 +49,6 @@ import org.apache.maven.plugins.dependency.utils.markers.SourcesFileMarkerHandle
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -116,19 +114,9 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
             BuildContext buildContext,
             MavenProject project,
             ResolverUtil resolverUtil,
-            DependencyResolver dependencyResolver,
-            RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
-        super(
-                session,
-                buildContext,
-                project,
-                resolverUtil,
-                dependencyResolver,
-                repositoryManager,
-                projectBuilder,
-                artifactHandlerManager);
+        super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
     }
     // CHECKSTYLE_ON: ParameterNumber
 

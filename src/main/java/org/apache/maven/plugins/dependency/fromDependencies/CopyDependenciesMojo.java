@@ -47,7 +47,6 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.transfer.artifact.install.ArtifactInstaller;
 import org.apache.maven.shared.transfer.artifact.install.ArtifactInstallerException;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.util.artifact.SubArtifact;
@@ -80,6 +79,8 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
 
     private final ArtifactInstaller installer;
 
+    private final RepositoryManager repositoryManager;
+
     /**
      * Either append the artifact's baseVersion or uniqueVersion to the filename. Will only be used if
      * {@link #isStripVersion()} is {@code false}.
@@ -106,31 +107,22 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     protected boolean copySignatures;
 
     @Inject
-    // CHECKSTYLE_OFF: ParameterNumber
+    @SuppressWarnings("checkstyle:ParameterNumber")
     public CopyDependenciesMojo(
             MavenSession session,
             BuildContext buildContext,
             MavenProject project,
             ResolverUtil resolverUtil,
-            DependencyResolver dependencyResolver,
             RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager,
             CopyUtil copyUtil,
             ArtifactInstaller installer) {
-        super(
-                session,
-                buildContext,
-                project,
-                resolverUtil,
-                dependencyResolver,
-                repositoryManager,
-                projectBuilder,
-                artifactHandlerManager);
+        super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
         this.copyUtil = copyUtil;
         this.installer = installer;
+        this.repositoryManager = repositoryManager;
     }
-    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through calling copyArtifact.
@@ -165,8 +157,8 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                         artifact, isStripVersion(), this.prependGroupId, this.useBaseVersion, this.stripClassifier);
             }
         } else {
-            ProjectBuildingRequest buildingRequest = getRepositoryManager()
-                    .setLocalRepositoryBasedir(session.getProjectBuildingRequest(), outputDirectory);
+            ProjectBuildingRequest buildingRequest =
+                    repositoryManager.setLocalRepositoryBasedir(session.getProjectBuildingRequest(), outputDirectory);
 
             artifacts.forEach(artifact -> installArtifact(artifact, buildingRequest));
         }

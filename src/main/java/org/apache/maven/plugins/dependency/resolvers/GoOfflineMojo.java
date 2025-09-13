@@ -49,7 +49,6 @@ import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -63,6 +62,8 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 @Mojo(name = "go-offline", threadSafe = true)
 public class GoOfflineMojo extends AbstractResolveMojo {
 
+    private final DependencyResolver dependencyResolver;
+
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
     public GoOfflineMojo(
@@ -71,18 +72,10 @@ public class GoOfflineMojo extends AbstractResolveMojo {
             MavenProject project,
             ResolverUtil resolverUtil,
             DependencyResolver dependencyResolver,
-            RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
-        super(
-                session,
-                buildContext,
-                project,
-                resolverUtil,
-                dependencyResolver,
-                repositoryManager,
-                projectBuilder,
-                artifactHandlerManager);
+        super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
+        this.dependencyResolver = dependencyResolver;
     }
     // CHECKSTYLE_ON: ParameterNumber
 
@@ -152,7 +145,7 @@ public class GoOfflineMojo extends AbstractResolveMojo {
 
         for (DependableCoordinate dependableCoordinate : dependableCoordinates) {
             final Iterable<ArtifactResult> artifactResults =
-                    getDependencyResolver().resolveDependencies(buildingRequest, dependableCoordinate, filter);
+                    dependencyResolver.resolveDependencies(buildingRequest, dependableCoordinate, filter);
 
             for (final ArtifactResult artifactResult : artifactResults) {
                 results.add(artifactResult.getArtifact());
