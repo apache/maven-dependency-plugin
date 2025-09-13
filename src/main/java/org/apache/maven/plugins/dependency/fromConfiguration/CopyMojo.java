@@ -128,7 +128,7 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
      *
      * @param artifactItem containing the information about the artifact to copy
      * @throws MojoExecutionException with a message if an error occurs
-     * @see CopyUtil#copyArtifactFile(Artifact, File)
+     * @see CopyUtil#copyArtifactFile(Artifact, File, boolean)
      */
     protected void copyArtifact(ArtifactItem artifactItem) throws MojoExecutionException {
         File destFile = new File(artifactItem.getOutputDirectory(), artifactItem.getDestFileName());
@@ -136,7 +136,7 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
             getLog().warn("Overwriting " + destFile);
         }
         try {
-            copyUtil.copyArtifactFile(artifactItem.getArtifact(), destFile);
+            copyUtil.copyArtifactFile(artifactItem.getArtifact(), destFile, isSilent());
         } catch (IOException e) {
             throw new MojoExecutionException(
                     "Failed to copy artifact '" + artifactItem.getArtifact() + "' ("

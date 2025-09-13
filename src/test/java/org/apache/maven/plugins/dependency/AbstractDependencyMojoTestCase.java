@@ -104,7 +104,7 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
     }
 
     protected void copyArtifactFile(Artifact sourceArtifact, File destFile) throws MojoExecutionException, IOException {
-        new CopyUtil(new DefaultBuildContext()).copyArtifactFile(sourceArtifact, destFile);
+        new CopyUtil(new DefaultBuildContext()).copyArtifactFile(sourceArtifact, destFile, true);
     }
 
     protected void installLocalRepository(LegacySupport legacySupport) throws ComponentLookupException {

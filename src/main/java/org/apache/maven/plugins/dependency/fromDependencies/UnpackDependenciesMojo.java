@@ -146,7 +146,7 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
                     getEncoding(),
                     ignorePermissions,
                     getFileMappers(),
-                    getLog());
+                    isSilent());
             DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler(artifact, this.markersDirectory);
             handler.setMarker();
         }
