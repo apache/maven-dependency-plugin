@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Plugin;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -103,6 +105,19 @@ public class ResolverUtil {
     }
 
     /**
+     * Resolve given plugin artifact.
+     *
+     * @param plugin a plugin to resolve
+     * @return resolved artifact
+     * @throws ArtifactResolutionException if the artifact could not be resolved
+     */
+    public Artifact resolvePlugin(Plugin plugin) throws ArtifactResolutionException {
+        MavenSession session = mavenSessionProvider.get();
+        Artifact artifact = toArtifact(plugin);
+        return resolveArtifact(artifact, session.getCurrentProject().getRemotePluginRepositories());
+    }
+
+    /**
      * Resolve transitive dependencies for artifact.
      *
      * @param artifact     an artifact to resolve
@@ -113,14 +128,64 @@ public class ResolverUtil {
      */
     public List<Artifact> resolveDependencies(Artifact artifact, List<RemoteRepository> repositories)
             throws DependencyResolutionException {
+        return resolveDependencies(artifact, null, repositories);
+    }
+
+    /**
+     * Resolve transitive dependencies for artifact.
+     *
+     * @param artifact an artifact to resolve
+     * @param dependencies a list of additional dependencies for artifact
+     * @param repositories remote repositories list
+     * @return list of transitive dependencies for artifact
+     * @throws DependencyResolutionException if the dependency tree could not be built or any dependency artifact could
+     *                                       not be resolved
+     */
+    public List<Artifact> resolveDependencies(
+            Artifact artifact, List<Dependency> dependencies, List<RemoteRepository> repositories)
+            throws DependencyResolutionException {
         MavenSession session = mavenSessionProvider.get();
 
-        CollectRequest collectRequest = new CollectRequest(new Dependency(artifact, null), repositories);
+        CollectRequest collectRequest = new CollectRequest(new Dependency(artifact, null), dependencies, repositories);
         DependencyRequest request = new DependencyRequest(collectRequest, null);
+
         DependencyResult result = repositorySystem.resolveDependencies(session.getRepositorySession(), request);
         return result.getArtifactResults().stream()
                 .map(ArtifactResult::getArtifact)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Resolve transitive dependencies for plugin.
+     *
+     * @param plugin aa plugin to resolve
+     * @return list of transitive dependencies for plugin
+     * @throws DependencyResolutionException if the dependency tree could not be built or any dependency artifact could
+     *                                       not be resolved
+     */
+    public List<Artifact> resolveDependencies(final Plugin plugin) throws DependencyResolutionException {
+
+        MavenSession session = mavenSessionProvider.get();
+
+        org.eclipse.aether.artifact.Artifact artifact = toArtifact(plugin);
+        List<Dependency> pluginDependencies = plugin.getDependencies().stream()
+                .map(d -> RepositoryUtils.toDependency(
+                        d, session.getRepositorySession().getArtifactTypeRegistry()))
+                .collect(Collectors.toList());
+
+        return resolveDependencies(
+                artifact, pluginDependencies, session.getCurrentProject().getRemoteProjectRepositories());
+    }
+
+    private Artifact toArtifact(Plugin plugin) {
+        MavenSession session = mavenSessionProvider.get();
+        return new DefaultArtifact(
+                plugin.getGroupId(),
+                plugin.getArtifactId(),
+                null,
+                "jar",
+                plugin.getVersion(),
+                session.getRepositorySession().getArtifactTypeRegistry().get("maven-plugin"));
     }
 
     /**
