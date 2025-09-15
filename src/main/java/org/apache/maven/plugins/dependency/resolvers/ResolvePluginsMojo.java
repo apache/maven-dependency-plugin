@@ -20,35 +20,34 @@ package org.apache.maven.plugins.dependency.resolvers;
 
 import javax.inject.Inject;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import org.apache.maven.RepositoryUtils;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.ModelBase;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginContainer;
+import org.apache.maven.model.ReportPlugin;
+import org.apache.maven.model.Reporting;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuilder;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
-import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
-import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
-import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
-import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -58,8 +57,79 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  * @since 2.0
  */
 @Mojo(name = "resolve-plugins", defaultPhase = LifecyclePhase.GENERATE_SOURCES, threadSafe = true)
-public class ResolvePluginsMojo extends AbstractResolveMojo {
+public class ResolvePluginsMojo extends AbstractDependencyMojo {
 
+    /**
+     * If specified, this parameter causes the dependencies to be written to the path specified instead of
+     * the console.
+     *
+     * @since 2.0
+     */
+    @Parameter(property = "outputFile")
+    protected File outputFile;
+
+    /**
+     * If we should exclude transitive dependencies.
+     * This means only the plugin artifacts itself will be resolved not plugin dependencies.
+     *
+     * @since 2.0
+     */
+    @Parameter(property = "excludeTransitive", defaultValue = "false")
+    protected boolean excludeTransitive;
+
+    /**
+     * List of artifact IDs to exclude.
+     *
+     * @since 2.0
+     */
+    @Parameter(property = "excludeArtifactIds", defaultValue = "")
+    protected List<String> excludeArtifactIds;
+
+    /**
+     * List of artifact IDs to include. Empty list indicates include everything (default).
+     *
+     * @since 2.0
+     */
+    @Parameter(property = "includeArtifactIds", defaultValue = "")
+    protected List<String> includeArtifactIds;
+
+    /**
+     * List of group IDs to exclude.
+     *
+     * @since 2.0
+     */
+    @Parameter(property = "excludeGroupIds", defaultValue = "")
+    protected List<String> excludeGroupIds;
+
+    /**
+     * List of group IDs to include. Empty list indicates include everything (default).
+     *
+     * @since 2.0
+     */
+    @Parameter(property = "includeGroupIds", defaultValue = "")
+    protected List<String> includeGroupIds;
+
+    /**
+     * Whether to append outputs into the output file or overwrite it.
+     *
+     * @since 2.2
+     */
+    @Parameter(property = "appendOutput", defaultValue = "false")
+    protected boolean appendOutput;
+
+    /**
+     * Don't resolve plugins that are in the current reactor.
+     *
+     * @since 2.7
+     */
+    @Parameter(property = "excludeReactor", defaultValue = "true")
+    protected boolean excludeReactor;
+
+    /**
+     * The encoding of the output file.
+     *
+     * @since 3.2.0
+     */
     @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
     private String outputEncoding;
 
@@ -71,22 +141,14 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
     @Parameter(property = "outputAbsoluteArtifactFilename", defaultValue = "false")
     private boolean outputAbsoluteArtifactFilename;
 
-    private final DependencyResolver dependencyResolver;
+    private final ResolverUtil resolverUtil;
 
     @Inject
-    // CHECKSTYLE_OFF: ParameterNumber
     public ResolvePluginsMojo(
-            MavenSession session,
-            BuildContext buildContext,
-            MavenProject project,
-            ResolverUtil resolverUtil,
-            DependencyResolver dependencyResolver,
-            ProjectBuilder projectBuilder,
-            ArtifactHandlerManager artifactHandlerManager) {
-        super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
-        this.dependencyResolver = dependencyResolver;
+            MavenSession session, BuildContext buildContext, MavenProject project, ResolverUtil resolverUtil) {
+        super(session, buildContext, project);
+        this.resolverUtil = resolverUtil;
     }
-    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.
@@ -97,7 +159,7 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
     protected void doExecute() throws MojoExecutionException {
         try {
             // ideally this should either be DependencyCoordinates or DependencyNode
-            final Set<Artifact> plugins = resolvePluginArtifacts();
+            final Set<Plugin> plugins = getProjectPlugins();
 
             StringBuilder sb = new StringBuilder();
             sb.append(System.lineSeparator());
@@ -107,42 +169,32 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
                 sb.append("   none");
                 sb.append(System.lineSeparator());
             } else {
-                for (Artifact plugin : plugins) {
+                for (Plugin plugin : plugins) {
+                    Artifact pluginArtifact = resolverUtil.resolvePlugin(plugin);
                     String artifactFilename = null;
                     if (outputAbsoluteArtifactFilename) {
-                        try {
-                            // we want to print the absolute file name here
-                            artifactFilename =
-                                    plugin.getFile().getAbsoluteFile().getPath();
-                        } catch (NullPointerException e) {
-                            // ignore the null pointer, we'll output a null string
-                            artifactFilename = null;
-                        }
+                        // we want to print the absolute file name here
+                        artifactFilename = Optional.ofNullable(pluginArtifact.getFile())
+                                .map(File::getAbsoluteFile)
+                                .map(File::getPath)
+                                .orElse(null);
                     }
 
-                    String id = plugin.toString();
+                    String id = pluginArtifact.toString();
                     sb.append("   ")
                             .append(id)
                             .append(outputAbsoluteArtifactFilename ? ":" + artifactFilename : "")
                             .append(System.lineSeparator());
 
                     if (!excludeTransitive) {
-                        DefaultDependableCoordinate pluginCoordinate = new DefaultDependableCoordinate();
-                        pluginCoordinate.setGroupId(plugin.getGroupId());
-                        pluginCoordinate.setArtifactId(plugin.getArtifactId());
-                        pluginCoordinate.setVersion(plugin.getVersion());
-
-                        for (final Artifact artifact : resolveArtifactDependencies(pluginCoordinate)) {
+                        for (Artifact artifact : resolverUtil.resolveDependencies(plugin)) {
                             artifactFilename = null;
                             if (outputAbsoluteArtifactFilename) {
-                                try {
-                                    // we want to print the absolute file name here
-                                    artifactFilename =
-                                            artifact.getFile().getAbsoluteFile().getPath();
-                                } catch (NullPointerException e) {
-                                    // ignore the null pointer, we'll output a null string
-                                    artifactFilename = null;
-                                }
+                                // we want to print the absolute file name here
+                                artifactFilename = Optional.ofNullable(artifact.getFile())
+                                        .map(File::getAbsoluteFile)
+                                        .map(File::getPath)
+                                        .orElse(null);
                             }
 
                             id = artifact.toString();
@@ -163,70 +215,71 @@ public class ResolvePluginsMojo extends AbstractResolveMojo {
                     DependencyUtil.write(output, outputFile, appendOutput, encoding);
                 }
             }
-        } catch (IOException
-                | ArtifactFilterException
-                | ArtifactResolverException
-                | DependencyResolverException
-                | ArtifactResolutionException e) {
+        } catch (IOException | ArtifactResolutionException | DependencyResolutionException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 
     /**
-     * This method resolves all transitive dependencies of an artifact.
+     * This return plugin list of the project after applying the include/exclude filters.
      *
-     * @param artifact the artifact used to retrieve dependencies
-     * @return resolved set of dependencies
-     * @throws DependencyResolverException in case of error while resolving artifacts
+     * @return set of project plugin
      */
-    private Set<Artifact> resolveArtifactDependencies(final DependableCoordinate artifact)
-            throws DependencyResolverException {
-        ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
+    private Set<Plugin> getProjectPlugins() {
 
-        Iterable<ArtifactResult> artifactResults =
-                dependencyResolver.resolveDependencies(buildingRequest, artifact, null);
+        Predicate<Plugin> pluginsFilter = new PluginsIncludeExcludeFilter(
+                includeGroupIds, excludeGroupIds, includeArtifactIds, excludeArtifactIds);
 
-        Set<Artifact> artifacts = new LinkedHashSet<>();
-
-        for (final ArtifactResult artifactResult : artifactResults) {
-            artifacts.add(artifactResult.getArtifact());
+        Predicate<Plugin> reactorExclusionFilter = plugin -> true;
+        if (excludeReactor) {
+            reactorExclusionFilter = new PluginsReactorExcludeFilter(session.getProjects());
         }
 
-        return artifacts;
+        List<Plugin> reportPlugins = Optional.ofNullable(getProject().getModel())
+                .map(ModelBase::getReporting)
+                .map(Reporting::getPlugins)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(this::toPlugin)
+                .collect(Collectors.toList());
+
+        List<Plugin> projectPlugins = getProject().getBuild().getPlugins();
+
+        return new LinkedHashSet<Plugin>(reportPlugins.size() + projectPlugins.size()) {
+            {
+                addAll(reportPlugins);
+                addAll(projectPlugins);
+            }
+        }.stream().filter(reactorExclusionFilter).filter(pluginsFilter).collect(Collectors.toSet());
     }
 
-    /**
-     * This method resolves the plugin artifacts from the project.
-     *
-     * @return set of resolved plugin artifacts
-     * @throws ArtifactFilterException in case of an error
-     * @throws ArtifactResolverException in case of an error
-     */
-    private Set<Artifact> resolvePluginArtifacts()
-            throws ArtifactFilterException, ArtifactResolverException, ArtifactResolutionException {
-        final Set<Artifact> plugins = getProject().getPluginArtifacts();
-        final Set<Artifact> reports = getProject().getReportArtifacts();
+    private Plugin toPlugin(ReportPlugin reportPlugin) {
+        // first look in the pluginManagement section
+        Plugin plugin = Optional.ofNullable(getProject().getBuild().getPluginManagement())
+                .map(PluginContainer::getPluginsAsMap)
+                .orElseGet(Collections::emptyMap)
+                .get(reportPlugin.getKey());
 
-        Set<Artifact> artifacts = new HashSet<>();
-        artifacts.addAll(reports);
-        artifacts.addAll(plugins);
-
-        final FilterArtifacts filter = getArtifactsFilter();
-        artifacts = filter.filter(artifacts);
-
-        Set<Artifact> result = new HashSet<>();
-        for (final Artifact artifact : new LinkedHashSet<>(artifacts)) {
-
-            org.eclipse.aether.artifact.Artifact resolveArtifact = getResolverUtil()
-                    .resolveArtifact(
-                            RepositoryUtils.toArtifact(artifact), getProject().getRemotePluginRepositories());
-            result.add(RepositoryUtils.toArtifact(resolveArtifact));
+        if (plugin == null) {
+            plugin = getProject().getBuild().getPluginsAsMap().get(reportPlugin.getKey());
         }
-        return result;
-    }
 
-    @Override
-    protected ArtifactsFilter getMarkedArtifactFilter() {
-        return null;
+        if (plugin == null) {
+            plugin = new Plugin();
+            plugin.setGroupId(reportPlugin.getGroupId());
+            plugin.setArtifactId(reportPlugin.getArtifactId());
+            plugin.setVersion(reportPlugin.getVersion());
+        } else {
+            // override the version with the one from the report plugin if specified
+            if (reportPlugin.getVersion() != null) {
+                plugin.setVersion(reportPlugin.getVersion());
+            }
+        }
+
+        if (plugin.getVersion() == null) {
+            plugin.setVersion("RELEASE");
+        }
+
+        return plugin;
     }
 }
