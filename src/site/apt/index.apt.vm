@@ -106,6 +106,9 @@ ${project.name}
   *{{{./unpack-dependencies-mojo.html}dependency:unpack-dependencies}} like
   copy-dependencies but unpacks.
 
+  *{{{./render-dependencies-mojo.html}dependency:render-dependencies}} like
+  build-classpath but with a custom Velocity template.
+
   []
 
 * Usage
@@ -151,6 +154,8 @@ ${project.name}
   * {{{./examples/purging-local-repository.html}Purging the local repository}}
 
   * {{{./examples/tree-mojo.html}Tree Mojo}}
+
+  * {{{./examples/render-dependencies.html}Render Dependencies}}
 
   []
 
