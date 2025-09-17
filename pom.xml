@@ -28,7 +28,7 @@ under the License.
   </parent>
 
   <artifactId>maven-dependency-plugin</artifactId>
-  <version>3.8.2-SNAPSHOT</version>
+  <version>3.9.0-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
   <name>Apache Maven Dependency Plugin</name>
@@ -98,7 +98,7 @@ under the License.
     <mockito.version>4.11.0</mockito.version>
     <plexus-archiver.version>4.10.1</plexus-archiver.version>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
-    <project.build.outputTimestamp>2024-10-18T18:16:14Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-09-17T20:51:14Z</project.build.outputTimestamp>
   </properties>
 
   <dependencies>
