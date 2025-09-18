@@ -1,0 +1,77 @@
+~~ Licensed to the Apache Software Foundation (ASF) under one
+~~ or more contributor license agreements.  See the NOTICE file
+~~ distributed with this work for additional information
+~~ regarding copyright ownership.  The ASF licenses this file
+~~ to you under the Apache License, Version 2.0 (the
+~~ "License"); you may not use this file except in compliance
+~~ with the License.  You may obtain a copy of the License at
+~~
+~~ http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing,
+~~ software distributed under the License is distributed on an
+~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+~~ KIND, either express or implied.  See the License for the
+~~ specific language governing permissions and limitations
+~~ under the License.    
+ 
+  ------
+  Render a Velocity template
+  ------
+  Allan Ramirez
+  Brian Fox
+  Stephen Connolly
+  ------
+  2025-09-17
+  ------
+
+Render a Velocity template
+
+  You can use <<<dependency:render-depedencies>>> mojo to a render a velocity template,
+  with the <<artifacts>> (dependencies) as context:
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <id>copy</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>render-dependencies</goal>
+            </goals>
+            <configuration>
+              <template><![CDATA[
+deps:
+  jars:
+#foreach($dep in $sorter.sort($artifacts, ["artifactId:asc"]))
+#set($type = $dep.type)
+#if(!$type || $type.trim().isEmpty())
+  #set($type = "jar")
+#end
+#set($classifierSuffix = "")
+#if($dep.classifier && !$dep.classifier.trim().isEmpty())
+  #set($classifierSuffix = "-$dep.classifier")
+#end
+  - local:///opt/test/libs/$dep.artifactId-$dep.baseVersion$classifierSuffix.$type
+#end]]></template>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+    Then after executing <<<mvn process-resources>>>, the template will be rendered.
+    By default it is printed in the console but you can set <<outputFile>> to store it somewhere.
+
+    The resolution uses exactly the same mechanism than for <<dependency:build-classpath>> mojo.
