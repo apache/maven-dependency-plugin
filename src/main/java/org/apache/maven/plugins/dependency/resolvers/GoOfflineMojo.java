@@ -35,6 +35,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
@@ -63,6 +64,15 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 public class GoOfflineMojo extends AbstractResolveMojo {
 
     private final DependencyResolver dependencyResolver;
+
+    /**
+     * If the plugin should be more silent with logging.
+     * <br/>
+     * Use {@code -q} command line option if you want to suppress all output.
+     * @since 2.0
+     */
+    @Parameter(property = "silent", defaultValue = "false")
+    private boolean silent;
 
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
@@ -93,7 +103,7 @@ public class GoOfflineMojo extends AbstractResolveMojo {
 
             final Set<Artifact> dependencies = resolveDependencyArtifacts();
 
-            if (!isSilent()) {
+            if (!silent) {
                 for (Artifact artifact : plugins) {
                     this.getLog().info("Resolved plugin: " + DependencyUtil.getFormattedFileName(artifact, false));
                 }

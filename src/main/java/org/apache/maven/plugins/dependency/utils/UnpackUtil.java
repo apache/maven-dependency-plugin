@@ -25,7 +25,6 @@ import javax.inject.Singleton;
 import java.io.File;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
@@ -33,6 +32,8 @@ import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
 import org.codehaus.plexus.components.io.fileselectors.IncludeExcludeFileSelector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -43,6 +44,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 @Singleton
 public class UnpackUtil {
 
+    private final Logger logger = LoggerFactory.getLogger(UnpackUtil.class);
     /**
      * To look up Archiver/UnArchiver implementations.
      */
@@ -76,8 +78,10 @@ public class UnpackUtil {
      * @param fileMappers       {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
      *                          rewriting
      *                          shall happen
-     * @param logger            a Mojo logger
+     * @param silent            if true, don't show information about unpacked files
      * @throws MojoExecutionException in case of an error
+     *                          shall happen.
+     * @throws MojoExecutionException in case of an error.
      */
     public void unpack(
             File file,
@@ -88,10 +92,10 @@ public class UnpackUtil {
             String encoding,
             boolean ignorePermissions,
             FileMapper[] fileMappers,
-            Log logger)
+            boolean silent)
             throws MojoExecutionException {
         try {
-            logUnpack(logger, file, location, includes, excludes);
+            logUnpack(silent, file, location, includes, excludes);
 
             location.mkdirs();
             if (!location.exists()) {
@@ -117,7 +121,7 @@ public class UnpackUtil {
 
             if (encoding != null && unArchiver instanceof ZipUnArchiver) {
                 ((ZipUnArchiver) unArchiver).setEncoding(encoding);
-                logger.info("Unpacks '" + type + "' with encoding '" + encoding + "'.");
+                logger.debug("Unpacks '" + type + "' with encoding '" + encoding + "'.");
             }
 
             unArchiver.setIgnorePermissions(ignorePermissions);
@@ -155,8 +159,8 @@ public class UnpackUtil {
         buildContext.refresh(location);
     }
 
-    private void logUnpack(Log logger, File file, File location, String includes, String excludes) {
-        if (logger.isInfoEnabled()) {
+    private void logUnpack(boolean silent, File file, File location, String includes, String excludes) {
+        if (silent && !logger.isDebugEnabled()) {
             return;
         }
 

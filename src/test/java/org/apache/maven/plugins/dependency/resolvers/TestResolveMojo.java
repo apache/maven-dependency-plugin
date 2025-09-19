@@ -25,7 +25,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
-import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.project.MavenProject;
 
@@ -85,17 +84,4 @@ public class TestResolveMojo extends AbstractDependencyMojoTestCase {
         assertNotNull(results);
         assertEquals(directArtifacts.size(), results.getResolvedDependencies().size());
     }
-
-    public void testSilent() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/resolve-test/plugin-config.xml");
-        ResolveDependenciesMojo mojo = (ResolveDependenciesMojo) lookupMojo("resolve", testPom);
-
-        assertFalse(mojo.getLog() instanceof DependencySilentLog);
-
-        mojo.setSilent(true);
-        assertTrue(mojo.getLog() instanceof DependencySilentLog);
-
-        mojo.setSilent(false);
-        assertFalse(mojo.getLog() instanceof DependencySilentLog);
-    } // TODO: Test skipping artifacts.
 }

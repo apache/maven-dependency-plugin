@@ -93,6 +93,15 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     private boolean overIfNewer;
 
     /**
+     * If the plugin should be more silent with logging.
+     * <br/>
+     * Use {@code -q} command line option if you want to suppress all output.
+     * @since 2.0
+     */
+    @Parameter(property = "silent", defaultValue = "false")
+    private boolean silent;
+
+    /**
      * Overwrite if newer.
      *
      * @since 3.7.0
@@ -384,6 +393,13 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      */
     public void setLocalRepositoryDirectory(File localRepositoryDirectory) {
         this.localRepositoryDirectory = localRepositoryDirectory;
+    }
+
+    /**
+     * @return {@link #silent}
+     */
+    protected final boolean isSilent() {
+        return silent;
     }
 
     /**
