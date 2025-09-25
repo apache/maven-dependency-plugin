@@ -22,8 +22,6 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,11 +30,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.ModelBase;
 import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginContainer;
-import org.apache.maven.model.ReportPlugin;
-import org.apache.maven.model.Reporting;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -235,51 +229,9 @@ public class ResolvePluginsMojo extends AbstractDependencyMojo {
             reactorExclusionFilter = new PluginsReactorExcludeFilter(session.getProjects());
         }
 
-        List<Plugin> reportPlugins = Optional.ofNullable(getProject().getModel())
-                .map(ModelBase::getReporting)
-                .map(Reporting::getPlugins)
-                .orElse(Collections.emptyList())
-                .stream()
-                .map(this::toPlugin)
-                .collect(Collectors.toList());
-
-        List<Plugin> projectPlugins = getProject().getBuild().getPlugins();
-
-        return new LinkedHashSet<Plugin>(reportPlugins.size() + projectPlugins.size()) {
-            {
-                addAll(reportPlugins);
-                addAll(projectPlugins);
-            }
-        }.stream().filter(reactorExclusionFilter).filter(pluginsFilter).collect(Collectors.toSet());
-    }
-
-    private Plugin toPlugin(ReportPlugin reportPlugin) {
-        // first look in the pluginManagement section
-        Plugin plugin = Optional.ofNullable(getProject().getBuild().getPluginManagement())
-                .map(PluginContainer::getPluginsAsMap)
-                .orElseGet(Collections::emptyMap)
-                .get(reportPlugin.getKey());
-
-        if (plugin == null) {
-            plugin = getProject().getBuild().getPluginsAsMap().get(reportPlugin.getKey());
-        }
-
-        if (plugin == null) {
-            plugin = new Plugin();
-            plugin.setGroupId(reportPlugin.getGroupId());
-            plugin.setArtifactId(reportPlugin.getArtifactId());
-            plugin.setVersion(reportPlugin.getVersion());
-        } else {
-            // override the version with the one from the report plugin if specified
-            if (reportPlugin.getVersion() != null) {
-                plugin.setVersion(reportPlugin.getVersion());
-            }
-        }
-
-        if (plugin.getVersion() == null) {
-            plugin.setVersion("RELEASE");
-        }
-
-        return plugin;
+        return resolverUtil.getProjectPlugins(getProject()).stream()
+                .filter(reactorExclusionFilter)
+                .filter(pluginsFilter)
+                .collect(Collectors.toSet());
     }
 }
