@@ -20,7 +20,6 @@ package org.apache.maven.plugins.dependency;
 
 import java.util.List;
 
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -28,27 +27,13 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  */
 public abstract class AbstractDependencyMojo extends AbstractMojo {
-
-    /**
-     * Remote repositories which will be searched for artifacts.
-     */
-    @Parameter(defaultValue = "${project.remoteArtifactRepositories}", readonly = true, required = true)
-    private List<ArtifactRepository> remoteRepositories;
-
-    /**
-     * Remote repositories which will be searched for plugins.
-     */
-    @Parameter(defaultValue = "${project.pluginArtifactRepositories}", readonly = true, required = true)
-    private List<ArtifactRepository> remotePluginRepositories;
 
     /**
      * Contains the full list of projects in the reactor.
@@ -124,30 +109,6 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
      * @throws MojoFailureException {@link MojoFailureException}
      */
     protected abstract void doExecute() throws MojoExecutionException, MojoFailureException;
-
-    /**
-     * @return returns a new ProjectBuildingRequest populated from the current session and the current project remote
-     *         repositories, used to resolve artifacts
-     */
-    public ProjectBuildingRequest newResolveArtifactProjectBuildingRequest() {
-        return newProjectBuildingRequest(remoteRepositories);
-    }
-
-    /**
-     * @return returns a new ProjectBuildingRequest populated from the current session and the current project remote
-     *         repositories, used to resolve plugins
-     */
-    protected ProjectBuildingRequest newResolvePluginProjectBuildingRequest() {
-        return newProjectBuildingRequest(remotePluginRepositories);
-    }
-
-    private ProjectBuildingRequest newProjectBuildingRequest(List<ArtifactRepository> repositories) {
-        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-
-        buildingRequest.setRemoteRepositories(repositories);
-
-        return buildingRequest;
-    }
 
     /**
      * @return returns the project

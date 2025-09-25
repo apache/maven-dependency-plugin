@@ -25,13 +25,21 @@ import javax.inject.Singleton;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.ModelBase;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginContainer;
+import org.apache.maven.model.ReportPlugin;
+import org.apache.maven.model.Reporting;
+import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -297,5 +305,58 @@ public class ResolverUtil {
         ArtifactTypeRegistry artifactTypeRegistry =
                 mavenSessionProvider.get().getRepositorySession().getArtifactTypeRegistry();
         return artifactTypeRegistry.get(packaging != null ? packaging : "jar");
+    }
+
+    /**
+     * Retrieve all plugins used in project either in build or reporting section.
+     *
+     * @param project a maven project
+     * @return a collection of plugins
+     */
+    public Collection<Plugin> getProjectPlugins(MavenProject project) {
+        List<Plugin> reportPlugins = Optional.ofNullable(project.getModel())
+                .map(ModelBase::getReporting)
+                .map(Reporting::getPlugins)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(p -> toPlugin(p, project))
+                .collect(Collectors.toList());
+
+        List<Plugin> projectPlugins = project.getBuild().getPlugins();
+
+        LinkedHashSet<Plugin> result = new LinkedHashSet<>(reportPlugins.size() + projectPlugins.size());
+        result.addAll(reportPlugins);
+        result.addAll(projectPlugins);
+        return result;
+    }
+
+    private Plugin toPlugin(ReportPlugin reportPlugin, MavenProject project) {
+        // first look in the pluginManagement section
+        Plugin plugin = Optional.ofNullable(project.getBuild().getPluginManagement())
+                .map(PluginContainer::getPluginsAsMap)
+                .orElseGet(Collections::emptyMap)
+                .get(reportPlugin.getKey());
+
+        if (plugin == null) {
+            plugin = project.getBuild().getPluginsAsMap().get(reportPlugin.getKey());
+        }
+
+        if (plugin == null) {
+            plugin = new Plugin();
+            plugin.setGroupId(reportPlugin.getGroupId());
+            plugin.setArtifactId(reportPlugin.getArtifactId());
+            plugin.setVersion(reportPlugin.getVersion());
+        } else {
+            // override the version with the one from the report plugin if specified
+            if (reportPlugin.getVersion() != null) {
+                plugin.setVersion(reportPlugin.getVersion());
+            }
+        }
+
+        if (plugin.getVersion() == null) {
+            plugin.setVersion("RELEASE");
+        }
+
+        return plugin;
     }
 }

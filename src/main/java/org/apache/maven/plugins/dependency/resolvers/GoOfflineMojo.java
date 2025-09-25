@@ -20,12 +20,15 @@ package org.apache.maven.plugins.dependency.resolvers;
 
 import javax.inject.Inject;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -33,22 +36,33 @@ import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.dependency.fromDependencies.AbstractDependencyFilterMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
+import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
+import org.apache.maven.shared.artifact.filter.collection.ClassifierFilter;
 import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
+import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
+import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
+import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -60,7 +74,21 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  * @since 2.0
  */
 @Mojo(name = "go-offline", threadSafe = true)
-public class GoOfflineMojo extends AbstractResolveMojo {
+public class GoOfflineMojo extends AbstractDependencyFilterMojo {
+
+    /**
+     * Remote repositories which will be searched for artifacts.
+     */
+    @Parameter(defaultValue = "${project.remoteArtifactRepositories}", readonly = true, required = true)
+    private List<ArtifactRepository> remoteRepositories;
+
+    /**
+     * Don't resolve plugins and artifacts that are in the current reactor.
+     *
+     * @since 2.7
+     */
+    @Parameter(property = "excludeReactor", defaultValue = "true")
+    protected boolean excludeReactor;
 
     private final DependencyResolver dependencyResolver;
 
@@ -89,22 +117,44 @@ public class GoOfflineMojo extends AbstractResolveMojo {
     protected void doExecute() throws MojoExecutionException {
 
         try {
-            final Set<Artifact> plugins = resolvePluginArtifacts();
+            final Set<Plugin> plugins = getProjectPlugins();
 
-            final Set<Artifact> dependencies = resolveDependencyArtifacts();
+            for (Plugin plugin : plugins) {
+                org.eclipse.aether.artifact.Artifact artifact =
+                        getResolverUtil().resolvePlugin(plugin);
 
-            if (!isSilent()) {
-                for (Artifact artifact : plugins) {
-                    this.getLog().info("Resolved plugin: " + DependencyUtil.getFormattedFileName(artifact, false));
-                }
-
-                for (Artifact artifact : dependencies) {
-                    this.getLog().info("Resolved dependency: " + DependencyUtil.getFormattedFileName(artifact, false));
+                logMessage("Resolved plugin: "
+                        + DependencyUtil.getFormattedFileName(RepositoryUtils.toArtifact(artifact), false));
+                if (!excludeTransitive) {
+                    logMessage("Resolved plugin dependency:");
+                    List<org.eclipse.aether.artifact.Artifact> artifacts =
+                            getResolverUtil().resolveDependencies(plugin);
+                    for (org.eclipse.aether.artifact.Artifact a : artifacts) {
+                        logMessage(
+                                "      " + DependencyUtil.getFormattedFileName(RepositoryUtils.toArtifact(a), false));
+                    }
                 }
             }
 
-        } catch (DependencyResolverException | ArtifactFilterException e) {
+            final Set<Artifact> dependencies = resolveDependencyArtifacts();
+
+            for (Artifact artifact : dependencies) {
+                logMessage("Resolved dependency: " + DependencyUtil.getFormattedFileName(artifact, false));
+            }
+
+        } catch (DependencyResolverException
+                | ArtifactFilterException
+                | ArtifactResolutionException
+                | DependencyResolutionException e) {
             throw new MojoExecutionException(e.getMessage(), e);
+        }
+    }
+
+    private void logMessage(String message) {
+        if (isSilent()) {
+            getLog().debug(message);
+        } else {
+            getLog().info(message);
         }
     }
 
@@ -164,31 +214,30 @@ public class GoOfflineMojo extends AbstractResolveMojo {
     }
 
     /**
-     * This method resolves the plugin artifacts from the project.
+     * This method retrieve plugins list from the project.
      *
-     * @return set of resolved plugin artifacts
-     * @throws ArtifactFilterException
-     * @throws DependencyResolverException in case of an error while resolving the artifacts
+     * @return set of plugin used in project
      */
-    protected Set<Artifact> resolvePluginArtifacts() throws DependencyResolverException, ArtifactFilterException {
+    private Set<Plugin> getProjectPlugins() {
+        Predicate<Plugin> pluginsFilter = new PluginsIncludeExcludeFilter(
+                toList(includeGroupIds),
+                toList(excludeGroupIds),
+                toList(includeArtifactIds),
+                toList(excludeArtifactIds));
 
-        Set<Artifact> plugins = getProject().getPluginArtifacts();
-        Set<Artifact> reports = getProject().getReportArtifacts();
+        Predicate<Plugin> reactorExclusionFilter = plugin -> true;
+        if (excludeReactor) {
+            reactorExclusionFilter = new PluginsReactorExcludeFilter(session.getProjects());
+        }
 
-        Set<Artifact> artifacts = new LinkedHashSet<>();
-        artifacts.addAll(reports);
-        artifacts.addAll(plugins);
-
-        final FilterArtifacts filter = getArtifactsFilter();
-        artifacts = filter.filter(artifacts);
-
-        Set<DependableCoordinate> dependableCoordinates = artifacts.stream()
-                .map(this::createDependendableCoordinateFromArtifact)
+        return getResolverUtil().getProjectPlugins(getProject()).stream()
+                .filter(reactorExclusionFilter)
+                .filter(pluginsFilter)
                 .collect(Collectors.toSet());
+    }
 
-        ProjectBuildingRequest buildingRequest = newResolvePluginProjectBuildingRequest();
-
-        return resolveDependableCoordinate(buildingRequest, dependableCoordinates, "plugins");
+    private List<String> toList(String list) {
+        return Arrays.asList(DependencyUtil.cleanToBeTokenizedString(list).split(","));
     }
 
     private Collection<Dependency> filterDependencies(Collection<Dependency> deps) throws ArtifactFilterException {
@@ -199,17 +248,6 @@ public class GoOfflineMojo extends AbstractResolveMojo {
         artifacts = filter.filter(artifacts);
 
         return createDependencySetFromArtifacts(artifacts);
-    }
-
-    private DependableCoordinate createDependendableCoordinateFromArtifact(final Artifact artifact) {
-        final DefaultDependableCoordinate result = new DefaultDependableCoordinate();
-        result.setGroupId(artifact.getGroupId());
-        result.setArtifactId(artifact.getArtifactId());
-        result.setVersion(artifact.getVersion());
-        result.setType(artifact.getType());
-        result.setClassifier(artifact.getClassifier());
-
-        return result;
     }
 
     private DependableCoordinate createDependendableCoordinateFromDependency(final Dependency dependency) {
@@ -254,6 +292,55 @@ public class GoOfflineMojo extends AbstractResolveMojo {
         }
 
         return dependencies;
+    }
+
+    /**
+     * @return {@link FilterArtifacts}
+     */
+    protected FilterArtifacts getArtifactsFilter() {
+        final FilterArtifacts filter = new FilterArtifacts();
+
+        if (excludeReactor) {
+            filter.addFilter(new ExcludeReactorProjectsArtifactFilter(reactorProjects, getLog()));
+        }
+
+        filter.addFilter(new ScopeFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeScope),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeScope)));
+
+        filter.addFilter(new TypeFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeTypes),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeTypes)));
+
+        filter.addFilter(new ClassifierFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeClassifiers),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeClassifiers)));
+
+        filter.addFilter(new GroupIdFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeGroupIds),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeGroupIds)));
+
+        filter.addFilter(new ArtifactIdFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
+
+        return filter;
+    }
+
+    /**
+     * @return returns a new ProjectBuildingRequest populated from the current session and the current project remote
+     *         repositories, used to resolve artifacts
+     */
+    public ProjectBuildingRequest newResolveArtifactProjectBuildingRequest() {
+        return newProjectBuildingRequest(remoteRepositories);
+    }
+
+    private ProjectBuildingRequest newProjectBuildingRequest(List<ArtifactRepository> repositories) {
+        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+
+        buildingRequest.setRemoteRepositories(repositories);
+
+        return buildingRequest;
     }
 
     @Override
