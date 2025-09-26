@@ -162,7 +162,7 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
                 artifactItem.getEncoding(),
                 ignorePermissions,
                 artifactItem.getFileMappers(),
-                getLog());
+                isSilent());
         handler.setMarker();
     }
 

@@ -237,7 +237,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      * @param useBaseVersion specifies if the baseVersion of the artifact should be used instead of the version
      * @param removeClassifier specifies if the classifier should be removed from the file name when copying
      * @throws MojoExecutionException with a message if an error occurs
-     * @see CopyUtil#copyArtifactFile(Artifact, File)
+     * @see CopyUtil#copyArtifactFile(Artifact, File, boolean)
      * @see DependencyUtil#getFormattedOutputDirectory(boolean, boolean, boolean, boolean, boolean, boolean, File, Artifact)
      */
     private static final String SIGNATURE_EXTENSION = ".asc";
@@ -267,7 +267,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
             getLog().warn("Overwriting " + destFile);
         }
         try {
-            copyUtil.copyArtifactFile(artifact, destFile);
+            copyUtil.copyArtifactFile(artifact, destFile, isSilent());
 
             // Copy the signature file if the copySignatures flag is true
             if (copySignatures) {
@@ -307,7 +307,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         if (signatureFile != null && signatureFile.exists()) {
             File signatureDestFile = new File(destDir, destFileName + SIGNATURE_EXTENSION);
             try {
-                copyUtil.copyFile(signatureFile, signatureDestFile);
+                copyUtil.copyFile(signatureFile, signatureDestFile, isSilent());
             } catch (IOException e) {
                 getLog().warn("Failed to copy signature file: " + signatureFile, e);
             }
@@ -354,7 +354,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                                 pomArtifact, removeVersion, prependGroupId, useBaseVersion, removeClassifier));
                 if (!pomDestFile.exists()) {
                     try {
-                        copyUtil.copyArtifactFile(pomArtifact, pomDestFile);
+                        copyUtil.copyArtifactFile(pomArtifact, pomDestFile, isSilent());
                     } catch (IOException e) {
                         throw new MojoExecutionException(
                                 "Failed to copy artifact '" + pomArtifact + "' (" + pomArtifact.getFile() + ") to "

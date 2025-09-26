@@ -112,6 +112,15 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
     @Parameter(property = "mdep.failOnMissingClassifierArtifact", defaultValue = "false")
     protected boolean failOnMissingClassifierArtifact;
 
+    /**
+     * If the plugin should be more silent with logging.
+     * <br/>
+     * Use {@code -q} command line option if you want to suppress all output.
+     * @since 2.0
+     */
+    @Parameter(property = "silent", defaultValue = "false")
+    private boolean silent;
+
     protected AbstractFromDependenciesMojo(
             MavenSession session,
             BuildContext buildContext,
@@ -232,5 +241,12 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
      */
     public void setUseRepositoryLayout(boolean useRepositoryLayout) {
         this.useRepositoryLayout = useRepositoryLayout;
+    }
+
+    /**
+     * @return {@link #silent}
+     */
+    protected final boolean isSilent() {
+        return silent;
     }
 }

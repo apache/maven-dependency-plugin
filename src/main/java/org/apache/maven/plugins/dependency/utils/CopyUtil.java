@@ -55,11 +55,13 @@ public class CopyUtil {
      *
      * @param sourceArtifact the artifact (file) to copy
      * @param destination file name of destination file
+     * @param silent if true, don't show information about copied files
      * @throws IOException if copy has failed
      * @throws MojoExecutionException if artifact file is a directory (which has not been packaged yet)
      * @since 3.7.0
      */
-    public void copyArtifactFile(Artifact sourceArtifact, File destination) throws IOException, MojoExecutionException {
+    public void copyArtifactFile(Artifact sourceArtifact, File destination, boolean silent)
+            throws IOException, MojoExecutionException {
         File source = sourceArtifact.getFile();
         if (source.isDirectory()) {
             // usual case is a future jar packaging, but there are special cases: classifier and other packaging
@@ -67,7 +69,12 @@ public class CopyUtil {
                     + "' has not been packaged yet (is a directory). When used on reactor artifact, "
                     + "copy should be executed after packaging: see MDEP-187.");
         }
-        logger.debug("Copying artifact '{}' ({}) to {}", sourceArtifact.getId(), sourceArtifact.getFile(), destination);
+
+        if (!silent || logger.isDebugEnabled()) {
+            logger.info(
+                    "Copying artifact '{}' ({}) to {}", sourceArtifact.getId(), sourceArtifact.getFile(), destination);
+        }
+
         FileUtils.copyFile(source, destination);
         buildContext.refresh(destination);
     }
@@ -77,11 +84,14 @@ public class CopyUtil {
      *
      * @param source the source file to copy
      * @param destination the destination file
+     * @param silent if true, don't show information about copied files
      * @throws IOException if copy has failed
      * @since 3.2.0
      */
-    public void copyFile(File source, File destination) throws IOException {
-        logger.debug("Copying file '{}' to {}", source, destination);
+    public void copyFile(File source, File destination, boolean silent) throws IOException {
+        if (!silent || logger.isDebugEnabled()) {
+            logger.info("Copying file '{}' to {}", source, destination);
+        }
         FileUtils.copyFile(source, destination);
         buildContext.refresh(destination);
     }
