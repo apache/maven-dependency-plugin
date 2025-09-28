@@ -99,6 +99,9 @@ under the License.
     <plexus-archiver.version>4.10.1</plexus-archiver.version>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
 
+    <!-- TODO remove with next parent -->
+    <version.maven-invoker-plugin>3.9.1</version.maven-invoker-plugin>
+
     <!-- strict check by dependency:analyze-only -->
     <enforce.dependency.declarations>true</enforce.dependency.declarations>
     <project.build.outputTimestamp>2024-10-18T18:16:14Z</project.build.outputTimestamp>

@@ -164,6 +164,35 @@ public class ResolverUtil {
     }
 
     /**
+     * Resolve transitive dependencies for artifact with managed dependencies.
+     *
+     * @param rootArtifact a root artifact to resolve
+     * @param dependencies a list of dependencies for artifact
+     * @param managedDependencies  a list of managed dependencies for artifact
+     * @param remoteProjectRepositories remote repositories list
+     * @return Resolved dependencies
+     * @throws DependencyResolutionException if the dependency tree could not be built or any dependency artifact could
+     *                                       not be resolved
+     */
+    public List<Artifact> resolveDependenciesForArtifact(
+            Artifact rootArtifact,
+            List<Dependency> dependencies,
+            List<Dependency> managedDependencies,
+            List<RemoteRepository> remoteProjectRepositories)
+            throws DependencyResolutionException {
+        MavenSession session = mavenSessionProvider.get();
+
+        CollectRequest collectRequest =
+                new CollectRequest(dependencies, managedDependencies, remoteProjectRepositories);
+        collectRequest.setRootArtifact(rootArtifact);
+        DependencyRequest request = new DependencyRequest(collectRequest, null);
+        DependencyResult result = repositorySystem.resolveDependencies(session.getRepositorySession(), request);
+        return result.getArtifactResults().stream()
+                .map(ArtifactResult::getArtifact)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Resolve transitive dependencies for plugin.
      *
      * @param plugin aa plugin to resolve
