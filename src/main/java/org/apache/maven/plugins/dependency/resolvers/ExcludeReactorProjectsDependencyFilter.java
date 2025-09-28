@@ -20,57 +20,39 @@ package org.apache.maven.plugins.dependency.resolvers;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.artifact.filter.resolve.AbstractFilter;
-import org.apache.maven.shared.artifact.filter.resolve.Node;
-import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * {@link TransformableFilter} implementation that excludes artifacts found in the Reactor.
+ * Filter implementation that excludes artifacts found in the Reactor.
  *
  * @author Maarten Mulders
  */
-public class ExcludeReactorProjectsDependencyFilter extends AbstractFilter {
-    private final Log log;
+public class ExcludeReactorProjectsDependencyFilter implements Predicate<Dependency> {
+    private final Logger log = LoggerFactory.getLogger(ExcludeReactorProjectsDependencyFilter.class);
     private final Set<String> reactorArtifactKeys;
 
-    public ExcludeReactorProjectsDependencyFilter(final List<MavenProject> reactorProjects, final Log log) {
-        this.log = log;
+    public ExcludeReactorProjectsDependencyFilter(final List<MavenProject> reactorProjects) {
         this.reactorArtifactKeys = reactorProjects.stream()
                 .map(project -> ArtifactUtils.key(project.getArtifact()))
                 .collect(Collectors.toSet());
     }
 
     @Override
-    public boolean accept(final Node node, final List<Node> parents) {
-        final Dependency dependency = node.getDependency();
-        if (dependency != null) {
-            final String dependencyArtifactKey =
-                    ArtifactUtils.key(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion());
-
-            final boolean result = isDependencyArtifactInReactor(dependencyArtifactKey);
-
-            if (log.isDebugEnabled() && result) {
-                log.debug("Skipped dependency " + dependencyArtifactKey + " because it is present in the reactor");
+    public boolean test(Dependency dependency) {
+        String key = ArtifactUtils.key(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion());
+        if (reactorArtifactKeys.contains(key)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Skipped dependency {} because it is present in the reactor", key);
             }
-
-            return !result;
+            return false;
         }
         return true;
-    }
-
-    private boolean isDependencyArtifactInReactor(final String dependencyArtifactKey) {
-        for (final String reactorArtifactKey : this.reactorArtifactKeys) {
-            // This check only includes GAV. Should we take a look at the types, too?
-            if (reactorArtifactKey.equals(dependencyArtifactKey)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

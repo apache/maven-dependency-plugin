@@ -22,6 +22,7 @@ import javax.inject.Inject;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,9 +34,9 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -43,10 +44,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.fromDependencies.AbstractDependencyFilterMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
@@ -55,15 +54,12 @@ import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
 import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
-import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
-import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
-import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * Goal that resolves all project dependencies, including plugins and reports and their dependencies.
@@ -77,20 +73,12 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 public class GoOfflineMojo extends AbstractDependencyFilterMojo {
 
     /**
-     * Remote repositories which will be searched for artifacts.
-     */
-    @Parameter(defaultValue = "${project.remoteArtifactRepositories}", readonly = true, required = true)
-    private List<ArtifactRepository> remoteRepositories;
-
-    /**
      * Don't resolve plugins and artifacts that are in the current reactor.
      *
      * @since 2.7
      */
     @Parameter(property = "excludeReactor", defaultValue = "true")
     protected boolean excludeReactor;
-
-    private final DependencyResolver dependencyResolver;
 
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
@@ -99,11 +87,9 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
             BuildContext buildContext,
             MavenProject project,
             ResolverUtil resolverUtil,
-            DependencyResolver dependencyResolver,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
         super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
-        this.dependencyResolver = dependencyResolver;
     }
     // CHECKSTYLE_ON: ParameterNumber
 
@@ -136,16 +122,14 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
                 }
             }
 
-            final Set<Artifact> dependencies = resolveDependencyArtifacts();
+            final List<org.eclipse.aether.artifact.Artifact> dependencies = resolveDependencyArtifacts();
 
-            for (Artifact artifact : dependencies) {
-                logMessage("Resolved dependency: " + DependencyUtil.getFormattedFileName(artifact, false));
+            for (org.eclipse.aether.artifact.Artifact artifact : dependencies) {
+                logMessage("Resolved dependency: "
+                        + DependencyUtil.getFormattedFileName(RepositoryUtils.toArtifact(artifact), false));
             }
 
-        } catch (DependencyResolverException
-                | ArtifactFilterException
-                | ArtifactResolutionException
-                | DependencyResolutionException e) {
+        } catch (ArtifactFilterException | ArtifactResolutionException | DependencyResolutionException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
@@ -161,56 +145,43 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
     /**
      * This method resolves the dependency artifacts from the project.
      *
-     * @return set of resolved dependency artifacts
-     * @throws ArtifactFilterException
-     * @throws DependencyResolverException in case of an error while resolving the artifacts
+     * @return lis of resolved dependency artifacts
+     * @throws ArtifactFilterException in case of an error while filtering the artifacts
+     * @throws DependencyResolutionException in case of an error while resolving the artifacts
      */
-    protected Set<Artifact> resolveDependencyArtifacts() throws DependencyResolverException, ArtifactFilterException {
+    protected List<org.eclipse.aether.artifact.Artifact> resolveDependencyArtifacts()
+            throws ArtifactFilterException, DependencyResolutionException {
         Collection<Dependency> dependencies = getProject().getDependencies();
 
         dependencies = filterDependencies(dependencies);
 
-        Set<DependableCoordinate> dependableCoordinates = dependencies.stream()
-                .map(this::createDependendableCoordinateFromDependency)
-                .collect(Collectors.toSet());
-
-        ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
-
-        return resolveDependableCoordinate(buildingRequest, dependableCoordinates, "dependencies");
-    }
-
-    private Set<Artifact> resolveDependableCoordinate(
-            final ProjectBuildingRequest buildingRequest,
-            final Collection<DependableCoordinate> dependableCoordinates,
-            final String type)
-            throws DependencyResolverException {
-        final TransformableFilter filter = getTransformableFilter();
-
-        this.getLog().debug("Resolving '" + type + "' with following repositories:");
-        for (ArtifactRepository repo : buildingRequest.getRemoteRepositories()) {
-            getLog().debug(repo.getId() + " (" + repo.getUrl() + ")");
-        }
-
-        final Set<Artifact> results = new HashSet<>();
-
-        for (DependableCoordinate dependableCoordinate : dependableCoordinates) {
-            final Iterable<ArtifactResult> artifactResults =
-                    dependencyResolver.resolveDependencies(buildingRequest, dependableCoordinate, filter);
-
-            for (final ArtifactResult artifactResult : artifactResults) {
-                results.add(artifactResult.getArtifact());
-            }
-        }
-
-        return results;
-    }
-
-    private TransformableFilter getTransformableFilter() {
+        Predicate<Dependency> excludeReactorProjectsDependencyFilter = d -> true;
         if (this.excludeReactor) {
-            return new ExcludeReactorProjectsDependencyFilter(this.reactorProjects, getLog());
-        } else {
-            return null;
+            excludeReactorProjectsDependencyFilter = new ExcludeReactorProjectsDependencyFilter(this.reactorProjects);
         }
+
+        ArtifactTypeRegistry artifactTypeRegistry =
+                session.getRepositorySession().getArtifactTypeRegistry();
+
+        List<org.eclipse.aether.graph.Dependency> dependableCoordinates = dependencies.stream()
+                .filter(excludeReactorProjectsDependencyFilter)
+                .map(d -> RepositoryUtils.toDependency(d, artifactTypeRegistry))
+                .collect(Collectors.toList());
+
+        List<org.eclipse.aether.graph.Dependency> managedDependencies = ofNullable(
+                        getProject().getDependencyManagement())
+                .map(DependencyManagement::getDependencies)
+                .map(list -> list.stream()
+                        .map(d -> RepositoryUtils.toDependency(d, artifactTypeRegistry))
+                        .collect(Collectors.toList()))
+                .orElse(null);
+
+        return getResolverUtil()
+                .resolveDependenciesForArtifact(
+                        RepositoryUtils.toArtifact(getProject().getArtifact()),
+                        dependableCoordinates,
+                        managedDependencies,
+                        getProject().getRemoteProjectRepositories());
     }
 
     /**
@@ -237,6 +208,9 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
     }
 
     private List<String> toList(String list) {
+        if (list == null || list.isEmpty()) {
+            return Collections.emptyList();
+        }
         return Arrays.asList(DependencyUtil.cleanToBeTokenizedString(list).split(","));
     }
 
@@ -248,17 +222,6 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
         artifacts = filter.filter(artifacts);
 
         return createDependencySetFromArtifacts(artifacts);
-    }
-
-    private DependableCoordinate createDependendableCoordinateFromDependency(final Dependency dependency) {
-        final DefaultDependableCoordinate result = new DefaultDependableCoordinate();
-        result.setGroupId(dependency.getGroupId());
-        result.setArtifactId(dependency.getArtifactId());
-        result.setVersion(dependency.getVersion());
-        result.setType(dependency.getType());
-        result.setClassifier(dependency.getClassifier());
-
-        return result;
     }
 
     private Set<Artifact> createArtifactSetFromDependencies(Collection<Dependency> deps) {
@@ -297,6 +260,7 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
     /**
      * @return {@link FilterArtifacts}
      */
+    // TODO: refactor this to use Resolver API filters
     protected FilterArtifacts getArtifactsFilter() {
         final FilterArtifacts filter = new FilterArtifacts();
 
@@ -325,22 +289,6 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
                 DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
 
         return filter;
-    }
-
-    /**
-     * @return returns a new ProjectBuildingRequest populated from the current session and the current project remote
-     *         repositories, used to resolve artifacts
-     */
-    public ProjectBuildingRequest newResolveArtifactProjectBuildingRequest() {
-        return newProjectBuildingRequest(remoteRepositories);
-    }
-
-    private ProjectBuildingRequest newProjectBuildingRequest(List<ArtifactRepository> repositories) {
-        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-
-        buildingRequest.setRemoteRepositories(repositories);
-
-        return buildingRequest;
     }
 
     @Override
