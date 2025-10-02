@@ -24,6 +24,7 @@ github:
     - maven-plugins
     - maven-dependency-plugin
     - maven
+    - hacktoberfest
   enabled_merge_buttons:
     squash: true
     merge: false
