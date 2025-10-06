@@ -19,16 +19,27 @@
 package org.apache.maven.plugins.dependency.analyze;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.stream.Stream;
 
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
@@ -43,6 +54,14 @@ import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerExce
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
+import org.objectweb.asm.ModuleVisitor;
+import org.objectweb.asm.Type;
+
+import static java.util.Collections.list;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static org.objectweb.asm.Opcodes.ASM9;
+import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
 /**
  * Analyzes the dependencies of this project and determines which are: used and declared; used and undeclared; unused
@@ -214,10 +233,14 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
      * </p>
      *
+     * <p>Certain dependencies that are known to be used and loaded by reflection
+     * are always ignored. This includes {@code org.slf4j:slf4j-simple::}
+     * and {@code org.glassfish:javax.json::}.</p>
+     *
      * @since 2.10
      */
     @Parameter
-    private String[] ignoredUnusedDeclaredDependencies;
+    private String[] ignoredUnusedDeclaredDependencies = new String[0];
 
     /**
      * List of dependencies that are ignored if they are in not test scope but are only used in test classes.
@@ -361,7 +384,6 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
         ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, ignoredDependencies));
         ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, ignoredUnusedDeclaredDependencies));
-        ignoredUnusedDeclared.addAll(filterDependencies(unusedDeclared, unconditionallyIgnoredDeclaredDependencies));
 
         if (ignoreAllNonTestScoped) {
             ignoredNonTestScope.addAll(filterDependencies(nonTestScope, new String[] {"*"}));
@@ -393,11 +415,15 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         }
 
         if (!unusedDeclared.isEmpty()) {
-            logDependencyWarning("Unused declared dependencies found:");
+            final Set<String> declaredSpi = scanForSpiUsage(usedDeclared, usedUndeclaredWithClasses);
+            cleanupUnused(declaredSpi, unusedDeclared);
+            if (!unusedDeclared.isEmpty()) {
+                logDependencyWarning("Unused declared dependencies found:");
 
-            logArtifacts(unusedDeclared, true);
-            reported = true;
-            warning = true;
+                logArtifacts(unusedDeclared, true);
+                reported = true;
+                warning = true;
+            }
         }
 
         if (!nonTestScope.isEmpty()) {
@@ -442,6 +468,119 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         }
 
         return warning;
+    }
+
+    // todo: enhance analyzer (dependency) to do it since it already visits classes
+    //       will save some time
+    private Set<String> scanForSpiUsage(final Set<Artifact> usedDeclared,
+                                        final Map<Artifact, Set<String>> usedUndeclaredWithClasses) {
+        return Stream.concat(
+                usedDeclared.stream().flatMap(this::findUsedSpi),
+                usedUndeclaredWithClasses.keySet().stream().flatMap(this::findUsedSpi))
+                .collect(toSet());
+    }
+
+    private Stream<String> findUsedSpi(final Artifact artifact) {
+        try (final JarFile jar = new JarFile(artifact.getFile())) {
+            return list(jar.entries()).stream()
+                    .filter(entry -> entry.getName().endsWith(".class"))
+                    .flatMap(entry -> {
+                        final ClassReader classReader;
+                        try {
+                            classReader = new ClassReader(jar.getInputStream(entry));
+                        } catch (IOException e) {
+                            return Stream.empty();
+                        }
+                        final Set<String> spi = new HashSet<>();
+                        classReader.accept(new ClassVisitor(ASM9) {
+                            @Override
+                            public MethodVisitor visitMethod(final int access,
+                                                             final String name,
+                                                             final String descriptor,
+                                                             final String signature,
+                                                             final String[] exceptions) {
+                                return new MethodVisitor(ASM9) {
+                                    private Type lastType = null;
+
+                                    @Override
+                                    public void visitLdcInsn(final Object value) {
+                                        if (value instanceof Type) {
+                                            lastType = (Type) value;
+                                        }
+                                    }
+
+                                    @Override
+                                    public void visitMethodInsn(final int opcode,
+                                                                final String owner,
+                                                                final String name,
+                                                                final String descriptor,
+                                                                final boolean isInterface) {
+                                        if (opcode == INVOKESTATIC &&
+                                                Objects.equals(owner, "java/util/ServiceLoader") &&
+                                                Objects.equals(name, "load")) {
+                                            spi.add(lastType.getClassName());
+                                        }
+                                        lastType = null;
+                                    }
+                                };
+                            }
+                        }, 0);
+                        return spi.stream();
+                    })
+                    .collect(toList()) // materialize before closing the jar
+                    .stream();
+        } catch (final IOException ioe) {
+            return Stream.empty();
+        }
+    }
+
+    // here we try to detect "well-known" indirect patterns to remove false warnings
+    private void cleanupUnused(final Set<String> spi, final Set<Artifact> unusedDeclared) {
+        unusedDeclared.removeIf(this::isSlf4jBinding);
+        unusedDeclared.removeIf(it -> hasUsedSPIImpl(spi, it));
+    }
+
+    // mainly for v1.x line but doesn't hurt much for v2
+    // TODO: enhance to ensure there is a single binding else just log a warning for all
+    //       and maybe even handle version?
+    private boolean isSlf4jBinding(final Artifact artifact) {
+        try (final JarFile file = new JarFile(artifact.getFile())) {
+            return file.getEntry("org/slf4j/impl/StaticLoggerBinder.class") != null;
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    private boolean hasUsedSPIImpl(final Set<String> usedSpi, final Artifact artifact) {
+        final Set<String> spi;
+        try (final JarFile file = new JarFile(artifact.getFile())) {
+            spi = list(file.entries()).stream()
+                    .filter(it -> it.getName().startsWith("META-INF/services/") && !it.isDirectory())
+                    .map(it -> it.getName().substring("META-INF/services/".length()))
+                    .collect(toSet());
+
+            // java >= 9
+            final JarEntry moduleEntry = file.getJarEntry("module-info.class");
+            if (moduleEntry != null) {
+                try (final InputStream in = file.getInputStream(moduleEntry)) {
+                    final ClassReader cr = new ClassReader(in);
+                    cr.accept(new ClassVisitor(ASM9) {
+                        @Override
+                        public ModuleVisitor visitModule(String name, int access, String version) {
+                            return new ModuleVisitor(ASM9) {
+                                @Override
+                                public void visitProvide(final String service, final String[] providers) {
+                                    spi.add(service.replace('/', '.'));
+                                }
+                            };
+                        }
+                    }, 0);
+                }
+            }
+        } catch (final IOException e) {
+            return false;
+        }
+        return usedSpi.stream().anyMatch(spi::contains);
     }
 
     private void filterArtifactsByScope(Set<Artifact> artifacts, String scope) {
@@ -554,7 +693,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     }
 
     private List<Artifact> filterDependencies(Set<Artifact> artifacts, String[] excludes) {
-        ArtifactFilter filter = new StrictPatternExcludesArtifactFilter(Arrays.asList(excludes));
+        ArtifactFilter filter = new StrictPatternExcludesArtifactFilter(excludes == null ?
+                Collections.emptyList() :Arrays.asList(excludes));
         List<Artifact> result = new ArrayList<>();
 
         for (Iterator<Artifact> it = artifacts.iterator(); it.hasNext(); ) {
