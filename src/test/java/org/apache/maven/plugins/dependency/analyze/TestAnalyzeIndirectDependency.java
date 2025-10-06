@@ -18,6 +18,14 @@
  */
 package org.apache.maven.plugins.dependency.analyze;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.HashSet;
+
 import jakarta.json.spi.JsonProvider;
 import org.apache.johnzon.core.JsonProviderImpl;
 import org.apache.maven.artifact.Artifact;
@@ -43,14 +51,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.SimpleLoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.HashSet;
-
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.tomitribe.util.JarLocation.jarLocation;
@@ -69,7 +69,7 @@ class TestAnalyzeIndirectDependency {
                             final String resource = JsonpMain.class.getName().replace('.', '/') + ".class";
                             final Path target = base.resolve(resource);
                             Files.createDirectories(target.getParent());
-                            try (final InputStream is = Thread.currentThread()
+                            try (InputStream is = Thread.currentThread()
                                     .getContextClassLoader()
                                     .getResourceAsStream(resource)) {
                                 Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
@@ -94,7 +94,7 @@ class TestAnalyzeIndirectDependency {
                             final String resource = Slf4jMain.class.getName().replace('.', '/') + ".class";
                             final Path target = base.resolve(resource);
                             Files.createDirectories(target.getParent());
-                            try (final InputStream is = Thread.currentThread()
+                            try (InputStream is = Thread.currentThread()
                                     .getContextClassLoader()
                                     .getResourceAsStream(resource)) {
                                 Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
@@ -104,11 +104,13 @@ class TestAnalyzeIndirectDependency {
                         artifact("org.slf4j", "slf4j-simple", slf4jVersion, SimpleLoggerFactory.class)));
     }
 
-    private String exec(final Path work, final IOConsumer<Path> classesFiller, final Artifact... artifacts) throws Exception {
+    private String exec(final Path work, final IOConsumer<Path> classesFiller, final Artifact... artifacts)
+            throws Exception {
         final Path classes = Files.createDirectories(work.resolve("target/classes"));
         final Build build = new Build();
         build.setOutputDirectory(classes.toString());
-        build.setTestOutputDirectory(Files.createDirectories(work.resolve("target/test-classes")).toString());
+        build.setTestOutputDirectory(
+                Files.createDirectories(work.resolve("target/test-classes")).toString());
 
         final MavenProject project = new MavenProject();
         project.setGroupId("g");
@@ -147,18 +149,17 @@ class TestAnalyzeIndirectDependency {
         configuration.addChild("ignoredPackagings", "pom");
         configuration.addChild("outputDirectory", project.getBuild().getOutputDirectory());
 
-        new BasicComponentConfigurator()
-                .configureComponent(mojo, configuration, evaluator, null);
+        new BasicComponentConfigurator().configureComponent(mojo, configuration, evaluator, null);
 
         mojo.execute();
 
         return log.toString().trim();
     }
 
-    private DefaultArtifact artifact(final String groupId, final String artifactId, final String slf4jVersion, final Class<?> marker) {
+    private DefaultArtifact artifact(
+            final String groupId, final String artifactId, final String slf4jVersion, final Class<?> marker) {
         final DefaultArtifact artifact = new DefaultArtifact(
-                groupId, artifactId, slf4jVersion,
-                "compile", "jar", "", new DefaultArtifactHandler());
+                groupId, artifactId, slf4jVersion, "compile", "jar", "", new DefaultArtifactHandler());
         artifact.setFile(jarLocation(marker));
         return artifact;
     }

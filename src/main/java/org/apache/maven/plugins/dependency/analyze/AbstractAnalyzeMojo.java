@@ -37,9 +37,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
@@ -54,6 +51,9 @@ import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerExce
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.ModuleVisitor;
 import org.objectweb.asm.Type;
 
@@ -472,16 +472,16 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
     // todo: enhance analyzer (dependency) to do it since it already visits classes
     //       will save some time
-    private Set<String> scanForSpiUsage(final Set<Artifact> usedDeclared,
-                                        final Map<Artifact, Set<String>> usedUndeclaredWithClasses) {
+    private Set<String> scanForSpiUsage(
+            final Set<Artifact> usedDeclared, final Map<Artifact, Set<String>> usedUndeclaredWithClasses) {
         return Stream.concat(
-                usedDeclared.stream().flatMap(this::findUsedSpi),
-                usedUndeclaredWithClasses.keySet().stream().flatMap(this::findUsedSpi))
+                        usedDeclared.stream().flatMap(this::findUsedSpi),
+                        usedUndeclaredWithClasses.keySet().stream().flatMap(this::findUsedSpi))
                 .collect(toSet());
     }
 
     private Stream<String> findUsedSpi(final Artifact artifact) {
-        try (final JarFile jar = new JarFile(artifact.getFile())) {
+        try (JarFile jar = new JarFile(artifact.getFile())) {
             return list(jar.entries()).stream()
                     .filter(entry -> entry.getName().endsWith(".class"))
                     .flatMap(entry -> {
@@ -492,39 +492,43 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                             return Stream.empty();
                         }
                         final Set<String> spi = new HashSet<>();
-                        classReader.accept(new ClassVisitor(ASM9) {
-                            @Override
-                            public MethodVisitor visitMethod(final int access,
-                                                             final String name,
-                                                             final String descriptor,
-                                                             final String signature,
-                                                             final String[] exceptions) {
-                                return new MethodVisitor(ASM9) {
-                                    private Type lastType = null;
-
+                        classReader.accept(
+                                new ClassVisitor(ASM9) {
                                     @Override
-                                    public void visitLdcInsn(final Object value) {
-                                        if (value instanceof Type) {
-                                            lastType = (Type) value;
-                                        }
-                                    }
+                                    public MethodVisitor visitMethod(
+                                            final int access,
+                                            final String name,
+                                            final String descriptor,
+                                            final String signature,
+                                            final String[] exceptions) {
+                                        return new MethodVisitor(ASM9) {
+                                            private Type lastType = null;
 
-                                    @Override
-                                    public void visitMethodInsn(final int opcode,
-                                                                final String owner,
-                                                                final String name,
-                                                                final String descriptor,
-                                                                final boolean isInterface) {
-                                        if (opcode == INVOKESTATIC &&
-                                                Objects.equals(owner, "java/util/ServiceLoader") &&
-                                                Objects.equals(name, "load")) {
-                                            spi.add(lastType.getClassName());
-                                        }
-                                        lastType = null;
+                                            @Override
+                                            public void visitLdcInsn(final Object value) {
+                                                if (value instanceof Type) {
+                                                    lastType = (Type) value;
+                                                }
+                                            }
+
+                                            @Override
+                                            public void visitMethodInsn(
+                                                    final int opcode,
+                                                    final String owner,
+                                                    final String name,
+                                                    final String descriptor,
+                                                    final boolean isInterface) {
+                                                if (opcode == INVOKESTATIC
+                                                        && Objects.equals(owner, "java/util/ServiceLoader")
+                                                        && Objects.equals(name, "load")) {
+                                                    spi.add(lastType.getClassName());
+                                                }
+                                                lastType = null;
+                                            }
+                                        };
                                     }
-                                };
-                            }
-                        }, 0);
+                                },
+                                0);
                         return spi.stream();
                     })
                     .collect(toList()) // materialize before closing the jar
@@ -544,7 +548,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     // TODO: enhance to ensure there is a single binding else just log a warning for all
     //       and maybe even handle version?
     private boolean isSlf4jBinding(final Artifact artifact) {
-        try (final JarFile file = new JarFile(artifact.getFile())) {
+        try (JarFile file = new JarFile(artifact.getFile())) {
             return file.getEntry("org/slf4j/impl/StaticLoggerBinder.class") != null;
         } catch (final IOException e) {
             return false;
@@ -553,7 +557,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
     private boolean hasUsedSPIImpl(final Set<String> usedSpi, final Artifact artifact) {
         final Set<String> spi;
-        try (final JarFile file = new JarFile(artifact.getFile())) {
+        try (JarFile file = new JarFile(artifact.getFile())) {
             spi = list(file.entries()).stream()
                     .filter(it -> it.getName().startsWith("META-INF/services/") && !it.isDirectory())
                     .map(it -> it.getName().substring("META-INF/services/".length()))
@@ -562,19 +566,21 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
             // java >= 9
             final JarEntry moduleEntry = file.getJarEntry("module-info.class");
             if (moduleEntry != null) {
-                try (final InputStream in = file.getInputStream(moduleEntry)) {
+                try (InputStream in = file.getInputStream(moduleEntry)) {
                     final ClassReader cr = new ClassReader(in);
-                    cr.accept(new ClassVisitor(ASM9) {
-                        @Override
-                        public ModuleVisitor visitModule(String name, int access, String version) {
-                            return new ModuleVisitor(ASM9) {
+                    cr.accept(
+                            new ClassVisitor(ASM9) {
                                 @Override
-                                public void visitProvide(final String service, final String[] providers) {
-                                    spi.add(service.replace('/', '.'));
+                                public ModuleVisitor visitModule(String name, int access, String version) {
+                                    return new ModuleVisitor(ASM9) {
+                                        @Override
+                                        public void visitProvide(final String service, final String[] providers) {
+                                            spi.add(service.replace('/', '.'));
+                                        }
+                                    };
                                 }
-                            };
-                        }
-                    }, 0);
+                            },
+                            0);
                 }
             }
         } catch (final IOException e) {
@@ -693,8 +699,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     }
 
     private List<Artifact> filterDependencies(Set<Artifact> artifacts, String[] excludes) {
-        ArtifactFilter filter = new StrictPatternExcludesArtifactFilter(excludes == null ?
-                Collections.emptyList() :Arrays.asList(excludes));
+        ArtifactFilter filter = new StrictPatternExcludesArtifactFilter(
+                excludes == null ? Collections.emptyList() : Arrays.asList(excludes));
         List<Artifact> result = new ArrayList<>();
 
         for (Iterator<Artifact> it = artifacts.iterator(); it.hasNext(); ) {

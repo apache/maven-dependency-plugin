@@ -96,7 +96,7 @@ under the License.
     <slf4jVersion>1.7.36</slf4jVersion>
     <jettyVersion>9.4.58.v20250814</jettyVersion>
     <jettyVersion>9.4.57.v20241219</jettyVersion>
-    <johnzonVersion>2.0.1</johnzonVersion>
+    <johnzonVersion>1.2.21</johnzonVersion>
     <glassfishVersion>2.0.1</glassfishVersion>
     <mockito.version>4.11.0</mockito.version>
     <plexus-archiver.version>4.10.1</plexus-archiver.version>
@@ -337,6 +337,7 @@ under the License.
       <groupId>org.apache.johnzon</groupId>
       <artifactId>johnzon-core</artifactId>
       <version>${johnzonVersion}</version>
+      <classifier>jakarta</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>

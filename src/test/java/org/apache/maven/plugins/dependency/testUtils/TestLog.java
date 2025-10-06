@@ -18,10 +18,10 @@
  */
 package org.apache.maven.plugins.dependency.testUtils;
 
-import org.apache.maven.plugin.logging.Log;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
+
+import org.apache.maven.plugin.logging.Log;
 
 public class TestLog implements Log {
     private final StringBuilder sb = new StringBuilder();
@@ -116,8 +116,7 @@ public class TestLog implements Log {
 
         error.printStackTrace(pWriter);
 
-        System.err.println(
-                "[error] " + content.toString() + System.lineSeparator() + System.lineSeparator() + sWriter);
+        System.err.println("[error] " + content.toString() + System.lineSeparator() + System.lineSeparator() + sWriter);
     }
 
     /**
@@ -166,11 +165,7 @@ public class TestLog implements Log {
     }
 
     private void print(String prefix, CharSequence content) {
-        sb.append("[")
-                .append(prefix)
-                .append("] ")
-                .append(content.toString())
-                .append(System.lineSeparator());
+        sb.append("[").append(prefix).append("] ").append(content.toString()).append(System.lineSeparator());
     }
 
     private void print(String prefix, Throwable error) {
