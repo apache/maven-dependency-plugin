@@ -124,7 +124,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean ignoreAllNonTestScoped;
 
     /**
-     * Output the XML for the missing dependencies (used but not declared).
+     * Output the xml for the missing dependencies (used but not declared).
      *
      * @since 2.0-alpha-5
      */
@@ -232,10 +232,6 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
      * </p>
-     *
-     * <p>Certain dependencies that are known to be used and loaded by reflection
-     * are always ignored. This includes {@code org.slf4j:slf4j-simple::}
-     * and {@code org.glassfish:javax.json::}.</p>
      *
      * @since 2.10
      */
