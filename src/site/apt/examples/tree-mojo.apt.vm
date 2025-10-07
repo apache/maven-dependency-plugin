@@ -283,10 +283,6 @@ mvn dependency:tree -DoutputType=tgf -DoutputFile=dependency-tree.tgf
 
 * Notes
 
-  * <<Plugin Version>>: The <<<json>>>, <<<dot>>>, <<<graphml>>>, and <<<tgf>>> output formats are
-    available starting with Maven Dependency Plugin version 3.7.0. Always use the latest version
-    (3.8.1 as of June 2025) for the most stable experience.
-
   * <<Visualization Tools>>:
 
     * <<JSON>>: Parse with any JSON-compatible tool (e.g., Python's <<<json>>> module, JavaScript's <<<JSON.parse>>>).
@@ -297,8 +293,3 @@ mvn dependency:tree -DoutputType=tgf -DoutputFile=dependency-tree.tgf
 
     * <<TGF>>: Use tools supporting TGF or convert to DOT/GraphML for visualization.
 
-  * <<Contributing>>: If you encounter issues or want to improve this documentation, contribute to
-    the Maven Dependency Plugin repository at
-    {{{https://github.com/apache/maven-dependency-plugin}https://github.com/apache/maven-dependency-plugin}}.
-    See the
-    {{{https://maven.apache.org/guides/development/guide-helping.html}guide to helping with Maven}}.
