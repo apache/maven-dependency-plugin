@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import junit.framework.TestCase;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
@@ -34,19 +33,26 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugins.dependency.testUtils.stubs.StubSourcesFileMarkerHandler;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author brianf
  */
-public class TestSourcesMarkerFileHandler extends TestCase {
+public class TestSourcesMarkerFileHandler {
     List<Artifact> artifacts = new ArrayList<>();
 
     Log log = new SilentLog();
 
     File outputFolder;
 
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    public void setUp() throws Exception {
 
         ArtifactHandler ah = new DefaultArtifactHandler();
         VersionRange vr = VersionRange.createFromVersion("1.1");
@@ -66,10 +72,12 @@ public class TestSourcesMarkerFileHandler extends TestCase {
         assertFalse(outputFolder.exists());
     }
 
-    protected void tearDown() {
+    @AfterEach
+    public void tearDown() {
         outputFolder.delete();
     }
 
+    @Test
     public void testSetMarkerResolved() throws MojoExecutionException {
         DefaultFileMarkerHandler handler = new SourcesFileMarkerHandler(artifacts.get(0), this.outputFolder, true);
         assertFalse(handler.isMarkerSet());
@@ -88,6 +96,7 @@ public class TestSourcesMarkerFileHandler extends TestCase {
         assertFalse(outputFolder.exists());
     }
 
+    @Test
     public void testSetMarkerUnresolved() throws MojoExecutionException {
         DefaultFileMarkerHandler handler = new SourcesFileMarkerHandler(artifacts.get(0), this.outputFolder, false);
         assertFalse(handler.isMarkerSet());
@@ -106,6 +115,7 @@ public class TestSourcesMarkerFileHandler extends TestCase {
         assertFalse(outputFolder.exists());
     }
 
+    @Test
     public void testBothMarkers() throws MojoExecutionException {
         DefaultFileMarkerHandler handler = new SourcesFileMarkerHandler(artifacts.get(1), this.outputFolder, true);
         DefaultFileMarkerHandler handler2 = new SourcesFileMarkerHandler(artifacts.get(1), this.outputFolder, false);
@@ -121,6 +131,7 @@ public class TestSourcesMarkerFileHandler extends TestCase {
         assertFalse(outputFolder.exists());
     }
 
+    @Test
     public void testMarkerFile() throws MojoExecutionException, IOException {
         DefaultFileMarkerHandler handler = new SourcesFileMarkerHandler(artifacts.get(0), this.outputFolder, true);
         DefaultFileMarkerHandler handler2 = new SourcesFileMarkerHandler(artifacts.get(0), this.outputFolder, false);
@@ -176,10 +187,12 @@ public class TestSourcesMarkerFileHandler extends TestCase {
         assertFalse(outputFolder.exists());
     }
 
+    @Test
     public void testMarkerTimeStampResolved() throws MojoExecutionException, IOException, InterruptedException {
         doTestMarkerTimeStamp(true);
     }
 
+    @Test
     public void testMarkerTimeStampUnResolved() throws MojoExecutionException, IOException, InterruptedException {
         doTestMarkerTimeStamp(false);
     }
@@ -220,6 +233,7 @@ public class TestSourcesMarkerFileHandler extends TestCase {
         assertFalse(resolvedHandler.isMarkerSet());
     }
 
+    @Test
     public void testMarkerFileException() {
         // this stub wraps the file with an object to throw exceptions
         StubSourcesFileMarkerHandler handler =
@@ -231,6 +245,7 @@ public class TestSourcesMarkerFileHandler extends TestCase {
         }
     }
 
+    @Test
     public void testMarkerFileResolvedSetter() {
         SourcesFileMarkerHandler handler = new SourcesFileMarkerHandler(null, null, true);
         assertTrue(handler.isResolved());
@@ -238,6 +253,7 @@ public class TestSourcesMarkerFileHandler extends TestCase {
         assertFalse(handler.isResolved());
     }
 
+    @Test
     public void testNullParent() throws MojoExecutionException {
         // the parent isn't set so this will create the marker in the local
         // folder. We must clear the
@@ -250,6 +266,7 @@ public class TestSourcesMarkerFileHandler extends TestCase {
         assertFalse(handler.isMarkerSet());
     }
 
+    @Test
     public void testNullParentResolved() throws MojoExecutionException {
         // the parent isn't set so this will create the marker in the local
         // folder. We must clear the

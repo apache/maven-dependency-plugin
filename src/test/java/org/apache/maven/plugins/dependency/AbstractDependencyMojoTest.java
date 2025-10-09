@@ -20,17 +20,17 @@ package org.apache.maven.plugins.dependency;
 
 import java.util.ArrayList;
 
-import junit.framework.TestCase;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AbstractDependencyMojoTest extends TestCase {
+public class AbstractDependencyMojoTest {
     private MavenSession session = mock(MavenSession.class);
 
     private ProjectBuildingRequest buildingRequest = mock(ProjectBuildingRequest.class);
@@ -49,8 +49,8 @@ public class AbstractDependencyMojoTest extends TestCase {
         protected void doExecute() {}
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         pluginRepos.add(newRepositoryWithId("pr-central"));
         pluginRepos.add(newRepositoryWithId("pr-plugins"));
 
