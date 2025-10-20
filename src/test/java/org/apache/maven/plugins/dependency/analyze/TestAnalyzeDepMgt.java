@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
@@ -36,10 +35,16 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-public class TestAnalyzeDepMgt extends TestCase {
+public class TestAnalyzeDepMgt {
 
     AnalyzeDepMgt mojo;
 
@@ -51,8 +56,8 @@ public class TestAnalyzeDepMgt extends TestCase {
 
     DependencyManagement depMgt;
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
 
         MavenProject project = new DependencyProjectStub();
         mojo = new AnalyzeDepMgt(project);
@@ -86,6 +91,7 @@ public class TestAnalyzeDepMgt extends TestCase {
         project.setDependencyArtifacts(directArtifacts);
     }
 
+    @Test
     public void testGetManagementKey() throws IOException {
         Dependency dep = new Dependency();
         dep.setArtifactId("artifact");
@@ -145,6 +151,7 @@ public class TestAnalyzeDepMgt extends TestCase {
         assertEquals(dep.getManagementKey(), mojo.getArtifactManagementKey(artifact));
     }
 
+    @Test
     public void testAddExclusions() {
 
         assertEquals(0, mojo.addExclusions(null).size());
@@ -158,6 +165,7 @@ public class TestAnalyzeDepMgt extends TestCase {
         assertSame(ex, map.get(mojo.getExclusionKey(ex)));
     }
 
+    @Test
     public void testGetExclusionErrors() {
         List<Exclusion> list = new ArrayList<>();
         list.add(ex);
@@ -172,6 +180,7 @@ public class TestAnalyzeDepMgt extends TestCase {
         assertEquals(mojo.getExclusionKey(ex), mojo.getExclusionKey(l.get(0)));
     }
 
+    @Test
     public void testGetMismatch() throws IOException {
         Map<String, Dependency> depMgtMap = new HashMap<>();
 
@@ -186,6 +195,7 @@ public class TestAnalyzeDepMgt extends TestCase {
         assertSame(exclusion, results.get(stubFactory.getReleaseArtifact()));
     }
 
+    @Test
     public void testMojo() throws IOException, MojoExecutionException, MojoFailureException {
         mojo.setIgnoreDirect(false);
         // test with nothing in depMgt
