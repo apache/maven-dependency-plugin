@@ -96,7 +96,7 @@ under the License.
     <slf4jVersion>1.7.36</slf4jVersion>
     <jettyVersion>9.4.58.v20250814</jettyVersion>
     <mockito.version>4.11.0</mockito.version>
-    <plexus-archiver.version>4.10.1</plexus-archiver.version>
+    <plexus-archiver.version>4.10.3</plexus-archiver.version>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
 
     <!-- TODO remove with next parent -->
