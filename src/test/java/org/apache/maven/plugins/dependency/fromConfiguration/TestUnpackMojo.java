@@ -37,8 +37,14 @@ import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub
 import org.apache.maven.plugins.dependency.utils.markers.UnpackFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
 
@@ -59,8 +65,8 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         return false;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
@@ -94,6 +100,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         return list.get(0);
     }
 
+    @Test
     public void testGetArtifactItems() throws Exception {
 
         ArtifactItem item = new ArtifactItem();
@@ -131,6 +138,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testUnpackFile() throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
 
@@ -141,6 +149,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         assertMarkerFiles(list, true);
     }
 
+    @Test
     public void testSkip() throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
 
@@ -152,6 +161,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         assertMarkerFiles(list, false);
     }
 
+    @Test
     public void testUnpackToLocation() throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
         ArtifactItem item = list.get(0);
@@ -164,6 +174,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         assertMarkerFiles(list, true);
     }
 
+    @Test
     public void testUnpackToLocationWhereLocationCannotBeCreatedThrowsException() throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
         ArtifactItem item = list.get(0);
@@ -193,6 +204,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testMissingVersionNotFound() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -235,6 +247,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         return list;
     }
 
+    @Test
     public void testMissingVersionFromDependencies() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -255,6 +268,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         assertEquals("2.0-SNAPSHOT", item.getVersion());
     }
 
+    @Test
     public void testMissingVersionFromDependenciesWithClassifier() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -297,6 +311,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         return list;
     }
 
+    @Test
     public void testMissingVersionFromDependencyMgt() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -327,6 +342,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         assertEquals("3.0-SNAPSHOT", item.getVersion());
     }
 
+    @Test
     public void testMissingVersionFromDependencyMgtWithClassifier() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -369,6 +385,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         assertEquals("3.1", item.getVersion());
     }
 
+    @Test
     public void testArtifactNotFound() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -390,6 +407,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testNoArtifactItems() {
         try {
             mojo.getProcessedArtifactItems(false);
@@ -399,6 +417,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testUnpackDontOverWriteReleases() throws Exception {
         stubFactory.setCreateFiles(true);
         Artifact release = stubFactory.getReleaseArtifact();
@@ -417,6 +436,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         assertUnpacked(item, false);
     }
 
+    @Test
     public void testUnpackDontOverWriteSnapshots() throws Exception {
         stubFactory.setCreateFiles(true);
         Artifact artifact = stubFactory.getSnapshotArtifact();
@@ -435,6 +455,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         assertUnpacked(item, false);
     }
 
+    @Test
     public void testUnpackOverWriteReleases() throws Exception {
         stubFactory.setCreateFiles(true);
         Artifact release = stubFactory.getReleaseArtifact();
@@ -453,6 +474,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
         assertUnpacked(item, true);
     }
 
+    @Test
     public void testUnpackOverWriteSnapshot() throws Exception {
         stubFactory.setCreateFiles(true);
         Artifact artifact = stubFactory.getSnapshotArtifact();
@@ -478,6 +500,7 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
      * https://bugs.openjdk.java.net/browse/JDK-8177809
      *
      */
+    @Test
     public void testUnpackOverWriteIfNewer() throws Exception {
         final long now = System.currentTimeMillis();
 
@@ -516,10 +539,10 @@ public class TestUnpackMojo extends AbstractDependencyMojoTestCase {
                 Files.getLastModifiedTime(unpackedFile.toPath()).toMillis();
 
         assertNotEquals(
-                "unpackedFile '" + unpackedFile + "' lastModified() == " + markerLastModifiedMillis
-                        + ": should be different",
                 markerLastModifiedMillis,
-                unpackedFileLastModifiedMillis);
+                unpackedFileLastModifiedMillis,
+                "unpackedFile '" + unpackedFile + "' lastModified() == " + markerLastModifiedMillis
+                        + ": should be different");
     }
 
     public void assertUnpacked(ArtifactItem item, boolean overWrite) throws Exception {

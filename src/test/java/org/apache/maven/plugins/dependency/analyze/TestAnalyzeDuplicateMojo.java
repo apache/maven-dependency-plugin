@@ -28,12 +28,17 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DuplicateDependencies2ProjectStub;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DuplicateDependenciesProjectStub;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @version $Id$
  */
 public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
+    @Test
     public void testDuplicate() throws Exception {
         MavenProject project = new DuplicateDependenciesProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());
@@ -53,6 +58,7 @@ public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
         assertTrue(log.getContent().contains("junit:junit:jar"));
     }
 
+    @Test
     public void testDuplicate2() throws Exception {
         MavenProject project = new DuplicateDependencies2ProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());

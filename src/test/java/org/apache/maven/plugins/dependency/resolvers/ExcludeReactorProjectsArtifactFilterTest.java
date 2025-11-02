@@ -28,10 +28,13 @@ import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -40,6 +43,7 @@ import static org.mockito.Mockito.when;
 
 public class ExcludeReactorProjectsArtifactFilterTest extends AbstractDependencyMojoTestCase {
 
+    @Test
     public void testFilter() throws ArtifactFilterException {
         Artifact artifact1 = new ArtifactStub();
         artifact1.setGroupId("org.apache.maven.plugins");
@@ -70,6 +74,7 @@ public class ExcludeReactorProjectsArtifactFilterTest extends AbstractDependency
         verify(log, never()).debug(any(String.class));
     }
 
+    @Test
     public void testFilterWithLogging() throws ArtifactFilterException {
         Artifact artifact = new ArtifactStub();
         artifact.setGroupId("org.apache.maven.plugins");

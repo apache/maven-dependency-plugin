@@ -26,6 +26,10 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ResolveDependenciesMojoTest extends AbstractDependencyMojoTestCase {
 
@@ -39,27 +43,31 @@ public class ResolveDependenciesMojoTest extends AbstractDependencyMojoTestCase 
         return true;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
     }
 
+    @Test
     public void testDependencyStatusLog() throws IOException {
         Set<Artifact> artifacts = this.stubFactory.getMixedArtifacts();
         doTestDependencyStatusLog(artifacts);
     }
 
+    @Test
     public void testDependencyStatusLogNullFiles() throws IOException {
         this.stubFactory.setCreateFiles(false);
         Set<Artifact> artifacts = this.stubFactory.getMixedArtifacts();
         doTestDependencyStatusLog(artifacts);
     }
 
+    @Test
     public void testDependencyStatusEmptySet() {
         doTestDependencyStatusLog(new HashSet<>());
     }
 
+    @Test
     public void testOptionalDependencyFormatting() throws IOException {
         Set<Artifact> set = new HashSet<>();
         Artifact artifact =

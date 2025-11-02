@@ -29,16 +29,20 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class TestSkip extends AbstractDependencyMojoTestCase {
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         super.setUp();
         MavenProject project = new DependencyProjectStub();
         getContainer().addComponent(project, MavenProject.class.getName());
@@ -47,78 +51,97 @@ public class TestSkip extends AbstractDependencyMojoTestCase {
         getContainer().addComponent(session, MavenSession.class.getName());
     }
 
+    @Test
     public void testSkipAnalyze() throws Exception {
         doTest("analyze");
     }
 
+    @Test
     public void testSkipAnalyzeDepMgt() throws Exception {
         doTest("analyze-dep-mgt");
     }
 
+    @Test
     public void testSkipAnalyzeOnly() throws Exception {
         doTest("analyze-only");
     }
 
+    @Test
     public void testSkipAnalyzeReport() throws Exception {
         doSpecialTest("analyze-report", true);
     }
 
+    @Test
     public void testSkipAnalyzeDuplicate() throws Exception {
         doTest("analyze-duplicate");
     }
 
+    @Test
     public void testSkipBuildClasspath() throws Exception {
         doTest("build-classpath");
     }
 
+    @Test
     public void testSkipCopy() throws Exception {
         doTest("copy");
     }
 
+    @Test
     public void testSkipCopyDependencies() throws Exception {
         doTest("copy-dependencies");
     }
 
+    @Test
     public void testSkipGet() throws Exception {
         doSpecialTest("get");
     }
 
+    @Test
     public void testSkipGoOffline() throws Exception {
         doTest("go-offline");
     }
 
+    @Test
     public void testSkipList() throws Exception {
         doTest("list");
     }
 
+    @Test
     public void testSkipProperties() throws Exception {
         doTest("properties");
     }
 
+    @Test
     public void testSkipPurgeLocalRepository() throws Exception {
         doSpecialTest("purge-local-repository");
     }
 
+    @Test
     public void testSkipResolve() throws Exception {
         doTest("resolve");
     }
 
+    @Test
     public void testSkipResolvePlugins() throws Exception {
         doTest("resolve-plugins");
     }
 
+    @Test
     public void testSkipSources() throws Exception {
         doTest("sources");
     }
 
+    @Test
     public void testSkipTree() throws Exception {
         doTest("tree");
     }
 
+    @Test
     public void testSkipUnpack() throws Exception {
         doTest("unpack");
     }
 
+    @Test
     public void testSkipUnpackDependencies() throws Exception {
         doTest("unpack-dependencies");
     }
@@ -142,7 +165,7 @@ public class TestSkip extends AbstractDependencyMojoTestCase {
     private void doConfigTest(String mojoName, String configFile, boolean addMojoExecution) throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/skip-test/" + configFile);
         Mojo mojo = lookupMojo(mojoName, testPom);
-        assertNotNull("Mojo not found.", mojo);
+        assertNotNull(mojo, "Mojo not found.");
 
         if (addMojoExecution) {
             setVariableValueToObject(mojo, "mojoExecution", getMockMojoExecution(mojoName));

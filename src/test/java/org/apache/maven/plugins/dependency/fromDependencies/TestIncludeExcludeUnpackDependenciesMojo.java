@@ -26,6 +26,11 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
     private static final String PACKED_FILE = "test.zip";
@@ -48,8 +53,8 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
         return true;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
@@ -91,6 +96,7 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
      *
      * @throws Exception in case of errors
      */
+    @Test
     public void testUnpackIncludesManyFiles() throws Exception {
         mojo.setIncludes("**/*1" + UNPACKED_FILE_SUFFIX);
         mojo.execute();
@@ -105,6 +111,7 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
      *
      * @throws Exception in case of errors
      */
+    @Test
     public void testUnpackIncludesSingleFile() throws Exception {
         mojo.setIncludes("**/test2" + UNPACKED_FILE_SUFFIX);
         mojo.execute();
@@ -119,6 +126,7 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
      *
      * @throws Exception in case of errors
      */
+    @Test
     public void testUnpackIncludesAllFiles() throws Exception {
         mojo.setIncludes("**/*");
         mojo.execute();
@@ -133,6 +141,7 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
      *
      * @throws Exception in case of errors
      */
+    @Test
     public void testUnpackExcludesManyFiles() throws Exception {
         mojo.setExcludes("**/*1" + UNPACKED_FILE_SUFFIX);
         mojo.execute();
@@ -147,6 +156,7 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
      *
      * @throws Exception in case of errors
      */
+    @Test
     public void testUnpackExcludesSingleFile() throws Exception {
         mojo.setExcludes("**/test2" + UNPACKED_FILE_SUFFIX);
         mojo.execute();
@@ -161,6 +171,7 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
      *
      * @throws Exception in case of errors
      */
+    @Test
     public void testUnpackExcludesAllFiles() throws Exception {
         mojo.setExcludes("**/*");
         mojo.execute();
@@ -170,6 +181,7 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
         assertUnpacked(false, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
     }
 
+    @Test
     public void testNoIncludeExcludes() throws Exception {
         mojo.execute();
         assertUnpacked(true, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);

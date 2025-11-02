@@ -38,6 +38,14 @@ import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
 
@@ -58,8 +66,8 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         return false;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
@@ -100,6 +108,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         assertFalse(handle.isMarkerSet());
     }
 
+    @Test
     public void testCopyArtifactFile() throws Exception {
         final Artifact srcArtifact = new ArtifactStub();
         srcArtifact.setGroupId("org.apache.maven.plugins");
@@ -121,41 +130,42 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception if an error occurs during the test
      */
+    @Test
     public void testCopySignatureFiles() throws Exception {
         // Enable the copySignatures parameter
         mojo.copySignatures = true;
 
         if (!mojo.outputDirectory.exists()) {
-            assertTrue("Failed to create output directory", mojo.outputDirectory.mkdirs());
+            assertTrue(mojo.outputDirectory.mkdirs(), "Failed to create output directory");
         }
 
         File sourceDirectory =
                 new File(System.getProperty("java.io.tmpdir"), "test-source-" + System.currentTimeMillis());
         if (!sourceDirectory.exists()) {
-            assertTrue("Failed to create source directory", sourceDirectory.mkdirs());
+            assertTrue(sourceDirectory.mkdirs(), "Failed to create source directory");
         }
 
         File artifactFile = new File(sourceDirectory, "maven-dependency-plugin-1.0.jar");
         if (!artifactFile.getParentFile().exists()) {
             assertTrue(
-                    "Failed to create parent directory",
-                    artifactFile.getParentFile().mkdirs());
+                    artifactFile.getParentFile().mkdirs(),
+                    "Failed to create parent directory");
         }
         if (artifactFile.exists()) {
-            assertTrue("Failed to delete existing artifact file", artifactFile.delete());
+            assertTrue(artifactFile.delete(), "Failed to delete existing artifact file");
         }
-        assertTrue("Failed to create artifact file", artifactFile.createNewFile());
+        assertTrue(artifactFile.createNewFile(), "Failed to create artifact file");
 
         File signatureFile = new File(sourceDirectory, "maven-dependency-plugin-1.0.jar.asc");
         if (!signatureFile.getParentFile().exists()) {
             assertTrue(
-                    "Failed to create parent directory",
-                    signatureFile.getParentFile().mkdirs());
+                    signatureFile.getParentFile().mkdirs(),
+                    "Failed to create parent directory");
         }
         if (signatureFile.exists()) {
-            assertTrue("Failed to delete existing signature file", signatureFile.delete());
+            assertTrue(signatureFile.delete(), "Failed to delete existing signature file");
         }
-        assertTrue("Failed to create signature file", signatureFile.createNewFile());
+        assertTrue(signatureFile.createNewFile(), "Failed to create signature file");
 
         Artifact artifact = stubFactory.createArtifact(
                 "org.apache.maven.plugins", "maven-dependency-plugin", "1.0", Artifact.SCOPE_COMPILE);
@@ -168,7 +178,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         mojo.execute();
 
         File copiedSignatureFile = new File(mojo.outputDirectory, "maven-dependency-plugin-1.0.jar.asc");
-        assertTrue("Signature file was not copied", copiedSignatureFile.exists());
+        assertTrue(copiedSignatureFile.exists(), "Signature file was not copied");
 
         // Clean up
         artifactFile.delete();
@@ -181,6 +191,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of an error
      */
+    @Test
     public void testMojo() throws Exception {
         mojo.execute();
         Set<Artifact> artifacts = mojo.getProject().getArtifacts();
@@ -194,6 +205,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testStripVersion() throws Exception {
         mojo.stripVersion = true;
         mojo.execute();
@@ -206,6 +218,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testStripClassifier() throws Exception {
         mojo.stripClassifier = true;
         mojo.execute();
@@ -218,6 +231,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testUseBaseVersion() throws Exception {
         mojo.useBaseVersion = true;
         mojo.execute();
@@ -230,6 +244,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testNoTransitive() throws Exception {
         mojo.excludeTransitive = true;
         mojo.execute();
@@ -242,6 +257,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeType() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getTypedArtifacts());
 
@@ -256,6 +272,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testIncludeType() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getTypedArtifacts());
 
@@ -283,6 +300,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeArtifactId() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getArtifactArtifacts());
         mojo.excludeArtifactIds = "one";
@@ -296,6 +314,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testIncludeArtifactId() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getArtifactArtifacts());
 
@@ -323,6 +342,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testIncludeGroupId() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getGroupIdArtifacts());
 
@@ -350,6 +370,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeGroupId() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getGroupIdArtifacts());
 
@@ -365,6 +386,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeMultipleGroupIds() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getGroupIdArtifacts());
 
@@ -381,6 +403,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeClassifier() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getClassifiedArtifacts());
 
@@ -395,6 +418,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testIncludeClassifier() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getClassifiedArtifacts());
 
@@ -422,6 +446,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testSubPerType() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getTypedArtifacts());
 
@@ -438,14 +463,17 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testCDMClassifier() throws Exception {
         dotestClassifierType("jdk14", null);
     }
 
+    @Test
     public void testCDMType() throws Exception {
         dotestClassifierType(null, "sources");
     }
 
+    @Test
     public void testCDMClassifierType() throws Exception {
         dotestClassifierType("jdk14", "sources");
     }
@@ -492,6 +520,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testArtifactResolutionException() throws MojoFailureException {
         dotestArtifactExceptions();
     }
@@ -515,6 +544,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
      * File.separatorChar + "target/test-classes/unit/copy-dependencies-test/test.zip" ); }
      */
 
+    @Test
     public void testDontOverWriteRelease()
             throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
 
@@ -544,6 +574,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         assertEquals(time, copiedFile.lastModified());
     }
 
+    @Test
     public void testOverWriteRelease() throws MojoExecutionException, IOException, MojoFailureException {
 
         Set<Artifact> artifacts = new HashSet<>();
@@ -572,6 +603,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         assertEquals(1000L, timeCopyNow);
     }
 
+    @Test
     public void testDontOverWriteSnap() throws MojoExecutionException, IOException, MojoFailureException {
 
         Set<Artifact> artifacts = new HashSet<>();
@@ -600,6 +632,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         assertEquals(2000L, timeCopyNow);
     }
 
+    @Test
     public void testOverWriteSnap() throws MojoExecutionException, IOException, MojoFailureException {
 
         Set<Artifact> artifacts = new HashSet<>();
@@ -629,11 +662,13 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         assertEquals(1000L, timeCopyNow);
     }
 
+    @Test
     public void testGetDependencies() throws MojoExecutionException {
         assertTrue(mojo.getResolvedDependencies(true)
                 .containsAll(mojo.getDependencySets(true).getResolvedDependencies()));
     }
 
+    @Test
     public void testExcludeProvidedScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
 
@@ -651,6 +686,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeSystemScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
 
@@ -668,6 +704,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeCompileScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
 
@@ -684,6 +721,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeTestScope() throws IOException, MojoFailureException {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
 
@@ -697,6 +735,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeRuntimeScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
 
@@ -713,6 +752,7 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testCopyPom() throws Exception {
         mojo.setCopyPom(true);
 
@@ -726,10 +766,11 @@ public class TestCopyDependenciesMojo extends AbstractDependencyMojoTestCase {
         for (Artifact artifact : artifacts) {
             String fileName = DependencyUtil.getFormattedFileName(artifact, false);
             File file = new File(mojo.outputDirectory, fileName.substring(0, fileName.length() - 4) + ".pom");
-            assertTrue(file + " doesn't exist", file.exists());
+            assertTrue(file.exists(), file + " doesn't exist");
         }
     }
 
+    @Test
     public void testPrependGroupId() throws Exception {
         mojo.prependGroupId = true;
         mojo.execute();

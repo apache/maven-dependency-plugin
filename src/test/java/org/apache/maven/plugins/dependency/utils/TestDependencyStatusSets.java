@@ -19,6 +19,8 @@
 package org.apache.maven.plugins.dependency.utils;
 
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TestDependencyStatusSets extends AbstractDependencyMojoTestCase {
 
@@ -32,12 +34,13 @@ public class TestDependencyStatusSets extends AbstractDependencyMojoTestCase {
         return true;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
     }
 
+    @Test
     public void testDependencyStatusSettersGetters() {
         /*
          * DependencyStatusSets dss = new DependencyStatusSets(); Set set = new HashSet(); dss.setResolvedDependencies(
@@ -49,6 +52,7 @@ public class TestDependencyStatusSets extends AbstractDependencyMojoTestCase {
          */
     }
 
+    @Test
     public void testDependencyStatusConstructor() {
         /*
          * Set r = new HashSet(); Set u = new HashSet(); Set s = new HashSet(); DependencyStatusSets dss = new

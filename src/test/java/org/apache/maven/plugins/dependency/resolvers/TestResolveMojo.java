@@ -28,6 +28,13 @@ import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub
 import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestResolveMojo extends AbstractDependencyMojoTestCase {
 
@@ -41,8 +48,8 @@ public class TestResolveMojo extends AbstractDependencyMojoTestCase {
         return false;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
@@ -58,6 +65,7 @@ public class TestResolveMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of errors.
      */
+    @Test
     public void testResolveTestEnvironment() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/resolve-test/plugin-config.xml");
         ResolveDependenciesMojo mojo = (ResolveDependenciesMojo) lookupMojo("resolve", testPom);
@@ -86,6 +94,7 @@ public class TestResolveMojo extends AbstractDependencyMojoTestCase {
         assertEquals(directArtifacts.size(), results.getResolvedDependencies().size());
     }
 
+    @Test
     public void testSilent() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/resolve-test/plugin-config.xml");
         ResolveDependenciesMojo mojo = (ResolveDependenciesMojo) lookupMojo("resolve", testPom);

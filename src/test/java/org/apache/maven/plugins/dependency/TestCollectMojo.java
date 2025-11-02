@@ -29,6 +29,13 @@ import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub
 import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestCollectMojo extends AbstractDependencyMojoTestCase {
 
@@ -42,8 +49,8 @@ public class TestCollectMojo extends AbstractDependencyMojoTestCase {
         return false;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
@@ -59,6 +66,7 @@ public class TestCollectMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception if a problem occurs
      */
+    @Test
     public void testCollectTestEnvironment() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/collect-test/plugin-config.xml");
         CollectDependenciesMojo mojo = (CollectDependenciesMojo) lookupMojo("collect", testPom);
@@ -85,6 +93,7 @@ public class TestCollectMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception if a problem occurs
      */
+    @Test
     public void testCollectTestEnvironmentExcludeTransitive() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/collect-test/plugin-config.xml");
         CollectDependenciesMojo mojo = (CollectDependenciesMojo) lookupMojo("collect", testPom);
@@ -108,6 +117,7 @@ public class TestCollectMojo extends AbstractDependencyMojoTestCase {
         assertEquals(directArtifacts.size(), results.getResolvedDependencies().size());
     }
 
+    @Test
     public void testSilent() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/resolve-test/plugin-config.xml");
         ResolveDependenciesMojo mojo = (ResolveDependenciesMojo) lookupMojo("resolve", testPom);

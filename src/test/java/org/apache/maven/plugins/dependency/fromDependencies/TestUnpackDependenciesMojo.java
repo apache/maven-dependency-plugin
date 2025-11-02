@@ -40,6 +40,13 @@ import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandle
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.eclipse.aether.RepositorySystem;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
 
@@ -65,8 +72,8 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         return false;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
@@ -138,6 +145,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testMojo() throws Exception {
         mojo.execute();
         for (Artifact artifact : mojo.getProject().getArtifacts()) {
@@ -145,6 +153,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testNoTransitive() throws Exception {
         mojo.excludeTransitive = true;
         mojo.execute();
@@ -153,6 +162,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeType() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getTypedArchiveArtifacts());
         mojo.excludeTypes = "jar";
@@ -163,6 +173,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeProvidedScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.excludeScope = "provided";
@@ -174,6 +185,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeSystemScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.excludeScope = "system";
@@ -185,6 +197,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeCompileScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.excludeScope = "compile";
@@ -196,6 +209,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeTestScope() throws IOException, MojoFailureException {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.excludeScope = "test";
@@ -208,6 +222,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeRuntimeScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.excludeScope = "runtime";
@@ -219,6 +234,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testIncludeType() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getTypedArchiveArtifacts());
 
@@ -246,6 +262,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testSubPerType() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getTypedArchiveArtifacts());
         mojo.useSubDirectoryPerType = true;
@@ -256,6 +273,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testSubPerArtifact() throws Exception {
         mojo.useSubDirectoryPerArtifact = true;
         mojo.execute();
@@ -265,6 +283,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testSubPerArtifactAndType() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getTypedArchiveArtifacts());
         mojo.useSubDirectoryPerArtifact = true;
@@ -276,6 +295,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testSubPerArtifactRemoveVersion() throws Exception {
         mojo.useSubDirectoryPerArtifact = true;
         mojo.stripVersion = true;
@@ -286,6 +306,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testSubPerArtifactAndTypeRemoveVersion() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getTypedArchiveArtifacts());
         mojo.useSubDirectoryPerArtifact = true;
@@ -298,6 +319,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testIncludeCompileScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.includeScope = "compile";
@@ -309,6 +331,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testIncludeTestScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.includeScope = "test";
@@ -321,6 +344,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testIncludeRuntimeScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.includeScope = "runtime";
@@ -332,6 +356,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testIncludeprovidedScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.includeScope = "provided";
@@ -342,6 +367,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testIncludesystemScope() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.includeScope = "system";
@@ -353,6 +379,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testIncludeArtifactId() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getArtifactArtifacts());
 
@@ -376,6 +403,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeArtifactId() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getArtifactArtifacts());
         mojo.excludeArtifactIds = "one";
@@ -389,6 +417,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testExcludeGroupId() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getGroupIdArtifacts());
         mojo.excludeGroupIds = "one";
@@ -399,6 +428,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testIncludeGroupId() throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getGroupIdArtifacts());
         mojo.includeGroupIds = "one";
@@ -425,14 +455,17 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testCDMClassifier() throws Exception {
         dotestClassifierType("jdk14", null);
     }
 
+    @Test
     public void testCDMType() throws Exception {
         dotestClassifierType(null, "zip");
     }
 
+    @Test
     public void testCDMClassifierType() throws Exception {
         dotestClassifierType("jdk14", "war");
     }
@@ -477,6 +510,7 @@ public class TestUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testArtifactResolutionException() throws MojoFailureException {
         dotestArtifactExceptions();
     }

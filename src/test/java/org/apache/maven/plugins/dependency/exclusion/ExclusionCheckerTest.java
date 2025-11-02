@@ -23,8 +23,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.plugins.dependency.exclusion.Coordinates.coordinates;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +33,7 @@ public class ExclusionCheckerTest {
 
     private ExclusionChecker checker;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         checker = new ExclusionChecker();
     }

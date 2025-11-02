@@ -22,6 +22,10 @@ import java.io.IOException;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestArtifactItem extends AbstractDependencyMojoTestCase {
 
@@ -35,12 +39,13 @@ public class TestArtifactItem extends AbstractDependencyMojoTestCase {
         return false;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
     }
 
+    @Test
     public void testArtifactItemConstructor() throws IOException {
         Artifact artifact = stubFactory.createArtifact("g", "a", "1.0", Artifact.SCOPE_COMPILE, "jar", "one");
 
@@ -54,6 +59,7 @@ public class TestArtifactItem extends AbstractDependencyMojoTestCase {
         assertEquals(item.getType(), artifact.getType());
     }
 
+    @Test
     public void testArtifactItemDefaultType() {
         ArtifactItem item = new ArtifactItem();
         // check type default
