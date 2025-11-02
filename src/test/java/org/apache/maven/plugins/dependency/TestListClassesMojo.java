@@ -31,9 +31,14 @@ import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
     private ListClassesMojo mojo;
@@ -48,8 +53,8 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         return false;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         super.setUp();
 
         MavenProject project = new DependencyProjectStub();
@@ -73,6 +78,7 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         installLocalRepository(session.getRepositorySession());
     }
 
+    @Test
     public void testListClassesNotTransitive() throws Exception {
         Path path = Paths.get("src/test/resources/unit/list-test/testListClassesNotTransitive.txt");
         List<String> expectedLogArgs = Files.readAllLines(path);
@@ -94,9 +100,10 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         mojo.execute();
 
         Mockito.verify(log, Mockito.times(expectedLogArgs.size())).info(infoArgsCaptor.capture());
-        Assert.assertEquals(expectedLogArgs, infoArgsCaptor.getAllValues());
+        Assertions.assertEquals(expectedLogArgs, infoArgsCaptor.getAllValues());
     }
 
+    @Test
     public void testListClassesNotTransitiveByGAV() throws Exception {
         Path path = Paths.get("src/test/resources/unit/list-test/testListClassesNotTransitive.txt");
         List<String> expectedLogArgs = Files.readAllLines(path);
@@ -122,9 +129,10 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         mojo.execute();
 
         Mockito.verify(log, Mockito.times(expectedLogArgs.size())).info(infoArgsCaptor.capture());
-        Assert.assertEquals(expectedLogArgs, infoArgsCaptor.getAllValues());
+        Assertions.assertEquals(expectedLogArgs, infoArgsCaptor.getAllValues());
     }
 
+    @Test
     public void testListClassesTransitive() throws Exception {
         Path path = Paths.get("src/test/resources/unit/list-test/testListClassesTransitive.txt");
         List<String> expectedLogArgs = Files.readAllLines(path);
@@ -147,9 +155,10 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         mojo.execute();
 
         Mockito.verify(log, Mockito.times(expectedLogArgs.size())).info(infoArgsCaptor.capture());
-        Assert.assertEquals(expectedLogArgs, infoArgsCaptor.getAllValues());
+        Assertions.assertEquals(expectedLogArgs, infoArgsCaptor.getAllValues());
     }
 
+    @Test
     public void testListClassesTransitiveByGAV() throws Exception {
         Path path = Paths.get("src/test/resources/unit/list-test/testListClassesTransitive.txt");
         List<String> expectedLogArgs = Files.readAllLines(path);
@@ -173,6 +182,6 @@ public class TestListClassesMojo extends AbstractDependencyMojoTestCase {
         mojo.execute();
 
         Mockito.verify(log, Mockito.times(expectedLogArgs.size())).info(infoArgsCaptor.capture());
-        Assert.assertEquals(expectedLogArgs, infoArgsCaptor.getAllValues());
+        Assertions.assertEquals(expectedLogArgs, infoArgsCaptor.getAllValues());
     }
 }

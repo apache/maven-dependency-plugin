@@ -40,10 +40,13 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -73,8 +76,8 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         return false;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
@@ -100,6 +103,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         mojo.setLog(testLog);
     }
 
+    @Test
     public void testShallThrowExceptionWhenFailOnWarning() throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency withInvalidExclusion = dependency("a", "b");
@@ -117,6 +121,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         assertThat(testLog.getContent()).startsWith("[error]");
     }
 
+    @Test
     public void testShallLogWarningWhenFailOnWarningIsFalse() throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency withInvalidExclusion = dependency("a", "b");
@@ -132,6 +137,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         assertThat(testLog.getContent()).startsWith("[warn]");
     }
 
+    @Test
     public void testShallExitWithoutAnalyzeWhenNoDependencyHasExclusion() throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         dependencies.add(dependency("a", "c"));
@@ -140,6 +146,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         assertThat(testLog.getContent()).startsWith("[debug] No dependencies defined with exclusions - exiting");
     }
 
+    @Test
     public void testShallNotReportInvalidExclusionForWildcardGroupIdAndArtifactId() throws Exception {
         Dependency dependencyWithWildcardExclusion = dependency("a", "b");
         dependencyWithWildcardExclusion.addExclusion(exclusion("*", "*"));
@@ -156,6 +163,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         assertThat(testLog.getContent()).doesNotContain("[warn]     a:b:", "[warn]         - *:*");
     }
 
+    @Test
     public void testCanResolveMultipleArtifactsWithEqualGroupIdAndArtifactId() throws Exception {
         Dependency dependency1 = dependency("a", "b");
         Dependency dependency2 = dependency("a", "b", "compile", "native");
@@ -169,6 +177,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         assertThatCode(() -> mojo.execute()).doesNotThrowAnyException();
     }
 
+    @Test
     public void testShallNotLogWhenExclusionIsValid() throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency dependency = dependency("a", "b");
@@ -187,6 +196,7 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         assertThatCode(() -> mojo.execute()).doesNotThrowAnyException();
     }
 
+    @Test
     public void testThatLogContainProjectName() throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency withInvalidExclusion = dependency("a", "b");

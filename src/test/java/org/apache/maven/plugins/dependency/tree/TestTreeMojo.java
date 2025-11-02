@@ -45,6 +45,12 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests <code>TreeMojo</code>.
@@ -69,8 +75,8 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     /*
      * @see org.apache.maven.plugin.testing.AbstractMojoTestCase#setUp()
      */
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
@@ -92,6 +98,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of an error.
      */
+    @Test
     public void testTreeTestEnvironment() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/tree-test/plugin-config.xml");
         TreeMojo mojo = (TreeMojo) lookupMojo("tree", testPom);
@@ -128,6 +135,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of an error.
      */
+    @Test
     public void testTreeDotSerializing() throws Exception {
         List<String> contents = runTreeMojo("tree1.dot", "dot");
         assertTrue(findString(contents, "digraph \"testGroupId:project:jar:1.0:compile\" {"));
@@ -143,6 +151,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of an error.
      */
+    @Test
     public void testTreeGraphMLSerializing() throws Exception {
         List<String> contents = runTreeMojo("tree1.graphml", "graphml");
 
@@ -159,6 +168,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of an error.
      */
+    @Test
     public void testTreeTGFSerializing() throws Exception {
         List<String> contents = runTreeMojo("tree1.tgf", "tgf");
         assertTrue(findString(contents, "testGroupId:project:jar:1.0:compile"));
@@ -169,6 +179,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     /**
      * Test the JSON format serialization on DependencyNodes with circular dependence
      */
+    @Test
     public void testTreeJsonCircularDependency() throws IOException {
         String outputFileName = testDir.getAbsolutePath() + File.separator + "tree1.json";
         File outputFile = new File(outputFileName);
@@ -196,6 +207,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     /*
      * Test parsing of Json output and verify all key-value pairs
      */
+    @Test
     public void testTreeJsonParsing() throws Exception {
         List<String> contents = runTreeMojo("tree2.json", "json");
 
@@ -310,11 +322,11 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
             DependencyNode actualNode) {
         Artifact actualArtifact = actualNode.getArtifact();
 
-        assertEquals("group id", expectedGroupId, actualArtifact.getGroupId());
-        assertEquals("artifact id", expectedArtifactId, actualArtifact.getArtifactId());
-        assertEquals("type", expectedType, actualArtifact.getType());
-        assertEquals("version", expectedVersion, actualArtifact.getVersion());
-        assertEquals("scope", expectedScope, actualArtifact.getScope());
+        assertEquals(expectedGroupId, actualArtifact.getGroupId(), "group id");
+        assertEquals(expectedArtifactId, actualArtifact.getArtifactId(), "artifact id");
+        assertEquals(expectedType, actualArtifact.getType(), "type");
+        assertEquals(expectedVersion, actualArtifact.getVersion(), "version");
+        assertEquals(expectedScope, actualArtifact.getScope(), "scope");
     }
 
     private String createArtifactCoordinateString(DependencyNode actualNode) {

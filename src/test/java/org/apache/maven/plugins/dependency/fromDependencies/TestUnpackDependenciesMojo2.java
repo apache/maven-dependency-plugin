@@ -33,8 +33,13 @@ import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase {
 
@@ -55,8 +60,8 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         return true;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
@@ -102,6 +107,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         return unpacked;
     }
 
+    @Test
     public void testDontOverWriteRelease()
             throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
 
@@ -120,6 +126,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         assertUnpacked(release, false);
     }
 
+    @Test
     public void testOverWriteRelease()
             throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
 
@@ -139,6 +146,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         assertUnpacked(release, true);
     }
 
+    @Test
     public void testDontOverWriteSnap()
             throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
 
@@ -159,6 +167,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         assertUnpacked(snap, false);
     }
 
+    @Test
     public void testOverWriteSnap()
             throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
 
@@ -179,6 +188,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         assertUnpacked(snap, true);
     }
 
+    @Test
     public void testOverWriteIfNewer()
             throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
 

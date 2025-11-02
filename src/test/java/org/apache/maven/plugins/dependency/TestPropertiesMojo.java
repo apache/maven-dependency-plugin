@@ -25,6 +25,11 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestPropertiesMojo extends AbstractDependencyMojoTestCase {
 
@@ -38,8 +43,8 @@ public class TestPropertiesMojo extends AbstractDependencyMojoTestCase {
         return true;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
@@ -55,6 +60,7 @@ public class TestPropertiesMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of errors
      */
+    @Test
     public void testSetProperties() throws Exception {
         File testPom = new File(getBasedir(), "target/test-classes/unit/properties-test/plugin-config.xml");
         PropertiesMojo mojo = (PropertiesMojo) lookupMojo("properties", testPom);

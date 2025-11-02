@@ -33,6 +33,15 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestCopyMojo extends AbstractDependencyMojoTestCase {
     private CopyMojo mojo;
@@ -52,8 +61,8 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         return false;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
@@ -80,6 +89,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         return list.get(0);
     }
 
+    @Test
     public void testSetArtifactWithoutPackaging() throws Exception {
         mojo.setArtifact("a:b:c");
         ArtifactItem item = mojo.getArtifactItems().get(0);
@@ -90,6 +100,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertNull(item.getClassifier());
     }
 
+    @Test
     public void testSetArtifactWithoutClassifier() throws Exception {
         mojo.setArtifact("a:b:c:d");
         ArtifactItem item = mojo.getArtifactItems().get(0);
@@ -100,6 +111,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertNull(item.getClassifier());
     }
 
+    @Test
     public void testSetArtifact() throws Exception {
         mojo.setArtifact("a:b:c:d:e");
         ArtifactItem item = mojo.getArtifactItems().get(0);
@@ -110,6 +122,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertEquals("e", item.getClassifier());
     }
 
+    @Test
     public void testGetArtifactItems() throws Exception {
 
         ArtifactItem item = new ArtifactItem();
@@ -143,6 +156,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertEquals(exist, file.exists());
     }
 
+    @Test
     public void testMojoDefaults() {
         CopyMojo theMojo = new CopyMojo(null, null, null, null, null, null);
 
@@ -151,6 +165,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertFalse(theMojo.isStripClassifier());
     }
 
+    @Test
     public void testCopyFile() throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
 
@@ -182,6 +197,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertFilesExist(list, true);
     }
 
+    @Test
     public void testSkip() throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
 
@@ -196,6 +212,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testCopyFileNoOverwrite() throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
 
@@ -210,6 +227,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertFilesExist(list, true);
     }
 
+    @Test
     public void testCopyToLocation() throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
         ArtifactItem item = list.get(0);
@@ -222,6 +240,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertFilesExist(list, true);
     }
 
+    @Test
     public void testCopyStripVersionSetInMojo() throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
 
@@ -237,6 +256,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertFilesExist(list, true);
     }
 
+    @Test
     public void testCopyStripClassifierSetInMojo() throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
 
@@ -254,6 +274,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertFilesExist(list, true);
     }
 
+    @Test
     public void testNonClassifierStrip() throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getReleaseAndSnapshotArtifacts());
         mojo.setStripVersion(true);
@@ -264,6 +285,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertFilesExist(list, true);
     }
 
+    @Test
     public void testNonClassifierNoStrip() throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getReleaseAndSnapshotArtifacts());
 
@@ -274,6 +296,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertFilesExist(list, true);
     }
 
+    @Test
     public void testMissingVersionNotFound() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -316,6 +339,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         return list;
     }
 
+    @Test
     public void testMissingVersionFromDependencies() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -336,6 +360,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertEquals("2.0-SNAPSHOT", item.getVersion());
     }
 
+    @Test
     public void testMissingVersionFromDependenciesLooseMatch() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -365,6 +390,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertEquals("2.1", item.getVersion());
     }
 
+    @Test
     public void testMissingVersionFromDependenciesWithClassifier() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -407,6 +433,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         return list;
     }
 
+    @Test
     public void testMissingVersionFromDependencyMgt() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -438,6 +465,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertEquals("3.0-SNAPSHOT", item.getVersion());
     }
 
+    @Test
     public void testMissingVersionFromDependencyMgtLooseMatch() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -476,6 +504,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertEquals("3.1", item.getVersion());
     }
 
+    @Test
     public void testMissingVersionFromDependencyMgtWithClassifier() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -507,6 +536,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertEquals("3.1", item.getVersion());
     }
 
+    @Test
     public void testArtifactNotFound() throws Exception {
         ArtifactItem item = new ArtifactItem();
 
@@ -528,6 +558,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testNoArtifactItems() {
         try {
             mojo.getProcessedArtifactItems(new ProcessArtifactItemsRequest(false, false, false, false));
@@ -537,6 +568,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         }
     }
 
+    @Test
     public void testCopyDontOverWriteReleases() throws Exception {
         stubFactory.setCreateFiles(true);
         Artifact release = stubFactory.getReleaseArtifact();
@@ -566,6 +598,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertEquals(time, copiedFile.lastModified());
     }
 
+    @Test
     public void testCopyDontOverWriteSnapshots() throws Exception {
         stubFactory.setCreateFiles(true);
         Artifact artifact = stubFactory.getSnapshotArtifact();
@@ -595,6 +628,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertEquals(time, copiedFile.lastModified());
     }
 
+    @Test
     public void testCopyOverWriteReleases() throws Exception {
         stubFactory.setCreateFiles(true);
         Artifact release = stubFactory.getReleaseArtifact();
@@ -622,6 +656,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertEquals(1000L, timeCopyNow);
     }
 
+    @Test
     public void testCopyOverWriteSnapshot() throws Exception {
         stubFactory.setCreateFiles(true);
         Artifact artifact = stubFactory.getSnapshotArtifact();
@@ -650,6 +685,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertEquals(1000L, timeCopyNow);
     }
 
+    @Test
     public void testCopyOverWriteIfNewer() throws Exception {
         stubFactory.setCreateFiles(true);
         Artifact artifact = stubFactory.getSnapshotArtifact();
@@ -677,6 +713,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         assertTrue(time < copiedFile.lastModified());
     }
 
+    @Test
     public void testCopyFileWithOverideLocalRepo() throws Exception {
         final File localRepo = stubFactory.getWorkingDir();
 
@@ -690,7 +727,7 @@ public class TestCopyMojo extends AbstractDependencyMojoTestCase {
         stubFactory.setWorkingDir(execLocalRepo);
         createArtifactItemArtifacts(list);
 
-        assertFalse("default local repo should not exist", localRepo.exists());
+        assertFalse(localRepo.exists(), "default local repo should not exist");
 
         mojo.setLocalRepositoryDirectory(execLocalRepo);
 

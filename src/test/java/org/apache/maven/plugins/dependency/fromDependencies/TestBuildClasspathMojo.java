@@ -28,6 +28,15 @@ import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
 
@@ -43,8 +52,8 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
         return true;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // required for mojo lookups to work
         super.setUp();
 
@@ -64,6 +73,7 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
     /**
      * Tests the proper discovery and configuration of the mojo.
      */
+    @Test
     public void testEnvironment() throws Exception {
         MavenProject project = mojo.getProject();
 
@@ -117,6 +127,7 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
         assertNotNull(propertyValue);
     }
 
+    @Test
     public void testPath() throws Exception {
 
         LegacySupport legacySupport = lookup(LegacySupport.class);
@@ -146,9 +157,9 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
         mojo.setPrependGroupId(true);
         mojo.appendArtifactPath(artifact, sb);
         assertEquals(
-                "If prefix is null, prependGroupId has no impact ",
                 "%M2_REPO%" + File.separator + DependencyUtil.getFormattedFileName(artifact, false, false),
-                sb.toString());
+                sb.toString(),
+                "If prefix is null, prependGroupId has no impact ");
 
         mojo.setLocalRepoProperty("");
         mojo.setPrefix("prefix");

@@ -30,6 +30,11 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author brianf
@@ -51,8 +56,8 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
         return false;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         super.setUp();
 
         artifactHandlerManager = new DefaultArtifactHandlerManager();
@@ -62,10 +67,12 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
         artifacts = factory.getMixedArtifacts();
     }
 
+    @Test
     public void testNullClassifier() {
         doTestNullEmptyClassifier(null);
     }
 
+    @Test
     public void testEmptyClassifier() {
         doTestNullEmptyClassifier("");
     }
@@ -96,10 +103,12 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
         }
     }
 
+    @Test
     public void testNullType() {
         doTestNullEmptyType(null);
     }
 
+    @Test
     public void testEmptyType() {
         doTestNullEmptyType("");
     }
@@ -130,6 +139,7 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
         }
     }
 
+    @Test
     public void testClassifierAndType() {
         String classifier = "jdk14";
         String type = "sources";
@@ -154,6 +164,7 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
         }
     }
 
+    @Test
     public void testGetterSetter() {
         String classifier = "class";
         String type = "type";

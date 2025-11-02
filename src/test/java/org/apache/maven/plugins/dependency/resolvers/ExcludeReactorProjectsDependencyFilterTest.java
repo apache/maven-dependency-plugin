@@ -24,10 +24,14 @@ import org.apache.maven.plugin.testing.stubs.ArtifactStub;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ExcludeReactorProjectsDependencyFilterTest extends AbstractDependencyMojoTestCase {
+    @Test
     public void testReject() {
         final Artifact artifact1 = new ArtifactStub();
         artifact1.setGroupId("org.apache.maven.plugins");
@@ -53,6 +57,7 @@ public class ExcludeReactorProjectsDependencyFilterTest extends AbstractDependen
         assertFalse(filter.test(dependency));
     }
 
+    @Test
     public void testAccept() {
         final Artifact artifact1 = new ArtifactStub();
         artifact1.setGroupId("org.apache.maven.plugins");

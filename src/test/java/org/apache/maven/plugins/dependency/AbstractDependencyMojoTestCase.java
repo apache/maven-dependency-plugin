@@ -35,7 +35,11 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.LocalRepositoryManager;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.sonatype.plexus.build.incremental.DefaultBuildContext;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCase {
 
@@ -51,7 +55,8 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
      *
      * @throws Exception if setup fails
      */
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         // Required for mojo lookups to work
         super.setUp();
 
@@ -94,11 +99,11 @@ public abstract class AbstractDependencyMojoTestCase extends AbstractMojoTestCas
      *
      * @throws Exception if cleanup fails
      */
-    @Override
-    protected void tearDown() throws Exception {
+    @AfterEach
+    public void tearDown() throws Exception {
         if (testDir != null) {
             FileUtils.deleteDirectory(testDir);
-            assertFalse("Test directory should not exist after cleanup", testDir.exists());
+            assertFalse(testDir.exists(), "Test directory should not exist after cleanup");
         }
         super.tearDown();
     }

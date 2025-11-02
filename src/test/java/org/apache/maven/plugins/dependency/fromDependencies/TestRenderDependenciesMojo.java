@@ -29,6 +29,8 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -45,8 +47,8 @@ public class TestRenderDependenciesMojo extends AbstractDependencyMojoTestCase {
         return true;
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         super.setUp();
 
         final MavenProject project = new DependencyProjectStub();
@@ -66,6 +68,7 @@ public class TestRenderDependenciesMojo extends AbstractDependencyMojoTestCase {
      * It is useful when combined with JIB for example since several versions of the CRD do not support wildcard for
      * the classpath(s).
      */
+    @Test
     public void testRender() throws Exception {
         final File rendered = new File(testDir, "render-dependencies.testRender.txt");
 
@@ -103,6 +106,7 @@ public class TestRenderDependenciesMojo extends AbstractDependencyMojoTestCase {
     /**
      * Tests the rendering with a file template.
      */
+    @Test
     public void testRenderFromFile() throws Exception {
         final File rendered = new File(testDir, "render-dependencies.testRenderFromFile.txt");
         final File template = new File(testDir, "render-dependencies.testRenderFromFile.template.vm");
