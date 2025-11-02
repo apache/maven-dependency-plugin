@@ -22,10 +22,8 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.markers.SourcesFileMarkerHandler;
-import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -36,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author brianf
  */
-public class TestResolveMarkerFileFilter {
+class TestResolveMarkerFileFilter {
 
     @TempDir
     File outputFolder;
@@ -50,7 +48,7 @@ public class TestResolveMarkerFileFilter {
     }
 
     @Test
-    public void testResolveFile() throws IOException, ArtifactFilterException, MojoExecutionException {
+    void resolveFile() throws Exception {
         SourcesFileMarkerHandler handler = new SourcesFileMarkerHandler(outputFolder);
 
         Artifact artifact = fact.getReleaseArtifact();

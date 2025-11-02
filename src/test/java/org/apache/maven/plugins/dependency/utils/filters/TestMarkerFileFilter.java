@@ -19,15 +19,12 @@
 package org.apache.maven.plugins.dependency.utils.filters;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
-import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -39,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author brianf
  */
-public class TestMarkerFileFilter {
+class TestMarkerFileFilter {
     Set<Artifact> artifacts = new HashSet<>();
 
     @TempDir
@@ -54,7 +51,7 @@ public class TestMarkerFileFilter {
     }
 
     @Test
-    public void testMarkerFile() throws ArtifactFilterException {
+    void markerFile() throws Exception {
         MarkerFileFilter filter = new MarkerFileFilter(true, true, false, new DefaultFileMarkerHandler(outputFolder));
         Set<Artifact> result = filter.filter(artifacts);
         assertEquals(2, result.size());
@@ -66,7 +63,7 @@ public class TestMarkerFileFilter {
     }
 
     @Test
-    public void testMarkerSnapshots() throws ArtifactFilterException, MojoExecutionException, IOException {
+    void markerSnapshots() throws Exception {
         DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler(fact.getSnapshotArtifact(), outputFolder);
         handler.setMarker();
 
@@ -81,7 +78,7 @@ public class TestMarkerFileFilter {
     }
 
     @Test
-    public void testMarkerRelease() throws IOException, ArtifactFilterException, MojoExecutionException {
+    void markerRelease() throws Exception {
         DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler(fact.getReleaseArtifact(), outputFolder);
         handler.setMarker();
 
@@ -97,7 +94,7 @@ public class TestMarkerFileFilter {
     }
 
     @Test
-    public void testMarkerTimestamp() throws IOException, MojoExecutionException, ArtifactFilterException {
+    void markerTimestamp() throws Exception {
         // filter includes release artifact because no marker present
         // filter includes snapshot artifact because it is newer than marker
         DependencyArtifactStubFactory fileFact = new DependencyArtifactStubFactory(outputFolder, true);
@@ -131,7 +128,7 @@ public class TestMarkerFileFilter {
     }
 
     @Test
-    public void testGettersSetters() {
+    void gettersSetters() {
         MarkerFileFilter filter = new MarkerFileFilter(true, false, true, new DefaultFileMarkerHandler(outputFolder));
         assertTrue(filter.isOverWriteReleases());
         assertFalse(filter.isOverWriteSnapshots());

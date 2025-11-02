@@ -19,7 +19,6 @@
 package org.apache.maven.plugins.dependency.utils.markers;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-public class TestUnpackMarkerFileHandler extends AbstractMojoTestCase {
+class TestUnpackMarkerFileHandler extends AbstractMojoTestCase {
     List<ArtifactItem> artifactItems = new ArrayList<>();
 
     @TempDir
@@ -75,7 +74,7 @@ public class TestUnpackMarkerFileHandler extends AbstractMojoTestCase {
      * @throws MojoExecutionException in case of an error.
      */
     @Test
-    public void testSetMarker() throws MojoExecutionException {
+    void setMarker() throws Exception {
         UnpackFileMarkerHandler handler = new UnpackFileMarkerHandler(artifactItems.get(0), this.outputFolder);
         assertFalse(handler.isMarkerSet());
         handler.setMarker();
@@ -95,7 +94,7 @@ public class TestUnpackMarkerFileHandler extends AbstractMojoTestCase {
     }
 
     @Test
-    public void testMarkerFile() throws MojoExecutionException, IOException {
+    void markerFile() throws Exception {
         UnpackFileMarkerHandler handler = new UnpackFileMarkerHandler(artifactItems.get(0), this.outputFolder);
 
         File handle = handler.getMarkerFile();
@@ -117,7 +116,7 @@ public class TestUnpackMarkerFileHandler extends AbstractMojoTestCase {
     }
 
     @Test
-    public void testMarkerTimeStamp() throws MojoExecutionException, IOException, InterruptedException {
+    void markerTimeStamp() throws Exception {
         File theFile = new File(outputFolder, "theFile.jar");
         theFile.createNewFile();
         ArtifactItem theArtifactItem = artifactItems.get(0);
@@ -140,7 +139,7 @@ public class TestUnpackMarkerFileHandler extends AbstractMojoTestCase {
     }
 
     @Test
-    public void testMarkerFileException() {
+    void markerFileException() {
         // this stub wraps the file with an object to throw exceptions
         StubUnpackFileMarkerHandler handler = new StubUnpackFileMarkerHandler(artifactItems.get(0), this.outputFolder);
         try {
@@ -152,7 +151,7 @@ public class TestUnpackMarkerFileHandler extends AbstractMojoTestCase {
     }
 
     @Test
-    public void testGetterSetter() {
+    void getterSetter() {
         UnpackFileMarkerHandler handler = new UnpackFileMarkerHandler(null, null);
         assertNull(handler.getArtifactItem());
         assertNull(handler.getArtifact());
@@ -166,7 +165,7 @@ public class TestUnpackMarkerFileHandler extends AbstractMojoTestCase {
     }
 
     @Test
-    public void testNullParent() throws MojoExecutionException {
+    void nullParent() throws Exception {
         // the parent isn't set so this will create the marker in the local
         // folder. We must clear the
         // marker to avoid leaving test droppings in root.
@@ -179,7 +178,7 @@ public class TestUnpackMarkerFileHandler extends AbstractMojoTestCase {
     }
 
     @Test
-    public void testIncludesMarker() throws MojoExecutionException, IOException {
+    void includesMarker() throws Exception {
         UnpackFileMarkerHandler handler = new UnpackFileMarkerHandler(artifactItems.get(1), outputFolder);
         File handle = handler.getMarkerFile();
         assertFalse(handle.exists());
@@ -202,7 +201,7 @@ public class TestUnpackMarkerFileHandler extends AbstractMojoTestCase {
     }
 
     @Test
-    public void testExcludesMarker() throws MojoExecutionException, IOException {
+    void excludesMarker() throws Exception {
         UnpackFileMarkerHandler handler = new UnpackFileMarkerHandler(artifactItems.get(2), outputFolder);
         File handle = handler.getMarkerFile();
         assertFalse(handle.exists());
@@ -225,7 +224,7 @@ public class TestUnpackMarkerFileHandler extends AbstractMojoTestCase {
     }
 
     @Test
-    public void testIncludesExcludesMarker() throws MojoExecutionException, IOException {
+    void includesExcludesMarker() throws Exception {
         UnpackFileMarkerHandler handler = new UnpackFileMarkerHandler(artifactItems.get(3), outputFolder);
         File handle = handler.getMarkerFile();
         assertFalse(handle.exists());

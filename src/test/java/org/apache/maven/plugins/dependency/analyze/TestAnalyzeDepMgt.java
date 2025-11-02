@@ -19,7 +19,6 @@
 package org.apache.maven.plugins.dependency.analyze;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +30,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
@@ -44,7 +42,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class TestAnalyzeDepMgt {
+class TestAnalyzeDepMgt {
 
     AnalyzeDepMgt mojo;
 
@@ -57,7 +55,7 @@ public class TestAnalyzeDepMgt {
     DependencyManagement depMgt;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
 
         MavenProject project = new DependencyProjectStub();
         mojo = new AnalyzeDepMgt(project);
@@ -92,7 +90,7 @@ public class TestAnalyzeDepMgt {
     }
 
     @Test
-    public void testGetManagementKey() throws IOException {
+    void getManagementKey() throws Exception {
         Dependency dep = new Dependency();
         dep.setArtifactId("artifact");
         dep.setClassifier("class");
@@ -152,7 +150,7 @@ public class TestAnalyzeDepMgt {
     }
 
     @Test
-    public void testAddExclusions() {
+    void addExclusions() {
 
         assertEquals(0, mojo.addExclusions(null).size());
 
@@ -166,7 +164,7 @@ public class TestAnalyzeDepMgt {
     }
 
     @Test
-    public void testGetExclusionErrors() {
+    void getExclusionErrors() {
         List<Exclusion> list = new ArrayList<>();
         list.add(ex);
 
@@ -181,7 +179,7 @@ public class TestAnalyzeDepMgt {
     }
 
     @Test
-    public void testGetMismatch() throws IOException {
+    void getMismatch() throws Exception {
         Map<String, Dependency> depMgtMap = new HashMap<>();
 
         depMgtMap.put(exclusion.getManagementKey(), exclusion);
@@ -196,7 +194,7 @@ public class TestAnalyzeDepMgt {
     }
 
     @Test
-    public void testMojo() throws IOException, MojoExecutionException, MojoFailureException {
+    void mojo() throws Exception {
         mojo.setIgnoreDirect(false);
         // test with nothing in depMgt
         mojo.execute();
