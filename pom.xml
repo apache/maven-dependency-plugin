@@ -97,7 +97,7 @@ under the License.
     <jettyVersion>9.4.58.v20250814</jettyVersion>
     <mockito.version>4.11.0</mockito.version>
     <plexus-archiver.version>4.10.3</plexus-archiver.version>
-    <pluginTestingVersion>3.3.0</pluginTestingVersion>
+    <pluginTestingVersion>3.4.0</pluginTestingVersion>
 
     <!-- TODO remove with next parent -->
     <version.maven-invoker-plugin>3.9.1</version.maven-invoker-plugin>
