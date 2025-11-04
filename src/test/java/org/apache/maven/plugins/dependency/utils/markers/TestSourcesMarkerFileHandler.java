@@ -52,7 +52,7 @@ public class TestSourcesMarkerFileHandler {
     File outputFolder;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
 
         ArtifactHandler ah = new DefaultArtifactHandler();
         VersionRange vr = VersionRange.createFromVersion("1.1");
@@ -73,12 +73,12 @@ public class TestSourcesMarkerFileHandler {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         outputFolder.delete();
     }
 
     @Test
-    public void testSetMarkerResolved() throws MojoExecutionException {
+    void setMarkerResolved() throws Exception {
         DefaultFileMarkerHandler handler = new SourcesFileMarkerHandler(artifacts.get(0), this.outputFolder, true);
         assertFalse(handler.isMarkerSet());
         handler.setMarker();
@@ -97,7 +97,7 @@ public class TestSourcesMarkerFileHandler {
     }
 
     @Test
-    public void testSetMarkerUnresolved() throws MojoExecutionException {
+    void setMarkerUnresolved() throws Exception {
         DefaultFileMarkerHandler handler = new SourcesFileMarkerHandler(artifacts.get(0), this.outputFolder, false);
         assertFalse(handler.isMarkerSet());
         handler.setMarker();
@@ -116,7 +116,7 @@ public class TestSourcesMarkerFileHandler {
     }
 
     @Test
-    public void testBothMarkers() throws MojoExecutionException {
+    void bothMarkers() throws Exception {
         DefaultFileMarkerHandler handler = new SourcesFileMarkerHandler(artifacts.get(1), this.outputFolder, true);
         DefaultFileMarkerHandler handler2 = new SourcesFileMarkerHandler(artifacts.get(1), this.outputFolder, false);
 
@@ -132,7 +132,7 @@ public class TestSourcesMarkerFileHandler {
     }
 
     @Test
-    public void testMarkerFile() throws MojoExecutionException, IOException {
+    void markerFile() throws Exception {
         DefaultFileMarkerHandler handler = new SourcesFileMarkerHandler(artifacts.get(0), this.outputFolder, true);
         DefaultFileMarkerHandler handler2 = new SourcesFileMarkerHandler(artifacts.get(0), this.outputFolder, false);
 
@@ -188,12 +188,12 @@ public class TestSourcesMarkerFileHandler {
     }
 
     @Test
-    public void testMarkerTimeStampResolved() throws MojoExecutionException, IOException, InterruptedException {
+    void markerTimeStampResolved() throws Exception {
         doTestMarkerTimeStamp(true);
     }
 
     @Test
-    public void testMarkerTimeStampUnResolved() throws MojoExecutionException, IOException, InterruptedException {
+    void markerTimeStampUnResolved() throws Exception {
         doTestMarkerTimeStamp(false);
     }
 
@@ -234,7 +234,7 @@ public class TestSourcesMarkerFileHandler {
     }
 
     @Test
-    public void testMarkerFileException() {
+    void markerFileException() {
         // this stub wraps the file with an object to throw exceptions
         StubSourcesFileMarkerHandler handler =
                 new StubSourcesFileMarkerHandler(artifacts.get(0), this.outputFolder, true);
@@ -246,7 +246,7 @@ public class TestSourcesMarkerFileHandler {
     }
 
     @Test
-    public void testMarkerFileResolvedSetter() {
+    void markerFileResolvedSetter() {
         SourcesFileMarkerHandler handler = new SourcesFileMarkerHandler(null, null, true);
         assertTrue(handler.isResolved());
         handler.setResolved(false);
@@ -254,7 +254,7 @@ public class TestSourcesMarkerFileHandler {
     }
 
     @Test
-    public void testNullParent() throws MojoExecutionException {
+    void nullParent() throws Exception {
         // the parent isn't set so this will create the marker in the local
         // folder. We must clear the
         // marker to avoid leaving test droppings in root.
@@ -267,7 +267,7 @@ public class TestSourcesMarkerFileHandler {
     }
 
     @Test
-    public void testNullParentResolved() throws MojoExecutionException {
+    void nullParentResolved() throws Exception {
         // the parent isn't set so this will create the marker in the local
         // folder. We must clear the
         // marker to avoid leaving test droppings in root.

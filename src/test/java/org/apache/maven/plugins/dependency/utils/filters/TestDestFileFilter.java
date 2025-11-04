@@ -24,10 +24,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -86,7 +84,7 @@ public class TestDestFileFilter {
     }
 
     @Test
-    public void testDestFileRelease() throws IOException, ArtifactFilterException {
+    void destFileRelease() throws Exception {
         DestFileFilter filter = new DestFileFilter(outputFolder);
         Artifact artifact = fact.getReleaseArtifact();
 
@@ -99,7 +97,7 @@ public class TestDestFileFilter {
     }
 
     @Test
-    public void testDestFileSnapshot() throws IOException, ArtifactFilterException {
+    void destFileSnapshot() throws Exception {
         DestFileFilter filter = new DestFileFilter(outputFolder);
         Artifact artifact = fact.getSnapshotArtifact();
 
@@ -112,7 +110,7 @@ public class TestDestFileFilter {
     }
 
     @Test
-    public void testDestFileStripVersion() throws IOException, ArtifactFilterException {
+    void destFileStripVersion() throws Exception {
         DestFileFilter filter = new DestFileFilter(outputFolder);
         Artifact artifact = fact.getSnapshotArtifact();
         filter.setRemoveVersion(true);
@@ -126,7 +124,7 @@ public class TestDestFileFilter {
     }
 
     @Test
-    public void testDestFileStripClassifier() throws IOException, ArtifactFilterException {
+    void destFileStripClassifier() throws Exception {
         DestFileFilter filter = new DestFileFilter(outputFolder);
         Artifact artifact = fact.getSnapshotArtifact();
         filter.setRemoveClassifier(true);
@@ -140,7 +138,7 @@ public class TestDestFileFilter {
     }
 
     @Test
-    public void testDestFileSubPerArtifact() throws IOException, ArtifactFilterException {
+    void destFileSubPerArtifact() throws Exception {
         DestFileFilter filter = new DestFileFilter(outputFolder);
         Artifact artifact = fact.getSnapshotArtifact();
         filter.setUseSubDirectoryPerArtifact(true);
@@ -154,7 +152,7 @@ public class TestDestFileFilter {
     }
 
     @Test
-    public void testDestFileSubPerType() throws MojoExecutionException, IOException, ArtifactFilterException {
+    void destFileSubPerType() throws Exception {
         DestFileFilter filter = new DestFileFilter(outputFolder);
         Artifact artifact = fact.getSnapshotArtifact();
         filter.setUseSubDirectoryPerType(true);
@@ -168,7 +166,7 @@ public class TestDestFileFilter {
     }
 
     @Test
-    public void testDestFileOverwriteIfNewer() throws MojoExecutionException, IOException, ArtifactFilterException {
+    void destFileOverwriteIfNewer() throws Exception {
         DestFileFilter filter = new DestFileFilter(outputFolder);
 
         fact.setCreateFiles(true);
@@ -194,7 +192,7 @@ public class TestDestFileFilter {
     }
 
     @Test
-    public void testGettersSetters() {
+    void gettersSetters() {
         DestFileFilter filter = new DestFileFilter(null);
         assertNull(filter.getOutputFileDirectory());
         filter.setOutputFileDirectory(outputFolder);
