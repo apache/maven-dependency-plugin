@@ -91,12 +91,14 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
 
     /**
      * If defined, the name of a property to which the classpath string will be written.
+     * If neither this nor the outputFile parameter is set, the classpath will be logged at INFO level.
      */
     @Parameter(property = "mdep.outputProperty")
     private String outputProperty;
 
     /**
-     * The file to write the classpath string. If undefined, it just prints the classpath as [INFO].
+     * If defined, the file to which the classpath string will be written.
+     * If neither this nor the outputProperty parameter is set, the classpath will be logged at INFO level.
      */
     @Parameter(property = "mdep.outputFile")
     private File outputFile;
@@ -237,15 +239,18 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
             }
         }
 
-        if (outputFile == null) {
-            getLog().info("Dependencies classpath:" + System.lineSeparator() + cpString);
-        } else {
+        if (outputFile != null) {
             if (regenerateFile || !isUpToDate(cpString)) {
                 storeClasspathFile(cpString, outputFile);
             } else {
                 this.getLog().info("Skipped writing classpath file '" + outputFile + "'.  No changes found.");
             }
         }
+
+        if (outputProperty == null && outputFile == null) {
+            getLog().info("Dependencies classpath:" + System.lineSeparator() + cpString);
+        }
+
         if (attach) {
             attachFile(cpString);
         }
