@@ -52,14 +52,10 @@ public class DependencyArtifactStubFactory extends ArtifactStubFactory {
         super(theWorkingDir, theCreateFiles);
     }
 
-    public ArtifactItem getArtifactItem(Artifact artifact) {
-        return new ArtifactItem(artifact);
-    }
-
     public List<ArtifactItem> getArtifactItems(Collection<Artifact> artifacts) {
         List<ArtifactItem> list = new ArrayList<>();
         for (Artifact artifact : artifacts) {
-            list.add(getArtifactItem(artifact));
+            list.add(new ArtifactItem(artifact));
         }
         return list;
     }
