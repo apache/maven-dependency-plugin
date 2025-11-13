@@ -21,28 +21,16 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
 import java.io.IOException;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.junit.jupiter.api.Test;
 
-public class TestArtifactItem extends AbstractDependencyMojoTestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    @Override
-    protected String getTestDirectoryName() {
-        return "artifactItems";
-    }
+class TestArtifactItem {
 
-    @Override
-    protected boolean shouldCreateFiles() {
-        return false;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp();
-    }
-
-    public void testArtifactItemConstructor() throws IOException {
-        Artifact artifact = stubFactory.createArtifact("g", "a", "1.0", Artifact.SCOPE_COMPILE, "jar", "one");
+    @Test
+    void testArtifactItemConstructor() throws IOException {
+        Artifact artifact = new DefaultArtifact("g", "a", "1.0", Artifact.SCOPE_COMPILE, "jar", "one", null);
 
         ArtifactItem item = new ArtifactItem(artifact);
 
@@ -54,7 +42,8 @@ public class TestArtifactItem extends AbstractDependencyMojoTestCase {
         assertEquals(item.getType(), artifact.getType());
     }
 
-    public void testArtifactItemDefaultType() {
+    @Test
+    void testArtifactItemDefaultType() {
         ArtifactItem item = new ArtifactItem();
         // check type default
         assertEquals("jar", item.getType());

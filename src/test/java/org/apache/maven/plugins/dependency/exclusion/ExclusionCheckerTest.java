@@ -23,23 +23,23 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.plugins.dependency.exclusion.Coordinates.coordinates;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ExclusionCheckerTest {
+class ExclusionCheckerTest {
 
     private ExclusionChecker checker;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         checker = new ExclusionChecker();
     }
 
     @Test
-    public void shallReportInvalidExclusions() {
+    void shallReportInvalidExclusions() {
         Coordinates artifact = coordinates("com.current", "artifact");
         Set<Coordinates> excludes = new HashSet<>(Arrays.asList(
                 coordinates("com.example", "one"),
@@ -59,13 +59,13 @@ public class ExclusionCheckerTest {
     }
 
     @Test
-    public void noViolationsWhenEmptyExclusions() {
+    void noViolationsWhenEmptyExclusions() {
         checker.check(coordinates("a", "b"), new HashSet<>(), new HashSet<>());
         assertThat(checker.getViolations()).isEmpty();
     }
 
     @Test
-    public void shallReportInvalidExclusionsWhenNoDependencies() {
+    void shallReportInvalidExclusionsWhenNoDependencies() {
         Coordinates artifact = coordinates("a", "b");
         HashSet<Coordinates> actualDependencies = new HashSet<>();
         checker.check(artifact, new HashSet<>(Collections.singletonList(coordinates("p", "m"))), actualDependencies);
@@ -73,7 +73,7 @@ public class ExclusionCheckerTest {
     }
 
     @Test
-    public void shallHandleWildcardExclusions() {
+    void shallHandleWildcardExclusions() {
         Coordinates artifact = coordinates("com.current", "artifact");
         Set<Coordinates> excludes = new HashSet<>(Collections.singletonList(coordinates("*", "*")));
 
@@ -86,7 +86,7 @@ public class ExclusionCheckerTest {
     }
 
     @Test
-    public void shallHandleWildcardGroupIdExclusion() {
+    void shallHandleWildcardGroupIdExclusion() {
         Coordinates artifact = coordinates("com.current", "artifact");
         Set<Coordinates> excludes = new HashSet<>(Collections.singletonList(coordinates("javax", "*")));
 

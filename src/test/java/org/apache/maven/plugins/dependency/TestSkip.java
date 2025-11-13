@@ -18,165 +18,200 @@
  */
 package org.apache.maven.plugins.dependency;
 
-import java.io.File;
+import javax.inject.Inject;
 
-import org.apache.maven.execution.MavenSession;
+import org.apache.maven.api.di.Provides;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoParameter;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.plugin.descriptor.MojoDescriptor;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
-import org.apache.maven.project.MavenProject;
-import org.mockito.ArgumentCaptor;
+import org.apache.maven.plugins.dependency.analyze.AnalyzeDepMgt;
+import org.apache.maven.plugins.dependency.analyze.AnalyzeDuplicateMojo;
+import org.apache.maven.plugins.dependency.analyze.AnalyzeMojo;
+import org.apache.maven.plugins.dependency.analyze.AnalyzeOnlyMojo;
+import org.apache.maven.plugins.dependency.analyze.AnalyzeReport;
+import org.apache.maven.plugins.dependency.fromConfiguration.CopyMojo;
+import org.apache.maven.plugins.dependency.fromConfiguration.UnpackMojo;
+import org.apache.maven.plugins.dependency.fromDependencies.BuildClasspathMojo;
+import org.apache.maven.plugins.dependency.fromDependencies.CopyDependenciesMojo;
+import org.apache.maven.plugins.dependency.fromDependencies.UnpackDependenciesMojo;
+import org.apache.maven.plugins.dependency.resolvers.GoOfflineMojo;
+import org.apache.maven.plugins.dependency.resolvers.ListMojo;
+import org.apache.maven.plugins.dependency.resolvers.OldResolveDependencySourcesMojo;
+import org.apache.maven.plugins.dependency.resolvers.ResolveDependenciesMojo;
+import org.apache.maven.plugins.dependency.resolvers.ResolvePluginsMojo;
+import org.apache.maven.plugins.dependency.tree.TreeMojo;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class TestSkip extends AbstractDependencyMojoTestCase {
+@ExtendWith(MockitoExtension.class)
+@MojoTest
+class TestSkip {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        MavenProject project = new DependencyProjectStub();
-        getContainer().addComponent(project, MavenProject.class.getName());
+    @Inject
+    private MojoExecution mojoExecution;
 
-        MavenSession session = newMavenSession(project);
-        getContainer().addComponent(session, MavenSession.class.getName());
+    @Mock
+    private Log log;
+
+    @Provides
+    private Log logProvides() {
+        return log;
     }
 
-    public void testSkipAnalyze() throws Exception {
-        doTest("analyze");
+    @Test
+    @InjectMojo(goal = "analyze")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipAnalyze(AnalyzeMojo mojo) throws Exception {
+        doTest(mojo);
     }
 
-    public void testSkipAnalyzeDepMgt() throws Exception {
-        doTest("analyze-dep-mgt");
+    @Test
+    @InjectMojo(goal = "analyze-dep-mgt")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipAnalyzeDepMgt(AnalyzeDepMgt mojo) throws Exception {
+        doTest(mojo);
     }
 
-    public void testSkipAnalyzeOnly() throws Exception {
-        doTest("analyze-only");
+    @Test
+    @InjectMojo(goal = "analyze-only")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipAnalyzeOnly(AnalyzeOnlyMojo mojo) throws Exception {
+        doTest(mojo);
     }
 
-    public void testSkipAnalyzeReport() throws Exception {
-        doSpecialTest("analyze-report", true);
-    }
+    @Test
+    @InjectMojo(goal = "analyze-report")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipAnalyzeReport(AnalyzeReport mojo) throws Exception {
+        Plugin plugin = new Plugin();
+        plugin.setArtifactId("maven-dependency-plugin");
+        plugin.setVersion("1.0.0");
+        when(mojoExecution.getPlugin()).thenReturn(plugin);
+        when(mojoExecution.getGoal()).thenReturn("analyze-report");
 
-    public void testSkipAnalyzeDuplicate() throws Exception {
-        doTest("analyze-duplicate");
-    }
-
-    public void testSkipBuildClasspath() throws Exception {
-        doTest("build-classpath");
-    }
-
-    public void testSkipCopy() throws Exception {
-        doTest("copy");
-    }
-
-    public void testSkipCopyDependencies() throws Exception {
-        doTest("copy-dependencies");
-    }
-
-    public void testSkipGet() throws Exception {
-        doSpecialTest("get");
-    }
-
-    public void testSkipGoOffline() throws Exception {
-        doTest("go-offline");
-    }
-
-    public void testSkipList() throws Exception {
-        doTest("list");
-    }
-
-    public void testSkipProperties() throws Exception {
-        doTest("properties");
-    }
-
-    public void testSkipPurgeLocalRepository() throws Exception {
-        doSpecialTest("purge-local-repository");
-    }
-
-    public void testSkipResolve() throws Exception {
-        doTest("resolve");
-    }
-
-    public void testSkipResolvePlugins() throws Exception {
-        doTest("resolve-plugins");
-    }
-
-    public void testSkipSources() throws Exception {
-        doTest("sources");
-    }
-
-    public void testSkipTree() throws Exception {
-        doTest("tree");
-    }
-
-    public void testSkipUnpack() throws Exception {
-        doTest("unpack");
-    }
-
-    public void testSkipUnpackDependencies() throws Exception {
-        doTest("unpack-dependencies");
-    }
-
-    protected void doTest(String mojoName) throws Exception {
-        doConfigTest(mojoName, "plugin-config.xml");
-    }
-
-    protected void doSpecialTest(String mojoName) throws Exception {
-        doConfigTest(mojoName, "plugin-" + mojoName + "-config.xml", false);
-    }
-
-    protected void doSpecialTest(String mojoName, boolean addMojoExecution) throws Exception {
-        doConfigTest(mojoName, "plugin-" + mojoName + "-config.xml", addMojoExecution);
-    }
-
-    private void doConfigTest(String mojoName, String configFile) throws Exception {
-        doConfigTest(mojoName, configFile, false);
-    }
-
-    private void doConfigTest(String mojoName, String configFile, boolean addMojoExecution) throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/skip-test/" + configFile);
-        Mojo mojo = lookupMojo(mojoName, testPom);
-        assertNotNull("Mojo not found.", mojo);
-
-        if (addMojoExecution) {
-            setVariableValueToObject(mojo, "mojoExecution", getMockMojoExecution(mojoName));
-        }
-        Log log = mock(Log.class);
-        mojo.setLog(log);
         mojo.execute();
-
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        verify(log, atLeastOnce()).info(captor.capture());
-        String skipMessage;
-        if (addMojoExecution) {
-            MojoExecution me = getMockMojoExecution(mojoName);
-            String reportMojoInfo = me.getPlugin().getId() + ":" + me.getGoal();
-            skipMessage = "Skipping " + reportMojoInfo + " report goal";
-        } else {
-            skipMessage = "Skipping plugin execution";
-        }
-        assertTrue(captor.getValue().contains(skipMessage));
+        verify(log)
+                .info(contains(
+                        "Skipping org.apache.maven.plugins:maven-dependency-plugin:1.0.0:analyze-report report goal"));
     }
 
-    private MojoExecution getMockMojoExecution(String goal) {
-        MojoDescriptor md = new MojoDescriptor();
-        md.setGoal(goal);
+    @Test
+    @InjectMojo(goal = "analyze-duplicate")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipAnalyzeDuplicate(AnalyzeDuplicateMojo mojo) throws Exception {
+        doTest(mojo);
+    }
 
-        MojoExecution me = new MojoExecution(md);
+    @Test
+    @InjectMojo(goal = "build-classpath")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipBuildClasspath(BuildClasspathMojo mojo) throws Exception {
+        doTest(mojo);
+    }
 
-        PluginDescriptor pd = new PluginDescriptor();
-        Plugin p = new Plugin();
-        p.setGroupId("org.apache.maven.plugins");
-        p.setArtifactId("maven-dependency-plugin");
-        pd.setPlugin(p);
-        md.setPluginDescriptor(pd);
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipCopy(CopyMojo mojo) throws Exception {
+        doTest(mojo);
+    }
 
-        return me;
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipCopyDependencies(CopyDependenciesMojo mojo) throws Exception {
+        doTest(mojo);
+    }
+
+    @Test
+    @InjectMojo(goal = "get")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipGet(GetMojo mojo) throws Exception {
+        doTest(mojo);
+    }
+
+    @Test
+    @InjectMojo(goal = "go-offline")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipGoOffline(GoOfflineMojo mojo) throws Exception {
+        doTest(mojo);
+    }
+
+    @Test
+    @InjectMojo(goal = "list")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipList(ListMojo mojo) throws Exception {
+        doTest(mojo);
+    }
+
+    @Test
+    @InjectMojo(goal = "properties")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipProperties(PropertiesMojo mojo) throws Exception {
+        doTest(mojo);
+    }
+
+    @Test
+    @InjectMojo(goal = "purge-local-repository")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipPurgeLocalRepository(PurgeLocalRepositoryMojo mojo) throws Exception {
+        doTest(mojo);
+    }
+
+    @Test
+    @InjectMojo(goal = "resolve")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipResolve(ResolveDependenciesMojo mojo) throws Exception {
+        doTest(mojo);
+    }
+
+    @Test
+    @InjectMojo(goal = "resolve-plugins")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipResolvePlugins(ResolvePluginsMojo mojo) throws Exception {
+        doTest(mojo);
+    }
+
+    @Test
+    @InjectMojo(goal = "sources")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipSources(OldResolveDependencySourcesMojo mojo) throws Exception {
+        doTest(mojo);
+    }
+
+    @Test
+    @InjectMojo(goal = "tree")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipTree(TreeMojo mojo) throws Exception {
+        doTest(mojo);
+    }
+
+    @Test
+    @InjectMojo(goal = "unpack")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipUnpack(UnpackMojo mojo) throws Exception {
+        doTest(mojo);
+    }
+
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    @MojoParameter(name = "skip", value = "true")
+    void testSkipUnpackDependencies(UnpackDependenciesMojo mojo) throws Exception {
+        doTest(mojo);
+    }
+
+    private void doTest(Mojo mojo) throws Exception {
+        mojo.execute();
+        verify(log).info(contains("Skipping plugin"));
     }
 }
