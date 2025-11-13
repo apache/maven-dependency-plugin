@@ -23,46 +23,40 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.apache.maven.plugins.dependency.fromConfiguration.ArtifactItem;
-import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.testUtils.stubs.StubUnpackFileMarkerHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class TestUnpackMarkerFileHandler extends AbstractMojoTestCase {
-    List<ArtifactItem> artifactItems = new ArrayList<>();
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.AssertionsKt.assertNull;
+
+class TestUnpackMarkerFileHandler {
+    private List<ArtifactItem> artifactItems = new ArrayList<>();
 
     @TempDir
-    File outputFolder;
+    private File outputFolder;
 
-    @TempDir
-    protected File testDir;
-
-    protected DependencyArtifactStubFactory stubFactory;
-
-    @Override
     @BeforeEach
-    protected void setUp() throws Exception {
-        super.setUp();
+    void setUp() {
+        ArtifactItem artifactItem = new ArtifactItem(new DefaultArtifact("test", "test", "1", null, "jar", "", null));
+        artifactItems.add(artifactItem);
 
-        stubFactory = new DependencyArtifactStubFactory(this.testDir, false);
-        Artifact artifact = stubFactory.createArtifact("test", "test", "1");
-        ArtifactItem artifactItem;
-        stubFactory.getArtifactItem(artifact);
-        artifactItems.add(stubFactory.getArtifactItem(stubFactory.createArtifact("test", "test", "1")));
-        artifact = stubFactory.createArtifact("test2", "test2", "2");
-        artifactItem = new ArtifactItem(artifact);
+        artifactItem = new ArtifactItem(new DefaultArtifact("test2", "test2", "2", null, "jar", "", null));
         artifactItem.setIncludes("**/*.xml");
         artifactItems.add(artifactItem);
-        artifact = stubFactory.createArtifact("test3", "test3", "3");
-        artifactItem = new ArtifactItem(artifact);
+
+        artifactItem = new ArtifactItem(new DefaultArtifact("test3", "test3", "3", null, "jar", "", null));
         artifactItem.setExcludes("**/*.class");
         artifactItems.add(artifactItem);
-        artifact = stubFactory.createArtifact("test4", "test4", "4");
-        artifactItem = new ArtifactItem(artifact);
+
+        artifactItem = new ArtifactItem(new DefaultArtifact("test4", "test4", "4", null, "jar", "", null));
         artifactItem.setIncludes("**/*.xml");
         artifactItem.setExcludes("**/*.class");
         artifactItems.add(artifactItem);

@@ -77,7 +77,7 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
         // programmatically.
         stubFactory.setSrcFile(new File(getBasedir() + File.separatorChar + PACKED_FILE_PATH));
         Artifact artifact = stubFactory.createArtifact("test", "test", "1.0", Artifact.SCOPE_COMPILE, "jar", null);
-        ArtifactItem item = stubFactory.getArtifactItem(artifact);
+        ArtifactItem item = new ArtifactItem(artifact);
         List<ArtifactItem> list = new ArrayList<>(1);
         list.add(item);
         assertNotNull(mojo);
@@ -205,7 +205,7 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
 
     public void testIncludeArtifactItemOverride() throws Exception {
         Artifact artifact = stubFactory.createArtifact("test", "test", "1.0", Artifact.SCOPE_COMPILE, "jar", null);
-        ArtifactItem item = stubFactory.getArtifactItem(artifact);
+        ArtifactItem item = new ArtifactItem(artifact);
         item.setIncludes("**/*");
         List<ArtifactItem> list = new ArrayList<>(1);
         list.add(item);
@@ -220,7 +220,7 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
 
     public void testExcludeArtifactItemOverride() throws Exception {
         Artifact artifact = stubFactory.createArtifact("test", "test", "1.0", Artifact.SCOPE_COMPILE, "jar", null);
-        ArtifactItem item = stubFactory.getArtifactItem(artifact);
+        ArtifactItem item = new ArtifactItem(artifact);
         item.setExcludes("**/*");
         List<ArtifactItem> list = new ArrayList<>(1);
         list.add(item);
@@ -236,11 +236,11 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
     public void testIncludeArtifactItemMultipleMarker() throws Exception {
         List<ArtifactItem> list = new ArrayList<>();
         Artifact artifact = stubFactory.createArtifact("test", "test", "1.0", Artifact.SCOPE_COMPILE, "jar", null);
-        ArtifactItem item = stubFactory.getArtifactItem(artifact);
+        ArtifactItem item = new ArtifactItem(artifact);
         item.setOverWrite("false");
         item.setIncludes("**/test2" + UNPACKED_FILE_SUFFIX);
         list.add(item);
-        item = stubFactory.getArtifactItem(artifact);
+        item = new ArtifactItem(artifact);
         item.setOverWrite("false");
         item.setIncludes("**/test3" + UNPACKED_FILE_SUFFIX);
         list.add(item);
@@ -256,11 +256,11 @@ public class TestIncludeExcludeUnpackMojo extends AbstractDependencyMojoTestCase
     public void testIncludeArtifactItemMultipleExecutions() throws Exception {
         List<ArtifactItem> list = new ArrayList<>();
         Artifact artifact = stubFactory.createArtifact("test", "test", "1.0", Artifact.SCOPE_COMPILE, "jar", null);
-        ArtifactItem item = stubFactory.getArtifactItem(artifact);
+        ArtifactItem item = new ArtifactItem(artifact);
         item.setOverWrite("false");
         item.setIncludes("**/test2" + UNPACKED_FILE_SUFFIX);
         list.add(item);
-        item = stubFactory.getArtifactItem(artifact);
+        item = new ArtifactItem(artifact);
         item.setOverWrite("false");
         item.setIncludes("**/test3" + UNPACKED_FILE_SUFFIX);
         list.add(item);
