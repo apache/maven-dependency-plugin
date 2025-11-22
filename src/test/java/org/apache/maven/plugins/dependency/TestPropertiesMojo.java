@@ -19,10 +19,14 @@
 package org.apache.maven.plugins.dependency;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
 
@@ -75,6 +79,39 @@ public class TestPropertiesMojo extends AbstractDependencyMojoTestCase {
             File artifactFile = artifact.getFile();
             assertNotNull(artifact.getDependencyConflictId());
             assertTrue(artifactFile.isFile());
+        }
+    }
+
+    /**
+     * tests the proper discovery and configuration of the mojo for plugin dependencies
+     * Each plugin dependency should set a property in the project
+     * @throws Exception in case of errors
+     */
+    public void testSetPropertiesForPluginDependencies() throws Exception {
+        File testPom = new File(getBasedir(), "target/test-classes/unit/properties-test/plugin-config.xml");
+        PropertiesMojo mojo = (PropertiesMojo) lookupMojo("properties", testPom);
+
+        assertNotNull(mojo);
+        MavenProject project = (MavenProject) getVariableValueFromObject(mojo, "project");
+        assertNotNull(project);
+
+        Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
+        Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
+        artifacts.addAll(directArtifacts);
+
+        PluginDescriptor pluginDescriptor = new PluginDescriptor();
+        pluginDescriptor.setArtifacts(new ArrayList<>());
+        Map pluginContext = new HashMap<>();
+        pluginContext.put("pluginDescriptor", pluginDescriptor);
+        mojo.setPluginContext(pluginContext);
+
+        mojo.execute();
+
+        for (Artifact artifact : artifacts) {
+            File artifactFile = artifact.getFile();
+            String depId = artifact.getDependencyConflictId();
+            assertTrue(project.getProperties().containsKey(depId));
+            assertTrue(project.getProperties().getProperty(depId).equals(artifactFile.getAbsolutePath()));
         }
     }
 }

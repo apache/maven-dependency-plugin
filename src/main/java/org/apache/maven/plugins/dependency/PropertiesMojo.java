@@ -20,11 +20,13 @@ package org.apache.maven.plugins.dependency;
 
 import javax.inject.Inject;
 
+import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -68,7 +70,7 @@ public class PropertiesMojo extends AbstractMojo {
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through setting a property for each artifact.
-     *
+     * Gets the list of declared plugin's dependencies and iterates through setting a property for each artifact.
      * @throws MojoExecutionException with a message if an error occurs
      */
     @Override
@@ -85,6 +87,21 @@ public class PropertiesMojo extends AbstractMojo {
                     .setProperty(
                             artifact.getDependencyConflictId(),
                             artifact.getFile().getAbsolutePath());
+        }
+
+        PluginDescriptor pluginDescriptor = (PluginDescriptor) getPluginContext().get("pluginDescriptor");
+
+        if (pluginDescriptor != null) {
+            List<Artifact> pluginArtifacts = pluginDescriptor.getArtifacts();
+            
+            if (pluginArtifacts != null) {
+                for (Artifact artifact : pluginArtifacts) {
+                    this.project.getProperties()
+                            .setProperty(
+                                    artifact.getDependencyConflictId(),
+                                    artifact.getFile().getAbsolutePath());
+                }
+            }
         }
     }
 
