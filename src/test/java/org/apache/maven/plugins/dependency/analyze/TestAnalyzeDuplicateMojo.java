@@ -18,214 +18,79 @@
  */
 package org.apache.maven.plugins.dependency.analyze;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import javax.inject.Inject;
 
-import org.apache.maven.execution.MavenSession;
+import java.io.File;
+
+import org.apache.maven.api.di.Provides;
+import org.apache.maven.api.plugin.testing.Basedir;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoExtension;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
-import org.apache.maven.plugins.dependency.testUtils.stubs.DuplicateDependencies2ProjectStub;
-import org.apache.maven.plugins.dependency.testUtils.stubs.DuplicateDependenciesProjectStub;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @version $Id$
  */
-public class TestAnalyzeDuplicateMojo extends AbstractDependencyMojoTestCase {
-    public void testDuplicate() throws Exception {
-        MavenProject project = new DuplicateDependenciesProjectStub();
-        getContainer().addComponent(project, MavenProject.class.getName());
+@ExtendWith(MockitoExtension.class)
+@MojoTest
+public class TestAnalyzeDuplicateMojo {
 
-        MavenSession session = newMavenSession(project);
-        getContainer().addComponent(session, MavenSession.class.getName());
+    @Inject
+    private MavenProject project;
 
-        File testPom = new File(getBasedir(), "target/test-classes/unit/duplicate-dependencies/plugin-config.xml");
-        AnalyzeDuplicateMojo mojo = (AnalyzeDuplicateMojo) lookupMojo("analyze-duplicate", testPom);
-        assertNotNull(mojo);
-        DuplicateLog log = new DuplicateLog();
-        mojo.setLog(log);
-        mojo.execute();
+    @Mock
+    private Log log;
 
-        assertTrue(log.getContent()
-                .contains("List of duplicate dependencies defined in <dependencies/> in " + "your pom.xml"));
-        assertTrue(log.getContent().contains("junit:junit:jar"));
+    @Provides
+    private Log logProvides() {
+        return log;
     }
 
-    public void testDuplicate2() throws Exception {
-        MavenProject project = new DuplicateDependencies2ProjectStub();
-        getContainer().addComponent(project, MavenProject.class.getName());
+    @Test
+    @Basedir("/unit/duplicate-dependencies")
+    @InjectMojo(goal = "analyze-duplicate")
+    public void testDuplicate(AnalyzeDuplicateMojo mojo) throws Exception {
+        when(project.getFile()).thenReturn(new File(MojoExtension.getBasedir(), "plugin-config.xml"));
+        when(log.isInfoEnabled()).thenReturn(true);
 
-        MavenSession session = newMavenSession(project);
-        getContainer().addComponent(session, MavenSession.class.getName());
-
-        File testPom = new File(getBasedir(), "target/test-classes/unit/duplicate-dependencies/plugin-config2.xml");
-        AnalyzeDuplicateMojo mojo = (AnalyzeDuplicateMojo) lookupMojo("analyze-duplicate", testPom);
-        assertNotNull(mojo);
-        DuplicateLog log = new DuplicateLog();
-        mojo.setLog(log);
         mojo.execute();
 
-        assertTrue(log.getContent()
-                .contains("List of duplicate dependencies defined in <dependencyManagement/> in " + "your pom.xml"));
-        assertTrue(log.getContent().contains("junit:junit:jar"));
+        ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
+        verify(log).info(logCapture.capture());
+
+        assertTrue(logCapture
+                .getValue()
+                .contains("List of duplicate dependencies defined in <dependencies/> in your pom.xml"));
+        assertTrue(logCapture.getValue().contains("junit:junit:jar"));
     }
 
-    static class DuplicateLog implements Log {
-        StringBuilder sb = new StringBuilder();
+    @Test
+    @Basedir("/unit/duplicate-dependencies")
+    @InjectMojo(goal = "analyze-duplicate")
+    public void testDuplicate2(AnalyzeDuplicateMojo mojo) throws Exception {
+        when(project.getFile()).thenReturn(new File(MojoExtension.getBasedir(), "plugin-config2.xml"));
+        when(log.isInfoEnabled()).thenReturn(true);
 
-        /** {@inheritDoc} */
-        @Override
-        public void debug(CharSequence content) {
-            print("debug", content);
-        }
+        mojo.execute();
 
-        /** {@inheritDoc} */
-        @Override
-        public void debug(CharSequence content, Throwable error) {
-            print("debug", content, error);
-        }
+        ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
+        verify(log).info(logCapture.capture());
 
-        /** {@inheritDoc} */
-        @Override
-        public void debug(Throwable error) {
-            print("debug", error);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void info(CharSequence content) {
-            print("info", content);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void info(CharSequence content, Throwable error) {
-            print("info", content, error);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void info(Throwable error) {
-            print("info", error);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void warn(CharSequence content) {
-            print("warn", content);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void warn(CharSequence content, Throwable error) {
-            print("warn", content, error);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void warn(Throwable error) {
-            print("warn", error);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void error(CharSequence content) {
-            System.err.println("[error] " + content.toString());
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void error(CharSequence content, Throwable error) {
-            StringWriter sWriter = new StringWriter();
-            PrintWriter pWriter = new PrintWriter(sWriter);
-
-            error.printStackTrace(pWriter);
-
-            System.err.println(
-                    "[error] " + content.toString() + System.lineSeparator() + System.lineSeparator() + sWriter);
-        }
-
-        /**
-         * @see org.apache.maven.plugin.logging.Log#error(java.lang.Throwable)
-         */
-        @Override
-        public void error(Throwable error) {
-            StringWriter sWriter = new StringWriter();
-            PrintWriter pWriter = new PrintWriter(sWriter);
-
-            error.printStackTrace(pWriter);
-
-            System.err.println("[error] " + sWriter);
-        }
-
-        /**
-         * @see org.apache.maven.plugin.logging.Log#isDebugEnabled()
-         */
-        @Override
-        public boolean isDebugEnabled() {
-            return false;
-        }
-
-        /**
-         * @see org.apache.maven.plugin.logging.Log#isInfoEnabled()
-         */
-        @Override
-        public boolean isInfoEnabled() {
-            return true;
-        }
-
-        /**
-         * @see org.apache.maven.plugin.logging.Log#isWarnEnabled()
-         */
-        @Override
-        public boolean isWarnEnabled() {
-            return true;
-        }
-
-        /**
-         * @see org.apache.maven.plugin.logging.Log#isErrorEnabled()
-         */
-        @Override
-        public boolean isErrorEnabled() {
-            return true;
-        }
-
-        private void print(String prefix, CharSequence content) {
-            sb.append("[")
-                    .append(prefix)
-                    .append("] ")
-                    .append(content.toString())
-                    .append(System.lineSeparator());
-        }
-
-        private void print(String prefix, Throwable error) {
-            StringWriter sWriter = new StringWriter();
-            PrintWriter pWriter = new PrintWriter(sWriter);
-
-            error.printStackTrace(pWriter);
-
-            sb.append("[").append(prefix).append("] ").append(sWriter).append(System.lineSeparator());
-        }
-
-        private void print(String prefix, CharSequence content, Throwable error) {
-            StringWriter sWriter = new StringWriter();
-            PrintWriter pWriter = new PrintWriter(sWriter);
-
-            error.printStackTrace(pWriter);
-
-            sb.append("[")
-                    .append(prefix)
-                    .append("] ")
-                    .append(content.toString())
-                    .append(System.lineSeparator())
-                    .append(System.lineSeparator());
-            sb.append(sWriter).append(System.lineSeparator());
-        }
-
-        protected String getContent() {
-            return sb.toString();
-        }
+        assertTrue(logCapture
+                .getValue()
+                .contains("List of duplicate dependencies defined in <dependencyManagement/> in your pom.xml"));
+        assertTrue(logCapture.getValue().contains("junit:junit:jar"));
     }
 }

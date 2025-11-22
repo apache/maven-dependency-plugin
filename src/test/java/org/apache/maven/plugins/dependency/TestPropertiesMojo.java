@@ -18,63 +18,49 @@
  */
 package org.apache.maven.plugins.dependency;
 
+import javax.inject.Inject;
+
 import java.io.File;
-import java.util.Set;
+import java.util.Arrays;
+import java.util.HashSet;
 
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoExtension;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-public class TestPropertiesMojo extends AbstractDependencyMojoTestCase {
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
-    @Override
-    protected String getTestDirectoryName() {
-        return "markers";
-    }
+@MojoTest
+public class TestPropertiesMojo {
 
-    @Override
-    protected boolean shouldCreateFiles() {
-        return true;
-    }
+    @Inject
+    private MavenProject project;
 
-    @Override
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp();
+    @Test
+    @InjectMojo(goal = "properties")
+    public void testSetProperties(PropertiesMojo mojo) throws Exception {
 
-        MavenProject project = new DependencyProjectStub();
-        getContainer().addComponent(project, MavenProject.class.getName());
+        Artifact artifact1 = Mockito.mock(Artifact.class);
+        Artifact artifact2 = Mockito.mock(Artifact.class);
 
-        MavenSession session = newMavenSession(project);
-        getContainer().addComponent(session, MavenSession.class.getName());
-    }
+        when(artifact1.getDependencyConflictId()).thenReturn("group1:artifact1");
+        when(artifact1.getFile()).thenReturn(new File(MojoExtension.getBasedir(), "artifact1.jar"));
 
-    /**
-     * tests the proper discovery and configuration of the mojo
-     *
-     * @throws Exception in case of errors
-     */
-    public void testSetProperties() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/properties-test/plugin-config.xml");
-        PropertiesMojo mojo = (PropertiesMojo) lookupMojo("properties", testPom);
+        when(artifact2.getDependencyConflictId()).thenReturn("group2:artifact2");
+        when(artifact2.getFile()).thenReturn(new File(MojoExtension.getBasedir(), "artifact2.jar"));
 
-        assertNotNull(mojo);
-        MavenProject project = (MavenProject) getVariableValueFromObject(mojo, "project");
-        assertNotNull(project);
-
-        Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
-        Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
-        artifacts.addAll(directArtifacts);
-
-        project.setArtifacts(artifacts);
+        when(artifact2.getVersion()).thenReturn("2.0.0");
+        when(this.project.getArtifacts()).thenReturn(new HashSet<>(Arrays.asList(artifact1, artifact2)));
 
         mojo.execute();
 
-        for (Artifact artifact : artifacts) {
-            File artifactFile = artifact.getFile();
-            assertNotNull(artifact.getDependencyConflictId());
-            assertTrue(artifactFile.isFile());
-        }
+        // Verify that properties are set correctly
+        assertTrue(project.getProperties().getProperty("group1:artifact1").endsWith("artifact1.jar"));
+        assertTrue(project.getProperties().getProperty("group2:artifact2").endsWith("artifact2.jar"));
     }
 }
