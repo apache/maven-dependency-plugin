@@ -18,187 +18,188 @@
  */
 package org.apache.maven.plugins.dependency.exclusion;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
-import org.apache.maven.RepositoryUtils;
-import org.apache.maven.artifact.Artifact;
+import org.apache.maven.api.di.Provides;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoParameter;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
-import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
+@ExtendWith(MockitoExtension.class)
+@MojoTest
+class AnalyzeExclusionsMojoTest {
 
-    private AnalyzeExclusionsMojo mojo;
-
+    @Inject
     private MavenProject project;
 
-    private TestLog testLog;
+    @Inject
+    private MavenSession mavenSession;
 
+    @Mock
+    private Log testLog;
+
+    @Provides
+    private Log testLogProvides() {
+        return testLog;
+    }
+
+    @Mock
     private ResolverUtil resolverUtil;
 
-    @Override
-    protected String getTestDirectoryName() {
-        return "analyze-exclusions";
+    @Provides
+    private ResolverUtil resolverUtilProvides() {
+        return resolverUtil;
     }
 
-    @Override
-    protected boolean shouldCreateFiles() {
-        return true;
-    }
-
-    @Override
-    protected boolean shouldUseFlattenedPath() {
-        return false;
-    }
-
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp();
+        when(project.getGroupId()).thenReturn("testGroupId");
+        when(project.getArtifactId()).thenReturn("testArtifactId");
+        when(project.getVersion()).thenReturn("1.0.0");
 
-        project = new DependencyProjectStub();
-        project.setName("projectName");
-        project.setGroupId("testGroupId");
-        project.setArtifactId("testArtifactId");
-        project.setVersion("1.0.0");
+        DependencyManagement dependencyManagement = mock(DependencyManagement.class);
+        when(dependencyManagement.getDependencies()).thenReturn(Collections.emptyList());
+        when(project.getDependencyManagement()).thenReturn(dependencyManagement);
 
-        getContainer().addComponent(project, MavenProject.class.getName());
-
-        MavenSession session = newMavenSession(project);
-        getContainer().addComponent(session, MavenSession.class.getName());
-
-        resolverUtil = mock(ResolverUtil.class);
-        getContainer().addComponent(resolverUtil, ResolverUtil.class.getName());
-
-        File testPom = new File(getBasedir(), "target/test-classes/unit/analyze-exclusions/plugin-config.xml");
-        mojo = (AnalyzeExclusionsMojo) lookupMojo("analyze-exclusions", testPom);
-        assertNotNull(mojo);
-
-        testLog = new TestLog();
-        mojo.setLog(testLog);
+        lenient().when(mavenSession.getRepositorySession()).thenReturn(new DefaultRepositorySystemSession());
     }
 
-    public void testShallThrowExceptionWhenFailOnWarning() throws Exception {
+    @Test
+    @InjectMojo(goal = "analyze-exclusions")
+    @MojoParameter(name = "exclusionFail", value = "true")
+    void testShallThrowExceptionWhenFailOnWarning(AnalyzeExclusionsMojo mojo) throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency withInvalidExclusion = dependency("a", "b");
         withInvalidExclusion.addExclusion(exclusion("invalid", "invalid"));
         dependencies.add(withInvalidExclusion);
-        project.setDependencies(dependencies);
-        Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(new HashSet<>(Collections.singletonList(artifact)));
-        setVariableValueToObject(mojo, "exclusionFail", true);
+        when(project.getDependencies()).thenReturn(dependencies);
 
-        assertThatThrownBy(() -> mojo.execute())
+        assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoExecutionException.class)
                 .hasMessageContaining("Invalid exclusions found");
 
-        assertThat(testLog.getContent()).startsWith("[error]");
+        verify(testLog, times(3)).error(anyString());
     }
 
-    public void testShallLogWarningWhenFailOnWarningIsFalse() throws Exception {
+    @Test
+    @InjectMojo(goal = "analyze-exclusions")
+    @MojoParameter(name = "exclusionFail", value = "false")
+    void testShallLogWarningWhenFailOnWarningIsFalse(AnalyzeExclusionsMojo mojo) throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency withInvalidExclusion = dependency("a", "b");
         withInvalidExclusion.addExclusion(exclusion("invalid", "invalid"));
         dependencies.add(withInvalidExclusion);
-        project.setDependencies(dependencies);
-        Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(new HashSet<>(Collections.singletonList(artifact)));
-        setVariableValueToObject(mojo, "exclusionFail", false);
+        when(project.getDependencies()).thenReturn(dependencies);
 
         mojo.execute();
 
-        assertThat(testLog.getContent()).startsWith("[warn]");
+        verify(testLog, times(3)).warn(anyString());
     }
 
-    public void testShallExitWithoutAnalyzeWhenNoDependencyHasExclusion() throws Exception {
+    @Test
+    @InjectMojo(goal = "analyze-exclusions")
+    void testShallExitWithoutAnalyzeWhenNoDependencyHasExclusion(AnalyzeExclusionsMojo mojo) throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         dependencies.add(dependency("a", "c"));
-        project.setDependencies(dependencies);
+        when(project.getDependencies()).thenReturn(dependencies);
+
         mojo.execute();
-        assertThat(testLog.getContent()).startsWith("[debug] No dependencies defined with exclusions - exiting");
+        verify(testLog).debug("No dependencies defined with exclusions - exiting");
     }
 
-    public void testShallNotReportInvalidExclusionForWildcardGroupIdAndArtifactId() throws Exception {
+    @Test
+    @InjectMojo(goal = "analyze-exclusions")
+    void testShallNotReportInvalidExclusionForWildcardGroupIdAndArtifactId(AnalyzeExclusionsMojo mojo)
+            throws Exception {
         Dependency dependencyWithWildcardExclusion = dependency("a", "b");
         dependencyWithWildcardExclusion.addExclusion(exclusion("*", "*"));
-        project.setDependencies(Collections.singletonList(dependencyWithWildcardExclusion));
-        Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(new HashSet<>(Collections.singletonList(artifact)));
+        when(project.getDependencies()).thenReturn(Collections.singletonList(dependencyWithWildcardExclusion));
 
         when(resolverUtil.collectDependencies(any()))
                 .thenReturn(Collections.singletonList(new org.eclipse.aether.graph.Dependency(
-                        RepositoryUtils.toArtifact(stubFactory.createArtifact("whatever", "ok", "1.0")), "")));
+                        new DefaultArtifact("whatever", "ok", "jar", "1.0"), "")));
 
         mojo.execute();
-
-        assertThat(testLog.getContent()).doesNotContain("[warn]     a:b:", "[warn]         - *:*");
+        verify(testLog, never()).warn(anyString());
     }
 
-    public void testCanResolveMultipleArtifactsWithEqualGroupIdAndArtifactId() throws Exception {
+    @Test
+    @InjectMojo(goal = "analyze-exclusions")
+    void testCanResolveMultipleArtifactsWithEqualGroupIdAndArtifactId(AnalyzeExclusionsMojo mojo) throws Exception {
         Dependency dependency1 = dependency("a", "b");
         Dependency dependency2 = dependency("a", "b", "compile", "native");
         dependency1.addExclusion(exclusion("c", "d"));
         dependency2.addExclusion(exclusion("c", "d"));
-        project.setDependencies(Arrays.asList(dependency1, dependency2));
-        Artifact artifact1 = stubFactory.createArtifact("a", "b", "1.0");
-        Artifact artifact2 = stubFactory.createArtifact("a", "b", "1.0", "compile", "jar", "native");
-        project.setArtifacts(new HashSet<>(Arrays.asList(artifact1, artifact2)));
+        when(project.getDependencies()).thenReturn(Arrays.asList(dependency1, dependency2));
 
-        assertThatCode(() -> mojo.execute()).doesNotThrowAnyException();
+        assertThatCode(mojo::execute).doesNotThrowAnyException();
     }
 
-    public void testShallNotLogWhenExclusionIsValid() throws Exception {
+    @Test
+    @InjectMojo(goal = "analyze-exclusions")
+    void testShallNotLogWhenExclusionIsValid(AnalyzeExclusionsMojo mojo) throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency dependency = dependency("a", "b");
         dependency.addExclusion(exclusion("ok", "ok"));
         dependencies.add(dependency);
-        project.setDependencies(dependencies);
-        Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-
-        project.setArtifacts(new HashSet<>(Collections.singletonList(artifact)));
-        setVariableValueToObject(mojo, "exclusionFail", true);
+        when(project.getDependencies()).thenReturn(dependencies);
 
         when(resolverUtil.collectDependencies(any()))
-                .thenReturn(Collections.singletonList(new org.eclipse.aether.graph.Dependency(
-                        RepositoryUtils.toArtifact(stubFactory.createArtifact("ok", "ok", "1.0")), "")));
+                .thenReturn(Collections.singletonList(
+                        new org.eclipse.aether.graph.Dependency(new DefaultArtifact("ok", "ok", "jar", "1.0"), "")));
 
-        assertThatCode(() -> mojo.execute()).doesNotThrowAnyException();
+        assertThatCode(mojo::execute).doesNotThrowAnyException();
+
+        verify(testLog, never()).warn(anyString());
     }
 
-    public void testThatLogContainProjectName() throws Exception {
+    @Test
+    @InjectMojo(goal = "analyze-exclusions")
+    void testThatLogContainProjectName(AnalyzeExclusionsMojo mojo) throws Exception {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency withInvalidExclusion = dependency("a", "b");
         withInvalidExclusion.addExclusion(exclusion("invalid", "invalid"));
         dependencies.add(withInvalidExclusion);
-        project.setDependencies(dependencies);
-        Artifact artifact = stubFactory.createArtifact("a", "b", "1.0");
-        project.setArtifacts(new HashSet<>(Collections.singletonList(artifact)));
+        when(project.getDependencies()).thenReturn(dependencies);
+
+        when(project.getName()).thenReturn("projectName");
 
         mojo.execute();
 
-        assertThat(testLog.getContent()).contains("[warn] projectName defines following unnecessary excludes");
+        verify(testLog).warn("projectName defines following unnecessary excludes");
     }
 
     private Dependency dependency(String groupId, String artifactId) {
@@ -233,184 +234,5 @@ public class AnalyzeExclusionsMojoTest extends AbstractDependencyMojoTestCase {
         inputSource.setModelId("testGroupId:testArtifactId:1.0.0");
         exclusion.setLocation("", new InputLocation(1, 1, inputSource));
         return exclusion;
-    }
-
-    static class TestLog implements Log {
-        StringBuilder sb = new StringBuilder();
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void debug(CharSequence content) {
-            print("debug", content);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void debug(CharSequence content, Throwable error) {
-            print("debug", content, error);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void debug(Throwable error) {
-            print("debug", error);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void info(CharSequence content) {
-            print("info", content);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void info(CharSequence content, Throwable error) {
-            print("info", content, error);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void info(Throwable error) {
-            print("info", error);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void warn(CharSequence content) {
-            print("warn", content);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void warn(CharSequence content, Throwable error) {
-            print("warn", content, error);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void warn(Throwable error) {
-            print("warn", error);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void error(CharSequence content) {
-            print("error", content);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void error(CharSequence content, Throwable error) {
-            StringWriter sWriter = new StringWriter();
-            PrintWriter pWriter = new PrintWriter(sWriter);
-
-            error.printStackTrace(pWriter);
-
-            System.err.println(
-                    "[error] " + content.toString() + System.lineSeparator() + System.lineSeparator() + sWriter);
-        }
-
-        /**
-         * @see org.apache.maven.plugin.logging.Log#error(java.lang.Throwable)
-         */
-        @Override
-        public void error(Throwable error) {
-            StringWriter sWriter = new StringWriter();
-            PrintWriter pWriter = new PrintWriter(sWriter);
-
-            error.printStackTrace(pWriter);
-
-            System.err.println("[error] " + sWriter);
-        }
-
-        /**
-         * @see org.apache.maven.plugin.logging.Log#isDebugEnabled()
-         */
-        @Override
-        public boolean isDebugEnabled() {
-            return false;
-        }
-
-        /**
-         * @see org.apache.maven.plugin.logging.Log#isInfoEnabled()
-         */
-        @Override
-        public boolean isInfoEnabled() {
-            return true;
-        }
-
-        /**
-         * @see org.apache.maven.plugin.logging.Log#isWarnEnabled()
-         */
-        @Override
-        public boolean isWarnEnabled() {
-            return true;
-        }
-
-        /**
-         * @see org.apache.maven.plugin.logging.Log#isErrorEnabled()
-         */
-        @Override
-        public boolean isErrorEnabled() {
-            return true;
-        }
-
-        private void print(String prefix, CharSequence content) {
-            sb.append("[")
-                    .append(prefix)
-                    .append("] ")
-                    .append(content.toString())
-                    .append(System.lineSeparator());
-        }
-
-        private void print(String prefix, Throwable error) {
-            StringWriter sWriter = new StringWriter();
-            PrintWriter pWriter = new PrintWriter(sWriter);
-
-            error.printStackTrace(pWriter);
-
-            sb.append("[").append(prefix).append("] ").append(sWriter).append(System.lineSeparator());
-        }
-
-        private void print(String prefix, CharSequence content, Throwable error) {
-            StringWriter sWriter = new StringWriter();
-            PrintWriter pWriter = new PrintWriter(sWriter);
-
-            error.printStackTrace(pWriter);
-
-            sb.append("[")
-                    .append(prefix)
-                    .append("] ")
-                    .append(content.toString())
-                    .append(System.lineSeparator())
-                    .append(System.lineSeparator());
-            sb.append(sWriter).append(System.lineSeparator());
-        }
-
-        protected String getContent() {
-            return sb.toString();
-        }
     }
 }

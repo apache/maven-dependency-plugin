@@ -18,61 +18,55 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
+import javax.inject.Inject;
+
 import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.LegacySupport;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
-import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.LocalRepository;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 
-public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
+import static org.junit.jupiter.api.AssertionsKt.assertNull;
+import static org.mockito.Mockito.when;
 
-    private BuildClasspathMojo mojo;
+@MojoTest
+public class TestBuildClasspathMojo {
 
-    @Override
-    protected String getTestDirectoryName() {
-        return "build-classpath";
-    }
+    @TempDir
+    private File testDir;
 
-    @Override
-    protected boolean shouldCreateFiles() {
-        return true;
-    }
+    @Inject
+    private MavenSession session;
 
-    @Override
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp();
-
-        MavenProject project = new DependencyProjectStub();
-        getContainer().addComponent(project, MavenProject.class.getName());
-
-        MavenSession session = newMavenSession(project);
-        getContainer().addComponent(session, MavenSession.class.getName());
-
-        File testPom = new File(getBasedir(), "target/test-classes/unit/build-classpath-test/plugin-config.xml");
-        mojo = (BuildClasspathMojo) lookupMojo("build-classpath", testPom);
-
-        assertNotNull(mojo);
-        assertNotNull(mojo.getProject());
-    }
+    @Inject
+    private MavenProject project;
 
     /**
      * Tests the proper discovery and configuration of the mojo.
      */
-    public void testEnvironment() throws Exception {
-        MavenProject project = mojo.getProject();
+    @Test
+    @InjectMojo(goal = "build-classpath")
+    public void testEnvironment(BuildClasspathMojo mojo) throws Exception {
 
-        Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
-        Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
-        artifacts.addAll(directArtifacts);
-
-        project.setArtifacts(artifacts);
-        project.setDependencyArtifacts(directArtifacts);
+        Set<Artifact> artifacts = getArtifacts();
+        when(project.getArtifacts()).thenReturn(artifacts);
 
         mojo.execute();
         try {
@@ -117,13 +111,19 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
         assertNotNull(propertyValue);
     }
 
-    public void testPath() throws Exception {
+    @Test
+    @InjectMojo(goal = "build-classpath")
+    public void testPath(BuildClasspathMojo mojo) throws Exception {
 
-        LegacySupport legacySupport = lookup(LegacySupport.class);
-        legacySupport.setSession(lookup(MavenSession.class));
-        installLocalRepository(legacySupport);
+        File localRepo = new File(testDir, "local-rep").getAbsoluteFile();
 
-        Artifact artifact = stubFactory.getReleaseArtifact();
+        RepositorySystemSession repoSession = Mockito.mock(RepositorySystemSession.class);
+        when(repoSession.getLocalRepository()).thenReturn(new LocalRepository(localRepo));
+        when(session.getRepositorySession()).thenReturn(repoSession);
+
+        Artifact artifact = new DefaultArtifact(
+                "testGroupId", "release", "1.0", null, "jar", "", new DefaultArtifactHandler("jar"));
+        artifact.setFile(new File(localRepo, "release-1.0.jar"));
 
         StringBuilder sb = new StringBuilder();
         mojo.setPrefix(null);
@@ -146,9 +146,9 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
         mojo.setPrependGroupId(true);
         mojo.appendArtifactPath(artifact, sb);
         assertEquals(
-                "If prefix is null, prependGroupId has no impact ",
                 "%M2_REPO%" + File.separator + DependencyUtil.getFormattedFileName(artifact, false, false),
-                sb.toString());
+                sb.toString(),
+                "If prefix is null, prependGroupId has no impact ");
 
         mojo.setLocalRepoProperty("");
         mojo.setPrefix("prefix");
@@ -170,5 +170,18 @@ public class TestBuildClasspathMojo extends AbstractDependencyMojoTestCase {
         sb = new StringBuilder();
         mojo.appendArtifactPath(artifact, sb);
         assertEquals("prefix" + File.separator + DependencyUtil.getFormattedFileName(artifact, true), sb.toString());
+    }
+
+    private Set<Artifact> getArtifacts() {
+        Artifact artifact1 = new DefaultArtifact(
+                "testGroupId", "release1", "1.0", null, "jar", "", new DefaultArtifactHandler("jar"));
+        artifact1.setFile(new File(testDir, "local-repo/release1-1.0.jar"));
+        Artifact artifact2 = new DefaultArtifact(
+                "testGroupId", "release2", "1.0", null, "jar", "", new DefaultArtifactHandler("jar"));
+        artifact2.setFile(new File(testDir, "local-repo/release2-1.0.jar"));
+        Set<Artifact> artifacts = new HashSet<>();
+        artifacts.add(artifact1);
+        artifacts.add(artifact2);
+        return artifacts;
     }
 }
