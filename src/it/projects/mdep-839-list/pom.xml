@@ -29,7 +29,7 @@
 
   <name>Test</name>
   <description>
-    Test dependency:list-repositories
+    Test dependency:list
   </description>
 
   <properties>
