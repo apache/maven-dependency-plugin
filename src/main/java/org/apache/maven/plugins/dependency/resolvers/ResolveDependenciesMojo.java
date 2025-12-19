@@ -240,7 +240,7 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
             if (artifact.getFile() != null) {
                 ModuleDescriptor moduleDescriptor = getModuleDescriptor(artifact.getFile());
                 if (moduleDescriptor != null) {
-                    messageBuilder.project(" -- module " + moduleDescriptor.name);
+                    messageBuilder.project(" - module " + moduleDescriptor.name);
 
                     if (moduleDescriptor.automatic) {
                         if ("MANIFEST".equals(moduleDescriptor.moduleNameSource)) {
