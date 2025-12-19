@@ -23,6 +23,17 @@ String output = file.getText( "UTF-8" )
 assert output.startsWith( 'The following files have been resolved:')
 // no escape codes
 assert !output.contains( '\u001B' ) 
-assert output.contains( 'compile -- module' ) 
+
+// expected output depends on whether we have a version of Java that supports modules or not
+def javaVersion = System.getProperty("java.specification.version")
+def majorVersion = (javaVersion.startsWith("1.") ? javaVersion.split("\\.")[1] : javaVersion).toInteger()
+
+if (majorVersion >= 9) {
+    assert output.contains('compile -- module') : "Output should contain module compilation info on Java 9+"
+} else {
+    assert output.contains( 'compile' ) 
+}
+
+
 
 
