@@ -19,7 +19,7 @@
 
 File file = new File( basedir, "classpath.txt" )
 assert file.exists() : "output file $file does not exist"
-
+AnsiConsole.out().println "Hello World"
 String output = file.getText( "UTF-8" )
 assert output.startsWith( 'The following files have been resolved:')
 // no escape codes
