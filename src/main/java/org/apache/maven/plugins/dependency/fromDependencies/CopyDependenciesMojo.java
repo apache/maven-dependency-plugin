@@ -227,6 +227,8 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         copyArtifact(artifact, removeVersion, prependGroupId, theUseBaseVersion, false);
     }
 
+    private static final String SIGNATURE_EXTENSION = ".asc";
+
     /**
      * Copies the Artifact after building the destination file name if overridden. This method also checks if the
      * classifier is set and adds it to the destination file name if needed.
@@ -240,8 +242,6 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      * @see CopyUtil#copyArtifactFile(Artifact, File)
      * @see DependencyUtil#getFormattedOutputDirectory(boolean, boolean, boolean, boolean, boolean, boolean, File, Artifact)
      */
-    private static final String SIGNATURE_EXTENSION = ".asc";
-
     protected void copyArtifact(
             Artifact artifact,
             boolean removeVersion,
