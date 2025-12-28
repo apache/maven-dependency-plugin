@@ -19,28 +19,30 @@
 package org.apache.maven.plugins.dependency.resolvers;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.plugin.testing.stubs.ArtifactStub;
-import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
-public class ExcludeReactorProjectsDependencyFilterTest extends AbstractDependencyMojoTestCase {
-    public void testReject() {
-        final Artifact artifact1 = new ArtifactStub();
-        artifact1.setGroupId("org.apache.maven.plugins");
-        artifact1.setArtifactId("maven-dependency-plugin-dummy");
-        artifact1.setVersion("1.0");
+@ExtendWith(MockitoExtension.class)
+class ExcludeReactorProjectsDependencyFilterTest {
 
-        Artifact artifact2 = new ArtifactStub();
-        artifact2.setGroupId("org.apache.maven.plugins");
-        artifact2.setArtifactId("maven-dependency-plugin-other-dummy");
-        artifact2.setVersion("1.0");
+    @Mock
+    private MavenProject project;
 
-        MavenProject project = new MavenProjectStub();
-        project.setArtifact(artifact1);
+    @Test
+    void testReject() {
+        Artifact artifact1 = anArtifact();
+
+        when(project.getArtifact()).thenReturn(artifact1);
 
         ExcludeReactorProjectsDependencyFilter filter =
                 new ExcludeReactorProjectsDependencyFilter(singletonList(project));
@@ -53,19 +55,11 @@ public class ExcludeReactorProjectsDependencyFilterTest extends AbstractDependen
         assertFalse(filter.test(dependency));
     }
 
-    public void testAccept() {
-        final Artifact artifact1 = new ArtifactStub();
-        artifact1.setGroupId("org.apache.maven.plugins");
-        artifact1.setArtifactId("maven-dependency-plugin-dummy");
-        artifact1.setVersion("1.0");
+    @Test
+    void testAccept() {
+        Artifact artifact1 = anArtifact();
 
-        Artifact artifact2 = new ArtifactStub();
-        artifact2.setGroupId("org.apache.maven.plugins");
-        artifact2.setArtifactId("maven-dependency-plugin-other-dummy");
-        artifact2.setVersion("1.0");
-
-        MavenProject project = new MavenProjectStub();
-        project.setArtifact(artifact1);
+        when(project.getArtifact()).thenReturn(artifact1);
 
         ExcludeReactorProjectsDependencyFilter filter =
                 new ExcludeReactorProjectsDependencyFilter(singletonList(project));
@@ -76,5 +70,10 @@ public class ExcludeReactorProjectsDependencyFilterTest extends AbstractDependen
         dependency.setVersion(artifact1.getVersion());
 
         assertTrue(filter.test(dependency));
+    }
+
+    private Artifact anArtifact() {
+        return new DefaultArtifact(
+                "org.apache.maven.plugins", "maven-dependency-plugin-dummy", "1.0", null, "jar", "", null);
     }
 }

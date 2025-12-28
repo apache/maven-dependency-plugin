@@ -22,43 +22,44 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.testing.stubs.ArtifactStub;
-import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ExcludeReactorProjectsArtifactFilterTest extends AbstractDependencyMojoTestCase {
+@ExtendWith(MockitoExtension.class)
+class ExcludeReactorProjectsArtifactFilterTest {
 
-    public void testFilter() throws ArtifactFilterException {
-        Artifact artifact1 = new ArtifactStub();
-        artifact1.setGroupId("org.apache.maven.plugins");
-        artifact1.setArtifactId("maven-dependency-plugin-dummy");
-        artifact1.setVersion("1.0");
+    @Mock
+    private Log log;
 
-        Artifact artifact2 = new ArtifactStub();
-        artifact2.setGroupId("org.apache.maven.plugins");
-        artifact2.setArtifactId("maven-dependency-plugin-other-dummy");
-        artifact2.setVersion("1.0");
+    @Mock
+    private MavenProject project;
+
+    @Test
+    void testFilter() throws ArtifactFilterException {
+        Artifact artifact1 = anArtifact("maven-dependency-plugin-dummy");
+        Artifact artifact2 = anArtifact("maven-dependency-plugin-other-dummy");
 
         Set<Artifact> artifacts = new HashSet<>();
         artifacts.add(artifact1);
         artifacts.add(artifact2);
 
-        MavenProject project = new MavenProjectStub();
-        project.setArtifact(artifact1);
-
-        Log log = mock(Log.class);
+        when(project.getArtifact()).thenReturn(artifact1);
         when(log.isDebugEnabled()).thenReturn(false);
 
         ExcludeReactorProjectsArtifactFilter filter =
@@ -70,16 +71,11 @@ public class ExcludeReactorProjectsArtifactFilterTest extends AbstractDependency
         verify(log, never()).debug(any(String.class));
     }
 
-    public void testFilterWithLogging() throws ArtifactFilterException {
-        Artifact artifact = new ArtifactStub();
-        artifact.setGroupId("org.apache.maven.plugins");
-        artifact.setArtifactId("maven-dependency-plugin-dummy");
-        artifact.setVersion("1.0");
+    @Test
+    void testFilterWithLogging() throws ArtifactFilterException {
+        Artifact artifact = anArtifact("maven-dependency-plugin-dummy");
 
-        MavenProject project = new MavenProjectStub();
-        project.setArtifact(artifact);
-
-        Log log = mock(Log.class);
+        when(project.getArtifact()).thenReturn(artifact);
         when(log.isDebugEnabled()).thenReturn(true);
 
         ExcludeReactorProjectsArtifactFilter filter =
@@ -90,5 +86,9 @@ public class ExcludeReactorProjectsArtifactFilterTest extends AbstractDependency
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(log).debug(captor.capture());
         assertTrue(captor.getValue().contains("Skipped artifact"));
+    }
+
+    private Artifact anArtifact(String artifactId) {
+        return new DefaultArtifact("org.apache.maven.plugins", artifactId, "1.0", null, "jar", "", null);
     }
 }
