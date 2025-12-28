@@ -91,8 +91,8 @@ under the License.
 
   <properties>
     <javaVersion>8</javaVersion>
-    <mavenVersion>3.9.11</mavenVersion>
-    <resolverVersion>1.9.24</resolverVersion>
+    <mavenVersion>3.9.12</mavenVersion>
+    <resolverVersion>1.9.25</resolverVersion>
     <slf4jVersion>1.7.36</slf4jVersion>
     <jettyVersion>9.4.58.v20250814</jettyVersion>
     <mockito.version>4.11.0</mockito.version>
