@@ -18,42 +18,23 @@
  */
 package org.apache.maven.plugins.dependency.resolvers;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.maven.api.plugin.testing.Basedir;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.testing.stubs.ArtifactStub;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
-import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
-import org.apache.maven.project.MavenProject;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
-    private GoOfflineMojo subject;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Override
-    protected String getTestDirectoryName() {
-        return "go-offline";
-    }
-
-    @Override
-    protected boolean shouldCreateFiles() {
-        return true;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp();
-        MavenProject project = new DependencyProjectStub();
-        getContainer().addComponent(project, MavenProject.class.getName());
-
-        MavenSession session = newMavenSession(project);
-        getContainer().addComponent(session, MavenSession.class.getName());
-    }
+@MojoTest
+class GoOfflineMojoTest {
 
     private static final String GROUP_EXCLUDE_PREFIX = "skip.this.groupid";
 
@@ -67,26 +48,14 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
 
     private static final String VALID_GROUP = "org.junit.jupiter";
 
-    public void testExcludeGroupIds() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/exclude-plugin-config.xml");
-
-        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
-        assertNotNull(subject);
-
-        Artifact artifact1 = new ArtifactStub();
-        artifact1.setGroupId(GROUP_EXCLUDE_PREFIX);
-        artifact1.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact1.setVersion(STUB_ARTIFACT_VERSION);
-
-        Artifact artifact2 = new ArtifactStub();
-        artifact2.setGroupId(GROUP_EXCLUDE_PREFIX + ".too");
-        artifact2.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact2.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
-
-        Artifact artifact3 = new ArtifactStub();
-        artifact3.setGroupId("dont.skip.me");
-        artifact3.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact3.setVersion("1.0");
+    @Test
+    @Basedir("/unit/go-offline-test")
+    @InjectMojo(goal = "go-offline", pom = "exclude-plugin-config.xml")
+    void testExcludeGroupIds(GoOfflineMojo subject) throws Exception {
+        Artifact artifact1 = anArtifact(GROUP_EXCLUDE_PREFIX, DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION);
+        Artifact artifact2 =
+                anArtifact(GROUP_EXCLUDE_PREFIX + ".too", DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION + "-SNAPSHOT");
+        Artifact artifact3 = anArtifact("dont.skip.me", DUMMY_ARTIFACT_NAME, "1.0");
 
         Set<Artifact> artifacts = new HashSet<>();
         artifacts.add(artifact1);
@@ -102,26 +71,13 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertFalse(artifacts.contains(artifact2));
     }
 
-    public void testExcludeArtifactIds() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/exclude-plugin-config.xml");
-
-        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
-        assertNotNull(subject);
-
-        Artifact artifact1 = new ArtifactStub();
-        artifact1.setGroupId(VALID_GROUP);
-        artifact1.setArtifactId(ARTIFACT_EXCLUDE_PREFIX);
-        artifact1.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
-
-        Artifact artifact2 = new ArtifactStub();
-        artifact2.setGroupId(VALID_GROUP);
-        artifact2.setArtifactId(ARTIFACT_EXCLUDE_PREFIX + "-too");
-        artifact2.setVersion(STUB_ARTIFACT_VERSION);
-
-        Artifact artifact3 = new ArtifactStub();
-        artifact3.setGroupId("dont.skip.me");
-        artifact3.setArtifactId("dummy-artifact");
-        artifact3.setVersion("1.0");
+    @Test
+    @Basedir("/unit/go-offline-test")
+    @InjectMojo(goal = "go-offline", pom = "exclude-plugin-config.xml")
+    void testExcludeArtifactIds(GoOfflineMojo subject) throws Exception {
+        Artifact artifact1 = anArtifact(VALID_GROUP, ARTIFACT_EXCLUDE_PREFIX, STUB_ARTIFACT_VERSION + "-SNAPSHOT");
+        Artifact artifact2 = anArtifact(VALID_GROUP, ARTIFACT_EXCLUDE_PREFIX + "-too", STUB_ARTIFACT_VERSION);
+        Artifact artifact3 = anArtifact("dont.skip.me", "dummy-artifact", "1.0");
 
         Set<Artifact> artifacts = new HashSet<>();
         artifacts.add(artifact1);
@@ -137,27 +93,13 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertFalse(artifacts.contains(artifact2));
     }
 
-    public void testExcludeScope() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/exclude-plugin-config.xml");
-
-        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
-        assertNotNull(subject);
-
-        Artifact artifact1 = new ArtifactStub();
-        artifact1.setGroupId(VALID_GROUP);
-        artifact1.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact1.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
-
-        Artifact artifact2 = new ArtifactStub();
-        artifact2.setGroupId(VALID_GROUP);
-        artifact2.setArtifactId(DUMMY_ARTIFACT_NAME + "-too");
-        artifact2.setVersion(STUB_ARTIFACT_VERSION);
-        artifact2.setScope("system");
-
-        Artifact artifact3 = new ArtifactStub();
-        artifact3.setGroupId(VALID_GROUP);
-        artifact3.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact3.setVersion(STUB_ARTIFACT_VERSION);
+    @Test
+    @Basedir("/unit/go-offline-test")
+    @InjectMojo(goal = "go-offline", pom = "exclude-plugin-config.xml")
+    void testExcludeScope(GoOfflineMojo subject) throws Exception {
+        Artifact artifact1 = anArtifact(VALID_GROUP, DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION + "-SNAPSHOT");
+        Artifact artifact2 = anArtifactScope(DUMMY_ARTIFACT_NAME + "-too", STUB_ARTIFACT_VERSION, "system");
+        Artifact artifact3 = anArtifact(VALID_GROUP, DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION);
 
         Set<Artifact> artifacts = new HashSet<>();
         artifacts.add(artifact1);
@@ -173,29 +115,13 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertFalse(artifacts.contains(artifact2));
     }
 
-    public void testExcludeTypes() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/exclude-plugin-config.xml");
-
-        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
-        assertNotNull(subject);
-
-        ArtifactStub artifact1 = new ArtifactStub();
-        artifact1.setGroupId(VALID_GROUP);
-        artifact1.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact1.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
-        artifact1.setType("ear");
-
-        ArtifactStub artifact2 = new ArtifactStub();
-        artifact2.setGroupId(VALID_GROUP);
-        artifact2.setArtifactId(DUMMY_ARTIFACT_NAME + "-too");
-        artifact2.setVersion(STUB_ARTIFACT_VERSION);
-        artifact2.setType("war");
-
-        ArtifactStub artifact3 = new ArtifactStub();
-        artifact3.setGroupId(VALID_GROUP);
-        artifact3.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact3.setVersion(STUB_ARTIFACT_VERSION);
-        artifact3.setType("pom");
+    @Test
+    @Basedir("/unit/go-offline-test")
+    @InjectMojo(goal = "go-offline", pom = "exclude-plugin-config.xml")
+    void testExcludeTypes(GoOfflineMojo subject) throws Exception {
+        Artifact artifact1 = anArtifactType(DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION + "-SNAPSHOT", "ear");
+        Artifact artifact2 = anArtifactType(DUMMY_ARTIFACT_NAME + "-too", STUB_ARTIFACT_VERSION, "war");
+        Artifact artifact3 = anArtifactType(DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION, "pom");
 
         Set<Artifact> artifacts = new HashSet<>();
         artifacts.add(artifact1);
@@ -218,29 +144,15 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception
      */
-    @Disabled("Requires update to maven-plugin-test-harness to support this test")
-    public void xtestExcludeClassifiers() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/exclude-plugin-config.xml");
-
-        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
-        assertNotNull(subject);
-
-        ArtifactStub artifact1 = new ArtifactStub();
-        artifact1.setGroupId(VALID_GROUP);
-        artifact1.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact1.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
-        // artifact1.setClassifier(CLASSIFIER_EXCLUDE_PREFIX);
-
-        ArtifactStub artifact2 = new ArtifactStub();
-        artifact2.setGroupId(VALID_GROUP);
-        artifact2.setArtifactId(DUMMY_ARTIFACT_NAME + "-too");
-        artifact2.setVersion(STUB_ARTIFACT_VERSION);
-        // artifact2.setClassifier(CLASSIFIER_EXCLUDE_PREFIX + "Too");
-
-        ArtifactStub artifact3 = new ArtifactStub();
-        artifact3.setGroupId(VALID_GROUP);
-        artifact3.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact3.setVersion(STUB_ARTIFACT_VERSION);
+    @Test
+    @Basedir("/unit/go-offline-test")
+    @InjectMojo(goal = "go-offline", pom = "exclude-plugin-config.xml")
+    void testExcludeClassifiers(GoOfflineMojo subject) throws Exception {
+        Artifact artifact1 = anArtifactClassifier(
+                DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION + "-SNAPSHOT", CLASSIFIER_EXCLUDE_PREFIX);
+        Artifact artifact2 = anArtifactClassifier(
+                DUMMY_ARTIFACT_NAME + "-too", STUB_ARTIFACT_VERSION, CLASSIFIER_EXCLUDE_PREFIX + "Too");
+        Artifact artifact3 = anArtifact(VALID_GROUP, DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION);
 
         Set<Artifact> artifacts = new HashSet<>();
         artifacts.add(artifact1);
@@ -262,26 +174,14 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
 
     private static final String CLASSIFIER_INCLUDE_PREFIX = "includeThisClassifier";
 
-    public void testIncludeGroupIds() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/include-gid-plugin-config.xml");
-
-        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
-        assertNotNull(subject);
-
-        Artifact artifact1 = new ArtifactStub();
-        artifact1.setGroupId(GROUP_INCLUDE_PREFIX);
-        artifact1.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact1.setVersion(STUB_ARTIFACT_VERSION);
-
-        Artifact artifact2 = new ArtifactStub();
-        artifact2.setGroupId(GROUP_INCLUDE_PREFIX + ".too");
-        artifact2.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact2.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
-
-        Artifact artifact3 = new ArtifactStub();
-        artifact3.setGroupId("skip.me");
-        artifact3.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact3.setVersion("1.0");
+    @Test
+    @Basedir("/unit/go-offline-test")
+    @InjectMojo(goal = "go-offline", pom = "include-gid-plugin-config.xml")
+    void testIncludeGroupIds(GoOfflineMojo subject) throws Exception {
+        Artifact artifact1 = anArtifact(GROUP_INCLUDE_PREFIX, DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION);
+        Artifact artifact2 =
+                anArtifact(GROUP_INCLUDE_PREFIX + ".too", DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION + "-SNAPSHOT");
+        Artifact artifact3 = anArtifact("skip.me", DUMMY_ARTIFACT_NAME, "1.0");
 
         Set<Artifact> artifacts = new HashSet<>();
         artifacts.add(artifact1);
@@ -298,26 +198,14 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertTrue(artifacts.contains(artifact2));
     }
 
-    public void testIncludeArtifactIds() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/include-aid-plugin-config.xml");
-
-        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
-        assertNotNull(subject);
-
-        Artifact artifact1 = new ArtifactStub();
-        artifact1.setGroupId(VALID_GROUP);
-        artifact1.setArtifactId(ARTIFACT_INCLUDE_PREFIX);
-        artifact1.setVersion(STUB_ARTIFACT_VERSION);
-
-        Artifact artifact2 = new ArtifactStub();
-        artifact2.setGroupId(VALID_GROUP);
-        artifact2.setArtifactId(ARTIFACT_INCLUDE_PREFIX + "-too");
-        artifact2.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
-
-        Artifact artifact3 = new ArtifactStub();
-        artifact3.setGroupId(VALID_GROUP);
-        artifact3.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact3.setVersion("1.0");
+    @Test
+    @Basedir("/unit/go-offline-test")
+    @InjectMojo(goal = "go-offline", pom = "include-aid-plugin-config.xml")
+    void testIncludeArtifactIds(GoOfflineMojo subject) throws Exception {
+        Artifact artifact1 = anArtifact(VALID_GROUP, ARTIFACT_INCLUDE_PREFIX, STUB_ARTIFACT_VERSION);
+        Artifact artifact2 =
+                anArtifact(VALID_GROUP, ARTIFACT_INCLUDE_PREFIX + "-too", STUB_ARTIFACT_VERSION + "-SNAPSHOT");
+        Artifact artifact3 = anArtifact(VALID_GROUP, DUMMY_ARTIFACT_NAME, "1.0");
 
         Set<Artifact> artifacts = new HashSet<>();
         artifacts.add(artifact1);
@@ -334,30 +222,13 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertTrue(artifacts.contains(artifact2));
     }
 
-    public void testIncludeScope() throws Exception {
-        File testPom =
-                new File(getBasedir(), "target/test-classes/unit/go-offline-test/include-scope-plugin-config.xml");
-
-        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
-        assertNotNull(subject);
-
-        Artifact artifact1 = new ArtifactStub();
-        artifact1.setGroupId(VALID_GROUP);
-        artifact1.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact1.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
-        artifact1.setScope("provided");
-
-        Artifact artifact2 = new ArtifactStub();
-        artifact2.setGroupId(VALID_GROUP);
-        artifact2.setArtifactId(DUMMY_ARTIFACT_NAME + "-too");
-        artifact2.setVersion(STUB_ARTIFACT_VERSION);
-        artifact2.setScope("system");
-
-        Artifact artifact3 = new ArtifactStub();
-        artifact3.setGroupId(VALID_GROUP);
-        artifact3.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact3.setVersion(STUB_ARTIFACT_VERSION);
-        artifact3.setScope("test");
+    @Test
+    @Basedir("/unit/go-offline-test")
+    @InjectMojo(goal = "go-offline", pom = "include-scope-plugin-config.xml")
+    void testIncludeScope(GoOfflineMojo subject) throws Exception {
+        Artifact artifact1 = anArtifactScope(DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION + "-SNAPSHOT", "provided");
+        Artifact artifact2 = anArtifactScope(DUMMY_ARTIFACT_NAME + "-too", STUB_ARTIFACT_VERSION, "system");
+        Artifact artifact3 = anArtifactScope(DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION, "test");
 
         Set<Artifact> artifacts = new HashSet<>();
         artifacts.add(artifact1);
@@ -374,30 +245,13 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertFalse(artifacts.contains(artifact3));
     }
 
-    public void testIncludeTypes() throws Exception {
-        File testPom =
-                new File(getBasedir(), "target/test-classes/unit/go-offline-test/include-types-plugin-config.xml");
-
-        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
-        assertNotNull(subject);
-
-        ArtifactStub artifact1 = new ArtifactStub();
-        artifact1.setGroupId(VALID_GROUP);
-        artifact1.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact1.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
-        artifact1.setType("ear");
-
-        ArtifactStub artifact2 = new ArtifactStub();
-        artifact2.setGroupId(VALID_GROUP);
-        artifact2.setArtifactId(DUMMY_ARTIFACT_NAME + "-too");
-        artifact2.setVersion(STUB_ARTIFACT_VERSION);
-        artifact2.setType("pom");
-
-        ArtifactStub artifact3 = new ArtifactStub();
-        artifact3.setGroupId(VALID_GROUP);
-        artifact3.setArtifactId(DUMMY_ARTIFACT_NAME);
-        artifact3.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
-        artifact3.setType("war");
+    @Test
+    @Basedir("/unit/go-offline-test")
+    @InjectMojo(goal = "go-offline", pom = "include-types-plugin-config.xml")
+    void testIncludeTypes(GoOfflineMojo subject) throws Exception {
+        Artifact artifact1 = anArtifactType(DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION + "-SNAPSHOT", "ear");
+        Artifact artifact2 = anArtifactType(DUMMY_ARTIFACT_NAME + "-too", STUB_ARTIFACT_VERSION, "pom");
+        Artifact artifact3 = anArtifactType(DUMMY_ARTIFACT_NAME, STUB_ARTIFACT_VERSION + "-SNAPSHOT", "war");
 
         Set<Artifact> artifacts = new HashSet<>();
         artifacts.add(artifact1);
@@ -412,5 +266,21 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertTrue(artifacts.contains(artifact1));
         assertTrue(artifacts.contains(artifact2));
         assertFalse(artifacts.contains(artifact3));
+    }
+
+    private Artifact anArtifact(String groupId, String artifactId, String version) {
+        return new DefaultArtifact(groupId, artifactId, version, null, "jar", "", null);
+    }
+
+    private Artifact anArtifactScope(String version, String artifactId, String scope) {
+        return new DefaultArtifact(VALID_GROUP, artifactId, version, scope, "jar", "", null);
+    }
+
+    private Artifact anArtifactType(String artifactId, String version, String type) {
+        return new DefaultArtifact(VALID_GROUP, artifactId, version, null, type, "", null);
+    }
+
+    private Artifact anArtifactClassifier(String artifactId, String version, String classifier) {
+        return new DefaultArtifact(VALID_GROUP, artifactId, version, null, "jar", classifier, null);
     }
 }

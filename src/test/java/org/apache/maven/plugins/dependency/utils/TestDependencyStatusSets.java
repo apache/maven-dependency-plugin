@@ -18,42 +18,45 @@
  */
 package org.apache.maven.plugins.dependency.utils;
 
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import java.util.HashSet;
+import java.util.Set;
 
-public class TestDependencyStatusSets extends AbstractDependencyMojoTestCase {
+import org.apache.maven.artifact.Artifact;
+import org.junit.jupiter.api.Test;
 
-    @Override
-    protected String getTestDirectoryName() {
-        return "dss";
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+
+class TestDependencyStatusSets {
+
+    @Test
+    void testDependencyStatusSettersGetters() {
+        DependencyStatusSets dss = new DependencyStatusSets();
+        Set<Artifact> set = new HashSet<>();
+        dss.setResolvedDependencies(set);
+        assertEquals(set, dss.getResolvedDependencies());
+
+        set = new HashSet<>();
+        dss.setUnResolvedDependencies(set);
+        assertEquals(set, dss.getUnResolvedDependencies());
+
+        set = new HashSet<>();
+        dss.setSkippedDependencies(set);
+        assertEquals(set, dss.getSkippedDependencies());
+
+        assertNotSame(dss.getResolvedDependencies(), dss.getSkippedDependencies());
+        assertNotSame(dss.getResolvedDependencies(), dss.getUnResolvedDependencies());
+        assertNotSame(dss.getSkippedDependencies(), dss.getUnResolvedDependencies());
     }
 
-    @Override
-    protected boolean shouldCreateFiles() {
-        return true;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp();
-    }
-
-    public void testDependencyStatusSettersGetters() {
-        /*
-         * DependencyStatusSets dss = new DependencyStatusSets(); Set set = new HashSet(); dss.setResolvedDependencies(
-         * set ); assertSame( set, dss.getResolvedDependencies() ); set = new HashSet(); dss.setUnResolvedDependencies(
-         * set ); assertSame( set, dss.getUnResolvedDependencies() ); set = new HashSet(); dss.setSkippedDependencies(
-         * set ); assertSame( set, dss.getSkippedDependencies() ); assertNotSame( dss.getResolvedDependencies(),
-         * dss.getSkippedDependencies() ); assertNotSame( dss.getResolvedDependencies(), dss.getUnResolvedDependencies()
-         * ); assertNotSame( dss.getSkippedDependencies(), dss.getUnResolvedDependencies() );
-         */
-    }
-
-    public void testDependencyStatusConstructor() {
-        /*
-         * Set r = new HashSet(); Set u = new HashSet(); Set s = new HashSet(); DependencyStatusSets dss = new
-         * DependencyStatusSets( r, u, s ); assertSame( r, dss.getResolvedDependencies() ); assertSame( u,
-         * dss.getUnResolvedDependencies() ); assertSame( s, dss.getSkippedDependencies() );
-         */
+    @Test
+    void testDependencyStatusConstructor() {
+        Set<Artifact> r = new HashSet<>();
+        Set<Artifact> u = new HashSet<>();
+        Set<Artifact> s = new HashSet<>();
+        DependencyStatusSets dss = new DependencyStatusSets(r, u, s);
+        assertEquals(r, dss.getResolvedDependencies());
+        assertEquals(u, dss.getUnResolvedDependencies());
+        assertEquals(s, dss.getSkippedDependencies());
     }
 }
