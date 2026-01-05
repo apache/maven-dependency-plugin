@@ -238,9 +238,9 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected boolean prependGroupId = false;
 
     /**
-     * By default this matches the project itself is the root.
-     * With graphRoots you can choose for a subtree of dependencies.
-     * After that the general include/exclude filters can be applied.
+     * By default, this goal uses the project itself as the root of the dependency tree.
+     * With graphRoots, you can select a subtree of dependencies.
+     * After that, the general include/exclude filters can be applied.
      *
      * @since 3.10.0
      */
