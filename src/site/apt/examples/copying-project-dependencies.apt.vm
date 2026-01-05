@@ -100,7 +100,7 @@ Copying project dependencies
 
 * Subtrees
 
-  By default the pom is considered the graphRoot, but it can be useful to get the jars of one dependency and all its transitive dependencies. 
+  By default, the pom is considered the root of the dependency tree, but it can be useful to get the jars of one dependency and all its transitive dependencies. 
   This can be done by specifying one or more <<graphRoots>>.
 
 +---+
