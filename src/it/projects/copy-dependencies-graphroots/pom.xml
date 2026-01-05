@@ -40,6 +40,11 @@
   
   <dependencies>
     <dependency>
+      <groupId>org.apache.maven.its.dependencies</groupId>
+      <artifactId>d-without-dep</artifactId>
+      <version>3.2.1</version>
+    </dependency>    
+    <dependency>
       <groupId>org.apache.maven.its.dependency</groupId>
 	  <artifactId>a-with-dep</artifactId>
       <version>1.0.0</version>
@@ -76,6 +81,10 @@
                 <graphRoot>
                   <groupId>org.apache.maven.its.dependency</groupId>
 	              <artifactId>a-with-dep</artifactId>
+                </graphRoot>
+                <graphRoot>
+                  <groupId>org.apache.maven.its.dependencies</groupId>
+                  <artifactId>d-without-dep</artifactId>
                 </graphRoot>
               </graphRoots>
               <outputDirectory>${project.build.directory}/it/copy-dep-test-1</outputDirectory>

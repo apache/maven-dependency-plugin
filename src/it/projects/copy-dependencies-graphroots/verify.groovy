@@ -17,14 +17,14 @@
  * under the License.
  */
 
-def targetFiles1 = ['a-with-dep-1.0.0.jar', 'b-with-dep-1.0.0.jar', 'c-without-dep-1.0.0.jar']
+def targetFiles1 = ['a-with-dep-1.0.0.jar', 'b-with-dep-1.0.0.jar', 'c-without-dep-1.0.0.jar', 'd-without-dep-3.2.1.jar']
 def directory1 = new File(basedir, 'target/it/copy-dep-test-1')
 
 // Get only file names from the directory (excludes subdirectories)
 def actualFiles1 = directory1.listFiles().findAll { it.isFile() }.collect { it.name }
 
 // Check if the sets are identical and have exactly 3 files
-assert (actualFiles1.size() == 3 && actualFiles1.containsAll(targetFiles1))
+assert (actualFiles1.size() == 4 && actualFiles1.containsAll(targetFiles1))
 
 
 def targetFiles2 = ['get-artifact-1.0.jar', 'get-artifact-transitive-1.0.jar']
