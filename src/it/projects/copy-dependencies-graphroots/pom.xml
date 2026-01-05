@@ -35,7 +35,7 @@
 
   <name>Test</name>
   <description>
-    Test dependency:copy-dependencies
+    Test dependency:copy-dependencies using graphRoots
   </description>
   
   <dependencies>
