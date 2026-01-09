@@ -18,16 +18,11 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
-/**
- * All values are static, no expression, so matcher can use equals
- */
 public class GraphRoot {
 
     private String groupId;
 
     private String artifactId;
-
-    private String type;
 
     public String getGroupId() {
         return groupId;
@@ -43,13 +38,5 @@ public class GraphRoot {
 
     public void setArtifactId(String artifactId) {
         this.artifactId = artifactId;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 }

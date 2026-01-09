@@ -28,7 +28,14 @@ class OrDependencyMatcher implements DependencyMatcher {
     private Collection<DependencyMatcher> matchers;
 
     OrDependencyMatcher(Collection<DependencyMatcher> matchers) {
-        this.matchers = new ArrayList<>(matchers);
+        this.matchers = new ArrayList<>(validate(matchers));
+    }
+
+    private Collection<DependencyMatcher> validate(Collection<DependencyMatcher> matchers) {
+        if (matchers == null || matchers.isEmpty()) {
+            throw new IllegalArgumentException("There must be at least 1 dependencyMatcher");
+        }
+        return matchers;
     }
 
     @Override

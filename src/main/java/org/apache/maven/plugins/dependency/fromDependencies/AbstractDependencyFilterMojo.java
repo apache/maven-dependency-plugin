@@ -239,7 +239,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
     /**
      * By default, this goal uses the project itself as the root of the dependency tree.
-     * With graphRoots, you can select a subtree of dependencies.
+     * With graphRoots, you can select a subtree of dependencies based on groupId and artifactId.
      * After that, the general include/exclude filters can be applied.
      *
      * @since 3.10.0
@@ -504,8 +504,12 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
     private Set<Artifact> collectArtifacts(MavenProject project) throws DependencyResolutionException {
         if (graphRoots == null || graphRoots.isEmpty()) {
+            // artifact have already been resolved here due to
+            // @Mojo(requiresDependencyResolution = ResolutionScope.TEST) on final Mojo
             return project.getArtifacts();
         } else {
+            // MavenProject doesn't provide access to the graph of dependencies(only the direct dependencies)
+            // Hence we need to re-resolve artifacts, but only for the matching graphnodes
             List<DependencyMatcher> filterMatchers =
                     graphRoots.stream().map(GraphRootMatcher::new).collect(Collectors.toList());
 

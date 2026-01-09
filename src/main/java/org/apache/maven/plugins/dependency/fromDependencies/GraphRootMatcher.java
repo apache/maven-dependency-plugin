@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
+import java.util.Objects;
+
 import org.apache.maven.model.Dependency;
 
 class GraphRootMatcher implements DependencyMatcher {
@@ -25,17 +27,12 @@ class GraphRootMatcher implements DependencyMatcher {
     private final GraphRoot graphRoot;
 
     GraphRootMatcher(GraphRoot graphRoot) {
-        this.graphRoot = graphRoot;
+        this.graphRoot = Objects.requireNonNull(graphRoot);
     }
 
     @Override
     public boolean matches(Dependency dependency) {
-        return matches(graphRoot.getGroupId(), dependency.getGroupId())
-                && matches(graphRoot.getArtifactId(), dependency.getArtifactId())
-                && matches(graphRoot.getType(), dependency.getType());
-    }
-
-    private static boolean matches(String filterValue, String nodeValue) {
-        return filterValue == null || filterValue.equals(nodeValue);
+        return Objects.equals(graphRoot.getGroupId(), dependency.getGroupId())
+                && Objects.equals(graphRoot.getArtifactId(), dependency.getArtifactId());
     }
 }
