@@ -97,3 +97,51 @@ Copying project dependencies
   [...]
 </project>
 +---+
+
+* Subtrees
+
+  By default, the pom is considered the root of the dependency tree, but it can be useful to get the jars of one dependency and all its transitive dependencies. 
+  This can be done by specifying one or more <<graphRoots>>.
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <graphRoots>
+                <graphRoot>
+			      <groupId>org.apache.maven.resolver</groupId>
+			      <artifactId>maven-resolver-supplier-mvn4</artifactId>
+                </graphRoot>
+              </graphRoots>
+              <!-- move to separate directory, so it can get its own classloader -->
+              <outputDirectory>\${project.build.directory}/lib-ext/maven-resolver-supplier-mvn4</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-supplier-mvn4</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>
++---+
+    
