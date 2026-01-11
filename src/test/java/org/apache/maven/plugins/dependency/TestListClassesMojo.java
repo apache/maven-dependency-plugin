@@ -20,39 +20,30 @@ package org.apache.maven.plugins.dependency;
 
 import javax.inject.Inject;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import org.apache.maven.api.di.Provides;
 import org.apache.maven.api.plugin.testing.Basedir;
 import org.apache.maven.api.plugin.testing.InjectMojo;
 import org.apache.maven.api.plugin.testing.MojoParameter;
 import org.apache.maven.api.plugin.testing.MojoTest;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.execution.DefaultMavenExecutionRequest;
-import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.internal.aether.DefaultRepositorySystemSessionFactory;
 import org.apache.maven.plugin.logging.Log;
-import org.eclipse.aether.RepositorySystemSession;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.apache.maven.api.plugin.testing.MojoExtension.getBasedir;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@MojoTest
+@MojoTest(realRepositorySession = true)
 class TestListClassesMojo {
 
     @Inject
@@ -61,27 +52,8 @@ class TestListClassesMojo {
     @Inject
     private DefaultRepositorySystemSessionFactory repoSessionFactory;
 
-    @Mock
+    @Inject
     private Log log;
-
-    @Provides
-    @SuppressWarnings("unused")
-    private Log logProvides() {
-        return log;
-    }
-
-    @BeforeEach
-    void setUp() {
-        ArtifactRepository localRepo = Mockito.mock(ArtifactRepository.class);
-        when(localRepo.getBasedir()).thenReturn(new File(getBasedir(), "target/local-repo").getAbsolutePath());
-
-        MavenExecutionRequest request = new DefaultMavenExecutionRequest();
-        request.setLocalRepository(localRepo);
-
-        RepositorySystemSession systemSession = repoSessionFactory.newRepositorySession(request);
-        when(mavenSession.getRepositorySession()).thenReturn(systemSession);
-        when(mavenSession.getRequest()).thenReturn(request);
-    }
 
     @Test
     @InjectMojo(goal = "list-classes")
