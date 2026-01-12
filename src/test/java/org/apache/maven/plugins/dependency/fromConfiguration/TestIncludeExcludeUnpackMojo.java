@@ -81,10 +81,10 @@ class TestIncludeExcludeUnpackMojo {
         }
     }
 
-    private void assertMarkerFile(UnpackMojo mojo, boolean val, ArtifactItem item) {
+    private void assertMarkerFile(UnpackMojo mojo, boolean exists, ArtifactItem item) {
         UnpackFileMarkerHandler handle = new UnpackFileMarkerHandler(item, mojo.getMarkersDirectory());
         try {
-            assertEquals(val, handle.isMarkerSet());
+            assertEquals(exists, handle.isMarkerSet());
         } catch (MojoExecutionException e) {
             fail(e.getLongMessage());
         }

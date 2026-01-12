@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -116,10 +117,10 @@ class TestUnpackMojo {
         }
     }
 
-    private void assertMarkerFile(UnpackMojo mojo, boolean val, ArtifactItem item) {
+    private void assertMarkerFile(UnpackMojo mojo, boolean exist, ArtifactItem item) {
         UnpackFileMarkerHandler handle = new UnpackFileMarkerHandler(item, mojo.getMarkersDirectory());
         try {
-            assertEquals(val, handle.isMarkerSet());
+            assertEquals(exist, handle.isMarkerSet());
         } catch (MojoExecutionException e) {
             fail(e.getLongMessage());
         }
@@ -540,10 +541,8 @@ class TestUnpackMojo {
 
         mojo.execute();
 
-        long markerLastModifiedMillis =
-                Files.getLastModifiedTime(marker.toPath()).toMillis();
-        long unpackedFileLastModifiedMillis =
-                Files.getLastModifiedTime(unpackedFile.toPath()).toMillis();
+        FileTime markerLastModifiedMillis = Files.getLastModifiedTime(marker.toPath());
+        FileTime unpackedFileLastModifiedMillis = Files.getLastModifiedTime(unpackedFile.toPath());
 
         assertNotEquals(
                 markerLastModifiedMillis,
