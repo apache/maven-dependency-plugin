@@ -99,9 +99,6 @@ under the License.
     <plexus-archiver.version>4.11.0</plexus-archiver.version>
     <pluginTestingVersion>3.4.0</pluginTestingVersion>
 
-    <!-- TODO remove with next parent -->
-    <version.maven-invoker-plugin>3.9.1</version.maven-invoker-plugin>
-
     <!-- strict check by dependency:analyze-only -->
     <enforce.dependency.declarations>true</enforce.dependency.declarations>
     <project.build.outputTimestamp>2025-09-29T05:54:43Z</project.build.outputTimestamp>
@@ -347,12 +344,6 @@ under the License.
       <artifactId>maven-plugin-testing-harness</artifactId>
       <version>${pluginTestingVersion}</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-container-default</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
