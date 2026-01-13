@@ -18,20 +18,21 @@
  */
 package org.apache.maven.plugins.dependency;
 
-import java.io.File;
+import javax.inject.Inject;
+
 import java.net.InetAddress;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 
+import org.apache.maven.api.plugin.testing.Basedir;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoParameter;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
-import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.eclipse.jetty.security.ConstraintMapping;
@@ -43,47 +44,32 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.security.Constraint;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class TestGetMojo extends AbstractDependencyMojoTestCase {
-    private GetMojo mojo;
+import static org.apache.maven.api.plugin.testing.MojoExtension.getTestPath;
+import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.when;
 
-    @Override
-    protected String getTestDirectoryName() {
-        return "markers";
-    }
+@MojoTest(realRepositorySession = true)
+@Basedir("/unit/get-test")
+class TestGetMojo {
 
-    @Override
-    protected boolean shouldCreateFiles() {
-        return false;
-    }
+    @Inject
+    private MavenSession session;
 
-    @Override
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp();
-        MavenProject project = new DependencyProjectStub();
-        getContainer().addComponent(project, MavenProject.class.getName());
+    @BeforeEach
+    void setUp() {
+        Settings settings = new Settings();
+        when(session.getSettings()).thenReturn(settings);
 
-        MavenSession session = newMavenSession(project);
-        getContainer().addComponent(session, MavenSession.class.getName());
-
-        File testPom = new File(getBasedir(), "target/test-classes/unit/get-test/plugin-config.xml");
-        mojo = (GetMojo) lookupMojo("get", testPom);
-
-        assertNotNull(mojo);
-
-        LegacySupport legacySupport = lookup(LegacySupport.class);
-        Settings settings = session.getSettings();
         Server server = new Server();
         server.setId("myserver");
         server.setUsername("foo");
         server.setPassword("bar");
         settings.addServer(server);
-        legacySupport.setSession(session);
-
-        installLocalRepository(legacySupport);
-
-        setVariableValueToObject(mojo, "session", legacySupport.getSession());
     }
 
     /**
@@ -91,18 +77,18 @@ public class TestGetMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of errors
      */
-    public void testTransitive() throws Exception {
-        // Set properties, transitive = default value = true
-        setVariableValueToObject(mojo, "transitive", Boolean.FALSE);
-        setVariableValueToObject(mojo, "remoteRepositories", "central::default::https://repo.maven.apache.org/maven2");
+    @Test
+    @InjectMojo(goal = "get")
+    @MojoParameter(name = "transitive", value = "false")
+    void testTransitive(GetMojo mojo) throws Exception {
+        DefaultProjectBuildingRequest pbr = new DefaultProjectBuildingRequest();
+        pbr.setRepositorySession(session.getRepositorySession());
+        when(session.getProjectBuildingRequest()).thenReturn(pbr);
+
         mojo.setGroupId("org.apache.maven");
         mojo.setArtifactId("maven-model");
         mojo.setVersion("2.0.9");
 
-        mojo.execute();
-
-        // Set properties, transitive = false
-        setVariableValueToObject(mojo, "transitive", Boolean.FALSE);
         mojo.execute();
     }
 
@@ -111,12 +97,17 @@ public class TestGetMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of errors
      */
-    public void testRemoteRepositories() throws Exception {
-        setVariableValueToObject(
-                mojo,
-                "remoteRepositories",
-                "central::default::https://repo.maven.apache.org/maven2,"
-                        + "central::::https://repo.maven.apache.org/maven2," + "https://repo.maven.apache.org/maven2");
+    @Test
+    @InjectMojo(goal = "get")
+    @MojoParameter(
+            name = "remoteRepositories",
+            value =
+                    "central::default::https://repo.maven.apache.org/maven2,central::::https://repo.maven.apache.org/maven2,https://repo.maven.apache.org/maven2")
+    void testRemoteRepositories(GetMojo mojo) throws Exception {
+        DefaultProjectBuildingRequest pbr = new DefaultProjectBuildingRequest();
+        pbr.setRepositorySession(session.getRepositorySession());
+        when(session.getProjectBuildingRequest()).thenReturn(pbr);
+
         mojo.setGroupId("org.apache.maven");
         mojo.setArtifactId("maven-model");
         mojo.setVersion("2.0.9");
@@ -129,7 +120,9 @@ public class TestGetMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of errors
      */
-    public void testRemoteRepositoriesAuthentication() throws Exception {
+    @Test
+    @InjectMojo(goal = "get")
+    void testRemoteRepositoriesAuthentication(GetMojo mojo) throws Exception {
         org.eclipse.jetty.server.Server server = createServer();
         try {
             server.start();
@@ -141,6 +134,11 @@ public class TestGetMojo extends AbstractDependencyMojoTestCase {
             url = url + ":" + serverConnector.getLocalPort() + "/maven";
 
             setVariableValueToObject(mojo, "remoteRepositories", "myserver::default::" + url);
+
+            DefaultProjectBuildingRequest pbr = new DefaultProjectBuildingRequest();
+            pbr.setRepositorySession(session.getRepositorySession());
+            when(session.getProjectBuildingRequest()).thenReturn(pbr);
+
             mojo.setGroupId("test");
             mojo.setArtifactId("test");
             mojo.setVersion("1.0");
@@ -156,7 +154,9 @@ public class TestGetMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of errors
      */
-    public void testParseRepository() throws Exception {
+    @Test
+    @InjectMojo(goal = "get")
+    void testParseRepository(GetMojo mojo) throws Exception {
         ArtifactRepositoryPolicy policy = null;
         ArtifactRepository repo =
                 mojo.parseRepository("central::default::https://repo.maven.apache.org/maven2", policy);
@@ -197,8 +197,7 @@ public class TestGetMojo extends AbstractDependencyMojoTestCase {
 
     private ContextHandler createContextHandler() {
         ResourceHandler resourceHandler = new ResourceHandler();
-        Path resourceDirectory = Paths.get("src", "test", "resources", "unit", "get-test", "repository");
-        resourceHandler.setResourceBase(resourceDirectory.toString());
+        resourceHandler.setResourceBase(getTestPath("repository"));
         resourceHandler.setDirectoriesListed(true);
 
         ContextHandler contextHandler = new ContextHandler("/maven");
@@ -210,8 +209,7 @@ public class TestGetMojo extends AbstractDependencyMojoTestCase {
         org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server(0);
         server.setStopAtShutdown(true);
 
-        LoginService loginService =
-                new HashLoginService("myrealm", "src/test/resources/unit/get-test/realm.properties");
+        LoginService loginService = new HashLoginService("myrealm", getTestPath("realm.properties"));
         server.addBean(loginService);
 
         ConstraintSecurityHandler security = new ConstraintSecurityHandler();

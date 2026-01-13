@@ -18,46 +18,40 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Set;
 
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
-import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
+import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TestRenderDependenciesMojo extends AbstractDependencyMojoTestCase {
-    private RenderDependenciesMojo mojo;
+@MojoTest
+class TestRenderDependenciesMojo {
 
-    @Override
-    protected String getTestDirectoryName() {
-        return "render-dependencies";
-    }
+    private DependencyArtifactStubFactory stubFactory;
 
-    @Override
-    protected boolean shouldCreateFiles() {
-        return true;
-    }
+    @TempDir
+    private File tempDir;
 
-    @Override
+    @Inject
+    private MavenProject project;
+
+    @BeforeEach
     protected void setUp() throws Exception {
-        super.setUp();
-
-        final MavenProject project = new DependencyProjectStub();
-        getContainer().addComponent(project, MavenProject.class.getName());
-
-        final MavenSession session = newMavenSession(project);
-        getContainer().addComponent(session, MavenSession.class.getName());
-
-        final File testPom = new File(
-                getBasedir(), "target/test-classes/unit/" + getTestDirectoryName() + "-test/plugin-config.xml");
-        mojo = (RenderDependenciesMojo) lookupMojo(getTestDirectoryName(), testPom);
+        stubFactory = new DependencyArtifactStubFactory(null, false);
+        setupProject();
     }
 
     /**
@@ -66,10 +60,10 @@ public class TestRenderDependenciesMojo extends AbstractDependencyMojoTestCase {
      * It is useful when combined with JIB for example since several versions of the CRD do not support wildcard for
      * the classpath(s).
      */
-    public void testRender() throws Exception {
-        final File rendered = new File(testDir, "render-dependencies.testRender.txt");
-
-        setupProject();
+    @Test
+    @InjectMojo(goal = "render-dependencies")
+    void testRender(RenderDependenciesMojo mojo) throws Exception {
+        final File rendered = new File(tempDir, "render-dependencies.testRender.txt");
 
         mojo.setTemplate("deps:\n"
                 + "  jars:\n"
@@ -103,9 +97,11 @@ public class TestRenderDependenciesMojo extends AbstractDependencyMojoTestCase {
     /**
      * Tests the rendering with a file template.
      */
-    public void testRenderFromFile() throws Exception {
-        final File rendered = new File(testDir, "render-dependencies.testRenderFromFile.txt");
-        final File template = new File(testDir, "render-dependencies.testRenderFromFile.template.vm");
+    @Test
+    @InjectMojo(goal = "render-dependencies")
+    void testRenderFromFile(RenderDependenciesMojo mojo) throws Exception {
+        final File rendered = new File(tempDir, "render-dependencies.testRenderFromFile.txt");
+        final File template = new File(tempDir, "render-dependencies.testRenderFromFile.template.vm");
         Files.write(
                 template.toPath(),
                 ("deps:\n"
@@ -143,11 +139,11 @@ public class TestRenderDependenciesMojo extends AbstractDependencyMojoTestCase {
     }
 
     private void setupProject() throws IOException {
-        final MavenProject project = mojo.getProject();
         final Set<Artifact> artifacts = stubFactory.getScopedArtifacts();
         final Set<Artifact> directArtifacts = stubFactory.getReleaseAndSnapshotArtifacts();
         artifacts.addAll(directArtifacts);
         project.setArtifacts(artifacts);
         project.setDependencyArtifacts(directArtifacts);
+        project.setArtifact(stubFactory.createArtifact("g", "a", "1.0", "jar"));
     }
 }
