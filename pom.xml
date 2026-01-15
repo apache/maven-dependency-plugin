@@ -23,7 +23,7 @@ under the License.
   <parent>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-plugins</artifactId>
-    <version>46</version>
+    <version>47</version>
     <relativePath />
   </parent>
 
@@ -98,9 +98,6 @@ under the License.
     <mockito.version>4.11.0</mockito.version>
     <plexus-archiver.version>4.11.0</plexus-archiver.version>
     <pluginTestingVersion>3.4.0</pluginTestingVersion>
-
-    <!-- TODO remove with next parent -->
-    <version.maven-invoker-plugin>3.9.1</version.maven-invoker-plugin>
 
     <!-- strict check by dependency:analyze-only -->
     <enforce.dependency.declarations>true</enforce.dependency.declarations>
@@ -347,12 +344,6 @@ under the License.
       <artifactId>maven-plugin-testing-harness</artifactId>
       <version>${pluginTestingVersion}</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-container-default</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
