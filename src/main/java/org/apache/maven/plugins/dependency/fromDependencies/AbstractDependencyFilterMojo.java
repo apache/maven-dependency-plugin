@@ -529,8 +529,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
         org.eclipse.aether.graph.Dependency dependency = RepositoryUtils.toDependency(
                 root, session.getRepositorySession().getArtifactTypeRegistry());
 
-        List<RemoteRepository> remoteRepositories =
-                RepositoryUtils.toRepos(session.getProjectBuildingRequest().getRemoteRepositories());
+        List<RemoteRepository> remoteRepositories = getProject().getRemoteProjectRepositories();
 
         Collection<org.eclipse.aether.artifact.Artifact> depArtifacts =
                 resolverUtil.resolveDependencies(dependency.getArtifact(), remoteRepositories);
