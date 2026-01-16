@@ -23,13 +23,17 @@ import javax.inject.Inject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
@@ -52,7 +56,9 @@ import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ProjectTransitivityFilter;
 import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -231,6 +237,16 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     @Parameter(property = "mdep.prependGroupId", defaultValue = "false")
     protected boolean prependGroupId = false;
 
+    /**
+     * By default, this goal uses the project itself as the root of the dependency tree.
+     * With graphRoots, you can select a subtree of dependencies based on groupId and artifactId.
+     * After that, the general include/exclude filters can be applied.
+     *
+     * @since 3.10.0
+     */
+    @Parameter
+    private List<GraphRoot> graphRoots;
+
     private final ResolverUtil resolverUtil;
 
     private final ProjectBuilder projectBuilder;
@@ -292,6 +308,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
      */
     protected DependencyStatusSets getDependencySets(boolean stopOnFailure, boolean includeParents)
             throws MojoExecutionException {
+
         // add filters in well known order, least specific to most specific
         FilterArtifacts filter = new FilterArtifacts();
 
@@ -323,7 +340,13 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
                 DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
 
         // start with all artifacts.
-        Set<Artifact> artifacts = getProject().getArtifacts();
+        Set<Artifact> artifacts;
+
+        try {
+            artifacts = collectArtifacts(getProject());
+        } catch (DependencyResolutionException e) {
+            throw new MojoExecutionException("Failed to collect artifacts", e);
+        }
 
         if (includeParents) {
             // add dependencies parents
@@ -477,6 +500,41 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             }
         }
         return resolvedArtifacts;
+    }
+
+    private Set<Artifact> collectArtifacts(MavenProject project) throws DependencyResolutionException {
+        if (graphRoots == null || graphRoots.isEmpty()) {
+            // artifact have already been resolved here due to
+            // @Mojo(requiresDependencyResolution = ResolutionScope.TEST) on final Mojo
+            return project.getArtifacts();
+        } else {
+            // MavenProject doesn't provide access to the graph of dependencies(only the direct dependencies)
+            // Hence we need to re-resolve artifacts, but only for the matching graphnodes
+            List<DependencyMatcher> filterMatchers =
+                    graphRoots.stream().map(GraphRootMatcher::new).collect(Collectors.toList());
+
+            DependencyMatcher subTreeMatcher = new OrDependencyMatcher(filterMatchers);
+
+            Set<Artifact> artifacts = new HashSet<>();
+            for (Dependency dep : project.getDependencies()) {
+                if (subTreeMatcher.matches(dep)) {
+                    artifacts.addAll(resolveDependencyArtifacts(dep));
+                }
+            }
+            return artifacts;
+        }
+    }
+
+    private Set<Artifact> resolveDependencyArtifacts(Dependency root) throws DependencyResolutionException {
+        org.eclipse.aether.graph.Dependency dependency = RepositoryUtils.toDependency(
+                root, session.getRepositorySession().getArtifactTypeRegistry());
+
+        List<RemoteRepository> remoteRepositories = getProject().getRemoteProjectRepositories();
+
+        Collection<org.eclipse.aether.artifact.Artifact> depArtifacts =
+                resolverUtil.resolveDependencies(dependency.getArtifact(), remoteRepositories);
+
+        return depArtifacts.stream().map(RepositoryUtils::toArtifact).collect(Collectors.toSet());
     }
 
     /**
