@@ -36,7 +36,7 @@ class ResolveDependenciesMojoTest {
     private DependencyArtifactStubFactory stubFactory;
 
     @BeforeEach
-    protected void setUp() throws Exception {
+    void setUp() {
         stubFactory = new DependencyArtifactStubFactory(null, false, false);
     }
 

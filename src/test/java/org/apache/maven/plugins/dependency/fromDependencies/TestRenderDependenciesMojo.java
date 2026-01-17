@@ -49,7 +49,7 @@ class TestRenderDependenciesMojo {
     private MavenProject project;
 
     @BeforeEach
-    protected void setUp() throws Exception {
+    void setUp() throws Exception {
         stubFactory = new DependencyArtifactStubFactory(null, false);
         setupProject();
     }

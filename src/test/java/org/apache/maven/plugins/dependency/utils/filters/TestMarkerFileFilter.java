@@ -45,7 +45,7 @@ class TestMarkerFileFilter {
     DependencyArtifactStubFactory fact;
 
     @BeforeEach
-    protected void setUp() throws Exception {
+    void setUp() throws Exception {
         this.fact = new DependencyArtifactStubFactory(outputFolder, false);
         artifacts = fact.getReleaseAndSnapshotArtifacts();
     }

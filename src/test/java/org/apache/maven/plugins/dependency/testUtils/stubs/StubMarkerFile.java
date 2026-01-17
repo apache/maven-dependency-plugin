@@ -20,28 +20,16 @@ package org.apache.maven.plugins.dependency.testUtils.stubs;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 
 public class StubMarkerFile extends File {
 
     private static final long serialVersionUID = 1L;
 
-    public StubMarkerFile(String pathname) {
-        super(pathname);
-    }
-
-    public StubMarkerFile(URI uri) {
-        super(uri);
-    }
-
     public StubMarkerFile(File parent, String child) {
         super(parent, child);
     }
 
-    public StubMarkerFile(String parent, String child) {
-        super(parent, child);
-    }
-
+    @Override
     public boolean createNewFile() throws IOException {
         throw new IOException("Intended Error");
     }

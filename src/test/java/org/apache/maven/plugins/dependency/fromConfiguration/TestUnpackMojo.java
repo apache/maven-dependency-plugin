@@ -72,7 +72,7 @@ class TestUnpackMojo {
     private ArchiverManager archiverManager;
 
     @BeforeEach
-    protected void setUp() throws Exception {
+    void setUp() throws Exception {
         stubFactory = new DependencyArtifactStubFactory(tempDir, true, false);
         stubFactory.setUnpackableFile(archiverManager);
         stubFactory.setSrcFile(MojoExtension.getTestFile("test.txt"));
@@ -111,16 +111,16 @@ class TestUnpackMojo {
         assertEquals(output, result.getOutputDirectory());
     }
 
-    private void assertMarkerFiles(UnpackMojo mojo, Collection<ArtifactItem> items, boolean exist) {
+    private void assertMarkerFiles(UnpackMojo mojo, Collection<ArtifactItem> items, boolean exists) {
         for (ArtifactItem item : items) {
-            assertMarkerFile(mojo, exist, item);
+            assertMarkerFile(mojo, exists, item);
         }
     }
 
-    private void assertMarkerFile(UnpackMojo mojo, boolean exist, ArtifactItem item) {
+    private void assertMarkerFile(UnpackMojo mojo, boolean exists, ArtifactItem item) {
         UnpackFileMarkerHandler handle = new UnpackFileMarkerHandler(item, mojo.getMarkersDirectory());
         try {
-            assertEquals(exist, handle.isMarkerSet());
+            assertEquals(exists, handle.isMarkerSet());
         } catch (MojoExecutionException e) {
             fail(e.getLongMessage());
         }

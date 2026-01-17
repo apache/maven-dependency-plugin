@@ -68,13 +68,8 @@ class AnalyzeExclusionsMojoTest {
     @Inject
     private MavenSession mavenSession;
 
-    @Mock
+    @Inject
     private Log testLog;
-
-    @Provides
-    private Log testLogProvides() {
-        return testLog;
-    }
 
     @Mock
     private ResolverUtil resolverUtil;
@@ -85,7 +80,7 @@ class AnalyzeExclusionsMojoTest {
     }
 
     @BeforeEach
-    protected void setUp() throws Exception {
+    void setUp() {
         when(project.getGroupId()).thenReturn("testGroupId");
         when(project.getArtifactId()).thenReturn("testArtifactId");
         when(project.getVersion()).thenReturn("1.0.0");
@@ -100,7 +95,7 @@ class AnalyzeExclusionsMojoTest {
     @Test
     @InjectMojo(goal = "analyze-exclusions")
     @MojoParameter(name = "exclusionFail", value = "true")
-    void testShallThrowExceptionWhenFailOnWarning(AnalyzeExclusionsMojo mojo) throws Exception {
+    void testShallThrowExceptionWhenFailOnWarning(AnalyzeExclusionsMojo mojo) {
         List<Dependency> dependencies = new ArrayList<>();
         Dependency withInvalidExclusion = dependency("a", "b");
         withInvalidExclusion.addExclusion(exclusion("invalid", "invalid"));
@@ -158,7 +153,7 @@ class AnalyzeExclusionsMojoTest {
 
     @Test
     @InjectMojo(goal = "analyze-exclusions")
-    void testCanResolveMultipleArtifactsWithEqualGroupIdAndArtifactId(AnalyzeExclusionsMojo mojo) throws Exception {
+    void testCanResolveMultipleArtifactsWithEqualGroupIdAndArtifactId(AnalyzeExclusionsMojo mojo) {
         Dependency dependency1 = dependency("a", "b");
         Dependency dependency2 = dependency("a", "b", "compile", "native");
         dependency1.addExclusion(exclusion("c", "d"));

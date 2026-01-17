@@ -20,14 +20,10 @@ package org.apache.maven.plugins.dependency.analyze;
 
 import javax.inject.Inject;
 
-import java.io.File;
-
 import org.apache.maven.api.plugin.testing.Basedir;
 import org.apache.maven.api.plugin.testing.InjectMojo;
-import org.apache.maven.api.plugin.testing.MojoExtension;
 import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -40,19 +36,15 @@ import static org.mockito.Mockito.when;
  * @version $Id$
  */
 @MojoTest
-public class TestAnalyzeDuplicateMojo {
-
-    @Inject
-    private MavenProject project;
+class TestAnalyzeDuplicateMojo {
 
     @Inject
     private Log log;
 
     @Test
     @Basedir("/unit/duplicate-dependencies")
-    @InjectMojo(goal = "analyze-duplicate")
-    public void testDuplicate(AnalyzeDuplicateMojo mojo) throws Exception {
-        when(project.getFile()).thenReturn(new File(MojoExtension.getBasedir(), "plugin-config.xml"));
+    @InjectMojo(goal = "analyze-duplicate", pom = "plugin-config.xml")
+    void testDuplicate(AnalyzeDuplicateMojo mojo) throws Exception {
         when(log.isInfoEnabled()).thenReturn(true);
 
         mojo.execute();
@@ -68,9 +60,8 @@ public class TestAnalyzeDuplicateMojo {
 
     @Test
     @Basedir("/unit/duplicate-dependencies")
-    @InjectMojo(goal = "analyze-duplicate")
-    public void testDuplicate2(AnalyzeDuplicateMojo mojo) throws Exception {
-        when(project.getFile()).thenReturn(new File(MojoExtension.getBasedir(), "plugin-config2.xml"));
+    @InjectMojo(goal = "analyze-duplicate", pom = "plugin-config2.xml")
+    void testDuplicate2(AnalyzeDuplicateMojo mojo) throws Exception {
         when(log.isInfoEnabled()).thenReturn(true);
 
         mojo.execute();

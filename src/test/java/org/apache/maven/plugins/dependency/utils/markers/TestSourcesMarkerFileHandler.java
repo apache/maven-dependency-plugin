@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -30,29 +29,25 @@ import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.plugins.dependency.testUtils.stubs.StubSourcesFileMarkerHandler;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author brianf
  */
-public class TestSourcesMarkerFileHandler {
+class TestSourcesMarkerFileHandler {
     List<Artifact> artifacts = new ArrayList<>();
 
-    Log log = new SilentLog();
-
-    File outputFolder;
+    private File outputFolder;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp(@TempDir File tempDir) {
 
         ArtifactHandler ah = new DefaultArtifactHandler();
         VersionRange vr = VersionRange.createFromVersion("1.1");
@@ -65,16 +60,8 @@ public class TestSourcesMarkerFileHandler {
         artifact = new DefaultArtifact("test", "4", vr, Artifact.SCOPE_RUNTIME, "zip", "", ah, false);
         artifacts.add(artifact);
 
-        // pick random output location
-        Random a = new Random();
-        outputFolder = new File("target/markers" + a.nextLong() + "/");
-        outputFolder.delete();
+        outputFolder = new File(tempDir, "markers");
         assertFalse(outputFolder.exists());
-    }
-
-    @AfterEach
-    void tearDown() {
-        outputFolder.delete();
     }
 
     @Test
@@ -197,8 +184,7 @@ public class TestSourcesMarkerFileHandler {
         doTestMarkerTimeStamp(false);
     }
 
-    public void doTestMarkerTimeStamp(boolean resolved)
-            throws MojoExecutionException, IOException, InterruptedException {
+    private void doTestMarkerTimeStamp(boolean resolved) throws MojoExecutionException, IOException {
         File theFile = new File(outputFolder, "theFile.jar");
         outputFolder.mkdirs();
         theFile.createNewFile();

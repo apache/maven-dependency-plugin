@@ -18,8 +18,9 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import javax.inject.Inject;
+
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
@@ -37,14 +38,27 @@ import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoParameter;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.LegacySupport;
-import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests <code>TreeMojo</code>.
@@ -53,36 +67,25 @@ import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
  * @version $Id$
  * @since 2.0
  */
-public class TestTreeMojo extends AbstractDependencyMojoTestCase {
-    // TestCase methods -------------------------------------------------------
+@MojoTest(realRepositorySession = true)
+class TestTreeMojo {
 
-    @Override
-    protected String getTestDirectoryName() {
-        return "tree";
-    }
+    @TempDir
+    private File tempDir;
 
-    @Override
-    protected boolean shouldUseFlattenedPath() {
-        return false;
-    }
+    @Inject
+    private MavenSession session;
 
-    /*
-     * @see org.apache.maven.plugin.testing.AbstractMojoTestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp();
+    private DependencyArtifactStubFactory stubFactory;
 
-        MavenProject project = new MavenProjectStub();
-        getContainer().addComponent(project, MavenProject.class.getName());
+    @BeforeEach
+    void setUp() {
+        stubFactory = new DependencyArtifactStubFactory(tempDir, true, false);
+        session.getRequest().setLocalRepositoryPath(new File(tempDir, "localTestRepo"));
 
-        MavenSession session = newMavenSession(project);
-        getContainer().addComponent(session, MavenSession.class.getName());
-
-        LegacySupport legacySupport = lookup(LegacySupport.class);
-        legacySupport.setSession(session);
-        installLocalRepository(legacySupport);
+        DefaultProjectBuildingRequest pbr = spy(new DefaultProjectBuildingRequest());
+        doAnswer(__ -> session.getRepositorySession()).when(pbr).getRepositorySession();
+        when(session.getProjectBuildingRequest()).thenReturn(pbr);
     }
 
     // tests ------------------------------------------------------------------
@@ -92,10 +95,9 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of an error.
      */
-    public void testTreeTestEnvironment() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/tree-test/plugin-config.xml");
-        TreeMojo mojo = (TreeMojo) lookupMojo("tree", testPom);
-
+    @Test
+    @InjectMojo(goal = "tree")
+    void testTreeTestEnvironment(TreeMojo mojo) throws Exception {
         assertNotNull(mojo);
         assertNotNull(mojo.getProject());
         MavenProject project = mojo.getProject();
@@ -128,8 +130,11 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of an error.
      */
-    public void testTreeDotSerializing() throws Exception {
-        List<String> contents = runTreeMojo("tree1.dot", "dot");
+    @Test
+    @InjectMojo(goal = "tree")
+    @MojoParameter(name = "outputType", value = "dot")
+    void testTreeDotSerializing(TreeMojo mojo) throws Exception {
+        List<String> contents = runTreeMojo(mojo);
         assertTrue(findString(contents, "digraph \"testGroupId:project:jar:1.0:compile\" {"));
         assertTrue(findString(
                 contents,
@@ -143,8 +148,11 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of an error.
      */
-    public void testTreeGraphMLSerializing() throws Exception {
-        List<String> contents = runTreeMojo("tree1.graphml", "graphml");
+    @Test
+    @InjectMojo(goal = "tree")
+    @MojoParameter(name = "outputType", value = "graphml")
+    void testTreeGraphMLSerializing(TreeMojo mojo) throws Exception {
+        List<String> contents = runTreeMojo(mojo);
 
         assertTrue(findString(contents, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
         assertTrue(findString(contents, "<y:NodeLabel>testGroupId:project:jar:1.0:compile</y:NodeLabel>"));
@@ -159,8 +167,11 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
      *
      * @throws Exception in case of an error.
      */
-    public void testTreeTGFSerializing() throws Exception {
-        List<String> contents = runTreeMojo("tree1.tgf", "tgf");
+    @Test
+    @InjectMojo(goal = "tree")
+    @MojoParameter(name = "outputType", value = "tgf")
+    void testTreeTGFSerializing(TreeMojo mojo) throws Exception {
+        List<String> contents = runTreeMojo(mojo);
         assertTrue(findString(contents, "testGroupId:project:jar:1.0:compile"));
         assertTrue(findString(contents, "testGroupId:snapshot:jar:2.0-SNAPSHOT:compile"));
         assertTrue(findString(contents, "testGroupId:release:jar:1.0:compile"));
@@ -169,9 +180,9 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     /**
      * Test the JSON format serialization on DependencyNodes with circular dependence
      */
-    public void testTreeJsonCircularDependency() throws IOException {
-        String outputFileName = testDir.getAbsolutePath() + File.separator + "tree1.json";
-        File outputFile = new File(outputFileName);
+    @Test
+    void testTreeJsonCircularDependency() throws IOException {
+        File outputFile = new File(tempDir, "tree1.json");
         Files.createDirectories(outputFile.getParentFile().toPath());
         outputFile.createNewFile();
 
@@ -180,13 +191,14 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
         DefaultDependencyNode node1 = new DefaultDependencyNode(artifact1);
         DefaultDependencyNode node2 = new DefaultDependencyNode(artifact2);
 
-        node1.setChildren(new ArrayList<DependencyNode>());
-        node2.setChildren(new ArrayList<DependencyNode>());
+        node1.setChildren(new ArrayList<>());
+        node2.setChildren(new ArrayList<>());
 
         node1.getChildren().add(node2);
         node2.getChildren().add(node1);
 
-        try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(outputFile))) {
+        try (OutputStreamWriter outputStreamWriter =
+                new OutputStreamWriter(Files.newOutputStream(outputFile.toPath()))) {
             JsonDependencyNodeVisitor jsonDependencyNodeVisitor = new JsonDependencyNodeVisitor(outputStreamWriter);
 
             jsonDependencyNodeVisitor.visit(node1);
@@ -196,23 +208,26 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
     /*
      * Test parsing of Json output and verify all key-value pairs
      */
-    public void testTreeJsonParsing() throws Exception {
-        List<String> contents = runTreeMojo("tree2.json", "json");
+    @Test
+    @InjectMojo(goal = "tree")
+    @MojoParameter(name = "outputType", value = "json")
+    void testTreeJsonParsing(TreeMojo mojo) throws Exception {
+        List<String> contents = runTreeMojo(mojo);
 
         System.setProperty("jakarta.json.provider", "org.glassfish.json.JsonProviderImpl");
         try (JsonReader reader = Json.createReader(new StringReader(String.join(System.lineSeparator(), contents)))) {
             JsonObject root = reader.readObject();
 
-            assertEquals(root.getString("groupId"), "testGroupId");
-            assertEquals(root.getString("artifactId"), "project");
-            assertEquals(root.getString("version"), "1.0");
-            assertEquals(root.getString("type"), "jar");
-            assertEquals(root.getString("scope"), "compile");
-            assertEquals(root.getString("classifier"), "");
-            assertEquals(root.getString("optional"), "false");
+            assertEquals("testGroupId", root.getString("groupId"));
+            assertEquals("project", root.getString("artifactId"));
+            assertEquals("1.0", root.getString("version"));
+            assertEquals("jar", root.getString("type"));
+            assertEquals("compile", root.getString("scope"));
+            assertEquals("", root.getString("classifier"));
+            assertEquals("false", root.getString("optional"));
 
             JsonArray children = root.getJsonArray("children");
-            assertEquals(children.size(), 2);
+            assertEquals(2, children.size());
 
             List<JsonObject> sortedChildren = children.stream()
                     .map(JsonObject.class::cast)
@@ -221,39 +236,34 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
 
             // Now that children are sorted, we can assert their values in a fixed order
             JsonObject child0 = sortedChildren.get(0);
-            assertEquals(child0.getString("groupId"), "testGroupId");
-            assertEquals(child0.getString("artifactId"), "release");
-            assertEquals(child0.getString("version"), "1.0");
-            assertEquals(child0.getString("type"), "jar");
-            assertEquals(child0.getString("scope"), "compile");
-            assertEquals(child0.getString("classifier"), "");
-            assertEquals(child0.getString("optional"), "false");
+            assertEquals("testGroupId", child0.getString("groupId"));
+            assertEquals("release", child0.getString("artifactId"));
+            assertEquals("1.0", child0.getString("version"));
+            assertEquals("jar", child0.getString("type"));
+            assertEquals("compile", child0.getString("scope"));
+            assertEquals("", child0.getString("classifier"));
+            assertEquals("false", child0.getString("optional"));
 
             JsonObject child1 = sortedChildren.get(1);
-            assertEquals(child1.getString("groupId"), "testGroupId");
-            assertEquals(child1.getString("artifactId"), "snapshot");
-            assertEquals(child1.getString("version"), "2.0-SNAPSHOT");
-            assertEquals(child1.getString("type"), "jar");
-            assertEquals(child1.getString("scope"), "compile");
-            assertEquals(child1.getString("classifier"), "");
-            assertEquals(child1.getString("optional"), "false");
+            assertEquals("testGroupId", child1.getString("groupId"));
+            assertEquals("snapshot", child1.getString("artifactId"));
+            assertEquals("2.0-SNAPSHOT", child1.getString("version"));
+            assertEquals("jar", child1.getString("type"));
+            assertEquals("compile", child1.getString("scope"));
+            assertEquals("", child1.getString("classifier"));
+            assertEquals("false", child1.getString("optional"));
         }
     }
 
     /**
      * Help finding content in the given list of string
      *
-     * @param outputFile the outputFile.
-     * @param format The format.
      * @throws Exception in case of an error.
      * @return list of strings in the output file
      */
-    private List<String> runTreeMojo(String outputFile, String format) throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/tree-test/plugin-config.xml");
-        Path outputFilePath = Paths.get(testDir.getAbsolutePath(), outputFile);
-        TreeMojo mojo = (TreeMojo) lookupMojo("tree", testPom);
+    private List<String> runTreeMojo(TreeMojo mojo) throws Exception {
+        Path outputFilePath = Paths.get(tempDir.getPath(), "outputFile.txt");
         setVariableValueToObject(mojo, "outputEncoding", "UTF-8");
-        setVariableValueToObject(mojo, "outputType", format);
         setVariableValueToObject(mojo, "outputFile", outputFilePath.toFile());
 
         assertNotNull(mojo);
@@ -270,9 +280,7 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
 
         mojo.execute();
 
-        List<String> contents = Files.readAllLines(outputFilePath);
-
-        return contents;
+        return Files.readAllLines(outputFilePath);
     }
 
     /**
@@ -310,11 +318,11 @@ public class TestTreeMojo extends AbstractDependencyMojoTestCase {
             DependencyNode actualNode) {
         Artifact actualArtifact = actualNode.getArtifact();
 
-        assertEquals("group id", expectedGroupId, actualArtifact.getGroupId());
-        assertEquals("artifact id", expectedArtifactId, actualArtifact.getArtifactId());
-        assertEquals("type", expectedType, actualArtifact.getType());
-        assertEquals("version", expectedVersion, actualArtifact.getVersion());
-        assertEquals("scope", expectedScope, actualArtifact.getScope());
+        assertEquals(expectedGroupId, actualArtifact.getGroupId(), "group id");
+        assertEquals(expectedArtifactId, actualArtifact.getArtifactId(), "artifact id");
+        assertEquals(expectedType, actualArtifact.getType(), "type");
+        assertEquals(expectedVersion, actualArtifact.getVersion(), "version");
+        assertEquals(expectedScope, actualArtifact.getScope(), "scope");
     }
 
     private String createArtifactCoordinateString(DependencyNode actualNode) {

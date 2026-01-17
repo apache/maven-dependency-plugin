@@ -53,7 +53,7 @@ class TestDependencyUtil {
     Artifact sources;
 
     @BeforeEach
-    protected void setUp() {
+    void setUp() {
 
         ArtifactHandler ah = new DefaultArtifactHandlerStub("jar", null);
         VersionRange vr = VersionRange.createFromVersion("1.1");

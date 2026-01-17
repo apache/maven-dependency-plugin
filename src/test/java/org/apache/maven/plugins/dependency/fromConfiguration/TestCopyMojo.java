@@ -137,15 +137,15 @@ class TestCopyMojo {
         assertEquals(output, result.getOutputDirectory());
     }
 
-    private void assertFilesExist(Collection<ArtifactItem> items, boolean exist) {
+    private void assertFilesExist(Collection<ArtifactItem> items) {
         for (ArtifactItem item : items) {
-            assertFileExists(item, exist);
+            assertFileExists(item);
         }
     }
 
-    private void assertFileExists(ArtifactItem item, boolean exist) {
+    private void assertFileExists(ArtifactItem item) {
         File file = new File(item.getOutputDirectory(), item.getDestFileName());
-        assertEquals(exist, file.exists());
+        assertTrue(file.exists());
     }
 
     @Test
@@ -165,7 +165,7 @@ class TestCopyMojo {
 
         mojo.execute();
 
-        assertFilesExist(list, true);
+        assertFilesExist(list);
     }
 
     /**
@@ -187,7 +187,7 @@ class TestCopyMojo {
 
         mojo.execute();
 
-        assertFilesExist(list, true);
+        assertFilesExist(list);
     }
 
     @Test
@@ -220,7 +220,7 @@ class TestCopyMojo {
         mojo.setArtifactItems(createArtifactItemArtifacts(list));
         mojo.execute();
 
-        assertFilesExist(list, true);
+        assertFilesExist(list);
     }
 
     @Test
@@ -234,7 +234,7 @@ class TestCopyMojo {
 
         mojo.execute();
 
-        assertFilesExist(list, true);
+        assertFilesExist(list);
     }
 
     @Test
@@ -251,7 +251,7 @@ class TestCopyMojo {
         mojo.execute();
         assertEquals(DependencyUtil.getFormattedFileName(item.getArtifact(), true), item.getDestFileName());
 
-        assertFilesExist(list, true);
+        assertFilesExist(list);
     }
 
     @Test
@@ -270,7 +270,7 @@ class TestCopyMojo {
                 DependencyUtil.getFormattedFileName(item.getArtifact(), false, false, false, true),
                 item.getDestFileName());
 
-        assertFilesExist(list, true);
+        assertFilesExist(list);
     }
 
     @Test
@@ -282,7 +282,7 @@ class TestCopyMojo {
 
         mojo.execute();
 
-        assertFilesExist(list, true);
+        assertFilesExist(list);
     }
 
     @Test
@@ -294,7 +294,7 @@ class TestCopyMojo {
 
         mojo.execute();
 
-        assertFilesExist(list, true);
+        assertFilesExist(list);
     }
 
     @Test
@@ -359,7 +359,7 @@ class TestCopyMojo {
         project.setDependencies(createDependencyArtifacts(getDependencyList(item)));
 
         mojo.execute();
-        this.assertFileExists(item, true);
+        this.assertFileExists(item);
         assertEquals("2.0-SNAPSHOT", item.getVersion());
     }
 
@@ -390,7 +390,7 @@ class TestCopyMojo {
         mojo.setArtifactItems(list);
 
         mojo.execute();
-        this.assertFileExists(item, true);
+        this.assertFileExists(item);
         assertEquals("2.1", item.getVersion());
     }
 
@@ -412,7 +412,7 @@ class TestCopyMojo {
         project.setDependencies(createDependencyArtifacts(getDependencyList(item)));
 
         mojo.execute();
-        this.assertFileExists(item, true);
+        this.assertFileExists(item);
         assertEquals("2.1", item.getVersion());
     }
 
@@ -469,7 +469,7 @@ class TestCopyMojo {
 
         mojo.execute();
 
-        this.assertFileExists(item, true);
+        this.assertFileExists(item);
         assertEquals("3.0-SNAPSHOT", item.getVersion());
     }
 
@@ -511,7 +511,7 @@ class TestCopyMojo {
 
         mojo.execute();
 
-        this.assertFileExists(item, true);
+        this.assertFileExists(item);
         assertEquals("3.1", item.getVersion());
     }
 
@@ -546,7 +546,7 @@ class TestCopyMojo {
 
         mojo.execute();
 
-        this.assertFileExists(item, true);
+        this.assertFileExists(item);
         assertEquals("3.1", item.getVersion());
     }
 
@@ -752,7 +752,7 @@ class TestCopyMojo {
 
         mojo.execute();
 
-        assertFilesExist(list, true);
+        assertFilesExist(list);
     }
 
     private List<Dependency> createDependencyArtifacts(List<Dependency> items) throws IOException {

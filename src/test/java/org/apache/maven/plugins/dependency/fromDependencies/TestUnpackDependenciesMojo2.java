@@ -18,76 +18,74 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.maven.api.plugin.testing.Basedir;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoExtension;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
-import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase {
+@MojoTest
+@Basedir("/unit/unpack-dependencies-test")
+class TestUnpackDependenciesMojo2 {
+
+    @TempDir
+    private File tempDir;
+
+    private DependencyArtifactStubFactory stubFactory;
+
+    @Inject
+    private MavenSession session;
+
+    @Inject
+    private MavenProject project;
+
+    @Inject
+    private ArchiverManager archiverManager;
 
     private static final String UNPACKABLE_FILE = "test.txt";
 
-    private static final String UNPACKABLE_FILE_PATH =
-            "target/test-classes/unit/unpack-dependencies-test/" + UNPACKABLE_FILE;
-
-    private UnpackDependenciesMojo mojo;
-
-    @Override
-    protected String getTestDirectoryName() {
-        return "unpack-dependencies";
-    }
-
-    @Override
-    protected boolean shouldCreateFiles() {
-        return true;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp();
-
-        MavenProject project = new DependencyProjectStub();
-        getContainer().addComponent(project, MavenProject.class.getName());
-
-        MavenSession session = newMavenSession(project);
-        getContainer().addComponent(session, MavenSession.class.getName());
-
-        File testPom = new File(getBasedir(), "target/test-classes/unit/unpack-dependencies-test/plugin-config.xml");
-        mojo = (UnpackDependenciesMojo) lookupMojo("unpack-dependencies", testPom);
-        mojo.outputDirectory = new File(this.testDir, "outputDirectory");
+    @BeforeEach
+    void setUp() throws Exception {
+        stubFactory = new DependencyArtifactStubFactory(tempDir, true, false);
+        session.getRequest().setLocalRepositoryPath(new File(tempDir, "localTestRepo"));
 
         // it needs to get the archivermanager
-        stubFactory.setUnpackableFile(lookup(ArchiverManager.class));
+        stubFactory.setUnpackableFile(archiverManager);
         // i'm using one file repeatedly to archive so I can test the name
         // programmatically.
-        stubFactory.setSrcFile(new File(getBasedir() + File.separatorChar + UNPACKABLE_FILE_PATH));
-
-        assertNotNull(mojo);
-        assertNotNull(mojo.getProject());
+        stubFactory.setSrcFile(MojoExtension.getTestFile(UNPACKABLE_FILE));
 
         Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
         Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
         artifacts.addAll(directArtifacts);
 
         project.setArtifacts(artifacts);
-        mojo.markersDirectory = new File(this.testDir, "markers");
+
+        project.getBuild().setDirectory(new File(tempDir, "target").getAbsolutePath());
     }
 
-    public File getUnpackedFile(Artifact artifact) {
+    private File getUnpackedFile(UnpackDependenciesMojo mojo, Artifact artifact) {
         File destDir = DependencyUtil.getFormattedOutputDirectory(
                 mojo.isUseSubDirectoryPerScope(),
                 mojo.isUseSubDirectoryPerType(),
@@ -102,7 +100,9 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         return unpacked;
     }
 
-    public void testDontOverWriteRelease()
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testDontOverWriteRelease(UnpackDependenciesMojo mojo)
             throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
 
         Set<Artifact> artifacts = new HashSet<>();
@@ -117,10 +117,12 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
 
         mojo.execute();
 
-        assertUnpacked(release, false);
+        assertUnpacked(mojo, release, false);
     }
 
-    public void testOverWriteRelease()
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testOverWriteRelease(UnpackDependenciesMojo mojo)
             throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
 
         Set<Artifact> artifacts = new HashSet<>();
@@ -136,10 +138,12 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
 
         mojo.execute();
 
-        assertUnpacked(release, true);
+        assertUnpacked(mojo, release, true);
     }
 
-    public void testDontOverWriteSnap()
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testDontOverWriteSnap(UnpackDependenciesMojo mojo)
             throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
 
         Set<Artifact> artifacts = new HashSet<>();
@@ -156,10 +160,12 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
 
         mojo.execute();
 
-        assertUnpacked(snap, false);
+        assertUnpacked(mojo, snap, false);
     }
 
-    public void testOverWriteSnap()
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testOverWriteSnap(UnpackDependenciesMojo mojo)
             throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
 
         Set<Artifact> artifacts = new HashSet<>();
@@ -176,10 +182,12 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
 
         mojo.execute();
 
-        assertUnpacked(snap, true);
+        assertUnpacked(mojo, snap, true);
     }
 
-    public void testOverWriteIfNewer()
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testOverWriteIfNewer(UnpackDependenciesMojo mojo)
             throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
 
         Set<Artifact> artifacts = new HashSet<>();
@@ -196,7 +204,7 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
 
         mojo.execute();
 
-        File unpackedFile = getUnpackedFile(snap);
+        File unpackedFile = getUnpackedFile(mojo, snap);
 
         // round down to the last second
         long time = System.currentTimeMillis();
@@ -221,9 +229,9 @@ public class TestUnpackDependenciesMojo2 extends AbstractDependencyMojoTestCase 
         assertNotEquals(time, unpackedFile.lastModified());
     }
 
-    public void assertUnpacked(Artifact artifact, boolean overWrite)
+    private void assertUnpacked(UnpackDependenciesMojo mojo, Artifact artifact, boolean overWrite)
             throws InterruptedException, MojoExecutionException, MojoFailureException {
-        File unpackedFile = getUnpackedFile(artifact);
+        File unpackedFile = getUnpackedFile(mojo, artifact);
 
         Thread.sleep(100);
         // round down to the last second
