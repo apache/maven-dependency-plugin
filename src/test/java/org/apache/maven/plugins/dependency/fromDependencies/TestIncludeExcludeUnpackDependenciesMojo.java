@@ -18,70 +18,53 @@
  */
 package org.apache.maven.plugins.dependency.fromDependencies;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.util.Set;
 
+import org.apache.maven.api.plugin.testing.Basedir;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoExtension;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
-import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
+import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependencyMojoTestCase {
-    private static final String PACKED_FILE = "test.zip";
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@MojoTest
+@Basedir("/unit/unpack-dependencies-test")
+class TestIncludeExcludeUnpackDependenciesMojo {
+    @TempDir
+    private File tempDir;
+
+    @Inject
+    private MavenSession session;
+
+    @Inject
+    private MavenProject project;
 
     private static final String UNPACKED_FILE_PREFIX = "test";
 
     private static final String UNPACKED_FILE_SUFFIX = ".txt";
 
-    private static final String PACKED_FILE_PATH = "target/test-classes/unit/unpack-dependencies-test/" + PACKED_FILE;
+    @BeforeEach
+    void setUp() throws Exception {
+        DependencyArtifactStubFactory stubFactory = new DependencyArtifactStubFactory(tempDir, true, false);
+        stubFactory.setSrcFile(MojoExtension.getTestFile("test.zip"));
 
-    private UnpackDependenciesMojo mojo;
+        project.getBuild().setDirectory(new File(tempDir, "target").getAbsolutePath());
 
-    @Override
-    protected String getTestDirectoryName() {
-        return "unpack-dependencies";
-    }
-
-    @Override
-    protected boolean shouldCreateFiles() {
-        return true;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp();
-
-        MavenProject project = new DependencyProjectStub();
-        getContainer().addComponent(project, MavenProject.class.getName());
-
-        MavenSession session = newMavenSession(project);
-        getContainer().addComponent(session, MavenSession.class.getName());
-
-        File testPom = new File(getBasedir(), "target/test-classes/unit/unpack-dependencies-test/plugin-config.xml");
-        mojo = (UnpackDependenciesMojo) lookupMojo("unpack-dependencies", testPom);
-        mojo.outputDirectory = new File(this.testDir, "outputDirectory");
-
-        // it needs to get the archivermanager
-        // stubFactory.setUnpackableFile( mojo.getArchiverManager() );
-        // I'm using one file repeatedly to archive so I can test the name
-        // programmatically.
-        stubFactory.setSrcFile(new File(getBasedir() + File.separatorChar + PACKED_FILE_PATH));
-
-        assertNotNull(mojo);
-        assertNotNull(mojo.getProject());
-
-        Set<Artifact> artifacts = this.stubFactory.getScopedArtifacts();
-        Set<Artifact> directArtifacts = this.stubFactory.getReleaseAndSnapshotArtifacts();
-        artifacts.addAll(directArtifacts);
-
+        Set<Artifact> artifacts = stubFactory.getScopedArtifacts();
         project.setArtifacts(artifacts);
-        project.setDependencyArtifacts(directArtifacts);
-        mojo.markersDirectory = new File(this.testDir, "markers");
     }
 
-    private void assertUnpacked(boolean unpacked, String fileName) {
+    private void assertUnpacked(UnpackDependenciesMojo mojo, boolean unpacked, String fileName) {
         File destFile = new File(mojo.getOutputDirectory().getAbsolutePath(), fileName);
         assertEquals(unpacked, destFile.exists());
     }
@@ -91,13 +74,15 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
      *
      * @throws Exception in case of errors
      */
-    public void testUnpackIncludesManyFiles() throws Exception {
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testUnpackIncludesManyFiles(UnpackDependenciesMojo mojo) throws Exception {
         mojo.setIncludes("**/*1" + UNPACKED_FILE_SUFFIX);
         mojo.execute();
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(false, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(false, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
     }
 
     /**
@@ -105,13 +90,15 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
      *
      * @throws Exception in case of errors
      */
-    public void testUnpackIncludesSingleFile() throws Exception {
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testUnpackIncludesSingleFile(UnpackDependenciesMojo mojo) throws Exception {
         mojo.setIncludes("**/test2" + UNPACKED_FILE_SUFFIX);
         mojo.execute();
-        assertUnpacked(false, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(false, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(false, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
     }
 
     /**
@@ -119,13 +106,15 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
      *
      * @throws Exception in case of errors
      */
-    public void testUnpackIncludesAllFiles() throws Exception {
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testUnpackIncludesAllFiles(UnpackDependenciesMojo mojo) throws Exception {
         mojo.setIncludes("**/*");
         mojo.execute();
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
     }
 
     /**
@@ -133,13 +122,15 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
      *
      * @throws Exception in case of errors
      */
-    public void testUnpackExcludesManyFiles() throws Exception {
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testUnpackExcludesManyFiles(UnpackDependenciesMojo mojo) throws Exception {
         mojo.setExcludes("**/*1" + UNPACKED_FILE_SUFFIX);
         mojo.execute();
-        assertUnpacked(false, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(false, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
     }
 
     /**
@@ -147,13 +138,15 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
      *
      * @throws Exception in case of errors
      */
-    public void testUnpackExcludesSingleFile() throws Exception {
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testUnpackExcludesSingleFile(UnpackDependenciesMojo mojo) throws Exception {
         mojo.setExcludes("**/test2" + UNPACKED_FILE_SUFFIX);
         mojo.execute();
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(false, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
     }
 
     /**
@@ -161,20 +154,24 @@ public class TestIncludeExcludeUnpackDependenciesMojo extends AbstractDependency
      *
      * @throws Exception in case of errors
      */
-    public void testUnpackExcludesAllFiles() throws Exception {
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testUnpackExcludesAllFiles(UnpackDependenciesMojo mojo) throws Exception {
         mojo.setExcludes("**/*");
         mojo.execute();
-        assertUnpacked(false, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(false, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(false, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(false, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
     }
 
-    public void testNoIncludeExcludes() throws Exception {
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testNoIncludeExcludes(UnpackDependenciesMojo mojo) throws Exception {
         mojo.execute();
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
-        assertUnpacked(true, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 11 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 2 + UNPACKED_FILE_SUFFIX);
+        assertUnpacked(mojo, true, UNPACKED_FILE_PREFIX + 3 + UNPACKED_FILE_SUFFIX);
     }
 }

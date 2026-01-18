@@ -24,43 +24,42 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
+import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ResolveDependenciesMojoTest extends AbstractDependencyMojoTestCase {
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Override
-    protected String getTestDirectoryName() {
-        return "dss";
+class ResolveDependenciesMojoTest {
+
+    private DependencyArtifactStubFactory stubFactory;
+
+    @BeforeEach
+    void setUp() {
+        stubFactory = new DependencyArtifactStubFactory(null, false, false);
     }
 
-    @Override
-    protected boolean shouldCreateFiles() {
-        return true;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        // required for mojo lookups to work
-        super.setUp();
-    }
-
-    public void testDependencyStatusLog() throws IOException {
+    @Test
+    void testDependencyStatusLog() throws IOException {
         Set<Artifact> artifacts = this.stubFactory.getMixedArtifacts();
         doTestDependencyStatusLog(artifacts);
     }
 
-    public void testDependencyStatusLogNullFiles() throws IOException {
+    @Test
+    void testDependencyStatusLogNullFiles() throws IOException {
         this.stubFactory.setCreateFiles(false);
         Set<Artifact> artifacts = this.stubFactory.getMixedArtifacts();
         doTestDependencyStatusLog(artifacts);
     }
 
-    public void testDependencyStatusEmptySet() {
+    @Test
+    void testDependencyStatusEmptySet() {
         doTestDependencyStatusLog(new HashSet<>());
     }
 
-    public void testOptionalDependencyFormatting() throws IOException {
+    @Test
+    void testOptionalDependencyFormatting() throws IOException {
         Set<Artifact> set = new HashSet<>();
         Artifact artifact =
                 stubFactory.createArtifact("g", "a", VersionRange.createFromVersion("1.0"), "test", "jar", null, true);

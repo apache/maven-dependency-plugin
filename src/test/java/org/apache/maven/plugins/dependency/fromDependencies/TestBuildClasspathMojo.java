@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.AssertionsKt.assertNull;
 import static org.mockito.Mockito.when;
 
 @MojoTest
-public class TestBuildClasspathMojo {
+class TestBuildClasspathMojo {
 
     @TempDir
     private File testDir;
@@ -63,7 +63,7 @@ public class TestBuildClasspathMojo {
      */
     @Test
     @InjectMojo(goal = "build-classpath")
-    public void testEnvironment(BuildClasspathMojo mojo) throws Exception {
+    void testEnvironment(BuildClasspathMojo mojo) throws Exception {
 
         Set<Artifact> artifacts = getArtifacts();
         when(project.getArtifacts()).thenReturn(artifacts);
@@ -113,7 +113,7 @@ public class TestBuildClasspathMojo {
 
     @Test
     @InjectMojo(goal = "build-classpath")
-    public void testPath(BuildClasspathMojo mojo) throws Exception {
+    void testPath(BuildClasspathMojo mojo) {
 
         File localRepo = new File(testDir, "local-rep").getAbsoluteFile();
 

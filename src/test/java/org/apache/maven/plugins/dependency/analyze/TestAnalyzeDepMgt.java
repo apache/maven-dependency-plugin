@@ -31,7 +31,6 @@ import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
-import org.apache.maven.plugins.dependency.testUtils.stubs.DependencyProjectStub;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +56,7 @@ class TestAnalyzeDepMgt {
     @BeforeEach
     void setUp() throws Exception {
 
-        MavenProject project = new DependencyProjectStub();
+        MavenProject project = new MavenProject();
         mojo = new AnalyzeDepMgt(project);
 
         stubFactory = new DependencyArtifactStubFactory(new File(""), false);
@@ -199,8 +198,8 @@ class TestAnalyzeDepMgt {
         // test with nothing in depMgt
         mojo.execute();
 
-        DependencyProjectStub project = (DependencyProjectStub) mojo.getProject();
-        project.setDependencyManagement(depMgt);
+        MavenProject project = mojo.getProject();
+        project.getModel().setDependencyManagement(depMgt);
         // test with exclusion
         mojo.execute();
 

@@ -18,59 +18,54 @@
  */
 package org.apache.maven.plugins.dependency.utils.translators;
 
-import java.util.HashMap;
+import javax.inject.Inject;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.artifact.handler.manager.DefaultArtifactHandlerManager;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.testing.SilentLog;
-import org.apache.maven.plugins.dependency.AbstractDependencyMojoTestCase;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author brianf
  */
-public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase {
+@MojoTest
+class TestClassifierTypeTranslator {
+
     Set<Artifact> artifacts = new HashSet<>();
 
-    Log log = new SilentLog();
+    @Inject
+    private Log log;
 
+    @Inject
     private ArtifactHandlerManager artifactHandlerManager;
 
-    @Override
-    protected String getTestDirectoryName() {
-        return "classifiertype-translator";
-    }
-
-    @Override
-    protected boolean shouldUseFlattenedPath() {
-        return false;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        artifactHandlerManager = new DefaultArtifactHandlerManager();
-        this.setVariableValueToObject(artifactHandlerManager, "artifactHandlers", new HashMap<>());
-
+    @BeforeEach
+    void setUp() throws Exception {
         DependencyArtifactStubFactory factory = new DependencyArtifactStubFactory(null, false);
         artifacts = factory.getMixedArtifacts();
     }
 
-    public void testNullClassifier() {
+    @Test
+    void testNullClassifier() {
         doTestNullEmptyClassifier(null);
     }
 
-    public void testEmptyClassifier() {
+    @Test
+    void testEmptyClassifier() {
         doTestNullEmptyClassifier("");
     }
 
-    public void doTestNullEmptyClassifier(String classifier) {
+    private void doTestNullEmptyClassifier(String classifier) {
         String type = "zip";
 
         ArtifactTranslator at = new ClassifierTypeTranslator(artifactHandlerManager, classifier, type);
@@ -96,15 +91,17 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
         }
     }
 
-    public void testNullType() {
+    @Test
+    void testNullType() {
         doTestNullEmptyType(null);
     }
 
-    public void testEmptyType() {
+    @Test
+    void testEmptyType() {
         doTestNullEmptyType("");
     }
 
-    public void doTestNullEmptyType(String type) {
+    private void doTestNullEmptyType(String type) {
         String classifier = "jdk5";
 
         ArtifactTranslator at = new ClassifierTypeTranslator(artifactHandlerManager, classifier, type);
@@ -130,7 +127,8 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
         }
     }
 
-    public void testClassifierAndType() {
+    @Test
+    void testClassifierAndType() {
         String classifier = "jdk14";
         String type = "sources";
         ArtifactTranslator at = new ClassifierTypeTranslator(artifactHandlerManager, classifier, type);
@@ -154,7 +152,8 @@ public class TestClassifierTypeTranslator extends AbstractDependencyMojoTestCase
         }
     }
 
-    public void testGetterSetter() {
+    @Test
+    void testGetterSetter() {
         String classifier = "class";
         String type = "type";
         ClassifierTypeTranslator at = new ClassifierTypeTranslator(artifactHandlerManager, classifier, type);

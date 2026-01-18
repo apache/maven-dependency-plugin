@@ -20,20 +20,12 @@ package org.apache.maven.plugins.dependency.analyze;
 
 import javax.inject.Inject;
 
-import java.io.File;
-
-import org.apache.maven.api.di.Provides;
 import org.apache.maven.api.plugin.testing.Basedir;
 import org.apache.maven.api.plugin.testing.InjectMojo;
-import org.apache.maven.api.plugin.testing.MojoExtension;
 import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -43,26 +35,16 @@ import static org.mockito.Mockito.when;
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @version $Id$
  */
-@ExtendWith(MockitoExtension.class)
 @MojoTest
-public class TestAnalyzeDuplicateMojo {
+class TestAnalyzeDuplicateMojo {
 
     @Inject
-    private MavenProject project;
-
-    @Mock
     private Log log;
-
-    @Provides
-    private Log logProvides() {
-        return log;
-    }
 
     @Test
     @Basedir("/unit/duplicate-dependencies")
-    @InjectMojo(goal = "analyze-duplicate")
-    public void testDuplicate(AnalyzeDuplicateMojo mojo) throws Exception {
-        when(project.getFile()).thenReturn(new File(MojoExtension.getBasedir(), "plugin-config.xml"));
+    @InjectMojo(goal = "analyze-duplicate", pom = "plugin-config.xml")
+    void testDuplicate(AnalyzeDuplicateMojo mojo) throws Exception {
         when(log.isInfoEnabled()).thenReturn(true);
 
         mojo.execute();
@@ -78,9 +60,8 @@ public class TestAnalyzeDuplicateMojo {
 
     @Test
     @Basedir("/unit/duplicate-dependencies")
-    @InjectMojo(goal = "analyze-duplicate")
-    public void testDuplicate2(AnalyzeDuplicateMojo mojo) throws Exception {
-        when(project.getFile()).thenReturn(new File(MojoExtension.getBasedir(), "plugin-config2.xml"));
+    @InjectMojo(goal = "analyze-duplicate", pom = "plugin-config2.xml")
+    void testDuplicate2(AnalyzeDuplicateMojo mojo) throws Exception {
         when(log.isInfoEnabled()).thenReturn(true);
 
         mojo.execute();

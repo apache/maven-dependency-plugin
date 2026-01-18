@@ -49,7 +49,7 @@ class TestDefaultMarkerFileHandler {
     File outputFolder;
 
     @BeforeEach
-    protected void setUp() throws Exception {
+    void setUp() {
         ArtifactHandler ah = new DefaultArtifactHandler();
         VersionRange vr = VersionRange.createFromVersion("1.1");
         Artifact artifact = new DefaultArtifact("test", "1", vr, Artifact.SCOPE_COMPILE, "jar", "", ah, false);

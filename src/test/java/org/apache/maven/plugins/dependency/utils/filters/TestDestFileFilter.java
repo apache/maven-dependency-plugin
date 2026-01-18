@@ -20,8 +20,6 @@ package org.apache.maven.plugins.dependency.utils.filters;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
@@ -38,25 +36,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author brianf
  */
-public class TestDestFileFilter {
-    Set<Artifact> artifacts = new HashSet<>();
+class TestDestFileFilter {
 
     @TempDir
-    File outputFolder;
+    private File outputFolder;
 
-    DependencyArtifactStubFactory fact;
+    private DependencyArtifactStubFactory fact;
 
     @BeforeEach
-    protected void setUp() throws Exception {
+    void setUp() throws Exception {
         this.fact = new DependencyArtifactStubFactory(outputFolder, false);
-        artifacts = fact.getReleaseAndSnapshotArtifacts();
     }
 
-    public void createFile(Artifact artifact) throws IOException {
+    private void createFile(Artifact artifact) throws IOException {
         createFile(artifact, false, false, false);
     }
 
-    public File createFile(
+    private File createFile(
             Artifact artifact,
             boolean useSubDirectoryPerArtifact,
             boolean useSubDirectoryPerType,
@@ -65,7 +61,7 @@ public class TestDestFileFilter {
         return createFile(artifact, useSubDirectoryPerArtifact, useSubDirectoryPerType, removeVersion, false);
     }
 
-    public File createFile(
+    private File createFile(
             Artifact artifact,
             boolean useSubDirectoryPerArtifact,
             boolean useSubDirectoryPerType,

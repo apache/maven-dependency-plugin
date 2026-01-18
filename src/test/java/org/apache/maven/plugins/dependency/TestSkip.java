@@ -20,7 +20,6 @@ package org.apache.maven.plugins.dependency;
 
 import javax.inject.Inject;
 
-import org.apache.maven.api.di.Provides;
 import org.apache.maven.api.plugin.testing.InjectMojo;
 import org.apache.maven.api.plugin.testing.MojoParameter;
 import org.apache.maven.api.plugin.testing.MojoTest;
@@ -45,28 +44,19 @@ import org.apache.maven.plugins.dependency.resolvers.ResolveDependenciesMojo;
 import org.apache.maven.plugins.dependency.resolvers.ResolvePluginsMojo;
 import org.apache.maven.plugins.dependency.tree.TreeMojo;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 @MojoTest
 class TestSkip {
 
     @Inject
     private MojoExecution mojoExecution;
 
-    @Mock
+    @Inject
     private Log log;
-
-    @Provides
-    private Log logProvides() {
-        return log;
-    }
 
     @Test
     @InjectMojo(goal = "analyze")

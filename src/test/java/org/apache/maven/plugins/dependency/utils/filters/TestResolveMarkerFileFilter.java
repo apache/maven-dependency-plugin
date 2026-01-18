@@ -42,7 +42,7 @@ class TestResolveMarkerFileFilter {
     DependencyArtifactStubFactory fact;
 
     @BeforeEach
-    protected void setUp() throws IOException {
+    void setUp() throws IOException {
         fact = new DependencyArtifactStubFactory(outputFolder, false);
         fact.getReleaseAndSnapshotArtifacts();
     }
