@@ -30,6 +30,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -181,7 +182,7 @@ public class ResolvePluginsMojo extends AbstractDependencyMojo {
                             .append(System.lineSeparator());
 
                     if (!excludeTransitive) {
-                        for (Artifact artifact : resolverUtil.resolveDependencies(plugin)) {
+                        for (Artifact artifact : resolverUtil.resolveDependencies(plugin, getDependencyFilter())) {
                             artifactFilename = null;
                             if (outputAbsoluteArtifactFilename) {
                                 // we want to print the absolute file name here
@@ -211,6 +212,14 @@ public class ResolvePluginsMojo extends AbstractDependencyMojo {
             }
         } catch (IOException | ArtifactResolutionException | DependencyResolutionException e) {
             throw new MojoExecutionException(e.getMessage(), e);
+        }
+    }
+
+    private Predicate<Dependency> getDependencyFilter() {
+        if (excludeReactor) {
+            return new ExcludeReactorProjectsDependencyFilter(session.getProjects());
+        } else {
+            return __ -> true;
         }
     }
 

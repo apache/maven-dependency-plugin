@@ -81,7 +81,6 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
     protected boolean excludeReactor;
 
     @Inject
-    // CHECKSTYLE_OFF: ParameterNumber
     public GoOfflineMojo(
             MavenSession session,
             BuildContext buildContext,
@@ -91,7 +90,6 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
             ArtifactHandlerManager artifactHandlerManager) {
         super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
     }
-    // CHECKSTYLE_ON: ParameterNumber
 
     /**
      * Main entry into mojo. Gets the list of dependencies, resolves all that are not in the Reactor, and iterates
@@ -114,7 +112,7 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
                 if (!excludeTransitive) {
                     logMessage("Resolved plugin dependency:");
                     List<org.eclipse.aether.artifact.Artifact> artifacts =
-                            getResolverUtil().resolveDependencies(plugin);
+                            getResolverUtil().resolveDependencies(plugin, getDependencyFilter());
                     for (org.eclipse.aether.artifact.Artifact a : artifacts) {
                         logMessage(
                                 "      " + DependencyUtil.getFormattedFileName(RepositoryUtils.toArtifact(a), false));
@@ -131,6 +129,14 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
 
         } catch (ArtifactFilterException | ArtifactResolutionException | DependencyResolutionException e) {
             throw new MojoExecutionException(e.getMessage(), e);
+        }
+    }
+
+    private Predicate<Dependency> getDependencyFilter() {
+        if (excludeReactor) {
+            return new ExcludeReactorProjectsDependencyFilter(session.getProjects());
+        } else {
+            return __ -> true;
         }
     }
 
@@ -157,7 +163,7 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
 
         Predicate<Dependency> excludeReactorProjectsDependencyFilter = d -> true;
         if (this.excludeReactor) {
-            excludeReactorProjectsDependencyFilter = new ExcludeReactorProjectsDependencyFilter(this.reactorProjects);
+            excludeReactorProjectsDependencyFilter = new ExcludeReactorProjectsDependencyFilter(session.getProjects());
         }
 
         ArtifactTypeRegistry artifactTypeRegistry =
@@ -265,7 +271,7 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
         final FilterArtifacts filter = new FilterArtifacts();
 
         if (excludeReactor) {
-            filter.addFilter(new ExcludeReactorProjectsArtifactFilter(reactorProjects, getLog()));
+            filter.addFilter(new ExcludeReactorProjectsArtifactFilter(session.getProjects(), getLog()));
         }
 
         filter.addFilter(new ScopeFilter(
