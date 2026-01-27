@@ -18,8 +18,6 @@
  */
 package org.apache.maven.plugins.dependency;
 
-import java.util.List;
-
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -34,12 +32,6 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  */
 public abstract class AbstractDependencyMojo extends AbstractMojo {
-
-    /**
-     * Contains the full list of projects in the reactor.
-     */
-    @Parameter(defaultValue = "${reactorProjects}", readonly = true)
-    protected List<MavenProject> reactorProjects;
 
     /**
      * The Maven session.

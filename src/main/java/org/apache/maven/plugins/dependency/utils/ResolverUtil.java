@@ -30,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
@@ -195,17 +196,21 @@ public class ResolverUtil {
     /**
      * Resolve transitive dependencies for plugin.
      *
-     * @param plugin aa plugin to resolve
+     * @param plugin a plugin to resolve
+     * @param dependencyFilter a filter to apply to plugin dependencies
      * @return list of transitive dependencies for plugin
      * @throws DependencyResolutionException if the dependency tree could not be built or any dependency artifact could
      *                                       not be resolved
      */
-    public List<Artifact> resolveDependencies(final Plugin plugin) throws DependencyResolutionException {
+    public List<Artifact> resolveDependencies(
+            final Plugin plugin, Predicate<org.apache.maven.model.Dependency> dependencyFilter)
+            throws DependencyResolutionException {
 
         MavenSession session = mavenSessionProvider.get();
 
         org.eclipse.aether.artifact.Artifact artifact = toArtifact(plugin);
         List<Dependency> pluginDependencies = plugin.getDependencies().stream()
+                .filter(dependencyFilter)
                 .map(d -> RepositoryUtils.toDependency(
                         d, session.getRepositorySession().getArtifactTypeRegistry()))
                 .collect(Collectors.toList());
