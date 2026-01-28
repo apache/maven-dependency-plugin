@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -154,9 +155,10 @@ public class RenderDependenciesMojo extends AbstractDependencyFilterMojo {
     }
 
     /**
-     * Do render the template.
-     * @param artifacts input.
-     * @return the template rendered.
+     * Render the template.
+     *
+     * @param artifacts input
+     * @return the template rendered
      */
     private String render(final List<Artifact> artifacts) {
         final Path templatePath = getTemplatePath();
@@ -178,8 +180,7 @@ public class RenderDependenciesMojo extends AbstractDependencyFilterMojo {
         context.put("sorter", new CollectionTool());
 
         // Merge template + context
-        final StringWriter writer = new StringWriter();
-        try (StringWriter ignored = writer) {
+        try (StringWriter writer = new StringWriter()) {
             if (fromFile) {
                 final Template template =
                         ve.getTemplate(templatePath.getFileName().toString());
@@ -187,11 +188,10 @@ public class RenderDependenciesMojo extends AbstractDependencyFilterMojo {
             } else {
                 ve.evaluate(context, writer, "tpl-" + Math.abs(hashCode()), template);
             }
+            return writer.toString();
         } catch (final IOException e) {
-            // no-op, not possible
+            throw new UncheckedIOException("not possible", e);
         }
-
-        return writer.toString();
     }
 
     private Path getTemplatePath() {
