@@ -381,9 +381,13 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             ProjectBuildingRequest buildingRequest =
                     new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
             buildingRequest.setProcessPlugins(false);
+            if (getProject().getRemoteArtifactRepositories() != null
+                    && !getProject().getRemoteArtifactRepositories().isEmpty()) {
+                buildingRequest.setRemoteRepositories(getProject().getRemoteArtifactRepositories());
+            }
             return projectBuilder.build(artifact, buildingRequest).getProject();
         } catch (ProjectBuildingException e) {
-            throw new MojoExecutionException("Coud not build project for " + artifact.getId(), e);
+            throw new MojoExecutionException("Could not build project for " + artifact.getId(), e);
         }
     }
 
