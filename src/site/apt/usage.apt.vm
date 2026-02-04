@@ -212,7 +212,7 @@ mvn dependency:copy
 
 * <<<dependency:unpack>>>
 
-   This goal is meant to be bound to a lifecycle and configured in your pom.xml.
+   This goal is meant to be bound to a lifecycle and configured in your <<<pom.xml>>>.
    It will resolve the artifact from the repository and place a copy in the
    specified location. Multiple artifacts can be defined in a single execution.
    A default outputDirectory is specified but can be overridden for each
@@ -299,7 +299,7 @@ mvn dependency:unpack
 
 * <<<dependency:unpack-dependencies>>>
 
-   This goal can be bound to a lifecycle and configured in your pom.xml.
+   This goal can be bound to a lifecycle and configured in your <<<pom.xml>>>.
    It will resolve the dependencies (including transitive dependencies) from
    the repository and unpack them to the specified location.
 
@@ -428,7 +428,7 @@ mvn dependency:unpack
   attachments if they exist.  This is useful when you want to download source
   attachments to your local repository.
 
-  You can also define the <<<markersDirectory>>> either in the pom or settings
+  You can also define the <<<markersDirectory>>> either in the <<<pom.xml>>> or settings
   to be a common location for all projects. This allows the system to resolve sources faster for dependencies that don't
   have the sources published. The plugin will store a marker file to describe if the sources were resolved or not. By placing
   them in a common location, multiple attempts to resolve non-existent sources will be avoided.
@@ -470,7 +470,7 @@ mvn dependency:purge-local-repository -Dexclude=org.apache.maven:maven-plugin-ap
 
   <<Note:>> The <<<exclude>>> parameter is a comma-delimited list of
   groupId:artifactId pairs. It has a corresponding List-based parameter -
-  <<<excludes>>> - for convenient use inside the POM.
+  <<<excludes>>> - for convenient use inside the <<<pom.xml>>>.
 
   Another handy aspect of this goal is the ability to wipe out artifacts at
   varying depths. These depths are:
@@ -509,7 +509,7 @@ mvn dependency:purge-local-repository -DresolutionFuzziness=artifactId
 * <<<dependency:analyze>>>
 
   This goal performs byte code analysis to determine missing or unused dependencies. This goal is meant to be launched from the command line. It will fork the build and execute test-compile so there are class files to analyze.
-  If you want to bind analyze in your pom, use the <<<dependency:analyze-only>>> instead.
+  If you want to bind analyze in your <<<pom.xml>>>, use the <<<dependency:analyze-only>>> instead.
 
   This goal can be executed from the command line:
 
@@ -526,6 +526,11 @@ mvn dependency:analyze
 [WARNING]    org.apache.maven.shared:maven-invoker:jar:2.0.7-SNAPSHOT:test
 +---+
 
+* <<<dependency:analyze-only>>>
+
+  This goal performs bytecode analysis to determine missing or unused dependencies, similar to <<<dependency:analyze>>>.
+
+  It will not fork the build with test compilation, so it should be used when you want to bind the analyze goal in your <<<pom.xml>>>.
 
 * <<<dependency:analyze-dep-mgt>>>
 
