@@ -31,7 +31,6 @@ import org.apache.maven.api.plugin.testing.MojoParameter;
 import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
@@ -52,7 +51,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -85,9 +83,7 @@ class AnalyzeExclusionsMojoTest {
         when(project.getArtifactId()).thenReturn("testArtifactId");
         when(project.getVersion()).thenReturn("1.0.0");
 
-        DependencyManagement dependencyManagement = mock(DependencyManagement.class);
-        when(dependencyManagement.getDependencies()).thenReturn(Collections.emptyList());
-        when(project.getDependencyManagement()).thenReturn(dependencyManagement);
+        when(project.getDependencyManagement()).thenReturn(null);
 
         lenient().when(mavenSession.getRepositorySession()).thenReturn(new DefaultRepositorySystemSession());
     }
