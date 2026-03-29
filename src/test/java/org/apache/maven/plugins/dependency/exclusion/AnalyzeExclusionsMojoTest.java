@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.maven.api.di.Provides;
 import org.apache.maven.api.plugin.testing.InjectMojo;
@@ -31,6 +32,7 @@ import org.apache.maven.api.plugin.testing.MojoParameter;
 import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
@@ -43,6 +45,9 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -51,6 +56,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -82,8 +88,6 @@ class AnalyzeExclusionsMojoTest {
         when(project.getGroupId()).thenReturn("testGroupId");
         when(project.getArtifactId()).thenReturn("testArtifactId");
         when(project.getVersion()).thenReturn("1.0.0");
-
-        when(project.getDependencyManagement()).thenReturn(null);
 
         lenient().when(mavenSession.getRepositorySession()).thenReturn(new DefaultRepositorySystemSession());
     }
@@ -191,6 +195,29 @@ class AnalyzeExclusionsMojoTest {
         mojo.execute();
 
         verify(testLog).warn("projectName defines following unnecessary excludes");
+    }
+
+    /**
+     * Nullability behavior of {@link MavenProject#getDependencyManagement} is not documented, test mojo with both {@code null}
+     * and non-{@code null} outputs
+     * 
+     * @see <a href="https://github.com/apache/maven-dependency-plugin/issues/1474">Issue</a>
+     */
+    @ParameterizedTest
+    @MethodSource
+    @NullSource
+    @InjectMojo(goal = "analyze-exclusions")
+    void testMojoWithSpecifiedProjectDependencyManagement(DependencyManagement dependencyManagement,
+            AnalyzeExclusionsMojo mojo) {
+        when(project.getDependencyManagement()).thenReturn(dependencyManagement);
+
+        assertThatCode(mojo::execute).doesNotThrowAnyException();
+    }
+
+    static Stream<DependencyManagement> testMojoWithSpecifiedProjectDependencyManagement() {
+        DependencyManagement dependencyManagement = mock(DependencyManagement.class);
+        when(dependencyManagement.getDependencies()).thenReturn(Collections.emptyList());
+        return Stream.of(dependencyManagement);
     }
 
     private Dependency dependency(String groupId, String artifactId) {
