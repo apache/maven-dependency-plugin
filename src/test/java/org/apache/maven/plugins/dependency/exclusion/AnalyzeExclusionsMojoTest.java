@@ -200,15 +200,15 @@ class AnalyzeExclusionsMojoTest {
     /**
      * Nullability behavior of {@link MavenProject#getDependencyManagement} is not documented, test mojo with both {@code null}
      * and non-{@code null} outputs
-     * 
+     *
      * @see <a href="https://github.com/apache/maven-dependency-plugin/issues/1474">Issue</a>
      */
     @ParameterizedTest
     @MethodSource
     @NullSource
     @InjectMojo(goal = "analyze-exclusions")
-    void testMojoWithSpecifiedProjectDependencyManagement(DependencyManagement dependencyManagement,
-            AnalyzeExclusionsMojo mojo) {
+    void testMojoWithSpecifiedProjectDependencyManagement(
+            DependencyManagement dependencyManagement, AnalyzeExclusionsMojo mojo) {
         when(project.getDependencyManagement()).thenReturn(dependencyManagement);
 
         assertThatCode(mojo::execute).doesNotThrowAnyException();
