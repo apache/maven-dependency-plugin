@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.apache.maven.api.di.Provides;
 import org.apache.maven.api.plugin.testing.InjectMojo;
@@ -45,9 +44,6 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -203,21 +199,28 @@ class AnalyzeExclusionsMojoTest {
      *
      * @see <a href="https://github.com/apache/maven-dependency-plugin/issues/1474">Issue</a>
      */
-    @ParameterizedTest
-    @MethodSource
-    @NullSource
+    @Test
     @InjectMojo(goal = "analyze-exclusions")
-    void testMojoWithSpecifiedProjectDependencyManagement(
-            DependencyManagement dependencyManagement, AnalyzeExclusionsMojo mojo) {
-        when(project.getDependencyManagement()).thenReturn(dependencyManagement);
+    void testMojoWithProjectDependencyManagementNull(AnalyzeExclusionsMojo mojo) {
+        // Default behavior specified explicitly for clarity
+        when(project.getDependencyManagement()).thenReturn(null);
 
         assertThatCode(mojo::execute).doesNotThrowAnyException();
     }
 
-    static Stream<DependencyManagement> testMojoWithSpecifiedProjectDependencyManagement() {
+    /**
+     * Nullability behavior of {@link MavenProject#getDependencyManagement} is not documented, test mojo with both {@code null}
+     * and non-{@code null} outputs
+     *
+     * @see <a href="https://github.com/apache/maven-dependency-plugin/issues/1474">Issue</a>
+     */
+    @Test
+    @InjectMojo(goal = "analyze-exclusions")
+    void testMojoWithProjectDependencyManagementEmpty(AnalyzeExclusionsMojo mojo) {
         DependencyManagement dependencyManagement = mock(DependencyManagement.class);
-        when(dependencyManagement.getDependencies()).thenReturn(Collections.emptyList());
-        return Stream.of(dependencyManagement);
+        lenient().when(dependencyManagement.getDependencies()).thenReturn(Collections.emptyList());
+
+        assertThatCode(mojo::execute).doesNotThrowAnyException();
     }
 
     private Dependency dependency(String groupId, String artifactId) {
