@@ -85,10 +85,6 @@ class AnalyzeExclusionsMojoTest {
         when(project.getArtifactId()).thenReturn("testArtifactId");
         when(project.getVersion()).thenReturn("1.0.0");
 
-        DependencyManagement dependencyManagement = mock(DependencyManagement.class);
-        when(dependencyManagement.getDependencies()).thenReturn(Collections.emptyList());
-        when(project.getDependencyManagement()).thenReturn(dependencyManagement);
-
         lenient().when(mavenSession.getRepositorySession()).thenReturn(new DefaultRepositorySystemSession());
     }
 
@@ -195,6 +191,36 @@ class AnalyzeExclusionsMojoTest {
         mojo.execute();
 
         verify(testLog).warn("projectName defines following unnecessary excludes");
+    }
+
+    /**
+     * Nullability behavior of {@link MavenProject#getDependencyManagement} is not documented, test mojo with both {@code null}
+     * and non-{@code null} outputs
+     *
+     * @see <a href="https://github.com/apache/maven-dependency-plugin/issues/1474">Issue</a>
+     */
+    @Test
+    @InjectMojo(goal = "analyze-exclusions")
+    void testMojoWithProjectDependencyManagementNull(AnalyzeExclusionsMojo mojo) {
+        // Default behavior specified explicitly for clarity
+        when(project.getDependencyManagement()).thenReturn(null);
+
+        assertThatCode(mojo::execute).doesNotThrowAnyException();
+    }
+
+    /**
+     * Nullability behavior of {@link MavenProject#getDependencyManagement} is not documented, test mojo with both {@code null}
+     * and non-{@code null} outputs
+     *
+     * @see <a href="https://github.com/apache/maven-dependency-plugin/issues/1474">Issue</a>
+     */
+    @Test
+    @InjectMojo(goal = "analyze-exclusions")
+    void testMojoWithProjectDependencyManagementEmpty(AnalyzeExclusionsMojo mojo) {
+        DependencyManagement dependencyManagement = mock(DependencyManagement.class);
+        lenient().when(dependencyManagement.getDependencies()).thenReturn(Collections.emptyList());
+
+        assertThatCode(mojo::execute).doesNotThrowAnyException();
     }
 
     private Dependency dependency(String groupId, String artifactId) {

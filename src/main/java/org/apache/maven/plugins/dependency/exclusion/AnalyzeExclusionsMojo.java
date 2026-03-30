@@ -31,6 +31,7 @@ import java.util.function.Consumer;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -103,14 +104,21 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
 
         Map<Coordinates, Collection<Exclusion>> dependenciesWithExclusions = new HashMap<>();
 
-        project.getDependencyManagement().getDependencies().forEach(dependency -> {
-            Collection<Exclusion> exclusions = getExclusionsForDependency(dependency);
-            if (!exclusions.isEmpty()) {
-                dependenciesWithExclusions
-                        .computeIfAbsent(coordinates(dependency), d -> new ArrayList<>())
-                        .addAll(exclusions);
+        DependencyManagement depMgt = project.getDependencyManagement();
+        if (depMgt != null) {
+            List<Dependency> depMgtDependencies = depMgt.getDependencies();
+
+            if (depMgtDependencies != null) {
+                depMgtDependencies.forEach(dependency -> {
+                    Collection<Exclusion> exclusions = getExclusionsForDependency(dependency);
+                    if (!exclusions.isEmpty()) {
+                        dependenciesWithExclusions
+                                .computeIfAbsent(coordinates(dependency), d -> new ArrayList<>())
+                                .addAll(exclusions);
+                    }
+                });
             }
-        });
+        }
 
         project.getDependencies().forEach(dependency -> {
             Collection<Exclusion> exclusions = getExclusionsForDependency(dependency);
