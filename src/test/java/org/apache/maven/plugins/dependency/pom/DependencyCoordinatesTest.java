@@ -86,6 +86,30 @@ class DependencyCoordinatesTest {
     }
 
     @Test
+    void parseTrailingColonRejectsEmptyGroupId() {
+        assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse(":artifactId"));
+    }
+
+    @Test
+    void parseTrailingColonRejectsEmptyArtifactId() {
+        assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse("groupId:"));
+    }
+
+    @Test
+    void parseDoubleColonRejectsEmptyFields() {
+        assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse("::"));
+    }
+
+    @Test
+    void parseTrailingColonsAcceptedWhenOptionalFieldsEmpty() {
+        // "g:a:" has 3 tokens with -1 split limit, 3rd is empty = valid (version empty)
+        DependencyCoordinates coords = DependencyCoordinates.parse("g:a:");
+        assertEquals("g", coords.getGroupId());
+        assertEquals("a", coords.getArtifactId());
+        assertNull(coords.getVersion());
+    }
+
+    @Test
     void parseNullThrows() {
         assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse(null));
     }
@@ -148,6 +172,7 @@ class DependencyCoordinatesTest {
         coords.setScope("test");
         coords.setType("pom");
         coords.setClassifier("cls");
+        coords.setOptional(true);
 
         assertEquals("g", coords.getGroupId());
         assertEquals("a", coords.getArtifactId());
@@ -155,6 +180,7 @@ class DependencyCoordinatesTest {
         assertEquals("test", coords.getScope());
         assertEquals("pom", coords.getType());
         assertEquals("cls", coords.getClassifier());
+        assertEquals(true, coords.getOptional());
     }
 
     @Test

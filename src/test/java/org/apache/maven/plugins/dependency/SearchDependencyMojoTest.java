@@ -83,4 +83,17 @@ class SearchDependencyMojoTest {
         List<String[]> artifacts = SearchDependencyMojo.extractArtifacts("{\"response\":{}}");
         assertEquals(0, artifacts.size());
     }
+
+    @Test
+    void extractStringFieldWithEscapedQuotes() {
+        String json = "{\"desc\":\"A \\\"special\\\" library\",\"g\":\"com.example\"}";
+        assertEquals("A \"special\" library", SearchDependencyMojo.extractStringField(json, "desc"));
+        assertEquals("com.example", SearchDependencyMojo.extractStringField(json, "g"));
+    }
+
+    @Test
+    void extractStringFieldWithEscapedBackslash() {
+        String json = "{\"path\":\"C:\\\\Users\\\\test\"}";
+        assertEquals("C:\\Users\\test", SearchDependencyMojo.extractStringField(json, "path"));
+    }
 }

@@ -277,10 +277,37 @@ public class SearchDependencyMojo extends AbstractMojo {
     }
 
     static String extractStringField(String json, String field) {
-        Pattern pattern = Pattern.compile("\"" + Pattern.quote(field) + "\"\\s*:\\s*\"([^\"]*)\"");
-        Matcher matcher = pattern.matcher(json);
-        if (matcher.find()) {
-            return matcher.group(1);
+        String key = "\"" + field + "\"";
+        int keyPos = json.indexOf(key);
+        if (keyPos < 0) {
+            return null;
+        }
+        // Find the colon after the key
+        int colonPos = json.indexOf(':', keyPos + key.length());
+        if (colonPos < 0) {
+            return null;
+        }
+        // Find the opening quote of the value
+        int openQuote = json.indexOf('"', colonPos + 1);
+        if (openQuote < 0) {
+            return null;
+        }
+        // Find the closing quote, handling escaped quotes
+        StringBuilder value = new StringBuilder();
+        for (int i = openQuote + 1; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (c == '\\' && i + 1 < json.length()) {
+                char next = json.charAt(i + 1);
+                if (next == '"' || next == '\\') {
+                    value.append(next);
+                    i++;
+                    continue;
+                }
+            }
+            if (c == '"') {
+                return value.toString();
+            }
+            value.append(c);
         }
         return null;
     }

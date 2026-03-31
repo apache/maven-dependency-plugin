@@ -34,6 +34,9 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -43,20 +46,36 @@ import org.xml.sax.SAXException;
 
 /**
  * Formatting-preserving POM editor using DOM-level XML parsing.
- * Preserves comments, whitespace, and indentation style when modifying {@code pom.xml} files.
+ * Preserves comments, whitespace, indentation style, XML namespaces,
+ * BOM markers, and XML declarations when modifying {@code pom.xml} files.
  */
 public class PomEditor {
+
+    private static final byte[] UTF8_BOM = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
 
     private final Document document;
     private final File pomFile;
     private final String indent;
     private final String lineEnding;
+    private final boolean hadXmlDeclaration;
+    private final boolean hadBom;
+    private final String namespaceURI;
 
-    private PomEditor(Document document, File pomFile, String indent, String lineEnding) {
+    private PomEditor(
+            Document document,
+            File pomFile,
+            String indent,
+            String lineEnding,
+            boolean hadXmlDeclaration,
+            boolean hadBom,
+            String namespaceURI) {
         this.document = document;
         this.pomFile = pomFile;
         this.indent = indent;
         this.lineEnding = lineEnding;
+        this.hadXmlDeclaration = hadXmlDeclaration;
+        this.hadBom = hadBom;
+        this.namespaceURI = namespaceURI;
     }
 
     /**
@@ -68,18 +87,27 @@ public class PomEditor {
      */
     public static PomEditor load(File pomFile) throws IOException {
         try {
+            byte[] rawBytes = Files.readAllBytes(pomFile.toPath());
+            boolean hasBom = hasBom(rawBytes);
+
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
             factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
             factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(pomFile);
 
-            String content = new String(Files.readAllBytes(pomFile.toPath()), detectEncoding(doc));
+            Charset encoding = detectEncoding(doc);
+            String content = new String(rawBytes, encoding);
             String lineEnding = detectLineEnding(content);
             String indent = detectIndent(content);
+            boolean hadXmlDecl = content.trim().startsWith("<?xml");
 
-            return new PomEditor(doc, pomFile, indent, lineEnding);
+            // Capture the namespace URI from the root element
+            String nsURI = doc.getDocumentElement().getNamespaceURI();
+
+            return new PomEditor(doc, pomFile, indent, lineEnding, hadXmlDecl, hasBom, nsURI);
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException("Failed to parse POM file: " + pomFile, e);
         }
@@ -102,7 +130,7 @@ public class PomEditor {
         NodeList children = depsElement.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE && "dependency".equals(node.getNodeName())) {
+            if (node.getNodeType() == Node.ELEMENT_NODE && "dependency".equals(localName(node))) {
                 Element dep = (Element) node;
                 String g = getChildText(dep, "groupId");
                 String a = getChildText(dep, "artifactId");
@@ -122,8 +150,8 @@ public class PomEditor {
      */
     public void addDependency(DependencyCoordinates coords, boolean managed) {
         Element depsElement = getDependenciesElement(managed, true);
-        Element dep = buildDependencyElement(coords, 2);
         int depthForDep = managed ? 3 : 2;
+        Element dep = buildDependencyElement(coords, depthForDep);
         String baseIndent = repeatIndent(depthForDep);
 
         depsElement.appendChild(document.createTextNode(lineEnding + baseIndent));
@@ -153,10 +181,14 @@ public class PomEditor {
         if (coords.getClassifier() != null) {
             setOrCreateChild(existing, "classifier", coords.getClassifier());
         }
+        if (coords.getOptional() != null && coords.getOptional()) {
+            setOrCreateChild(existing, "optional", "true");
+        }
     }
 
     /**
      * Removes a dependency element from the POM.
+     * Also removes any immediately preceding XML comment associated with the dependency.
      *
      * @param groupId    the groupId to match
      * @param artifactId the artifactId to match
@@ -173,40 +205,44 @@ public class PomEditor {
             return false;
         }
 
-        // Remove preceding whitespace text node
-        Node prev = dep.getPreviousSibling();
-        if (prev != null
-                && prev.getNodeType() == Node.TEXT_NODE
-                && prev.getTextContent().trim().isEmpty()) {
-            depsElement.removeChild(prev);
-        }
+        // Remove preceding whitespace and associated comment nodes
+        removePrecedingWhitespaceAndComments(depsElement, dep);
 
         depsElement.removeChild(dep);
         return true;
     }
 
     /**
-     * Writes the modified POM back to disk.
+     * Writes the modified POM back to disk using an atomic write (temp file + rename).
      *
      * @throws IOException if the file cannot be written
      */
     public void save() throws IOException {
         try {
-            // Serialize to string, then do post-processing
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = tf.newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-            transformer.setOutputProperty(
-                    OutputKeys.ENCODING, detectEncoding(document).name());
 
-            // Check if original has standalone
-            String standalone = document.getXmlStandalone() ? "yes" : "no";
-            transformer.setOutputProperty(OutputKeys.STANDALONE, standalone);
+            if (hadXmlDeclaration) {
+                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+                Charset enc = detectEncoding(document);
+                transformer.setOutputProperty(OutputKeys.ENCODING, enc.name());
+            } else {
+                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            }
 
             StringWriter writer = new StringWriter();
             transformer.transform(new DOMSource(document), new StreamResult(writer));
 
             String output = writer.toString();
+
+            // Remove standalone attribute if not in the original
+            // The transformer may add standalone="no" which wasn't in the original
+            if (hadXmlDeclaration) {
+                output = output.replaceFirst("<\\?xml([^?]*) standalone=\"no\"([^?]*)\\?>", "<?xml$1$2?>");
+                // Clean up any double spaces left behind
+                output = output.replaceFirst("<\\?xml\\s+", "<?xml ");
+                output = output.replaceFirst("\\s+\\?>", "?>");
+            }
 
             // Normalize line endings to match original
             output = output.replace("\r\n", "\n").replace("\r", "\n");
@@ -219,13 +255,41 @@ public class PomEditor {
                 output += lineEnding;
             }
 
-            Files.write(pomFile.toPath(), output.getBytes(detectEncoding(document)));
+            Charset encoding = detectEncoding(document);
+            byte[] bytes = output.getBytes(encoding);
+
+            // Re-add BOM if original had one
+            if (hadBom) {
+                byte[] withBom = new byte[UTF8_BOM.length + bytes.length];
+                System.arraycopy(UTF8_BOM, 0, withBom, 0, UTF8_BOM.length);
+                System.arraycopy(bytes, 0, withBom, UTF8_BOM.length, bytes.length);
+                bytes = withBom;
+            }
+
+            // Atomic write: write to temp file in same directory, then rename
+            File tempFile = File.createTempFile("pom", ".xml.tmp", pomFile.getParentFile());
+            try {
+                Files.write(tempFile.toPath(), bytes);
+                Files.move(tempFile.toPath(), pomFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                // Clean up temp file on failure
+                tempFile.delete();
+                throw e;
+            }
         } catch (TransformerException e) {
             throw new IOException("Failed to write POM file: " + pomFile, e);
         }
     }
 
     // --- Private helpers ---
+
+    /**
+     * Returns the local name of a node, handling both namespace-aware and non-namespace-aware cases.
+     */
+    private static String localName(Node node) {
+        String local = node.getLocalName();
+        return local != null ? local : node.getNodeName();
+    }
 
     private Element getDependenciesElement(boolean managed, boolean create) {
         Element root = document.getDocumentElement();
@@ -245,7 +309,7 @@ public class PomEditor {
         NodeList children = parent.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE && tagName.equals(node.getNodeName())) {
+            if (node.getNodeType() == Node.ELEMENT_NODE && tagName.equals(localName(node))) {
                 return (Element) node;
             }
         }
@@ -253,19 +317,27 @@ public class PomEditor {
             return null;
         }
         String baseIndent = repeatIndent(depth);
-        Element newElement = document.createElement(tagName);
+        Element newElement = createElementWithNS(tagName);
 
-        // Add newline + indent before the new element
         parent.appendChild(document.createTextNode(lineEnding + baseIndent));
         parent.appendChild(newElement);
-        // Add newline after the element (for closing tag of parent)
         ensureClosingIndent(parent, depth - 1);
 
         return newElement;
     }
 
+    /**
+     * Creates an element in the same namespace as the root element, if any.
+     */
+    private Element createElementWithNS(String tagName) {
+        if (namespaceURI != null) {
+            return document.createElementNS(namespaceURI, tagName);
+        }
+        return document.createElement(tagName);
+    }
+
     private Element buildDependencyElement(DependencyCoordinates coords, int depth) {
-        Element dep = document.createElement("dependency");
+        Element dep = createElementWithNS("dependency");
         String childIndent = repeatIndent(depth + 1);
 
         appendChildElement(dep, "groupId", coords.getGroupId(), childIndent);
@@ -283,8 +355,10 @@ public class PomEditor {
         if (coords.getClassifier() != null) {
             appendChildElement(dep, "classifier", coords.getClassifier(), childIndent);
         }
+        if (coords.getOptional() != null && coords.getOptional()) {
+            appendChildElement(dep, "optional", "true", childIndent);
+        }
 
-        // Closing indent for </dependency>
         dep.appendChild(document.createTextNode(lineEnding + repeatIndent(depth)));
 
         return dep;
@@ -292,7 +366,7 @@ public class PomEditor {
 
     private void appendChildElement(Element parent, String tagName, String value, String indentStr) {
         parent.appendChild(document.createTextNode(lineEnding + indentStr));
-        Element child = document.createElement(tagName);
+        Element child = createElementWithNS(tagName);
         child.setTextContent(value);
         parent.appendChild(child);
     }
@@ -301,12 +375,11 @@ public class PomEditor {
         NodeList children = parent.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE && tagName.equals(node.getNodeName())) {
+            if (node.getNodeType() == Node.ELEMENT_NODE && tagName.equals(localName(node))) {
                 node.setTextContent(value);
                 return;
             }
         }
-        // Create new child — detect indentation depth from parent
         int depth = getElementDepth(parent);
         String childIndent = repeatIndent(depth + 1);
         appendChildElement(parent, tagName, value, childIndent);
@@ -320,6 +393,32 @@ public class PomEditor {
             current = current.getParentNode();
         }
         return depth;
+    }
+
+    /**
+     * Removes preceding whitespace text nodes and any immediately preceding XML comment
+     * that is associated with the dependency element (no blank line separating them).
+     */
+    private void removePrecedingWhitespaceAndComments(Element parent, Node target) {
+        Node prev = target.getPreviousSibling();
+
+        // Walk backwards through whitespace and comment nodes
+        while (prev != null) {
+            if (prev.getNodeType() == Node.TEXT_NODE
+                    && prev.getTextContent().trim().isEmpty()) {
+                // Whitespace-only text node
+                Node toRemove = prev;
+                prev = prev.getPreviousSibling();
+                parent.removeChild(toRemove);
+            } else if (prev.getNodeType() == Node.COMMENT_NODE) {
+                // Remove associated comment (directly preceding, no blank line gap)
+                Node toRemove = prev;
+                prev = prev.getPreviousSibling();
+                parent.removeChild(toRemove);
+            } else {
+                break;
+            }
+        }
     }
 
     private void ensureClosingIndent(Element element, int depth) {
@@ -344,11 +443,15 @@ public class PomEditor {
         NodeList children = parent.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE && tagName.equals(node.getNodeName())) {
+            if (node.getNodeType() == Node.ELEMENT_NODE && tagName.equals(localName(node))) {
                 return node.getTextContent().trim();
             }
         }
         return null;
+    }
+
+    private static boolean hasBom(byte[] bytes) {
+        return bytes.length >= 3 && bytes[0] == UTF8_BOM[0] && bytes[1] == UTF8_BOM[1] && bytes[2] == UTF8_BOM[2];
     }
 
     private static Charset detectEncoding(Document doc) {
@@ -372,35 +475,58 @@ public class PomEditor {
         return "\n";
     }
 
-    private static String detectIndent(String content) {
+    /**
+     * Detects the indentation unit by analyzing all indented lines and finding
+     * the most common smallest indent unit (GCD of leading whitespace lengths).
+     */
+    static String detectIndent(String content) {
         String[] lines = content.split("\\r?\\n");
+        Map<Character, int[]> charCounts = new HashMap<>();
+
         for (String line : lines) {
-            if (line.length() > 0 && (line.charAt(0) == ' ' || line.charAt(0) == '\t')) {
-                // Find the leading whitespace
-                int end = 0;
-                char indentChar = line.charAt(0);
-                while (end < line.length() && line.charAt(end) == indentChar) {
-                    end++;
+            if (line.isEmpty() || (line.charAt(0) != ' ' && line.charAt(0) != '\t')) {
+                continue;
+            }
+            char indentChar = line.charAt(0);
+            int end = 0;
+            while (end < line.length() && line.charAt(end) == indentChar) {
+                end++;
+            }
+            // Only count lines that have content after the indent
+            if (end < line.length()) {
+                int[] counts = charCounts.computeIfAbsent(indentChar, k -> new int[] {0, 0});
+                counts[0]++; // frequency
+                if (counts[1] == 0) {
+                    counts[1] = end;
+                } else {
+                    counts[1] = gcd(counts[1], end);
                 }
-                // Return the smallest meaningful indent unit
-                String ws = line.substring(0, end);
-                // If it looks like a standard indent (2 or 4 spaces, or 1 tab), use that
-                if (indentChar == '\t') {
-                    return "\t";
-                }
-                if (ws.length() <= 4) {
-                    return ws;
-                }
-                // Try to find a common divisor (2 or 4 spaces)
-                if (ws.length() % 4 == 0) {
-                    return "    ";
-                }
-                if (ws.length() % 2 == 0) {
-                    return "  ";
-                }
-                return ws;
             }
         }
+
+        if (charCounts.containsKey('\t')) {
+            return "\t";
+        }
+        if (charCounts.containsKey(' ')) {
+            int unit = charCounts.get(' ')[1];
+            if (unit <= 0) {
+                unit = 4;
+            }
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < unit; i++) {
+                sb.append(' ');
+            }
+            return sb.toString();
+        }
         return "    ";
+    }
+
+    private static int gcd(int a, int b) {
+        while (b != 0) {
+            int t = b;
+            b = a % b;
+            a = t;
+        }
+        return a;
     }
 }

@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Element;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -319,5 +320,191 @@ class PomEditorTest {
         assertTrue(result.contains("<dependencyManagement>"));
         assertTrue(result.contains("<scope>import</scope>"));
         assertTrue(result.contains("<type>pom</type>"));
+    }
+
+    @Test
+    void addDependencyWithNamespacedPom() throws IOException {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n"
+                + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 "
+                + "http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n"
+                + "    <modelVersion>4.0.0</modelVersion>\n"
+                + "    <groupId>com.example</groupId>\n"
+                + "    <artifactId>test</artifactId>\n"
+                + "    <version>1.0</version>\n"
+                + "    <dependencies>\n"
+                + "        <dependency>\n"
+                + "            <groupId>junit</groupId>\n"
+                + "            <artifactId>junit</artifactId>\n"
+                + "            <version>4.13.2</version>\n"
+                + "        </dependency>\n"
+                + "    </dependencies>\n"
+                + "</project>\n";
+
+        File pomFile = createTempPom(pom);
+        PomEditor editor = PomEditor.load(pomFile);
+
+        // Should find existing dependency in namespaced POM
+        Element found = editor.findDependency("junit", "junit", false);
+        assertNotNull(found, "Should find dependency in namespaced POM");
+
+        // Should add new dependency to namespaced POM
+        DependencyCoordinates coords = DependencyCoordinates.parse("com.google.adk:google-adk:1.0.0");
+        editor.addDependency(coords, false);
+        editor.save();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<groupId>com.google.adk</groupId>"));
+        assertTrue(result.contains("xmlns=\"http://maven.apache.org/POM/4.0.0\""), "Namespace should be preserved");
+    }
+
+    @Test
+    void addOptionalDependency() throws IOException {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "    <modelVersion>4.0.0</modelVersion>\n"
+                + "    <groupId>com.example</groupId>\n"
+                + "    <artifactId>test</artifactId>\n"
+                + "    <version>1.0</version>\n"
+                + "</project>\n";
+
+        File pomFile = createTempPom(pom);
+        PomEditor editor = PomEditor.load(pomFile);
+
+        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:optional-lib:1.0.0");
+        coords.setOptional(true);
+        editor.addDependency(coords, false);
+        editor.save();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<optional>true</optional>"), "Should contain <optional>true</optional>");
+    }
+
+    @Test
+    void pomWithoutXmlDeclaration() throws IOException {
+        String pom = "<project>\n"
+                + "    <modelVersion>4.0.0</modelVersion>\n"
+                + "    <groupId>com.example</groupId>\n"
+                + "    <artifactId>test</artifactId>\n"
+                + "    <version>1.0</version>\n"
+                + "</project>\n";
+
+        File pomFile = createTempPom(pom);
+        PomEditor editor = PomEditor.load(pomFile);
+
+        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        editor.addDependency(coords, false);
+        editor.save();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertFalse(result.startsWith("<?xml"), "Should not add XML declaration if original didn't have one");
+        assertTrue(result.contains("<groupId>com.example</groupId>"));
+    }
+
+    @Test
+    void removeWithPrecedingComment() throws IOException {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "    <modelVersion>4.0.0</modelVersion>\n"
+                + "    <groupId>com.example</groupId>\n"
+                + "    <artifactId>test</artifactId>\n"
+                + "    <version>1.0</version>\n"
+                + "    <dependencies>\n"
+                + "        <dependency>\n"
+                + "            <groupId>junit</groupId>\n"
+                + "            <artifactId>junit</artifactId>\n"
+                + "            <version>4.13.2</version>\n"
+                + "        </dependency>\n"
+                + "        <!-- Guava for collections -->\n"
+                + "        <dependency>\n"
+                + "            <groupId>com.google.guava</groupId>\n"
+                + "            <artifactId>guava</artifactId>\n"
+                + "            <version>31.0-jre</version>\n"
+                + "        </dependency>\n"
+                + "    </dependencies>\n"
+                + "</project>\n";
+
+        File pomFile = createTempPom(pom);
+        PomEditor editor = PomEditor.load(pomFile);
+
+        boolean removed = editor.removeDependency("com.google.guava", "guava", false);
+        assertTrue(removed);
+        editor.save();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertFalse(result.contains("com.google.guava"), "Guava should be removed");
+        assertFalse(result.contains("Guava for collections"), "Associated comment should be removed");
+        assertTrue(result.contains("<groupId>junit</groupId>"), "JUnit should remain");
+    }
+
+    @Test
+    void preservesBom() throws IOException {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "    <modelVersion>4.0.0</modelVersion>\n"
+                + "    <groupId>com.example</groupId>\n"
+                + "    <artifactId>test</artifactId>\n"
+                + "    <version>1.0</version>\n"
+                + "</project>\n";
+
+        // Write with BOM
+        byte[] bomBytes = new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
+        byte[] contentBytes = pom.getBytes(StandardCharsets.UTF_8);
+        byte[] withBom = new byte[bomBytes.length + contentBytes.length];
+        System.arraycopy(bomBytes, 0, withBom, 0, bomBytes.length);
+        System.arraycopy(contentBytes, 0, withBom, bomBytes.length, contentBytes.length);
+
+        File pomFile = new File(tempDir, "bom-pom.xml");
+        Files.write(pomFile.toPath(), withBom);
+
+        PomEditor editor = PomEditor.load(pomFile);
+        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        editor.addDependency(coords, false);
+        editor.save();
+
+        byte[] result = Files.readAllBytes(pomFile.toPath());
+        assertTrue(
+                result.length >= 3 && result[0] == (byte) 0xEF && result[1] == (byte) 0xBB && result[2] == (byte) 0xBF,
+                "BOM should be preserved");
+    }
+
+    @Test
+    void detectIndentWithMixedDepths() {
+        String content = "<project>\n"
+                + "  <groupId>com.example</groupId>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>junit</groupId>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        assertEquals("  ", PomEditor.detectIndent(content));
+    }
+
+    @Test
+    void detectIndentWithTabs() {
+        String content = "<project>\n"
+                + "\t<groupId>com.example</groupId>\n"
+                + "\t<dependencies>\n"
+                + "\t\t<dependency>\n"
+                + "\t\t\t<groupId>junit</groupId>\n"
+                + "\t\t</dependency>\n"
+                + "\t</dependencies>\n"
+                + "</project>\n";
+        assertEquals("\t", PomEditor.detectIndent(content));
+    }
+
+    @Test
+    void detectIndentWith4Spaces() {
+        String content = "<project>\n"
+                + "    <groupId>com.example</groupId>\n"
+                + "    <dependencies>\n"
+                + "        <dependency>\n"
+                + "            <groupId>junit</groupId>\n"
+                + "        </dependency>\n"
+                + "    </dependencies>\n"
+                + "</project>\n";
+        assertEquals("    ", PomEditor.detectIndent(content));
     }
 }

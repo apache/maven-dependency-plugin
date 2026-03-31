@@ -231,6 +231,10 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             coords.setClassifier(classifier);
         }
 
+        if (optional) {
+            coords.setOptional(true);
+        }
+
         try {
             coords.validate();
         } catch (IllegalArgumentException e) {

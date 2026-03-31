@@ -31,6 +31,7 @@ public class DependencyCoordinates {
     private String scope;
     private String type;
     private String classifier;
+    private Boolean optional;
 
     public DependencyCoordinates() {}
 
@@ -50,7 +51,8 @@ public class DependencyCoordinates {
         if (gav == null || gav.trim().isEmpty()) {
             throw new IllegalArgumentException("GAV string must not be null or empty");
         }
-        String[] tokens = gav.split(":");
+        // Use split with -1 limit to preserve trailing empty segments for validation
+        String[] tokens = gav.split(":", -1);
         if (tokens.length < 2 || tokens.length > 6) {
             throw new IllegalArgumentException("Invalid GAV format: '" + gav
                     + "'. Expected groupId:artifactId[:version[:scope[:type[:classifier]]]]");
@@ -58,6 +60,12 @@ public class DependencyCoordinates {
         DependencyCoordinates coords = new DependencyCoordinates();
         coords.groupId = tokens[0].trim();
         coords.artifactId = tokens[1].trim();
+        if (coords.groupId.isEmpty()) {
+            throw new IllegalArgumentException("Invalid GAV format: '" + gav + "'. groupId must not be empty.");
+        }
+        if (coords.artifactId.isEmpty()) {
+            throw new IllegalArgumentException("Invalid GAV format: '" + gav + "'. artifactId must not be empty.");
+        }
         if (tokens.length >= 3 && !tokens[2].trim().isEmpty()) {
             coords.version = tokens[2].trim();
         }
@@ -159,5 +167,13 @@ public class DependencyCoordinates {
 
     public void setClassifier(String classifier) {
         this.classifier = classifier;
+    }
+
+    public Boolean getOptional() {
+        return optional;
+    }
+
+    public void setOptional(Boolean optional) {
+        this.optional = optional;
     }
 }
