@@ -632,4 +632,36 @@ class PomEditorTest {
         File pomFile = createTempPom(xml);
         assertThrows(IOException.class, () -> PomEditor.load(pomFile));
     }
+
+    @Test
+    void bomPrefixedFilePreservesXmlDeclaration() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <groupId>com.example</groupId>\n"
+                + "</project>\n";
+        // Write with UTF-8 BOM prefix
+        byte[] xmlBytes = xml.getBytes(StandardCharsets.UTF_8);
+        byte[] bom = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
+        byte[] bomPrefixed = new byte[bom.length + xmlBytes.length];
+        System.arraycopy(bom, 0, bomPrefixed, 0, bom.length);
+        System.arraycopy(xmlBytes, 0, bomPrefixed, bom.length, xmlBytes.length);
+
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), bomPrefixed);
+
+        PomEditor editor = PomEditor.load(pomFile);
+        DependencyCoordinates coords = new DependencyCoordinates("junit", "junit");
+        coords.setVersion("4.13");
+        editor.addDependency(coords, false);
+        editor.save();
+
+        byte[] resultBytes = Files.readAllBytes(pomFile.toPath());
+        // BOM should still be present
+        assertEquals((byte) 0xEF, resultBytes[0]);
+        assertEquals((byte) 0xBB, resultBytes[1]);
+        assertEquals((byte) 0xBF, resultBytes[2]);
+        // XML declaration should be preserved
+        String result = new String(resultBytes, StandardCharsets.UTF_8);
+        assertTrue(result.contains("<?xml"));
+    }
 }

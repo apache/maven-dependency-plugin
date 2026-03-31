@@ -111,7 +111,7 @@ public class PomEditor {
             String content = new String(rawBytes, encoding);
             String lineEnding = detectLineEnding(content);
             String indent = detectIndent(content);
-            boolean hadXmlDecl = content.trim().startsWith("<?xml");
+            boolean hadXmlDecl = stripBomChar(content).trim().startsWith("<?xml");
 
             // Capture the namespace URI from the root element
             String nsURI = doc.getDocumentElement().getNamespaceURI();
@@ -510,6 +510,18 @@ public class PomEditor {
 
     private static boolean hasBom(byte[] bytes) {
         return bytes.length >= 3 && bytes[0] == UTF8_BOM[0] && bytes[1] == UTF8_BOM[1] && bytes[2] == UTF8_BOM[2];
+    }
+
+    /**
+     * Strips the Unicode BOM character (U+FEFF) from the start of a string if present.
+     * Java's String.trim() only removes ASCII whitespace (chars &lt;= 0x20) and does not
+     * remove the BOM character.
+     */
+    private static String stripBomChar(String s) {
+        if (s != null && !s.isEmpty() && s.charAt(0) == '\uFEFF') {
+            return s.substring(1);
+        }
+        return s;
     }
 
     private static Charset detectEncoding(Document doc) {

@@ -84,6 +84,10 @@ public class SearchDependencyMojo extends AbstractMojo {
             throw new MojoFailureException("Search query must not be empty.");
         }
 
+        if (rows < 1) {
+            throw new MojoFailureException("The 'rows' parameter must be a positive integer, got: " + rows);
+        }
+
         String jsonResponse = performSearch();
         displayResults(jsonResponse);
     }

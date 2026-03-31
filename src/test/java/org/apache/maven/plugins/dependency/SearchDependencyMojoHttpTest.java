@@ -173,4 +173,22 @@ class SearchDependencyMojoHttpTest {
         assertTrue(capturedUserAgent[0].startsWith("Apache-Maven-Dependency-Plugin/"));
         assertTrue(capturedUserAgent[0].contains("dependency:search"));
     }
+
+    @Test
+    void negativeRowsIsRejected() throws Exception {
+        setVariableValueToObject(mojo, "rows", -1);
+        setUrl("/search");
+
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("positive integer"));
+    }
+
+    @Test
+    void zeroRowsIsRejected() throws Exception {
+        setVariableValueToObject(mojo, "rows", 0);
+        setUrl("/search");
+
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("positive integer"));
+    }
 }
