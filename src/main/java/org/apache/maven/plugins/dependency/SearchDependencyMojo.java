@@ -306,8 +306,11 @@ public class SearchDependencyMojo extends AbstractMojo {
             if (artifacts.isEmpty()) {
                 getLog().info("No artifacts found matching '" + currentQuery + "'.");
                 getLog().info("");
-                String input = readLine("Enter a new search term, or press Enter to quit: ");
-                if (input == null || input.trim().isEmpty()) {
+                String input = readLine("Enter a new search term, or 'q' to quit: ");
+                if (input == null
+                        || input.trim().isEmpty()
+                        || "q".equalsIgnoreCase(input.trim())
+                        || "quit".equalsIgnoreCase(input.trim())) {
                     return;
                 }
                 currentQuery = input.trim();
@@ -317,8 +320,11 @@ public class SearchDependencyMojo extends AbstractMojo {
 
             displayNumberedResults(artifacts, numFound);
 
-            String input = readLine("Enter number to select, text to search again, or Enter to quit: ");
-            if (input == null || input.trim().isEmpty()) {
+            String input = readLine("Enter number to select, text to search again, 'q' to quit: ");
+            if (input == null
+                    || input.trim().isEmpty()
+                    || "q".equalsIgnoreCase(input.trim())
+                    || "quit".equalsIgnoreCase(input.trim())) {
                 return;
             }
 
@@ -398,17 +404,30 @@ public class SearchDependencyMojo extends AbstractMojo {
         getLog().info("Fetching versions for " + groupId + ":" + artifactId + "...");
 
         List<String> versions;
+        int totalVersions = 0;
         try {
             String versionJson = performSearch("g:\"" + groupId + "\" AND a:\"" + artifactId + "\"", 20, true);
             versions = extractVersionList(versionJson);
+            totalVersions = extractInt(versionJson, "numFound");
         } catch (Exception e) {
             getLog().debug("Failed to fetch versions: " + e.getMessage());
             versions = new ArrayList<>();
         }
 
-        if (versions.isEmpty()) {
+        // Resolve the effective default version: prefer latestVersion from initial search,
+        // fall back to first version from the GAV query, or fail gracefully.
+        String defaultVersion = (latestVersion != null && !latestVersion.isEmpty())
+                ? latestVersion
+                : (!versions.isEmpty() ? versions.get(0) : null);
+
+        if (versions.isEmpty() && defaultVersion != null) {
             versions = new ArrayList<>();
-            versions.add(latestVersion);
+            versions.add(defaultVersion);
+        }
+
+        if (versions.isEmpty()) {
+            getLog().warn("No version information available for " + groupId + ":" + artifactId + ".");
+            return false;
         }
 
         getLog().info("");
@@ -416,15 +435,18 @@ public class SearchDependencyMojo extends AbstractMojo {
         getLog().info("");
 
         for (int i = 0; i < versions.size(); i++) {
-            String marker = versions.get(i).equals(latestVersion) ? " (latest)" : "";
+            String marker = versions.get(i).equals(defaultVersion) ? " (latest)" : "";
             getLog().info("  " + (i + 1) + ") " + versions.get(i) + marker);
+        }
+        if (totalVersions > versions.size()) {
+            getLog().info("  ... and " + (totalVersions - versions.size()) + " older version(s) not shown.");
         }
         getLog().info("");
 
-        String input = readLine("Enter version number, 'b' to go back, or Enter for latest (" + latestVersion + "): ");
+        String input = readLine("Enter version number, 'b' to go back, or Enter for latest (" + defaultVersion + "): ");
 
         if (input == null || input.trim().isEmpty()) {
-            printAddCommand(groupId, artifactId, latestVersion);
+            printAddCommand(groupId, artifactId, defaultVersion);
             return true;
         }
 
@@ -434,7 +456,11 @@ public class SearchDependencyMojo extends AbstractMojo {
             return false;
         }
 
-        String selectedVersion = latestVersion;
+        if ("q".equalsIgnoreCase(input) || "quit".equalsIgnoreCase(input)) {
+            return true;
+        }
+
+        String selectedVersion = defaultVersion;
         try {
             int sel = Integer.parseInt(input);
             if (sel >= 1 && sel <= versions.size()) {

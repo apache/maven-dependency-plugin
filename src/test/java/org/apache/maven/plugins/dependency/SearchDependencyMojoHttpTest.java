@@ -412,6 +412,174 @@ class SearchDependencyMojoHttpTest {
         assertTrue(!output.contains("Selected:"), "should not select anything");
     }
 
+    @Test
+    void interactiveQuitWithQ() throws Exception {
+        server.createContext("/search", exchange -> {
+            byte[] bytes = SEARCH_RESPONSE.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        });
+        server.start();
+
+        Queue<String> answers = new LinkedList<>();
+        answers.add("q"); // quit with 'q'
+
+        SearchDependencyMojo interactiveMojo = createInteractiveMojo(answers);
+        setUrl(interactiveMojo, "/search");
+
+        CapturingLog log = new CapturingLog();
+        interactiveMojo.setLog(log);
+        interactiveMojo.execute();
+
+        String output = String.join("\n", log.messages);
+        assertTrue(output.contains("result(s)"), "should show results before quitting");
+        assertTrue(!output.contains("Selected:"), "should not select anything");
+    }
+
+    @Test
+    void interactiveEmptyLatestVersionUsesFirstFromVersionList() throws Exception {
+        // Artifact with empty latestVersion
+        String searchNoVersion = "{\"responseHeader\":{\"status\":0},"
+                + "\"response\":{\"numFound\":1,\"start\":0,\"docs\":["
+                + "{\"g\":\"com.example\",\"a\":\"no-latest\",\"latestVersion\":\"\"}"
+                + "]}}";
+
+        server.createContext("/search", exchange -> {
+            String uri = exchange.getRequestURI().toString();
+            String json = uri.contains("core=gav") ? VERSION_RESPONSE : searchNoVersion;
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        });
+        server.start();
+
+        Queue<String> answers = new LinkedList<>();
+        answers.add("1"); // select artifact
+        answers.add(""); // accept default version (should be 2.0.0, not empty)
+
+        SearchDependencyMojo interactiveMojo = createInteractiveMojo(answers);
+        setUrl(interactiveMojo, "/search");
+
+        CapturingLog log = new CapturingLog();
+        interactiveMojo.setLog(log);
+        interactiveMojo.execute();
+
+        String output = String.join("\n", log.messages);
+        assertTrue(
+                output.contains("Selected: com.example:no-latest:2.0.0"),
+                "should use first version from GAV query, not empty string");
+    }
+
+    @Test
+    void interactiveNoVersionsAvailableGoesBack() throws Exception {
+        // Both latestVersion empty AND version query returns nothing
+        String searchNoVersion = "{\"responseHeader\":{\"status\":0},"
+                + "\"response\":{\"numFound\":1,\"start\":0,\"docs\":["
+                + "{\"g\":\"com.example\",\"a\":\"ghost\",\"latestVersion\":\"\"}"
+                + "]}}";
+        String emptyVersions =
+                "{\"responseHeader\":{\"status\":0}," + "\"response\":{\"numFound\":0,\"start\":0,\"docs\":[]}}";
+
+        server.createContext("/search", exchange -> {
+            String uri = exchange.getRequestURI().toString();
+            String json = uri.contains("core=gav") ? emptyVersions : searchNoVersion;
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        });
+        server.start();
+
+        Queue<String> answers = new LinkedList<>();
+        answers.add("1"); // select artifact
+        // handleVersionSelection returns false (no versions) → back to list
+        answers.add("q"); // quit
+
+        SearchDependencyMojo interactiveMojo = createInteractiveMojo(answers);
+        setUrl(interactiveMojo, "/search");
+
+        CapturingLog log = new CapturingLog();
+        interactiveMojo.setLog(log);
+        interactiveMojo.execute();
+
+        assertTrue(
+                log.warnings.stream().anyMatch(w -> w.contains("No version information")),
+                "should warn about missing versions");
+    }
+
+    @Test
+    void interactiveVersionPagingHint() throws Exception {
+        // Version response with numFound > docs returned
+        String manyVersions = "{\"responseHeader\":{\"status\":0},"
+                + "\"response\":{\"numFound\":50,\"start\":0,\"docs\":["
+                + "{\"g\":\"com.example\",\"a\":\"my-lib\",\"v\":\"3.0.0\"},"
+                + "{\"g\":\"com.example\",\"a\":\"my-lib\",\"v\":\"2.0.0\"}"
+                + "]}}";
+
+        server.createContext("/search", exchange -> {
+            String uri = exchange.getRequestURI().toString();
+            String json = uri.contains("core=gav") ? manyVersions : SEARCH_RESPONSE;
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        });
+        server.start();
+
+        Queue<String> answers = new LinkedList<>();
+        answers.add("1"); // select first artifact
+        answers.add("1"); // select first version
+
+        SearchDependencyMojo interactiveMojo = createInteractiveMojo(answers);
+        setUrl(interactiveMojo, "/search");
+
+        CapturingLog log = new CapturingLog();
+        interactiveMojo.setLog(log);
+        interactiveMojo.execute();
+
+        String output = String.join("\n", log.messages);
+        assertTrue(output.contains("48 older version(s) not shown"), "should indicate more versions exist");
+    }
+
+    @Test
+    void interactiveQuitFromVersionPrompt() throws Exception {
+        server.createContext("/search", exchange -> {
+            String uri = exchange.getRequestURI().toString();
+            String json = uri.contains("core=gav") ? VERSION_RESPONSE : SEARCH_RESPONSE;
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        });
+        server.start();
+
+        Queue<String> answers = new LinkedList<>();
+        answers.add("1"); // select artifact
+        answers.add("q"); // quit from version prompt
+
+        SearchDependencyMojo interactiveMojo = createInteractiveMojo(answers);
+        setUrl(interactiveMojo, "/search");
+
+        CapturingLog log = new CapturingLog();
+        interactiveMojo.setLog(log);
+        interactiveMojo.execute();
+
+        String output = String.join("\n", log.messages);
+        assertTrue(!output.contains("Selected:"), "should not select when quitting with q");
+    }
+
     private void setUrl(SearchDependencyMojo target, String path) throws Exception {
         setVariableValueToObject(target, "repositoryUrl", "http://localhost:" + port + path);
     }
