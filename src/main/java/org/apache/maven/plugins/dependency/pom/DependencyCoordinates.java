@@ -116,6 +116,25 @@ public class DependencyCoordinates {
         if (version != null) {
             sb.append(':').append(version);
         }
+        StringBuilder details = new StringBuilder();
+        if (type != null && !"jar".equals(type)) {
+            details.append("type=").append(type);
+        }
+        if (classifier != null && !classifier.isEmpty()) {
+            if (details.length() > 0) {
+                details.append(", ");
+            }
+            details.append("classifier=").append(classifier);
+        }
+        if (scope != null) {
+            if (details.length() > 0) {
+                details.append(", ");
+            }
+            details.append("scope=").append(scope);
+        }
+        if (details.length() > 0) {
+            sb.append(" [").append(details).append(']');
+        }
         return sb.toString();
     }
 

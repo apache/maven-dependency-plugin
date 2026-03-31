@@ -95,7 +95,8 @@ public class SearchDependencyMojo extends AbstractMojo {
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Accept", "application/json");
-            connection.setRequestProperty("User-Agent", "Apache-Maven-Dependency-Plugin/3.11.0 (dependency:search)");
+            connection.setRequestProperty(
+                    "User-Agent", "Apache-Maven-Dependency-Plugin/" + getPluginVersion() + " (dependency:search)");
             connection.setConnectTimeout(10000);
             connection.setReadTimeout(10000);
 
@@ -319,5 +320,13 @@ public class SearchDependencyMojo extends AbstractMojo {
             return Integer.parseInt(matcher.group(1));
         }
         return 0;
+    }
+
+    private String getPluginVersion() {
+        Package pkg = getClass().getPackage();
+        if (pkg != null && pkg.getImplementationVersion() != null) {
+            return pkg.getImplementationVersion();
+        }
+        return "SNAPSHOT";
     }
 }

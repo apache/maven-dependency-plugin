@@ -507,4 +507,104 @@ class PomEditorTest {
                 + "</project>\n";
         assertEquals("    ", PomEditor.detectIndent(content));
     }
+
+    @Test
+    void findDependencyByTypeAndClassifier() throws IOException {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>junit</groupId>\n"
+                + "      <artifactId>junit</artifactId>\n"
+                + "      <version>4.13</version>\n"
+                + "    </dependency>\n"
+                + "    <dependency>\n"
+                + "      <groupId>junit</groupId>\n"
+                + "      <artifactId>junit</artifactId>\n"
+                + "      <version>4.13</version>\n"
+                + "      <type>test-jar</type>\n"
+                + "      <scope>test</scope>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        File pomFile = createTempPom(pom);
+        PomEditor editor = PomEditor.load(pomFile);
+
+        // Default (no type/classifier) matches the first (jar) entry
+        Element defaultMatch = editor.findDependency("junit", "junit", null, null, false);
+        assertNotNull(defaultMatch);
+        assertNull(PomEditor.getChildText(defaultMatch, "type"));
+
+        // Explicit test-jar type matches the second entry
+        Element testJarMatch = editor.findDependency("junit", "junit", "test-jar", null, false);
+        assertNotNull(testJarMatch);
+        assertEquals("test-jar", PomEditor.getChildText(testJarMatch, "type"));
+
+        // Non-existent classifier returns null
+        Element noMatch = editor.findDependency("junit", "junit", null, "sources", false);
+        assertNull(noMatch);
+    }
+
+    @Test
+    void removeDependencyByTypeAndClassifier() throws IOException {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>junit</groupId>\n"
+                + "      <artifactId>junit</artifactId>\n"
+                + "      <version>4.13</version>\n"
+                + "    </dependency>\n"
+                + "    <dependency>\n"
+                + "      <groupId>junit</groupId>\n"
+                + "      <artifactId>junit</artifactId>\n"
+                + "      <version>4.13</version>\n"
+                + "      <type>test-jar</type>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        File pomFile = createTempPom(pom);
+        PomEditor editor = PomEditor.load(pomFile);
+
+        // Remove only the test-jar variant
+        assertTrue(editor.removeDependency("junit", "junit", "test-jar", null, false));
+        editor.save();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        // The default jar variant should still be there
+        assertTrue(result.contains("<groupId>junit</groupId>"));
+        assertFalse(result.contains("<type>test-jar</type>"));
+    }
+
+    @Test
+    void findDependencyWithClassifier() throws IOException {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "      <version>1.0</version>\n"
+                + "    </dependency>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "      <version>1.0</version>\n"
+                + "      <classifier>sources</classifier>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        File pomFile = createTempPom(pom);
+        PomEditor editor = PomEditor.load(pomFile);
+
+        // Match by classifier
+        Element sourcesMatch = editor.findDependency("com.example", "lib", null, "sources", false);
+        assertNotNull(sourcesMatch);
+        assertEquals("sources", PomEditor.getChildText(sourcesMatch, "classifier"));
+
+        // Default (no classifier) matches the one without classifier
+        Element defaultMatch = editor.findDependency("com.example", "lib", null, null, false);
+        assertNotNull(defaultMatch);
+        assertNull(PomEditor.getChildText(defaultMatch, "classifier"));
+    }
 }

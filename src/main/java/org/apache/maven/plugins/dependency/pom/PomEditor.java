@@ -115,7 +115,7 @@ public class PomEditor {
 
     /**
      * Finds an existing dependency matching the given groupId and artifactId
-     * in the specified section.
+     * in the specified section. Matches on groupId and artifactId only (ignoring type/classifier).
      *
      * @param groupId    the groupId to match
      * @param artifactId the artifactId to match
@@ -123,6 +123,24 @@ public class PomEditor {
      * @return the matching {@code <dependency>} element, or {@code null} if not found
      */
     public Element findDependency(String groupId, String artifactId, boolean managed) {
+        return findDependency(groupId, artifactId, null, null, managed);
+    }
+
+    /**
+     * Finds a dependency element matching groupId, artifactId, type, and classifier
+     * in the specified section.
+     *
+     * <p>Type matching: {@code null} and {@code "jar"} are treated as equivalent (Maven's default).
+     * Classifier matching: {@code null} matches only dependencies without a classifier.
+     *
+     * @param groupId    the groupId to match
+     * @param artifactId the artifactId to match
+     * @param type       the type to match ({@code null} matches "jar" or absent)
+     * @param classifier the classifier to match ({@code null} matches absent)
+     * @param managed    if {@code true}, search in {@code <dependencyManagement>}; otherwise in {@code <dependencies>}
+     * @return the matching {@code <dependency>} element, or {@code null} if not found
+     */
+    public Element findDependency(String groupId, String artifactId, String type, String classifier, boolean managed) {
         Element depsElement = getDependenciesElement(managed, false);
         if (depsElement == null) {
             return null;
@@ -134,9 +152,25 @@ public class PomEditor {
                 Element dep = (Element) node;
                 String g = getChildText(dep, "groupId");
                 String a = getChildText(dep, "artifactId");
-                if (groupId.equals(g) && artifactId.equals(a)) {
-                    return dep;
+                if (!groupId.equals(g) || !artifactId.equals(a)) {
+                    continue;
                 }
+
+                String depType = getChildText(dep, "type");
+                String effectiveSearchType = (type == null || type.isEmpty()) ? "jar" : type;
+                String effectiveDepType = (depType == null || depType.isEmpty()) ? "jar" : depType;
+                if (!effectiveSearchType.equals(effectiveDepType)) {
+                    continue;
+                }
+
+                String depClassifier = getChildText(dep, "classifier");
+                String effectiveSearchClassifier = (classifier == null) ? "" : classifier;
+                String effectiveDepClassifier = (depClassifier == null) ? "" : depClassifier;
+                if (!effectiveSearchClassifier.equals(effectiveDepClassifier)) {
+                    continue;
+                }
+
+                return dep;
             }
         }
         return null;
@@ -187,8 +221,7 @@ public class PomEditor {
     }
 
     /**
-     * Removes a dependency element from the POM.
-     * Also removes any immediately preceding XML comment associated with the dependency.
+     * Removes a dependency element matching groupId and artifactId (any type/classifier).
      *
      * @param groupId    the groupId to match
      * @param artifactId the artifactId to match
@@ -196,11 +229,27 @@ public class PomEditor {
      * @return {@code true} if the dependency was found and removed
      */
     public boolean removeDependency(String groupId, String artifactId, boolean managed) {
+        return removeDependency(groupId, artifactId, null, null, managed);
+    }
+
+    /**
+     * Removes a dependency element from the POM, matching on groupId, artifactId, type, and classifier.
+     * Also removes any immediately preceding XML comment associated with the dependency.
+     *
+     * @param groupId    the groupId to match
+     * @param artifactId the artifactId to match
+     * @param type       the type to match ({@code null} matches "jar" or absent)
+     * @param classifier the classifier to match ({@code null} matches absent)
+     * @param managed    if {@code true}, remove from {@code <dependencyManagement>}
+     * @return {@code true} if the dependency was found and removed
+     */
+    public boolean removeDependency(
+            String groupId, String artifactId, String type, String classifier, boolean managed) {
         Element depsElement = getDependenciesElement(managed, false);
         if (depsElement == null) {
             return false;
         }
-        Element dep = findDependency(groupId, artifactId, managed);
+        Element dep = findDependency(groupId, artifactId, type, classifier, managed);
         if (dep == null) {
             return false;
         }

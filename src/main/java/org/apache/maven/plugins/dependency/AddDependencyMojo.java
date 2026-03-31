@@ -168,7 +168,12 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         File pomFile = targetProject.getFile();
         try {
             PomEditor editor = PomEditor.load(pomFile);
-            Element existing = editor.findDependency(coords.getGroupId(), coords.getArtifactId(), targetManaged);
+            Element existing = editor.findDependency(
+                    coords.getGroupId(),
+                    coords.getArtifactId(),
+                    coords.getType(),
+                    coords.getClassifier(),
+                    targetManaged);
 
             if (existing != null) {
                 if (!updateExisting) {
@@ -179,13 +184,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
                 getLog().info("Updated dependency " + coords + " in " + pomFile.getName());
             } else {
                 editor.addDependency(coords, targetManaged);
-                StringBuilder msg = new StringBuilder("Added dependency ");
-                msg.append(coords);
-                if (coords.getScope() != null) {
-                    msg.append(" (scope: ").append(coords.getScope()).append(')');
-                }
-                msg.append(" to ").append(pomFile.getName());
-                getLog().info(msg.toString());
+                getLog().info("Added dependency " + coords + " to " + pomFile.getName());
             }
 
             editor.save();
@@ -257,6 +256,10 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             return getProject();
         }
         List<MavenProject> reactorProjects = session.getProjects();
+        if (reactorProjects == null || reactorProjects.isEmpty()) {
+            throw new MojoFailureException(
+                    "Module '" + module + "' cannot be resolved: no reactor projects available.");
+        }
         for (MavenProject p : reactorProjects) {
             if (module.equals(p.getArtifactId())) {
                 return p;

@@ -190,4 +190,41 @@ class DependencyCoordinatesTest {
         assertEquals("my-lib", coords.getArtifactId());
         assertEquals("1.0.0", coords.getVersion());
     }
+
+    @Test
+    void toStringIncludesScope() {
+        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        coords.setScope("test");
+        assertEquals("com.example:lib:1.0.0 [scope=test]", coords.toString());
+    }
+
+    @Test
+    void toStringIncludesNonJarType() {
+        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        coords.setType("pom");
+        assertEquals("com.example:lib:1.0.0 [type=pom]", coords.toString());
+    }
+
+    @Test
+    void toStringIncludesClassifier() {
+        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        coords.setClassifier("sources");
+        assertEquals("com.example:lib:1.0.0 [classifier=sources]", coords.toString());
+    }
+
+    @Test
+    void toStringIncludesAllDetails() {
+        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        coords.setType("pom");
+        coords.setClassifier("linux");
+        coords.setScope("provided");
+        assertEquals("com.example:lib:1.0.0 [type=pom, classifier=linux, scope=provided]", coords.toString());
+    }
+
+    @Test
+    void toStringOmitsDefaultJarType() {
+        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        coords.setType("jar");
+        assertEquals("com.example:lib:1.0.0", coords.toString());
+    }
 }
