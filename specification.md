@@ -259,7 +259,7 @@ Removes a `<dependency>` element from the project's `pom.xml`. The goal modifies
 ### 4.4 Behavior
 
 1. The goal locates the `<dependency>` element matching the given `groupId`, `artifactId`, `type`, and `classifier` in the target section (`<dependencies>` or `<dependencyManagement><dependencies>`).
-2. If found, the entire `<dependency>` element is removed, along with any immediately preceding XML comment that appears to be associated with it (i.e., a comment on the line(s) directly above the `<dependency>` tag, with no blank line separating them).
+2. If found, the entire `<dependency>` element is removed, along with any contiguous preceding XML comment and whitespace nodes associated with it.
 3. If **not found**, the goal **fails** with a `MojoFailureException`: _"Dependency groupId:artifactId not found in `<dependencies>`."_
 4. If not found in the raw XML but detected in Maven's resolved original model (indicating the dependency uses property references like `${project.groupId}`), the goal **fails** with a message: _"Dependency groupId:artifactId exists in `<dependencies>` but uses property references in the POM. Please remove it manually."_
 
@@ -320,7 +320,7 @@ Queries Maven Central's search API for artifacts matching a given search term an
 | `query`         | `query`            | `String`  | Yes      | —                                                | Free-text search term, or a structured query (e.g., `g:com.google.adk`, `a:google-adk`). |
 | `rows`          | `rows`             | `Integer` | No       | `10`                                             | Maximum number of results to return. |
 | `repositoryUrl` | `repositoryUrl`    | `String`  | No       | `https://search.maven.org/solrsearch/select`     | Maven Central Search v2 REST API endpoint. Can be overridden for private registries that expose a compatible API. |
-| `interactive`   | `interactive`      | `Boolean` | No       | `true`                                           | Enable interactive mode. When enabled and a console is available, results are shown as a numbered list for browsing and selection. Automatically disabled in batch mode (`-B`) or when no console is available. |
+| `interactive`   | `interactive`      | `Boolean` | No       | `true`                                           | Enable interactive mode. When enabled and a console is available, results are shown as a numbered list for browsing and selection. Automatically disabled when no console is available (e.g., piped output or CI environments). Can be explicitly disabled with `-Dinteractive=false`. |
 | `skip`          | `mdep.skip`        | `Boolean` | No       | `false`                                          | Skip plugin execution. |
 
 ### 5.4 Search API Integration
@@ -344,7 +344,7 @@ The `query` parameter is passed directly to the API's `q` parameter, supporting 
 
 #### Non-interactive mode
 
-When interactive mode is disabled (`-Dinteractive=false`, `-B` batch mode, or no console), results are displayed in a simple tabular format:
+When interactive mode is disabled (`-Dinteractive=false` or no console available), results are displayed in a simple tabular format:
 
 ```
 [INFO] Search results for: google-adk
@@ -364,13 +364,14 @@ When a console is available and interactive mode is enabled (the default), resul
 
 1. **Select an artifact** by entering its number
 2. **Refine the search** by entering free text (triggers a new query)
-3. **Quit** by pressing Enter
+3. **Quit** by entering `q`, `quit`, or pressing Enter on an empty prompt
 
 After selecting an artifact, a second query fetches available versions (using the `core=gav` Solr parameter). The user can then:
 
 1. **Select a specific version** by number
 2. **Accept the latest** by pressing Enter
-3. **Go back** to the artifact list by entering `b`
+3. **Go back** to the artifact list by entering `b` or `back`
+4. **Quit** by entering `q` or `quit`
 
 After version selection, the goal prints ready-to-use `dependency:add` commands.
 
@@ -384,7 +385,7 @@ After version selection, the goal prints ready-to-use `dependency:add` commands.
 [INFO]
 [INFO] 2 result(s) found.
 [INFO]
-Enter number to select, text to search again, or Enter to quit: 1
+Enter number to select, text to search again, 'q' to quit: 1
 
 [INFO] Versions of com.google.adk:google-adk:
 [INFO]

@@ -92,6 +92,16 @@ mvn dependency:add -Dgav=com.google.code.gson:gson
   dependency, following Maven convention. If no managed version is found, the goal fails with
   a descriptive error.
 
+** Additional Parameters
+
+  You can also specify <<<type>>> and <<<classifier>>> explicitly. These override any values
+  provided in the <<<gav>>> shorthand:
+
++---+
+mvn dependency:add -Dgav=com.example:lib:1.0 -Dtype=test-jar
+mvn dependency:add -Dgav=com.example:lib:1.0 -Dclassifier=sources
++---+
+
 ** Updating an Existing Dependency
 
   By default, <<<dependency:add>>> fails if the dependency already exists. Use <<<-DupdateExisting>>>
@@ -100,6 +110,23 @@ mvn dependency:add -Dgav=com.google.code.gson:gson
 +---+
 mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -DupdateExisting
 +---+
+
+  When updating, you can clear existing fields by setting them to <<<NONE>>>:
+
++---+
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dscope=NONE -DupdateExisting
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dtype=NONE -DupdateExisting
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dclassifier=NONE -DupdateExisting
++---+
+
+  The <<<NONE>>> sentinel removes the corresponding XML element from the dependency.
+  Fields not specified are left unchanged.
+
+** Scope Validation
+
+  The <<<scope>>> parameter is validated against Maven's known scope values:
+  <<<compile>>>, <<<provided>>>, <<<runtime>>>, <<<test>>>, <<<system>>>, and <<<import>>>.
+  Invalid scope values are rejected with an error.
 
 ** Multi-Module Projects
 
@@ -130,6 +157,28 @@ mvn dependency:remove -DgroupId=com.google.code.gson -DartifactId=gson
 
   Only <<<groupId>>> and <<<artifactId>>> are required to identify the dependency to remove.
 
+** Type and Classifier Matching
+
+  When multiple variants of a dependency exist (e.g., jar and test-jar), use <<<-Dtype>>>
+  and <<<-Dclassifier>>> to target a specific one:
+
++---+
+mvn dependency:remove -DgroupId=com.example -DartifactId=lib -Dtype=test-jar
+mvn dependency:remove -DgroupId=com.example -DartifactId=lib -Dclassifier=sources
++---+
+
+  Explicit <<<-Dtype>>> and <<<-Dclassifier>>> override any values from the <<<-Dgav>>> shorthand.
+
+** Removing a BOM Import
+
+  To remove a BOM import from <<<\<dependencyManagement\>>>>, use the <<<-Dbom>>> flag:
+
++---+
+mvn dependency:remove -Dgav=org.springframework.boot:spring-boot-dependencies -Dbom
++---+
+
+  This is equivalent to <<<-Dmanaged -Dtype=pom>>>.
+
 ** Removing from dependencyManagement
 
   To remove a dependency from <<<\<dependencyManagement\>>>> instead of <<<\<dependencies\>>>>:
@@ -155,8 +204,7 @@ mvn dependency:remove -Dgav=com.google.code.gson:gson -Dmodule=my-service
 
   By default, search runs in <interactive mode>: results are shown as a numbered list,
   and you can select an artifact to browse its versions and get the <<<dependency:add>>>
-  command. To disable interactive mode (e.g., for scripting), pass <<<-Dinteractive=false>>>
-  or use Maven's batch mode (<<<-B>>>).
+  command. To disable interactive mode (e.g., for scripting), pass <<<-Dinteractive=false>>>.
 
 ** Basic Usage
 
@@ -167,6 +215,16 @@ mvn dependency:search -Dquery=gson
   In interactive mode, you'll see a numbered list and be prompted to select an artifact,
   then a version. After selection, the goal prints the <<<dependency:add>>> command.
 
+  The following commands are available at any prompt:
+
+  * <<<q>>> or <<<quit>>> — exit interactive mode
+
+  * <<<b>>> or <<<back>>> — return to the previous list (version selection only)
+
+  * Any text — triggers a new search with that text
+
+  []
+
   In non-interactive mode (<<<-Dinteractive=false>>>), a table is displayed:
 
 +---+
@@ -176,7 +234,7 @@ mvn dependency:search -Dquery=gson
 [INFO]   ─────────────────────────────────────────────────────────────
 [INFO]   com.google.code.gson     gson                2.10.1
 [INFO]
-[INFO] 1 result found. Use dependency:add to add one to your project:
+[INFO] 1 result(s) found. Use dependency:add to add one to your project:
 [INFO]   mvn dependency:add -Dgav="com.google.code.gson:gson:2.10.1"
 +---+
 
@@ -209,10 +267,8 @@ mvn dependency:search -Dquery=my-lib -DrepositoryUrl=https://nexus.example.com/s
 ** Disabling Interactive Mode
 
   Interactive mode is enabled by default when a console is available. To disable it
-  (e.g., for CI pipelines or scripts), use <<<-Dinteractive=false>>> or Maven's batch
-  mode flag:
+  (e.g., for CI pipelines or scripts), use <<<-Dinteractive=false>>>:
 
 +---+
 mvn dependency:search -Dquery=gson -Dinteractive=false
-mvn -B dependency:search -Dquery=gson
 +---+

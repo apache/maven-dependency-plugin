@@ -79,8 +79,8 @@ public class SearchDependencyMojo extends AbstractMojo {
      * numbered list. You can select an artifact, browse its versions, and
      * get the {@code dependency:add} command to run.
      *
-     * <p>Automatically disabled when no console is available (e.g., piped output)
-     * or when Maven runs in batch mode ({@code -B}).</p>
+     * <p>Automatically disabled when no console is available (e.g., piped output
+     * or CI environments). Can be explicitly disabled with {@code -Dinteractive=false}.</p>
      */
     @Parameter(property = "interactive", defaultValue = "true")
     private boolean interactive;
