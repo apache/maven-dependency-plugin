@@ -112,4 +112,26 @@ class SearchDependencyMojoTest {
         List<String[]> artifacts = SearchDependencyMojo.extractArtifacts(malformed);
         assertEquals(0, artifacts.size());
     }
+
+    @Test
+    void extractVersionListFromGavResponse() {
+        String gavJson = "{\"responseHeader\":{\"status\":0},"
+                + "\"response\":{\"numFound\":3,\"start\":0,\"docs\":["
+                + "{\"g\":\"com.example\",\"a\":\"my-lib\",\"v\":\"2.0.0\"},"
+                + "{\"g\":\"com.example\",\"a\":\"my-lib\",\"v\":\"1.5.0\"},"
+                + "{\"g\":\"com.example\",\"a\":\"my-lib\",\"v\":\"1.0.0\"}"
+                + "]}}";
+        List<String> versions = SearchDependencyMojo.extractVersionList(gavJson);
+        assertEquals(3, versions.size());
+        assertEquals("2.0.0", versions.get(0));
+        assertEquals("1.5.0", versions.get(1));
+        assertEquals("1.0.0", versions.get(2));
+    }
+
+    @Test
+    void extractVersionListFromEmptyResponse() {
+        String empty = "{\"response\":{\"numFound\":0,\"docs\":[]}}";
+        List<String> versions = SearchDependencyMojo.extractVersionList(empty);
+        assertEquals(0, versions.size());
+    }
 }

@@ -73,6 +73,18 @@ public class SearchDependencyMojo extends AbstractMojo {
     @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
 
+    /**
+     * Enable interactive mode for browsing and selecting search results.
+     * When enabled and a console is available, results are displayed as a
+     * numbered list. You can select an artifact, browse its versions, and
+     * get the {@code dependency:add} command to run.
+     *
+     * <p>Automatically disabled when no console is available (e.g., piped output)
+     * or when Maven runs in batch mode ({@code -B}).</p>
+     */
+    @Parameter(property = "interactive", defaultValue = "true")
+    private boolean interactive;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (skip) {
@@ -88,15 +100,35 @@ public class SearchDependencyMojo extends AbstractMojo {
             throw new MojoFailureException("The 'rows' parameter must be a positive integer, got: " + rows);
         }
 
-        String jsonResponse = performSearch();
-        displayResults(jsonResponse);
+        String jsonResponse = performSearch(query.trim(), rows, false);
+
+        if (isInteractive()) {
+            interactiveLoop(jsonResponse);
+        } else {
+            displayResults(jsonResponse);
+        }
     }
 
     String performSearch() throws MojoExecutionException, MojoFailureException {
+        return performSearch(query.trim(), rows, false);
+    }
+
+    /**
+     * Queries the Maven Central search API.
+     *
+     * @param searchQuery the Solr query string
+     * @param maxRows     maximum results to return
+     * @param gavMode     if true, appends {@code &core=gav} for per-version results
+     */
+    String performSearch(String searchQuery, int maxRows, boolean gavMode)
+            throws MojoExecutionException, MojoFailureException {
         HttpURLConnection connection = null;
         try {
-            String encodedQuery = URLEncoder.encode(query.trim(), StandardCharsets.UTF_8.name());
-            String urlStr = repositoryUrl + "?q=" + encodedQuery + "&rows=" + rows + "&wt=json";
+            String encodedQuery = URLEncoder.encode(searchQuery, StandardCharsets.UTF_8.name());
+            String urlStr = repositoryUrl + "?q=" + encodedQuery + "&rows=" + maxRows + "&wt=json";
+            if (gavMode) {
+                urlStr += "&core=gav";
+            }
             URL url = new URL(urlStr);
 
             connection = (HttpURLConnection) url.openConnection();
@@ -239,6 +271,200 @@ public class SearchDependencyMojo extends AbstractMojo {
         }
     }
 
+    // ── Interactive mode ────────────────────────────────────────────────
+
+    /**
+     * Whether interactive mode should be used. Package-private for testing.
+     */
+    boolean isInteractive() {
+        return interactive && System.console() != null;
+    }
+
+    /**
+     * Reads a line of input from the user. Package-private so tests can override via spy.
+     *
+     * @return the user input, or {@code null} if no console is available
+     */
+    String readLine(String prompt) {
+        if (System.console() == null) {
+            return null;
+        }
+        return System.console().readLine("%s", prompt);
+    }
+
+    private void interactiveLoop(String initialJson) throws MojoExecutionException, MojoFailureException {
+        String currentJson = initialJson;
+        String currentQuery = query.trim();
+
+        while (true) {
+            List<String[]> artifacts = extractArtifacts(currentJson);
+            int numFound = extractInt(currentJson, "numFound");
+
+            getLog().info("Search results for: " + currentQuery);
+            getLog().info("");
+
+            if (artifacts.isEmpty()) {
+                getLog().info("No artifacts found matching '" + currentQuery + "'.");
+                getLog().info("");
+                String input = readLine("Enter a new search term, or press Enter to quit: ");
+                if (input == null || input.trim().isEmpty()) {
+                    return;
+                }
+                currentQuery = input.trim();
+                currentJson = performSearch(currentQuery, rows, false);
+                continue;
+            }
+
+            displayNumberedResults(artifacts, numFound);
+
+            String input = readLine("Enter number to select, text to search again, or Enter to quit: ");
+            if (input == null || input.trim().isEmpty()) {
+                return;
+            }
+
+            input = input.trim();
+
+            try {
+                int selection = Integer.parseInt(input);
+                if (selection >= 1 && selection <= artifacts.size()) {
+                    String[] selected = artifacts.get(selection - 1);
+                    if (handleVersionSelection(selected[0], selected[1], selected[2])) {
+                        return;
+                    }
+                    // User chose 'b' to go back — redisplay same results
+                    continue;
+                } else {
+                    getLog().warn("Invalid selection: " + selection + ". Enter a number between 1 and "
+                            + artifacts.size() + ".");
+                    continue;
+                }
+            } catch (NumberFormatException e) {
+                // Not a number — treat as a new search query
+            }
+
+            currentQuery = input;
+            currentJson = performSearch(currentQuery, rows, false);
+        }
+    }
+
+    private void displayNumberedResults(List<String[]> artifacts, int totalFound) {
+        int maxGroupId = "groupId".length();
+        int maxArtifactId = "artifactId".length();
+        int maxVersion = "latest version".length();
+
+        for (String[] artifact : artifacts) {
+            maxGroupId = Math.max(maxGroupId, artifact[0].length());
+            maxArtifactId = Math.max(maxArtifactId, artifact[1].length());
+            maxVersion = Math.max(maxVersion, artifact[2].length());
+        }
+
+        int numWidth = String.valueOf(artifacts.size()).length();
+        String fmt = "  %" + numWidth + "d  %-" + maxGroupId + "s  %-" + maxArtifactId + "s  %-" + maxVersion + "s";
+        String headerFmt =
+                "  %" + numWidth + "s  %-" + maxGroupId + "s  %-" + maxArtifactId + "s  %-" + maxVersion + "s";
+
+        getLog().info(String.format(headerFmt, "#", "groupId", "artifactId", "latest version"));
+
+        int lineLen = numWidth + 2 + maxGroupId + maxArtifactId + maxVersion + 6;
+        StringBuilder separator = new StringBuilder("  ");
+        for (int i = 0; i < lineLen; i++) {
+            separator.append('\u2500');
+        }
+        getLog().info(separator.toString());
+
+        for (int i = 0; i < artifacts.size(); i++) {
+            String[] a = artifacts.get(i);
+            getLog().info(String.format(fmt, i + 1, a[0], a[1], a[2]));
+        }
+
+        getLog().info("");
+        if (totalFound > artifacts.size()) {
+            getLog().info(artifacts.size() + " of " + totalFound + " result(s) shown.");
+        } else {
+            getLog().info(artifacts.size() + " result(s) found.");
+        }
+        getLog().info("");
+    }
+
+    /**
+     * Handles version selection for a chosen artifact.
+     *
+     * @return {@code true} if the user completed selection (or quit),
+     *         {@code false} if they chose to go back to the artifact list
+     */
+    private boolean handleVersionSelection(String groupId, String artifactId, String latestVersion)
+            throws MojoExecutionException, MojoFailureException {
+        getLog().info("");
+        getLog().info("Fetching versions for " + groupId + ":" + artifactId + "...");
+
+        List<String> versions;
+        try {
+            String versionJson = performSearch("g:\"" + groupId + "\" AND a:\"" + artifactId + "\"", 20, true);
+            versions = extractVersionList(versionJson);
+        } catch (Exception e) {
+            getLog().debug("Failed to fetch versions: " + e.getMessage());
+            versions = new ArrayList<>();
+        }
+
+        if (versions.isEmpty()) {
+            versions = new ArrayList<>();
+            versions.add(latestVersion);
+        }
+
+        getLog().info("");
+        getLog().info("Versions of " + groupId + ":" + artifactId + ":");
+        getLog().info("");
+
+        for (int i = 0; i < versions.size(); i++) {
+            String marker = versions.get(i).equals(latestVersion) ? " (latest)" : "";
+            getLog().info("  " + (i + 1) + ") " + versions.get(i) + marker);
+        }
+        getLog().info("");
+
+        String input = readLine("Enter version number, 'b' to go back, or Enter for latest (" + latestVersion + "): ");
+
+        if (input == null || input.trim().isEmpty()) {
+            printAddCommand(groupId, artifactId, latestVersion);
+            return true;
+        }
+
+        input = input.trim();
+
+        if ("b".equalsIgnoreCase(input) || "back".equalsIgnoreCase(input)) {
+            return false;
+        }
+
+        String selectedVersion = latestVersion;
+        try {
+            int sel = Integer.parseInt(input);
+            if (sel >= 1 && sel <= versions.size()) {
+                selectedVersion = versions.get(sel - 1);
+            } else {
+                getLog().warn("Invalid selection, using latest version.");
+            }
+        } catch (NumberFormatException e) {
+            getLog().warn("Invalid input, using latest version.");
+        }
+
+        printAddCommand(groupId, artifactId, selectedVersion);
+        return true;
+    }
+
+    private void printAddCommand(String groupId, String artifactId, String version) {
+        String gav = groupId + ":" + artifactId + ":" + version;
+        getLog().info("");
+        getLog().info("Selected: " + gav);
+        getLog().info("");
+        getLog().info("To add this dependency to your project:");
+        getLog().info("  mvn dependency:add -Dgav=\"" + gav + "\"");
+        getLog().info("");
+        getLog().info("With a specific scope:");
+        getLog().info("  mvn dependency:add -Dgav=\"" + gav + "\" -Dscope=test");
+        getLog().info("");
+        getLog().info("To dependencyManagement:");
+        getLog().info("  mvn dependency:add -Dgav=\"" + gav + "\" -Dmanaged");
+    }
+
     /**
      * Extracts artifact info (groupId, artifactId, latestVersion) from the Solr JSON response.
      */
@@ -280,6 +506,47 @@ public class SearchDependencyMojo extends AbstractMojo {
             }
         }
         return results;
+    }
+
+    /**
+     * Extracts individual version strings from a GAV-mode Solr JSON response
+     * (uses the {@code "v"} field instead of {@code "latestVersion"}).
+     */
+    static List<String> extractVersionList(String json) {
+        List<String> versions = new ArrayList<>();
+        int docsStart = json.indexOf("\"docs\":");
+        if (docsStart < 0) {
+            return versions;
+        }
+        int arrayStart = json.indexOf('[', docsStart);
+        if (arrayStart < 0) {
+            return versions;
+        }
+
+        int pos = arrayStart + 1;
+        while (pos < json.length()) {
+            int objStart = json.indexOf('{', pos);
+            if (objStart < 0) {
+                break;
+            }
+            int objEnd = findMatchingBrace(json, objStart);
+            if (objEnd < 0) {
+                break;
+            }
+
+            String docJson = json.substring(objStart, objEnd + 1);
+            String v = extractStringField(docJson, "v");
+            if (v != null && !v.isEmpty()) {
+                versions.add(v);
+            }
+
+            pos = objEnd + 1;
+            int nextChar = skipWhitespace(json, pos);
+            if (nextChar < json.length() && json.charAt(nextChar) == ']') {
+                break;
+            }
+        }
+        return versions;
     }
 
     private static int findMatchingBrace(String json, int openPos) {

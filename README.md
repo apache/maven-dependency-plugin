@@ -46,8 +46,11 @@ mvn dependency:add -Dgav="org.springframework.boot:spring-boot-dependencies:3.2.
 # Remove a dependency
 mvn dependency:remove -Dgav="com.google.code.gson:gson"
 
-# Search Maven Central
+# Search Maven Central (interactive by default)
 mvn dependency:search -Dquery=gson
+
+# Search without interactive mode (plain table)
+mvn dependency:search -Dquery=gson -Dinteractive=false
 ```
 
 See the [specification](specification.md) for full details.

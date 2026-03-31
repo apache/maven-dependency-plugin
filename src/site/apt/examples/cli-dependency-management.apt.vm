@@ -153,13 +153,21 @@ mvn dependency:remove -Dgav=com.google.code.gson:gson -Dmodule=my-service
   The <<<dependency:search>>> goal queries Maven Central for matching artifacts. This goal
   does not require a project — it can be run from any directory.
 
+  By default, search runs in <interactive mode>: results are shown as a numbered list,
+  and you can select an artifact to browse its versions and get the <<<dependency:add>>>
+  command. To disable interactive mode (e.g., for scripting), pass <<<-Dinteractive=false>>>
+  or use Maven's batch mode (<<<-B>>>).
+
 ** Basic Usage
 
 +---+
 mvn dependency:search -Dquery=gson
 +---+
 
-  This displays a table of matching artifacts with their latest versions:
+  In interactive mode, you'll see a numbered list and be prompted to select an artifact,
+  then a version. After selection, the goal prints the <<<dependency:add>>> command.
+
+  In non-interactive mode (<<<-Dinteractive=false>>>), a table is displayed:
 
 +---+
 [INFO] Search results for: gson
@@ -196,4 +204,15 @@ mvn dependency:search -Dquery=jackson -Drows=20
 
 +---+
 mvn dependency:search -Dquery=my-lib -DrepositoryUrl=https://nexus.example.com/solrsearch/select
++---+
+
+** Disabling Interactive Mode
+
+  Interactive mode is enabled by default when a console is available. To disable it
+  (e.g., for CI pipelines or scripts), use <<<-Dinteractive=false>>> or Maven's batch
+  mode flag:
+
++---+
+mvn dependency:search -Dquery=gson -Dinteractive=false
+mvn -B dependency:search -Dquery=gson
 +---+

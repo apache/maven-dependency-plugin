@@ -21,9 +21,13 @@ package org.apache.maven.plugins.dependency;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 import com.sun.net.httpserver.HttpServer;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -190,5 +194,299 @@ class SearchDependencyMojoHttpTest {
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
         assertTrue(ex.getMessage().contains("positive integer"));
+    }
+
+    // ── Interactive mode tests ──────────────────────────────────────────
+
+    private static final String SEARCH_RESPONSE = "{\"responseHeader\":{\"status\":0},"
+            + "\"response\":{\"numFound\":2,\"start\":0,\"docs\":["
+            + "{\"g\":\"com.example\",\"a\":\"my-lib\",\"latestVersion\":\"2.0.0\"},"
+            + "{\"g\":\"com.example\",\"a\":\"other-lib\",\"latestVersion\":\"1.0.0\"}"
+            + "]}}";
+
+    private static final String VERSION_RESPONSE = "{\"responseHeader\":{\"status\":0},"
+            + "\"response\":{\"numFound\":3,\"start\":0,\"docs\":["
+            + "{\"g\":\"com.example\",\"a\":\"my-lib\",\"v\":\"2.0.0\"},"
+            + "{\"g\":\"com.example\",\"a\":\"my-lib\",\"v\":\"1.5.0\"},"
+            + "{\"g\":\"com.example\",\"a\":\"my-lib\",\"v\":\"1.0.0\"}"
+            + "]}}";
+
+    /**
+     * Creates a SearchDependencyMojo that returns predetermined responses to readLine()
+     * and reports itself as interactive.
+     */
+    private SearchDependencyMojo createInteractiveMojo(Queue<String> answers) throws Exception {
+        SearchDependencyMojo interactiveMojo = new SearchDependencyMojo() {
+            @Override
+            boolean isInteractive() {
+                return true;
+            }
+
+            @Override
+            String readLine(String prompt) {
+                return answers.isEmpty() ? null : answers.poll();
+            }
+        };
+        setVariableValueToObject(interactiveMojo, "query", "test");
+        setVariableValueToObject(interactiveMojo, "rows", 10);
+        setVariableValueToObject(interactiveMojo, "skip", false);
+        setVariableValueToObject(interactiveMojo, "interactive", true);
+        return interactiveMojo;
+    }
+
+    @Test
+    void interactiveSelectArtifactAndAcceptLatestVersion() throws Exception {
+        server.createContext("/search", exchange -> {
+            String uri = exchange.getRequestURI().toString();
+            String json = uri.contains("core=gav") ? VERSION_RESPONSE : SEARCH_RESPONSE;
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        });
+        server.start();
+
+        Queue<String> answers = new LinkedList<>();
+        answers.add("1"); // select first artifact
+        answers.add(""); // accept latest version
+
+        SearchDependencyMojo interactiveMojo = createInteractiveMojo(answers);
+        setUrl(interactiveMojo, "/search");
+
+        CapturingLog log = new CapturingLog();
+        interactiveMojo.setLog(log);
+        interactiveMojo.execute();
+
+        String output = String.join("\n", log.messages);
+        assertTrue(output.contains("Selected: com.example:my-lib:2.0.0"), "should show selected GAV");
+        assertTrue(output.contains("dependency:add"), "should show add command");
+    }
+
+    @Test
+    void interactiveSelectSpecificVersion() throws Exception {
+        server.createContext("/search", exchange -> {
+            String uri = exchange.getRequestURI().toString();
+            String json = uri.contains("core=gav") ? VERSION_RESPONSE : SEARCH_RESPONSE;
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        });
+        server.start();
+
+        Queue<String> answers = new LinkedList<>();
+        answers.add("1"); // select first artifact
+        answers.add("2"); // select version 1.5.0
+
+        SearchDependencyMojo interactiveMojo = createInteractiveMojo(answers);
+        setUrl(interactiveMojo, "/search");
+
+        CapturingLog log = new CapturingLog();
+        interactiveMojo.setLog(log);
+        interactiveMojo.execute();
+
+        String output = String.join("\n", log.messages);
+        assertTrue(output.contains("Selected: com.example:my-lib:1.5.0"), "should show selected version");
+    }
+
+    @Test
+    void interactiveBackFromVersionGoesToArtifactList() throws Exception {
+        server.createContext("/search", exchange -> {
+            String uri = exchange.getRequestURI().toString();
+            String json = uri.contains("core=gav") ? VERSION_RESPONSE : SEARCH_RESPONSE;
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        });
+        server.start();
+
+        Queue<String> answers = new LinkedList<>();
+        answers.add("1"); // select first artifact
+        answers.add("b"); // go back
+        answers.add(""); // quit
+
+        SearchDependencyMojo interactiveMojo = createInteractiveMojo(answers);
+        setUrl(interactiveMojo, "/search");
+
+        CapturingLog log = new CapturingLog();
+        interactiveMojo.setLog(log);
+        interactiveMojo.execute();
+
+        String output = String.join("\n", log.messages);
+        // The search results header should appear twice (initial + after going back)
+        int firstOccurrence = output.indexOf("Search results for:");
+        int secondOccurrence = output.indexOf("Search results for:", firstOccurrence + 1);
+        assertTrue(secondOccurrence > firstOccurrence, "should redisplay results after going back");
+    }
+
+    @Test
+    void interactiveReSearchWithText() throws Exception {
+        final int[] requestCount = {0};
+        server.createContext("/search", exchange -> {
+            requestCount[0]++;
+            String json = SEARCH_RESPONSE;
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        });
+        server.start();
+
+        Queue<String> answers = new LinkedList<>();
+        answers.add("newquery"); // text → re-search
+        answers.add(""); // quit
+
+        SearchDependencyMojo interactiveMojo = createInteractiveMojo(answers);
+        setUrl(interactiveMojo, "/search");
+
+        CapturingLog log = new CapturingLog();
+        interactiveMojo.setLog(log);
+        interactiveMojo.execute();
+
+        // Initial search + re-search = 2 requests
+        assertTrue(requestCount[0] >= 2, "should have made at least 2 HTTP requests");
+    }
+
+    @Test
+    void interactiveInvalidNumberShowsWarning() throws Exception {
+        server.createContext("/search", exchange -> {
+            byte[] bytes = SEARCH_RESPONSE.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        });
+        server.start();
+
+        Queue<String> answers = new LinkedList<>();
+        answers.add("99"); // invalid number
+        answers.add(""); // quit
+
+        SearchDependencyMojo interactiveMojo = createInteractiveMojo(answers);
+        setUrl(interactiveMojo, "/search");
+
+        CapturingLog log = new CapturingLog();
+        interactiveMojo.setLog(log);
+        interactiveMojo.execute();
+
+        assertTrue(
+                log.warnings.stream().anyMatch(w -> w.contains("Invalid selection")),
+                "should warn about invalid selection");
+    }
+
+    @Test
+    void interactiveQuitImmediately() throws Exception {
+        server.createContext("/search", exchange -> {
+            byte[] bytes = SEARCH_RESPONSE.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        });
+        server.start();
+
+        Queue<String> answers = new LinkedList<>();
+        answers.add(""); // quit immediately
+
+        SearchDependencyMojo interactiveMojo = createInteractiveMojo(answers);
+        setUrl(interactiveMojo, "/search");
+
+        CapturingLog log = new CapturingLog();
+        interactiveMojo.setLog(log);
+        interactiveMojo.execute();
+
+        String output = String.join("\n", log.messages);
+        // Should show results but not show "Selected:"
+        assertTrue(output.contains("result(s)"), "should show results");
+        assertTrue(!output.contains("Selected:"), "should not select anything");
+    }
+
+    private void setUrl(SearchDependencyMojo target, String path) throws Exception {
+        setVariableValueToObject(target, "repositoryUrl", "http://localhost:" + port + path);
+    }
+
+    /** Simple Log implementation that captures messages for assertions. */
+    private static class CapturingLog implements Log {
+        final List<String> messages = new java.util.ArrayList<>();
+        final List<String> warnings = new java.util.ArrayList<>();
+
+        @Override
+        public boolean isDebugEnabled() {
+            return false;
+        }
+
+        @Override
+        public void debug(CharSequence content) {}
+
+        @Override
+        public void debug(CharSequence content, Throwable error) {}
+
+        @Override
+        public void debug(Throwable error) {}
+
+        @Override
+        public boolean isInfoEnabled() {
+            return true;
+        }
+
+        @Override
+        public void info(CharSequence content) {
+            messages.add(content.toString());
+        }
+
+        @Override
+        public void info(CharSequence content, Throwable error) {
+            messages.add(content.toString());
+        }
+
+        @Override
+        public void info(Throwable error) {}
+
+        @Override
+        public boolean isWarnEnabled() {
+            return true;
+        }
+
+        @Override
+        public void warn(CharSequence content) {
+            warnings.add(content.toString());
+        }
+
+        @Override
+        public void warn(CharSequence content, Throwable error) {
+            warnings.add(content.toString());
+        }
+
+        @Override
+        public void warn(Throwable error) {}
+
+        @Override
+        public boolean isErrorEnabled() {
+            return true;
+        }
+
+        @Override
+        public void error(CharSequence content) {
+            messages.add(content.toString());
+        }
+
+        @Override
+        public void error(CharSequence content, Throwable error) {
+            messages.add(content.toString());
+        }
+
+        @Override
+        public void error(Throwable error) {}
     }
 }

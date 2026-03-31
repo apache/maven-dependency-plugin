@@ -311,6 +311,7 @@ Queries Maven Central's search API for artifacts matching a given search term an
 | `query`         | `query`            | `String`  | Yes      | —                                                | Free-text search term, or a structured query (e.g., `g:com.google.adk`, `a:google-adk`). |
 | `rows`          | `rows`             | `Integer` | No       | `10`                                             | Maximum number of results to return. |
 | `repositoryUrl` | `repositoryUrl`    | `String`  | No       | `https://search.maven.org/solrsearch/select`     | Maven Central Search v2 REST API endpoint. Can be overridden for private registries that expose a compatible API. |
+| `interactive`   | `interactive`      | `Boolean` | No       | `true`                                           | Enable interactive mode. When enabled and a console is available, results are shown as a numbered list for browsing and selection. Automatically disabled in batch mode (`-B`) or when no console is available. |
 | `skip`          | `mdep.skip`        | `Boolean` | No       | `false`                                          | Skip plugin execution. |
 
 ### 5.4 Search API Integration
@@ -332,7 +333,9 @@ The `query` parameter is passed directly to the API's `q` parameter, supporting 
 
 ### 5.5 Output Format
 
-Results are displayed in a tabular format:
+#### Non-interactive mode
+
+When interactive mode is disabled (`-Dinteractive=false`, `-B` batch mode, or no console), results are displayed in a simple tabular format:
 
 ```
 [INFO] Search results for: google-adk
@@ -346,12 +349,52 @@ Results are displayed in a tabular format:
 [INFO]   mvn dependency:add -Dgav="com.google.adk:google-adk:1.0.0"
 ```
 
-When no results are found:
+#### Interactive mode (default)
+
+When a console is available and interactive mode is enabled (the default), results are displayed as a numbered list. The user can:
+
+1. **Select an artifact** by entering its number
+2. **Refine the search** by entering free text (triggers a new query)
+3. **Quit** by pressing Enter
+
+After selecting an artifact, a second query fetches available versions (using the `core=gav` Solr parameter). The user can then:
+
+1. **Select a specific version** by number
+2. **Accept the latest** by pressing Enter
+3. **Go back** to the artifact list by entering `b`
+
+After version selection, the goal prints ready-to-use `dependency:add` commands.
 
 ```
-[INFO] Search results for: nonexistent-library
+[INFO] Search results for: google-adk
 [INFO]
-[INFO] No artifacts found matching 'nonexistent-library'.
+[INFO]   #  groupId                  artifactId          latest version
+[INFO]   ──────────────────────────────────────────────────────────────────
+[INFO]   1  com.google.adk           google-adk          1.0.0
+[INFO]   2  com.google.adk           google-adk-spring   0.5.0
+[INFO]
+[INFO] 2 result(s) found.
+[INFO]
+Enter number to select, text to search again, or Enter to quit: 1
+
+[INFO] Versions of com.google.adk:google-adk:
+[INFO]
+[INFO]   1) 1.0.0 (latest)
+[INFO]   2) 0.9.5
+[INFO]   3) 0.9.0
+[INFO]
+Enter version number, 'b' to go back, or Enter for latest (1.0.0): 
+
+[INFO] Selected: com.google.adk:google-adk:1.0.0
+[INFO]
+[INFO] To add this dependency to your project:
+[INFO]   mvn dependency:add -Dgav="com.google.adk:google-adk:1.0.0"
+[INFO]
+[INFO] With a specific scope:
+[INFO]   mvn dependency:add -Dgav="com.google.adk:google-adk:1.0.0" -Dscope=test
+[INFO]
+[INFO] To dependencyManagement:
+[INFO]   mvn dependency:add -Dgav="com.google.adk:google-adk:1.0.0" -Dmanaged
 ```
 
 ### 5.6 Network and Error Handling
@@ -369,7 +412,7 @@ When no results are found:
 ### 5.7 Usage Examples
 
 ```bash
-# Simple text search
+# Simple text search (interactive by default)
 mvn dependency:search -Dquery=google-adk
 
 # Search by groupId
@@ -377,6 +420,12 @@ mvn dependency:search -Dquery="g:com.google.adk"
 
 # Search with more results
 mvn dependency:search -Dquery=jackson -Drows=20
+
+# Non-interactive (plain table output, suitable for scripts)
+mvn dependency:search -Dquery=google-adk -Dinteractive=false
+
+# Batch mode also disables interactive
+mvn -B dependency:search -Dquery=google-adk
 
 # Search against a private registry
 mvn dependency:search -Dquery=my-lib -DrepositoryUrl=https://nexus.example.com/solrsearch/select
