@@ -303,16 +303,19 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     }
 
     /**
-     * Checks whether the dependency exists in Maven's resolved (interpolated) model.
-     * This catches dependencies declared with property references like {@code ${project.groupId}}.
+     * Checks whether the dependency exists in the project's declared (original) model
+     * after property interpolation, but before inheritance merging.
+     * This catches dependencies declared with property references like {@code ${project.groupId}}
+     * without false-positiving on inherited dependencies from a parent POM.
      */
     private static boolean existsInResolvedModel(MavenProject project, DependencyCoordinates coords, boolean managed) {
         List<Dependency> deps;
+        org.apache.maven.model.Model originalModel = project.getOriginalModel();
         if (managed) {
-            DependencyManagement depMgmt = project.getDependencyManagement();
+            DependencyManagement depMgmt = originalModel != null ? originalModel.getDependencyManagement() : null;
             deps = depMgmt != null ? depMgmt.getDependencies() : null;
         } else {
-            deps = project.getDependencies();
+            deps = originalModel != null ? originalModel.getDependencies() : null;
         }
         if (deps == null) {
             return false;
