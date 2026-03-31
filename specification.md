@@ -57,6 +57,7 @@ Adds a `<dependency>` element to the project's `pom.xml`. If the dependency alre
 | `managed`            | `managed`               | `Boolean` | No       | `false`   | When `true`, insert into `<dependencyManagement>` instead of `<dependencies>`. |
 | `module`             | `module`                | `String`  | No       | —         | Target a specific child module by artifactId when running from the root of a multi-module project. |
 | `updateExisting`     | `updateExisting`        | `Boolean` | No       | `false`   | When `true` and the dependency already exists, update its version (and other specified fields). When `false`, fail with an error if the dependency already exists. |
+| `bom`                | `bom`                   | `Boolean` | No       | `false`   | When `true`, add as a BOM import (`type=pom`, `scope=import`) into `<dependencyManagement>`. See §3.11. |
 | `skip`               | `mdep.skip`             | `Boolean` | No       | `false`   | Skip plugin execution. |
 
 > ¹ Either `gav` **or** both `groupId` + `artifactId` must be provided. If both forms are present, `gav` takes precedence.
@@ -263,16 +264,18 @@ Queries Maven Central's search API for artifacts matching a given search term an
 |-----------------|--------------------|-----------|----------|--------------------------------------------------|-------------|
 | `query`         | `query`            | `String`  | Yes      | —                                                | Free-text search term, or a structured query (e.g., `g:com.google.adk`, `a:google-adk`). |
 | `rows`          | `rows`             | `Integer` | No       | `10`                                             | Maximum number of results to return. |
-| `repositoryUrl` | `repositoryUrl`    | `String`  | No       | `https://search.maven.org/solrsearch/select`     | Maven Central Search API endpoint. Can be overridden for private registries that expose a compatible API. |
+| `repositoryUrl` | `repositoryUrl`    | `String`  | No       | `https://search.maven.org/solrsearch/select`     | Maven Central Search v2 REST API endpoint. Can be overridden for private registries that expose a compatible API. |
 | `skip`          | `mdep.skip`        | `Boolean` | No       | `false`                                          | Skip plugin execution. |
 
 ### 5.4 Search API Integration
 
-The goal uses the [Maven Central Search REST API](https://search.maven.org/classic/#api) (Solr-based):
+The goal uses the [Maven Central Search v2 REST API](https://central.sonatype.com/search):
 
 ```
 GET https://search.maven.org/solrsearch/select?q={query}&rows={rows}&wt=json
 ```
+
+> **Note:** The endpoint path remains Solr-compatible for now, but the implementation targets the newer v2 API behavior. The `repositoryUrl` parameter allows overriding the endpoint for forward compatibility or private registries.
 
 The `query` parameter is passed directly to the API's `q` parameter, supporting both free-text and structured queries:
 
@@ -440,16 +443,41 @@ All three goals are annotated `threadSafe = true`. POM file writes use file-leve
 
 ---
 
-## 8. Open Questions
+## 8. Design Decisions
 
-1. **BOM support:** Should `dependency:add` support adding BOM imports (`<scope>import</scope>` + `<type>pom</type>`) to `<dependencyManagement>` with a convenient shorthand (e.g., `-Dbom`)?
+The following questions were evaluated and resolved:
 
-2. **Exclusions:** Should `dependency:add` support specifying exclusions inline (e.g., `-Dexclusions="org.slf4j:slf4j-api,commons-logging:commons-logging"`)? This could be deferred to a follow-up enhancement.
+| # | Question | Decision | Rationale |
+|---|----------|----------|-----------|
+| 1 | **BOM support** — `-Dbom` shorthand for `scope=import` + `type=pom` in `<dependencyManagement>` | **Yes, include in initial implementation** | BOMs are a common pattern; a `-Dbom` flag significantly reduces friction for this use case. See §3.11 for details. |
+| 2 | **Exclusions** — inline `-Dexclusions` parameter | **No** | Exclusions should be added manually via POM editing. Keeps the CLI surface simple. |
+| 3 | **Dry-run mode** — `-DdryRun` flag to preview changes | **No** | Not needed for the initial implementation. Users can rely on version control to review changes. |
+| 4 | **Sorting** — insertion order for new dependencies | **Always append** | New dependencies are appended to the end of the `<dependencies>` or `<dependencyManagement>` list. No auto-sorting. |
+| 5 | **Search API** — legacy Solr vs. newer REST API | **Newer REST API only** | Target `search.maven.org` v2 REST API. The legacy Solr API is being phased out. |
+| 6 | **Property references** — create `<properties>` entries for versions | **No, always literal** | Always insert the literal version string. Property extraction is a stylistic choice best left to the developer.  |
 
-3. **Dry-run mode:** Should a `-DdryRun` flag be supported to preview the change without writing to disk? This would print the modified XML diff to the console.
+### 3.11 BOM Support (`-Dbom` flag)
 
-4. **Sorting:** When inserting a new dependency, should the goal attempt to maintain alphabetical ordering by `groupId:artifactId` if the existing dependencies appear to be sorted? Or always append to the end?
+When the `-Dbom` flag is set to `true`, `dependency:add` automatically:
 
-5. **Search API evolution:** Maven Central is migrating to a new search API. Should the goal support both the legacy Solr API and the newer REST API, or target only one?
+1. Sets `<type>pom</type>` and `<scope>import</scope>` on the dependency.
+2. Implies `-Dmanaged` — the dependency is inserted into `<dependencyManagement>`, since BOM imports are only valid there.
+3. Requires `-Dversion` (BOMs must have an explicit version).
 
-6. **Property references:** When a version is specified and the POM already uses `<properties>` for dependency versions (e.g., `<version>${google-adk.version}</version>`), should the goal create a property and reference it, or insert the literal version string?
+Any explicit `-Dscope` or `-Dtype` values provided alongside `-Dbom` are **ignored** with a warning: _"The -Dbom flag overrides scope and type. Using scope=import and type=pom."_
+
+**Parameter addition to §3.3:**
+
+| Parameter | Property | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `bom`     | `bom`    | `Boolean` | No | `false` | When `true`, add as a BOM import (`type=pom`, `scope=import`) into `<dependencyManagement>`. |
+
+**Example:**
+
+```bash
+# Add a BOM import
+mvn dependency:add -Dgav="org.springframework.boot:spring-boot-dependencies:3.2.0" -Dbom
+
+# Equivalent to (but shorter than):
+mvn dependency:add -Dgav="org.springframework.boot:spring-boot-dependencies:3.2.0" -Dmanaged -Dtype=pom -Dscope=import
+```
