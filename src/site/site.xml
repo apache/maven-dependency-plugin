@@ -44,6 +44,7 @@ under the License.
       <item name="Purging local repository dependencies" href="examples/purging-local-repository.html"/>
       <item name="Dependency tree output formats" href="examples/tree-mojo.html"/>
       <item name="Render Dependencies" href="examples/render-dependencies.html"/>
+      <item name="CLI Dependency Management" href="examples/cli-dependency-management.html"/>
     </menu>
     <menu name="Resources">
       <item name="Dependency Mechanism" href="../../guides/introduction/introduction-to-dependency-mechanism.html"/>

@@ -44,6 +44,10 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 /**
  * Removes a dependency from the project's {@code pom.xml}.
  * Supports removing from {@code <dependencies>} or {@code <dependencyManagement>}.
+ *
+ * <p>Matching uses groupId, artifactId, type, and classifier for precision.
+ * If the dependency exists in Maven's resolved model but uses property references
+ * in the raw POM, a clear error directs the user to edit manually.</p>
  * When removing a managed dependency from a parent POM, warns if child modules
  * reference it without an explicit version.
  *
@@ -65,8 +69,10 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
     private String artifactId;
 
     /**
-     * Shorthand coordinates: {@code groupId:artifactId}.
-     * Version, scope, type, and classifier segments are accepted but ignored.
+     * Shorthand coordinates: {@code groupId:artifactId[:version[:scope[:type[:classifier]]]]}.
+     * Only groupId and artifactId are required. Type and classifier, if provided,
+     * are used for precise matching when multiple dependency variants exist
+     * (e.g., jar vs test-jar).
      */
     @Parameter(property = "gav")
     private String gav;

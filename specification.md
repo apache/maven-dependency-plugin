@@ -83,6 +83,8 @@ Adds a `<dependency>` element to the project's `pom.xml`. If the dependency alre
 >
 > ² Version is required when adding to `<dependencyManagement>` (`-Dmanaged`). When adding to `<dependencies>`, version is optional if the dependency is already declared in an ancestor's `<dependencyManagement>` — in that case the `<version>` element is omitted from the inserted XML, following Maven convention.
 
+> **Scope validation:** The `scope` parameter is validated against Maven's known scope values: `compile`, `provided`, `runtime`, `test`, `system`, `import`. Invalid scope values are rejected with a `MojoFailureException`.
+
 ### 3.4 GAV Shorthand Format
 
 The `gav` parameter accepts a colon-separated coordinate string:
@@ -120,6 +122,11 @@ When the target `pom.xml` already contains a dependency with the same `groupId`,
 |------------------|----------|
 | `false` (default) | The goal **fails** with a `MojoFailureException` and message: `Dependency groupId:artifactId already exists. Use -DupdateExisting to update it.` |
 | `true` | The existing `<dependency>` element is **updated in place** — only the fields explicitly provided by the user are changed (version, scope, type, classifier, optional). Fields not provided are left unchanged. |
+
+> **Type/classifier matching semantics:**
+> - Matching uses Maven's default type semantics: `null` and `"jar"` are treated as equivalent.
+> - Classifier `null` matches only dependencies without a classifier.
+> - When a dependency exists in the POM via property references (e.g., `${project.groupId}`), the goal cross-references Maven's resolved original model to detect it and blocks with a clear error.
 
 ### 3.6 Behavior: Multi-Module Projects
 
@@ -160,12 +167,31 @@ The goal **must** preserve the existing structure of the `pom.xml`, including:
 
 Alternatively, consider leveraging the `maven-model` APIs along with a formatting-preserving XML manipulation library if one is available in the plugin's dependency tree.
 
+#### 3.8.1 Security Hardening
+
+The DOM parser is configured with the following security measures:
+- DOCTYPE declarations are **disallowed** (`disallow-doctype-decl`) to prevent entity-expansion denial-of-service attacks.
+- External DTD loading and external entity resolution are disabled.
+- `FEATURE_SECURE_PROCESSING` is enabled.
+- The root element is validated to be `<project>` — non-POM XML files are rejected with a clear error.
+
+#### 3.8.2 Atomic Writes
+
+POM modifications are written using atomic file operations: content is first written to a temporary file in the same directory, then renamed over the original using `Files.move(REPLACE_EXISTING)`. This prevents partial writes from corrupting the POM if the process is interrupted.
+
+#### 3.8.3 Encoding and BOM Preservation
+
+- The original XML encoding declaration (e.g., `encoding="UTF-8"`) is preserved on output.
+- UTF-8 BOM (Byte Order Mark) is detected on input and re-emitted on output if present.
+- Line endings (LF vs CRLF) are detected and preserved.
+- Indentation style is auto-detected from the existing file content using GCD-based analysis.
+
 ### 3.9 Output
 
 On success, the goal logs:
 
 ```
-[INFO] Added dependency com.google.adk:google-adk:1.0.0 (scope: test) to pom.xml
+[INFO] Added dependency com.google.adk:google-adk:1.0.0 [scope=test] to pom.xml
 ```
 
 Or, when version is managed:
@@ -220,7 +246,7 @@ Removes a `<dependency>` element from the project's `pom.xml`. The goal modifies
 |-------------------|---------------------|-----------|----------|-----------|-------------|
 | `groupId`         | `groupId`           | `String`  | No¹      | —         | The dependency's groupId. |
 | `artifactId`      | `artifactId`        | `String`  | No¹      | —         | The dependency's artifactId. |
-| `gav`             | `gav`               | `String`  | No¹      | —         | Shorthand coordinates: `groupId:artifactId`. Version, scope, type, and classifier segments are accepted but ignored (matching is by groupId + artifactId only). |
+| `gav`             | `gav`               | `String`  | No¹      | —         | Shorthand coordinates: `groupId:artifactId`. Version and scope segments are accepted but only groupId and artifactId are used for locating the dependency. Type and classifier segments are used for precise matching when multiple variants exist (e.g., jar vs test-jar). |
 | `managed`         | `managed`           | `Boolean` | No       | `false`   | When `true`, remove from `<dependencyManagement>` instead of `<dependencies>`. |
 | `module`          | `module`            | `String`  | No       | —         | Target a specific child module by artifactId. |
 | `skip`            | `mdep.skip`         | `Boolean` | No       | `false`   | Skip plugin execution. |
@@ -229,9 +255,10 @@ Removes a `<dependency>` element from the project's `pom.xml`. The goal modifies
 
 ### 4.4 Behavior
 
-1. The goal locates the `<dependency>` element matching the given `groupId` and `artifactId` in the target section (`<dependencies>` or `<dependencyManagement><dependencies>`).
+1. The goal locates the `<dependency>` element matching the given `groupId`, `artifactId`, `type`, and `classifier` in the target section (`<dependencies>` or `<dependencyManagement><dependencies>`).
 2. If found, the entire `<dependency>` element is removed, along with any immediately preceding XML comment that appears to be associated with it (i.e., a comment on the line(s) directly above the `<dependency>` tag, with no blank line separating them).
 3. If **not found**, the goal **fails** with a `MojoFailureException`: _"Dependency groupId:artifactId not found in `<dependencies>`."_
+4. If not found in the raw XML but detected in Maven's resolved original model (indicating the dependency uses property references like `${project.groupId}`), the goal **fails** with a message: _"Dependency groupId:artifactId exists in `<dependencies>` but uses property references in the POM. Please remove it manually."_
 
 ### 4.5 Behavior: Managed Dependency Removal Safety Check
 
@@ -331,10 +358,13 @@ When no results are found:
 
 | Scenario | Behavior |
 |----------|----------|
-| No network connectivity | `MojoFailureException` with message: _"Unable to reach Maven Central search API. Check your network connection."_ |
-| API returns HTTP error | `MojoFailureException` with HTTP status and message from the response. |
-| API returns malformed JSON | `MojoExecutionException` with message: _"Failed to parse search API response."_ |
-| Query is empty or blank | `MojoFailureException` with message: _"Search query must not be empty."_ |
+| No network connectivity | `MojoFailureException`: _"Unable to reach Maven Central search API. Check your network connection."_ |
+| HTTP 429 (rate limit) | `MojoFailureException`: _"Maven Central search API rate limit exceeded (HTTP 429). Please wait a moment and try again."_ with server response body if available. |
+| Other HTTP errors (4xx/5xx) | `MojoFailureException` with HTTP status code and server response body (truncated to 500 characters). |
+| Response Content-Type is not JSON | `MojoFailureException`: _"Maven Central search API returned unexpected content type."_ |
+| Response body is not valid JSON | `MojoFailureException`: _"Maven Central search API returned a non-JSON response."_ |
+| API returns malformed JSON | `MojoExecutionException`: _"Failed to parse search API response."_ |
+| Query is empty or blank | `MojoFailureException`: _"Search query must not be empty."_ |
 
 ### 5.7 Usage Examples
 
@@ -365,8 +395,7 @@ src/main/java/org/apache/maven/plugins/dependency/
 ├── SearchDependencyMojo.java       # dependency:search goal
 └── pom/
     ├── PomEditor.java              # Formatting-preserving POM read/write
-    ├── DependencyCoordinates.java  # GAV parsing and coordinate representation
-    └── DependencyInserter.java     # Logic to insert/update/remove <dependency> nodes
+    └── DependencyCoordinates.java  # GAV parsing and coordinate representation
 ```
 
 ### 6.2 New Test Files
@@ -376,10 +405,10 @@ src/test/java/org/apache/maven/plugins/dependency/
 ├── AddDependencyMojoTest.java
 ├── RemoveDependencyMojoTest.java
 ├── SearchDependencyMojoTest.java
+├── SearchDependencyMojoHttpTest.java
 └── pom/
     ├── PomEditorTest.java
-    ├── DependencyCoordinatesTest.java
-    └── DependencyInserterTest.java
+    └── DependencyCoordinatesTest.java
 
 src/it/projects/
 ├── add-dependency/
@@ -458,7 +487,7 @@ These are **new goals only** — no existing goal behavior is modified. The chan
 
 ### 7.4 Thread Safety
 
-All three goals are annotated `threadSafe = true`. POM file writes use file-level locking to prevent concurrent modification when running parallel builds.
+All three goals are annotated `threadSafe = true`. POM file writes use atomic file operations (temp file + rename) to prevent partial writes. Note: concurrent modifications by separate processes are not guarded against with file locking; the last writer wins.
 
 ---
 
@@ -474,6 +503,21 @@ The following questions were evaluated and resolved:
 | 4 | **Sorting** — insertion order for new dependencies | **Always append** | New dependencies are appended to the end of the `<dependencies>` or `<dependencyManagement>` list. No auto-sorting. |
 | 5 | **Search API** — legacy Solr vs. newer REST API | **Newer REST API only** | Target `search.maven.org` v2 REST API. The legacy Solr API is being phased out. |
 | 6 | **Property references** — create `<properties>` entries for versions | **No, always literal** | Always insert the literal version string. Property extraction is a stylistic choice best left to the developer.  |
+
+### 8.1 Implementation Safety Measures
+
+The following safety measures were implemented based on iterative edge case analysis:
+
+| # | Measure | Description |
+|---|---------|-------------|
+| 1 | **Type/classifier matching** | Dependency matching uses `groupId:artifactId:type:classifier` (not just `groupId:artifactId`) to prevent incorrect updates when multiple variants exist. |
+| 2 | **Scope validation** | Scope values are validated against Maven's known set (`compile`, `provided`, `runtime`, `test`, `system`, `import`). |
+| 3 | **XXE protection** | DOCTYPE declarations are disallowed; external entities disabled; secure processing enabled. |
+| 4 | **Root element validation** | Only files with `<project>` as root element are accepted. |
+| 5 | **Atomic writes** | POM modifications use temp file + rename to prevent partial writes. |
+| 6 | **Property-interpolation detection** | When a dependency exists in Maven's resolved model but not in the raw XML (indicating property references), the goal blocks with a clear error instead of creating duplicates. |
+| 7 | **Original model cross-reference** | Uses `project.getOriginalModel()` (not `project.getDependencies()`) to avoid false positives from inherited parent dependencies. |
+| 8 | **Search response validation** | Content-Type, JSON structure, and HTTP status are all validated. Rate limiting (429) produces a specific user-friendly message. |
 
 ### 3.11 BOM Support (`-Dbom` flag)
 

@@ -23,6 +23,37 @@ Contributing to [Apache Maven Dependency Plugin](https://maven.apache.org/plugin
 [![Jenkins Build](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fci-maven.apache.org%2Fjob%2FMaven%2Fjob%2Fmaven-box%2Fjob%2Fmaven-dependency-plugin%2Fjob%2Fmaster%2F)][build]
 [![Jenkins Tests](https://img.shields.io/jenkins/tests?jobUrl=https%3A%2F%2Fci-maven.apache.org%2Fjob%2FMaven%2Fjob%2Fmaven-box%2Fjob%2Fmaven-dependency-plugin%2Fjob%2Fmaster%2F)][test-results]
 
+New: CLI Dependency Management Goals (3.11.0)
+----------------------------------------------
+
+Starting with version 3.11.0, the plugin provides three new goals for managing
+dependencies directly from the command line — bringing Maven on par with
+`npm install`, `cargo add`, and `dotnet add package`:
+
+```bash
+# Add a dependency
+mvn dependency:add -Dgav="com.google.code.gson:gson:2.10.1"
+
+# Add with scope
+mvn dependency:add -Dgav="junit:junit:4.13.2:test"
+
+# Add to dependencyManagement
+mvn dependency:add -Dgav="com.google.code.gson:gson:2.10.1" -Dmanaged
+
+# Add a BOM import
+mvn dependency:add -Dgav="org.springframework.boot:spring-boot-dependencies:3.2.0" -Dbom
+
+# Remove a dependency
+mvn dependency:remove -Dgav="com.google.code.gson:gson"
+
+# Search Maven Central
+mvn dependency:search -Dquery=gson
+```
+
+See the [specification](specification.md) for full details.
+
+---
+
 You have found a bug, or you have an idea for a cool new feature? Contributing
 code is a great way to give something back to the open source community. Before
 you dig right into the code, there are a few guidelines that we need

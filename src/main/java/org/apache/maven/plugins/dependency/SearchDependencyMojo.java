@@ -39,7 +39,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 /**
  * Queries Maven Central for artifacts matching a search term and displays
- * the results in a tabular format.
+ * the results in a tabular format. Does not require a project context.
+ *
+ * <p>Response validation includes Content-Type checking, JSON structure verification,
+ * and detailed error messages for HTTP failures (including rate limiting).</p>
  *
  * @since 3.11.0
  */

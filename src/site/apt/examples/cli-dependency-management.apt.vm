@@ -1,0 +1,199 @@
+~~ Licensed to the Apache Software Foundation (ASF) under one
+~~ or more contributor license agreements.  See the NOTICE file
+~~ distributed with this work for additional information
+~~ regarding copyright ownership.  The ASF licenses this file
+~~ to you under the Apache License, Version 2.0 (the
+~~ "License"); you may not use this file except in compliance
+~~ with the License.  You may obtain a copy of the License at
+~~
+~~ http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing,
+~~ software distributed under the License is distributed on an
+~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+~~ KIND, either express or implied.  See the License for the
+~~ specific language governing permissions and limitations
+~~ under the License.    
+ 
+  ------
+  CLI Dependency Management
+  ------
+  Bruno Borges
+  ------
+  2025-06-01
+  ------
+
+CLI Dependency Management
+
+  Starting with version 3.11.0, the Maven Dependency Plugin provides three goals
+  for managing dependencies directly from the command line: <<<dependency:add>>>,
+  <<<dependency:remove>>>, and <<<dependency:search>>>.
+
+* Adding Dependencies
+
+  The <<<dependency:add>>> goal adds a dependency to your project's <<<pom.xml>>>.
+
+** Basic Usage
+
+  You can add a dependency by specifying its coordinates individually:
+
++---+
+mvn dependency:add -DgroupId=com.google.code.gson -DartifactId=gson -Dversion=2.10.1
++---+
+
+  Or use the shorter <<<gav>>> shorthand format:
+
++---+
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1
++---+
+
+  The <<<gav>>> parameter accepts the format <<<groupId:artifactId[:version[:scope[:type[:classifier]]]]>>>.
+  For example, to add a test-scoped dependency:
+
++---+
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1:test
++---+
+
+  You can also specify <<<scope>>> separately:
+
++---+
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dscope=test
++---+
+
+** Adding to dependencyManagement
+
+  Use the <<<-Dmanaged>>> flag to add a dependency to the <<<\<dependencyManagement\>>>> section
+  instead of <<<\<dependencies\>>>>:
+
++---+
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dmanaged
++---+
+
+** Adding a BOM Import
+
+  To import a BOM (Bill of Materials) into <<<\<dependencyManagement\>>>>, use the <<<-Dbom>>> flag:
+
++---+
+mvn dependency:add -Dgav=org.springframework.boot:spring-boot-dependencies:3.2.0 -Dbom
++---+
+
+  This inserts a dependency with <<<type=pom>>> and <<<scope=import>>> into <<<\<dependencyManagement\>>>>.
+
+** Version Inference
+
+  When adding to <<<\<dependencies\>>>> and the version is already managed by a parent POM's
+  <<<\<dependencyManagement\>>>>, you can omit the version:
+
++---+
+mvn dependency:add -Dgav=com.google.code.gson:gson
++---+
+
+  The goal will detect the managed version and omit the <<<\<version\>>>> element from the inserted
+  dependency, following Maven convention. If no managed version is found, the goal fails with
+  a descriptive error.
+
+** Updating an Existing Dependency
+
+  By default, <<<dependency:add>>> fails if the dependency already exists. Use <<<-DupdateExisting>>>
+  to update it instead:
+
++---+
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -DupdateExisting
++---+
+
+** Multi-Module Projects
+
+  To add a dependency to a specific child module from the root of a multi-module project,
+  use the <<<-Dmodule>>> parameter:
+
++---+
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dmodule=my-service
++---+
+
+* Removing Dependencies
+
+  The <<<dependency:remove>>> goal removes a dependency from your project's <<<pom.xml>>>.
+
+** Basic Usage
+
+  Remove a dependency using the <<<gav>>> shorthand:
+
++---+
+mvn dependency:remove -Dgav=com.google.code.gson:gson
++---+
+
+  Or using explicit coordinates:
+
++---+
+mvn dependency:remove -DgroupId=com.google.code.gson -DartifactId=gson
++---+
+
+  Only <<<groupId>>> and <<<artifactId>>> are required to identify the dependency to remove.
+
+** Removing from dependencyManagement
+
+  To remove a dependency from <<<\<dependencyManagement\>>>> instead of <<<\<dependencies\>>>>:
+
++---+
+mvn dependency:remove -Dgav=com.google.code.gson:gson -Dmanaged
++---+
+
+** Removing from a Specific Module
+
+  In a multi-module project, target a specific child module:
+
++---+
+mvn dependency:remove -Dgav=com.google.code.gson:gson -Dmodule=my-service
++---+
+
+  If the dependency is not found, the goal fails with a descriptive error message.
+
+* Searching Maven Central
+
+  The <<<dependency:search>>> goal queries Maven Central for matching artifacts. This goal
+  does not require a project — it can be run from any directory.
+
+** Basic Usage
+
++---+
+mvn dependency:search -Dquery=gson
++---+
+
+  This displays a table of matching artifacts with their latest versions:
+
++---+
+[INFO] Search results for: gson
+[INFO]
+[INFO]   groupId                  artifactId          latest version
+[INFO]   ─────────────────────────────────────────────────────────────
+[INFO]   com.google.code.gson     gson                2.10.1
+[INFO]
+[INFO] 1 result found. Use dependency:add to add one to your project:
+[INFO]   mvn dependency:add -Dgav="com.google.code.gson:gson:2.10.1"
++---+
+
+** Structured Queries
+
+  You can search by groupId or artifactId using structured query syntax:
+
++---+
+mvn dependency:search -Dquery="g:com.google.code.gson"
+mvn dependency:search -Dquery="a:gson"
+mvn dependency:search -Dquery="g:com.google AND a:gson"
++---+
+
+** Limiting Results
+
+  Use <<<-Drows>>> to control the number of results returned:
+
++---+
+mvn dependency:search -Dquery=jackson -Drows=20
++---+
+
+** Custom Repository Endpoint
+
+  To search against a private registry that exposes a compatible search API:
+
++---+
+mvn dependency:search -Dquery=my-lib -DrepositoryUrl=https://nexus.example.com/solrsearch/select
++---+

@@ -42,6 +42,14 @@ import org.w3c.dom.Element;
  * Supports adding to {@code <dependencies>} or {@code <dependencyManagement>},
  * with version inference from managed dependencies and BOM import shorthand.
  *
+ * <p>The goal uses formatting-preserving DOM manipulation to maintain the POM's
+ * existing structure (comments, indentation, encoding). Duplicate detection uses
+ * type and classifier-aware matching, and cross-references Maven's resolved model
+ * to catch dependencies declared via property references.</p>
+ *
+ * <p>Scope values are validated against Maven's known scopes:
+ * {@code compile}, {@code provided}, {@code runtime}, {@code test}, {@code system}, {@code import}.</p>
+ *
  * @since 3.11.0
  */
 @Mojo(name = "add", requiresProject = true, threadSafe = true)
@@ -73,7 +81,9 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     private String gav;
 
     /**
-     * Dependency scope ({@code compile}, {@code provided}, {@code runtime}, {@code test}, {@code system}, {@code import}).
+     * Dependency scope. Validated against Maven's known scope values:
+     * {@code compile}, {@code provided}, {@code runtime}, {@code test}, {@code system}, {@code import}.
+     * Invalid values are rejected with a {@link org.apache.maven.plugin.MojoFailureException}.
      */
     @Parameter(property = "scope")
     private String scope;
