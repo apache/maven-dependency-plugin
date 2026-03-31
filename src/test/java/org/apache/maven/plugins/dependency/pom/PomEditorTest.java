@@ -731,4 +731,27 @@ class PomEditorTest {
         assertTrue(result.contains("<version>2.0</version>"), "version should be updated");
         assertTrue(result.contains("<scope>test</scope>"), "scope should be preserved");
     }
+
+    @Test
+    void addDependencyIgnoresEmptyStringFields() throws IOException {
+        String xml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "  <dependencies/>\n" + "</project>\n";
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
+
+        PomEditor editor = PomEditor.load(pomFile);
+        DependencyCoordinates coords = new DependencyCoordinates("com.example", "lib");
+        coords.setVersion("1.0");
+        coords.setScope(""); // empty = NONE sentinel, should not create element
+        coords.setType(""); // same
+        coords.setClassifier(""); // same
+        editor.addDependency(coords, false);
+        editor.save();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<version>1.0</version>"), "version should be present");
+        assertTrue(!result.contains("<scope>"), "empty scope should not create element");
+        assertTrue(!result.contains("<type>"), "empty type should not create element");
+        assertTrue(!result.contains("<classifier>"), "empty classifier should not create element");
+    }
 }

@@ -422,16 +422,16 @@ public class PomEditor {
         appendChildElement(dep, "groupId", coords.getGroupId(), childIndent);
         appendChildElement(dep, "artifactId", coords.getArtifactId(), childIndent);
 
-        if (coords.getVersion() != null) {
+        if (coords.getVersion() != null && !coords.getVersion().isEmpty()) {
             appendChildElement(dep, "version", coords.getVersion(), childIndent);
         }
-        if (coords.getScope() != null) {
+        if (coords.getScope() != null && !coords.getScope().isEmpty()) {
             appendChildElement(dep, "scope", coords.getScope(), childIndent);
         }
-        if (coords.getType() != null) {
+        if (coords.getType() != null && !coords.getType().isEmpty()) {
             appendChildElement(dep, "type", coords.getType(), childIndent);
         }
-        if (coords.getClassifier() != null) {
+        if (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) {
             appendChildElement(dep, "classifier", coords.getClassifier(), childIndent);
         }
         if (coords.getOptional() != null && coords.getOptional()) {
