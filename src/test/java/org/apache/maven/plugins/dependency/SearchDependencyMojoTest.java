@@ -96,4 +96,20 @@ class SearchDependencyMojoTest {
         String json = "{\"path\":\"C:\\\\Users\\\\test\"}";
         assertEquals("C:\\Users\\test", SearchDependencyMojo.extractStringField(json, "path"));
     }
+
+    @Test
+    void extractArtifactsFromHtmlResponse() {
+        // Simulates an HTML error page returned with HTTP 200
+        String html = "<html><body><h1>Service Unavailable</h1></body></html>";
+        List<String[]> artifacts = SearchDependencyMojo.extractArtifacts(html);
+        assertEquals(0, artifacts.size());
+    }
+
+    @Test
+    void extractArtifactsFromMalformedJson() {
+        // Missing docs array but has numFound
+        String malformed = "{\"response\":{\"numFound\":5}}";
+        List<String[]> artifacts = SearchDependencyMojo.extractArtifacts(malformed);
+        assertEquals(0, artifacts.size());
+    }
 }

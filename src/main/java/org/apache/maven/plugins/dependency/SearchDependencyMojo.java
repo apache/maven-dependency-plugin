@@ -102,11 +102,30 @@ public class SearchDependencyMojo extends AbstractMojo {
 
             int status = connection.getResponseCode();
             if (status != HttpURLConnection.HTTP_OK) {
-                throw new MojoFailureException("Maven Central search API returned HTTP " + status
-                        + ". Check your query and network connection.");
+                String errorBody = readErrorResponse(connection);
+                if (status == 429) {
+                    throw new MojoFailureException("Maven Central search API rate limit exceeded (HTTP 429). "
+                            + "Please wait a moment and try again."
+                            + (errorBody.isEmpty() ? "" : " Server response: " + errorBody));
+                }
+                throw new MojoFailureException("Maven Central search API returned HTTP " + status + "."
+                        + (errorBody.isEmpty() ? "" : " Server response: " + errorBody));
             }
 
-            return readResponse(connection.getInputStream());
+            String contentType = connection.getContentType();
+            if (contentType != null && !contentType.contains("json")) {
+                throw new MojoFailureException("Maven Central search API returned unexpected content type: "
+                        + contentType + ". Expected a JSON response.");
+            }
+
+            String response = readResponse(connection.getInputStream());
+
+            if (response.isEmpty() || response.charAt(0) != '{') {
+                throw new MojoFailureException("Maven Central search API returned a non-JSON response. "
+                        + "The API endpoint may have changed or returned an error page.");
+            }
+
+            return response;
         } catch (MojoFailureException e) {
             throw e;
         } catch (java.net.UnknownHostException | java.net.ConnectException e) {
@@ -130,6 +149,31 @@ public class SearchDependencyMojo extends AbstractMojo {
             }
         }
         return sb.toString();
+    }
+
+    private static String readErrorResponse(HttpURLConnection connection) {
+        try {
+            InputStream errorStream = connection.getErrorStream();
+            if (errorStream == null) {
+                return "";
+            }
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                    if (sb.length() > 500) {
+                        sb.setLength(500);
+                        sb.append("...");
+                        break;
+                    }
+                }
+            }
+            return sb.toString();
+        } catch (IOException e) {
+            return "";
+        }
     }
 
     void displayResults(String jsonResponse) throws MojoExecutionException {
