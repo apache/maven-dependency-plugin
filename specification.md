@@ -69,10 +69,10 @@ Adds a `<dependency>` element to the project's `pom.xml`. If the dependency alre
 | `artifactId`         | `artifactId`            | `String`  | No¹      | —         | The dependency's artifactId. |
 | `version`            | `version`               | `String`  | No²      | —         | The dependency's version. |
 | `gav`                | `gav`                   | `String`  | No¹      | —         | Shorthand coordinates in the format `groupId:artifactId[:version[:scope[:type[:classifier]]]]`. |
-| `scope`              | `scope`                 | `String`  | No       | —         | Dependency scope (`compile`, `provided`, `runtime`, `test`, `system`, `import`). Omitted from the POM when not specified (Maven defaults to `compile`). |
-| `type`               | `type`                  | `String`  | No       | —         | Dependency type/packaging (e.g., `jar`, `pom`, `war`). Omitted from the POM when not specified (Maven defaults to `jar`). |
-| `classifier`         | `classifier`            | `String`  | No       | —         | Dependency classifier (e.g., `sources`, `javadoc`, `tests`). |
-| `optional`           | `optional`              | `Boolean` | No       | `false`   | Whether the dependency is optional. Omitted from the POM when `false`. |
+| `scope`              | `scope`                 | `String`  | No       | —         | Dependency scope (`compile`, `provided`, `runtime`, `test`, `system`, `import`). Omitted from the POM when not specified (Maven defaults to `compile`). Use `NONE` with `-DupdateExisting` to remove an existing `<scope>` element. |
+| `type`               | `type`                  | `String`  | No       | —         | Dependency type/packaging (e.g., `jar`, `pom`, `war`). Omitted from the POM when not specified (Maven defaults to `jar`). Use `NONE` with `-DupdateExisting` to remove an existing `<type>` element. |
+| `classifier`         | `classifier`            | `String`  | No       | —         | Dependency classifier (e.g., `sources`, `javadoc`, `tests`). Use `NONE` with `-DupdateExisting` to remove an existing `<classifier>` element. |
+| `optional`           | `optional`              | `Boolean` | No       | —         | Whether the dependency is optional. When `true`, adds `<optional>true</optional>`. When explicitly set to `false` with `-DupdateExisting`, removes an existing `<optional>` element. When not specified, the field is left unchanged during updates. |
 | `managed`            | `managed`               | `Boolean` | No       | `false`   | When `true`, insert into `<dependencyManagement>` instead of `<dependencies>`. |
 | `module`             | `module`                | `String`  | No       | —         | Target a specific child module by artifactId when running from the root of a multi-module project. |
 | `updateExisting`     | `updateExisting`        | `Boolean` | No       | `false`   | When `true` and the dependency already exists, update its version (and other specified fields). When `false`, fail with an error if the dependency already exists. |
@@ -248,6 +248,9 @@ Removes a `<dependency>` element from the project's `pom.xml`. The goal modifies
 | `artifactId`      | `artifactId`        | `String`  | No¹      | —         | The dependency's artifactId. |
 | `gav`             | `gav`               | `String`  | No¹      | —         | Shorthand coordinates: `groupId:artifactId`. Version and scope segments are accepted but only groupId and artifactId are used for locating the dependency. Type and classifier segments are used for precise matching when multiple variants exist (e.g., jar vs test-jar). |
 | `managed`         | `managed`           | `Boolean` | No       | `false`   | When `true`, remove from `<dependencyManagement>` instead of `<dependencies>`. |
+| `type`            | `type`              | `String`  | No       | —         | Dependency type for precise matching (e.g., `pom`, `war`, `test-jar`). When not specified, defaults to `jar`. Explicit `-Dtype` overrides the type from `-Dgav`. |
+| `classifier`      | `classifier`        | `String`  | No       | —         | Dependency classifier for precise matching (e.g., `sources`, `javadoc`, `tests`). Explicit `-Dclassifier` overrides the classifier from `-Dgav`. |
+| `bom`             | `bom`               | `Boolean` | No       | `false`   | When `true`, remove a BOM import (`type=pom`) from `<dependencyManagement>`. Equivalent to `-Dmanaged -Dtype=pom`. |
 | `module`          | `module`            | `String`  | No       | —         | Target a specific child module by artifactId. |
 | `skip`            | `mdep.skip`         | `Boolean` | No       | `false`   | Skip plugin execution. |
 
@@ -285,6 +288,12 @@ mvn dependency:remove -Dgav="com.google.adk:google-adk"
 
 # Remove from dependencyManagement
 mvn dependency:remove -Dgav="com.google.adk:google-adk" -Dmanaged
+
+# Remove a BOM import (shorthand for -Dmanaged -Dtype=pom)
+mvn dependency:remove -Dgav="org.springframework.boot:spring-boot-dependencies" -Dbom
+
+# Remove a specific type variant (test-jar)
+mvn dependency:remove -DgroupId=com.example -DartifactId=lib -Dtype=test-jar
 
 # Remove from a specific child module
 mvn dependency:remove -Dgav="com.google.adk:google-adk" -Dmodule=my-service

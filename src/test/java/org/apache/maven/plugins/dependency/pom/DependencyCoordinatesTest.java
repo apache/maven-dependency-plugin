@@ -250,4 +250,18 @@ class DependencyCoordinatesTest {
         DependencyCoordinates coords = new DependencyCoordinates("g", "a");
         coords.validate(); // null scope is fine (defaults to compile)
     }
+
+    @Test
+    void validateAcceptsNoneScopeForClearing() {
+        DependencyCoordinates coords = new DependencyCoordinates("g", "a");
+        coords.setScope("NONE");
+        coords.validate(); // NONE is accepted as a sentinel for clearing
+    }
+
+    @Test
+    void validateAcceptsEmptyScopeForClearing() {
+        DependencyCoordinates coords = new DependencyCoordinates("g", "a");
+        coords.setScope("");
+        coords.validate(); // empty scope is accepted (used internally after NONE conversion)
+    }
 }

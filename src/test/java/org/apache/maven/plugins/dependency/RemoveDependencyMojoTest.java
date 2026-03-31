@@ -150,4 +150,69 @@ class RemoveDependencyMojoTest {
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
         assertTrue(ex.getMessage().contains("not found"));
     }
+
+    @Test
+    void bomFlagSetsTypeAndManaged() throws Exception {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencyManagement>\n"
+                + "    <dependencies>\n"
+                + "      <dependency>\n"
+                + "        <groupId>org.springframework.boot</groupId>\n"
+                + "        <artifactId>spring-boot-dependencies</artifactId>\n"
+                + "        <version>3.2.0</version>\n"
+                + "        <type>pom</type>\n"
+                + "        <scope>import</scope>\n"
+                + "      </dependency>\n"
+                + "    </dependencies>\n"
+                + "  </dependencyManagement>\n"
+                + "</project>\n";
+        File pomFile = createTempPom(pom);
+        when(project.getFile()).thenReturn(pomFile);
+        when(project.getModules()).thenReturn(Collections.emptyList());
+
+        setVariableValueToObject(mojo, "groupId", "org.springframework.boot");
+        setVariableValueToObject(mojo, "artifactId", "spring-boot-dependencies");
+        setVariableValueToObject(mojo, "bom", true);
+
+        mojo.execute();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(!result.contains("spring-boot-dependencies"), "BOM should be removed");
+    }
+
+    @Test
+    void typeParameterUsedForMatching() throws Exception {
+        // POM has both jar and pom variants
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "      <version>1.0</version>\n"
+                + "    </dependency>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "      <version>1.0</version>\n"
+                + "      <type>test-jar</type>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        File pomFile = createTempPom(pom);
+        when(project.getFile()).thenReturn(pomFile);
+        when(project.getModules()).thenReturn(Collections.emptyList());
+
+        // Remove only the test-jar variant
+        setVariableValueToObject(mojo, "groupId", "com.example");
+        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "type", "test-jar");
+
+        mojo.execute();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(!result.contains("test-jar"), "test-jar variant should be removed");
+        assertTrue(result.contains("com.example"), "jar variant should remain");
+    }
 }

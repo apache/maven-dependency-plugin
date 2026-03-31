@@ -83,6 +83,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     /**
      * Dependency scope. Validated against Maven's known scope values:
      * {@code compile}, {@code provided}, {@code runtime}, {@code test}, {@code system}, {@code import}.
+     * Use {@code NONE} with {@code -DupdateExisting} to remove an existing scope element.
      * Invalid values are rejected with a {@link org.apache.maven.plugin.MojoFailureException}.
      */
     @Parameter(property = "scope")
@@ -101,10 +102,12 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     private String classifier;
 
     /**
-     * Whether the dependency is optional.
+     * Whether the dependency is optional. When updating an existing dependency
+     * ({@code -DupdateExisting}), setting {@code -Doptional=false} explicitly
+     * removes the {@code <optional>} element.
      */
-    @Parameter(property = "optional", defaultValue = "false")
-    private boolean optional;
+    @Parameter(property = "optional")
+    private Boolean optional;
 
     /**
      * When {@code true}, insert into {@code <dependencyManagement>} instead of {@code <dependencies>}.
@@ -245,14 +248,25 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             coords.setClassifier(classifier);
         }
 
-        if (optional) {
-            coords.setOptional(true);
+        if (optional != null) {
+            coords.setOptional(optional);
         }
 
         try {
             coords.validate();
         } catch (IllegalArgumentException e) {
             throw new MojoFailureException(e.getMessage());
+        }
+
+        // Convert NONE sentinels to empty strings (signals field removal during update)
+        if ("NONE".equals(coords.getScope())) {
+            coords.setScope("");
+        }
+        if ("NONE".equals(coords.getType())) {
+            coords.setType("");
+        }
+        if ("NONE".equals(coords.getClassifier())) {
+            coords.setClassifier("");
         }
 
         return coords;

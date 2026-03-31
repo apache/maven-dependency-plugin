@@ -84,6 +84,26 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
     private boolean managed;
 
     /**
+     * Dependency type for precise matching (e.g., {@code pom}, {@code war}, {@code test-jar}).
+     * When not specified, defaults to {@code "jar"}.
+     */
+    @Parameter(property = "type")
+    private String type;
+
+    /**
+     * Dependency classifier for precise matching (e.g., {@code sources}, {@code javadoc}, {@code tests}).
+     */
+    @Parameter(property = "classifier")
+    private String classifier;
+
+    /**
+     * When {@code true}, remove a BOM import ({@code type=pom}) from {@code <dependencyManagement>}.
+     * Equivalent to {@code -Dmanaged -Dtype=pom}.
+     */
+    @Parameter(property = "bom", defaultValue = "false")
+    private boolean bom;
+
+    /**
      * Target a specific child module by artifactId.
      */
     @Parameter(property = "module")
@@ -97,11 +117,17 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
     @Override
     protected void doExecute() throws MojoExecutionException, MojoFailureException {
         DependencyCoordinates coords = resolveCoordinates();
+
+        if (bom) {
+            handleBomFlag(coords);
+        }
+
+        boolean targetManaged = managed || bom;
         MavenProject targetProject = resolveTargetProject();
         File pomFile = targetProject.getFile();
 
         // Safety check for managed dependency removal in parent POM
-        if (managed
+        if (targetManaged
                 && targetProject.getModules() != null
                 && !targetProject.getModules().isEmpty()) {
             checkChildModuleDependencies(targetProject, coords.getGroupId(), coords.getArtifactId());
@@ -110,18 +136,22 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
         try {
             PomEditor editor = PomEditor.load(pomFile);
             boolean removed = editor.removeDependency(
-                    coords.getGroupId(), coords.getArtifactId(), coords.getType(), coords.getClassifier(), managed);
+                    coords.getGroupId(),
+                    coords.getArtifactId(),
+                    coords.getType(),
+                    coords.getClassifier(),
+                    targetManaged);
 
             if (!removed) {
                 // Cross-reference with resolved model to detect property-interpolated coords
-                if (existsInResolvedModel(targetProject, coords, managed)) {
-                    String section = managed ? "<dependencyManagement>" : "<dependencies>";
+                if (existsInResolvedModel(targetProject, coords, targetManaged)) {
+                    String section = targetManaged ? "<dependencyManagement>" : "<dependencies>";
                     throw new MojoFailureException("Dependency " + coords.getGroupId() + ":"
                             + coords.getArtifactId()
                             + " exists in " + section + " but uses property references in the POM. "
                             + "Please remove it manually.");
                 }
-                String section = managed ? "<dependencyManagement>" : "<dependencies>";
+                String section = targetManaged ? "<dependencyManagement>" : "<dependencies>";
                 throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
                         + " not found in " + section + ".");
             }
@@ -143,8 +173,17 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
             } catch (IllegalArgumentException e) {
                 throw new MojoFailureException(e.getMessage());
             }
+            // Explicit parameters override GAV shorthand values
+            if (type != null) {
+                coords.setType(type);
+            }
+            if (classifier != null) {
+                coords.setClassifier(classifier);
+            }
         } else if (groupId != null && artifactId != null) {
             coords = new DependencyCoordinates(groupId, artifactId);
+            coords.setType(type);
+            coords.setClassifier(classifier);
         } else {
             throw new MojoFailureException(
                     "You must specify either -Dgav=groupId:artifactId " + "or both -DgroupId=... and -DartifactId=...");
@@ -157,6 +196,13 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
         }
 
         return coords;
+    }
+
+    private void handleBomFlag(DependencyCoordinates coords) {
+        if (coords.getType() != null && !"pom".equals(coords.getType())) {
+            getLog().warn("The -Dbom flag overrides type. Using type=pom.");
+        }
+        coords.setType("pom");
     }
 
     private MavenProject resolveTargetProject() throws MojoFailureException {

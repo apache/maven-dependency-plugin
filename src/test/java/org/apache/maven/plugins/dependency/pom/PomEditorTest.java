@@ -664,4 +664,71 @@ class PomEditorTest {
         String result = new String(resultBytes, StandardCharsets.UTF_8);
         assertTrue(result.contains("<?xml"));
     }
+
+    @Test
+    void updateDependencyClearsFieldsWithEmptyString() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "      <version>1.0</version>\n"
+                + "      <scope>test</scope>\n"
+                + "      <optional>true</optional>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
+
+        PomEditor editor = PomEditor.load(pomFile);
+        Element dep = editor.findDependency("com.example", "lib", false);
+        assertNotNull(dep);
+
+        // Empty string signals removal
+        DependencyCoordinates coords = new DependencyCoordinates("com.example", "lib");
+        coords.setScope(""); // clear scope
+        coords.setOptional(false); // clear optional
+
+        editor.updateDependency(dep, coords);
+        editor.save();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(!result.contains("<scope>"), "scope element should be removed");
+        assertTrue(!result.contains("<optional>"), "optional element should be removed");
+        assertTrue(result.contains("<version>1.0</version>"), "version should remain");
+    }
+
+    @Test
+    void updateDependencyPreservesFieldsWhenNull() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "      <version>1.0</version>\n"
+                + "      <scope>test</scope>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
+
+        PomEditor editor = PomEditor.load(pomFile);
+        Element dep = editor.findDependency("com.example", "lib", false);
+        assertNotNull(dep);
+
+        // Only update version, leave scope (null means don't touch)
+        DependencyCoordinates coords = new DependencyCoordinates("com.example", "lib");
+        coords.setVersion("2.0");
+
+        editor.updateDependency(dep, coords);
+        editor.save();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<version>2.0</version>"), "version should be updated");
+        assertTrue(result.contains("<scope>test</scope>"), "scope should be preserved");
+    }
 }

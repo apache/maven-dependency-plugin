@@ -207,25 +207,46 @@ public class PomEditor {
     /**
      * Updates an existing dependency element with the provided coordinate fields.
      * Only updates fields that are non-null in the provided coordinates.
+     * A field set to an empty string signals removal of that element.
      *
      * @param existing the existing dependency element
      * @param coords   the new coordinate values
      */
     public void updateDependency(Element existing, DependencyCoordinates coords) {
         if (coords.getVersion() != null) {
-            setOrCreateChild(existing, "version", coords.getVersion());
+            if (coords.getVersion().isEmpty()) {
+                removeChild(existing, "version");
+            } else {
+                setOrCreateChild(existing, "version", coords.getVersion());
+            }
         }
         if (coords.getScope() != null) {
-            setOrCreateChild(existing, "scope", coords.getScope());
+            if (coords.getScope().isEmpty()) {
+                removeChild(existing, "scope");
+            } else {
+                setOrCreateChild(existing, "scope", coords.getScope());
+            }
         }
         if (coords.getType() != null) {
-            setOrCreateChild(existing, "type", coords.getType());
+            if (coords.getType().isEmpty()) {
+                removeChild(existing, "type");
+            } else {
+                setOrCreateChild(existing, "type", coords.getType());
+            }
         }
         if (coords.getClassifier() != null) {
-            setOrCreateChild(existing, "classifier", coords.getClassifier());
+            if (coords.getClassifier().isEmpty()) {
+                removeChild(existing, "classifier");
+            } else {
+                setOrCreateChild(existing, "classifier", coords.getClassifier());
+            }
         }
-        if (coords.getOptional() != null && coords.getOptional()) {
-            setOrCreateChild(existing, "optional", "true");
+        if (coords.getOptional() != null) {
+            if (coords.getOptional()) {
+                setOrCreateChild(existing, "optional", "true");
+            } else {
+                removeChild(existing, "optional");
+            }
         }
     }
 
@@ -441,6 +462,27 @@ public class PomEditor {
         int depth = getElementDepth(parent);
         String childIndent = repeatIndent(depth + 1);
         appendChildElement(parent, tagName, value, childIndent);
+    }
+
+    /**
+     * Removes a child element and its preceding whitespace text node, if present.
+     */
+    private void removeChild(Element parent, String tagName) {
+        NodeList children = parent.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node node = children.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE && tagName.equals(localName(node))) {
+                // Remove preceding whitespace text node
+                if (i > 0 && children.item(i - 1).getNodeType() == Node.TEXT_NODE) {
+                    parent.removeChild(children.item(i - 1));
+                    // After removal, the element moved to index i-1
+                    parent.removeChild(children.item(i - 1));
+                } else {
+                    parent.removeChild(node);
+                }
+                return;
+            }
+        }
     }
 
     private int getElementDepth(Node node) {

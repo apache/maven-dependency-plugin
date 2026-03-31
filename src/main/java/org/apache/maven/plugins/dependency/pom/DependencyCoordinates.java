@@ -100,8 +100,9 @@ public class DependencyCoordinates {
         if (artifactId == null || artifactId.isEmpty()) {
             throw new IllegalArgumentException("artifactId must not be null or empty");
         }
-        if (scope != null && !VALID_SCOPES.contains(scope)) {
-            throw new IllegalArgumentException("Invalid scope: '" + scope + "'. Valid scopes are: " + VALID_SCOPES);
+        if (scope != null && !scope.isEmpty() && !"NONE".equals(scope) && !VALID_SCOPES.contains(scope)) {
+            throw new IllegalArgumentException(
+                    "Invalid scope: '" + scope + "'. Valid scopes are: " + VALID_SCOPES + " (or NONE to clear)");
         }
     }
 
