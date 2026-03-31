@@ -182,6 +182,16 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
                 }
                 editor.updateDependency(existing, coords);
                 getLog().info("Updated dependency " + coords + " in " + pomFile.getName());
+            } else if (existsInResolvedModel(targetProject, coords, targetManaged)) {
+                // Dependency exists in the resolved model but not in raw XML — property interpolation
+                if (!updateExisting) {
+                    throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
+                            + " already exists (using property references in the POM). "
+                            + "Use -DupdateExisting to add a literal entry, or edit the POM manually.");
+                }
+                getLog().warn("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
+                        + " exists via property interpolation. Adding a new literal entry.");
+                editor.addDependency(coords, targetManaged);
             } else {
                 editor.addDependency(coords, targetManaged);
                 getLog().info("Added dependency " + coords + " to " + pomFile.getName());
@@ -295,5 +305,35 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    /**
+     * Checks whether the dependency exists in Maven's resolved (interpolated) model.
+     * This catches dependencies declared with property references like {@code ${project.groupId}}.
+     */
+    private static boolean existsInResolvedModel(MavenProject project, DependencyCoordinates coords, boolean managed) {
+        List<Dependency> deps;
+        if (managed) {
+            DependencyManagement depMgmt = project.getDependencyManagement();
+            deps = depMgmt != null ? depMgmt.getDependencies() : null;
+        } else {
+            deps = project.getDependencies();
+        }
+        if (deps == null) {
+            return false;
+        }
+        String searchType = coords.getType() != null ? coords.getType() : "jar";
+        String searchClassifier = coords.getClassifier() != null ? coords.getClassifier() : "";
+        for (Dependency dep : deps) {
+            if (coords.getGroupId().equals(dep.getGroupId())
+                    && coords.getArtifactId().equals(dep.getArtifactId())) {
+                String depType = dep.getType() != null ? dep.getType() : "jar";
+                String depClassifier = dep.getClassifier() != null ? dep.getClassifier() : "";
+                if (searchType.equals(depType) && searchClassifier.equals(depClassifier)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

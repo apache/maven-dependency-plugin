@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -106,6 +107,14 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
                     coords.getGroupId(), coords.getArtifactId(), coords.getType(), coords.getClassifier(), managed);
 
             if (!removed) {
+                // Cross-reference with resolved model to detect property-interpolated coords
+                if (existsInResolvedModel(targetProject, coords, managed)) {
+                    String section = managed ? "<dependencyManagement>" : "<dependencies>";
+                    throw new MojoFailureException("Dependency " + coords.getGroupId() + ":"
+                            + coords.getArtifactId()
+                            + " exists in " + section + " but uses property references in the POM. "
+                            + "Please remove it manually.");
+                }
                 String section = managed ? "<dependencyManagement>" : "<dependencies>";
                 throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
                         + " not found in " + section + ".");
@@ -196,5 +205,35 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
             getLog().warn("The following child modules depend on " + depGroupId + ":" + depArtifactId
                     + " without an explicit version and will break: [" + affected + "]. Proceeding with removal.");
         }
+    }
+
+    /**
+     * Checks whether the dependency exists in Maven's resolved (interpolated) model.
+     * This catches dependencies declared with property references like {@code ${project.groupId}}.
+     */
+    private static boolean existsInResolvedModel(MavenProject project, DependencyCoordinates coords, boolean managed) {
+        java.util.List<Dependency> deps;
+        if (managed) {
+            DependencyManagement depMgmt = project.getDependencyManagement();
+            deps = depMgmt != null ? depMgmt.getDependencies() : null;
+        } else {
+            deps = project.getDependencies();
+        }
+        if (deps == null) {
+            return false;
+        }
+        String searchType = coords.getType() != null ? coords.getType() : "jar";
+        String searchClassifier = coords.getClassifier() != null ? coords.getClassifier() : "";
+        for (Dependency dep : deps) {
+            if (coords.getGroupId().equals(dep.getGroupId())
+                    && coords.getArtifactId().equals(dep.getArtifactId())) {
+                String depType = dep.getType() != null ? dep.getType() : "jar";
+                String depClassifier = dep.getClassifier() != null ? dep.getClassifier() : "";
+                if (searchType.equals(depType) && searchClassifier.equals(depClassifier)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
