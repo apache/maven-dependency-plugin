@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PomEditorTest {
@@ -606,5 +607,29 @@ class PomEditorTest {
         Element defaultMatch = editor.findDependency("com.example", "lib", null, null, false);
         assertNotNull(defaultMatch);
         assertNull(PomEditor.getChildText(defaultMatch, "classifier"));
+    }
+
+    @Test
+    void rejectsNonProjectRootElement() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<settings>\n"
+                + "  <localRepository>/tmp/repo</localRepository>\n"
+                + "</settings>\n";
+        File pomFile = createTempPom(xml);
+        IOException ex = assertThrows(IOException.class, () -> PomEditor.load(pomFile));
+        assertTrue(ex.getMessage().contains("<settings>"));
+    }
+
+    @Test
+    void rejectsDoctypeDeclaration() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<!DOCTYPE project [\n"
+                + "  <!ENTITY xxe \"malicious\">\n"
+                + "]>\n"
+                + "<project>\n"
+                + "  <groupId>&xxe;</groupId>\n"
+                + "</project>\n";
+        File pomFile = createTempPom(xml);
+        assertThrows(IOException.class, () -> PomEditor.load(pomFile));
     }
 }

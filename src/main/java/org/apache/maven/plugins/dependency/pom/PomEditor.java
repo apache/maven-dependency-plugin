@@ -95,8 +95,17 @@ public class PomEditor {
             factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
             factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(pomFile);
+
+            // Verify root element is <project>
+            String rootName = localName(doc.getDocumentElement());
+            if (!"project".equals(rootName)) {
+                throw new IOException(
+                        "Not a valid POM file: expected <project> root element but found <" + rootName + ">");
+            }
 
             Charset encoding = detectEncoding(doc);
             String content = new String(rawBytes, encoding);

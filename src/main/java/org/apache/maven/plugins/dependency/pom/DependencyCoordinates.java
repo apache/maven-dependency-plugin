@@ -18,12 +18,19 @@
  */
 package org.apache.maven.plugins.dependency.pom;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Represents parsed Maven dependency coordinates (GAV + scope/type/classifier).
  * Supports parsing from a colon-separated string in the format:
  * {@code groupId:artifactId[:version[:scope[:type[:classifier]]]]}.
  */
 public class DependencyCoordinates {
+
+    private static final Set<String> VALID_SCOPES =
+            new HashSet<>(Arrays.asList("compile", "provided", "runtime", "test", "system", "import"));
 
     private String groupId;
     private String artifactId;
@@ -92,6 +99,9 @@ public class DependencyCoordinates {
         }
         if (artifactId == null || artifactId.isEmpty()) {
             throw new IllegalArgumentException("artifactId must not be null or empty");
+        }
+        if (scope != null && !VALID_SCOPES.contains(scope)) {
+            throw new IllegalArgumentException("Invalid scope: '" + scope + "'. Valid scopes are: " + VALID_SCOPES);
         }
     }
 

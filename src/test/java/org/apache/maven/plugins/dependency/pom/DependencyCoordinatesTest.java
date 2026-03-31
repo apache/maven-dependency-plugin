@@ -227,4 +227,27 @@ class DependencyCoordinatesTest {
         coords.setType("jar");
         assertEquals("com.example:lib:1.0.0", coords.toString());
     }
+
+    @Test
+    void validateAcceptsValidScopes() {
+        String[] validScopes = {"compile", "provided", "runtime", "test", "system", "import"};
+        for (String scope : validScopes) {
+            DependencyCoordinates coords = new DependencyCoordinates("g", "a");
+            coords.setScope(scope);
+            coords.validate(); // should not throw
+        }
+    }
+
+    @Test
+    void validateRejectsInvalidScope() {
+        DependencyCoordinates coords = new DependencyCoordinates("g", "a");
+        coords.setScope("bananas");
+        assertThrows(IllegalArgumentException.class, coords::validate);
+    }
+
+    @Test
+    void validateAcceptsNullScope() {
+        DependencyCoordinates coords = new DependencyCoordinates("g", "a");
+        coords.validate(); // null scope is fine (defaults to compile)
+    }
 }

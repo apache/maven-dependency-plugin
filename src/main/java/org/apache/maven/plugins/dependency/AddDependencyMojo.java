@@ -184,14 +184,9 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
                 getLog().info("Updated dependency " + coords + " in " + pomFile.getName());
             } else if (existsInResolvedModel(targetProject, coords, targetManaged)) {
                 // Dependency exists in the resolved model but not in raw XML — property interpolation
-                if (!updateExisting) {
-                    throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
-                            + " already exists (using property references in the POM). "
-                            + "Use -DupdateExisting to add a literal entry, or edit the POM manually.");
-                }
-                getLog().warn("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
-                        + " exists via property interpolation. Adding a new literal entry.");
-                editor.addDependency(coords, targetManaged);
+                throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
+                        + " already exists in the POM (using property references). "
+                        + "Cannot safely add or update automatically. Please edit the POM manually.");
             } else {
                 editor.addDependency(coords, targetManaged);
                 getLog().info("Added dependency " + coords + " to " + pomFile.getName());
