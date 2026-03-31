@@ -1,0 +1,163 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.maven.plugins.dependency.pom;
+
+/**
+ * Represents parsed Maven dependency coordinates (GAV + scope/type/classifier).
+ * Supports parsing from a colon-separated string in the format:
+ * {@code groupId:artifactId[:version[:scope[:type[:classifier]]]]}.
+ */
+public class DependencyCoordinates {
+
+    private String groupId;
+    private String artifactId;
+    private String version;
+    private String scope;
+    private String type;
+    private String classifier;
+
+    public DependencyCoordinates() {}
+
+    public DependencyCoordinates(String groupId, String artifactId) {
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+    }
+
+    /**
+     * Parses a colon-separated GAV string.
+     *
+     * @param gav the coordinate string in format {@code groupId:artifactId[:version[:scope[:type[:classifier]]]]}
+     * @return the parsed coordinates
+     * @throws IllegalArgumentException if the string has fewer than 2 or more than 6 segments
+     */
+    public static DependencyCoordinates parse(String gav) {
+        if (gav == null || gav.trim().isEmpty()) {
+            throw new IllegalArgumentException("GAV string must not be null or empty");
+        }
+        String[] tokens = gav.split(":");
+        if (tokens.length < 2 || tokens.length > 6) {
+            throw new IllegalArgumentException("Invalid GAV format: '" + gav
+                    + "'. Expected groupId:artifactId[:version[:scope[:type[:classifier]]]]");
+        }
+        DependencyCoordinates coords = new DependencyCoordinates();
+        coords.groupId = tokens[0].trim();
+        coords.artifactId = tokens[1].trim();
+        if (tokens.length >= 3 && !tokens[2].trim().isEmpty()) {
+            coords.version = tokens[2].trim();
+        }
+        if (tokens.length >= 4 && !tokens[3].trim().isEmpty()) {
+            coords.scope = tokens[3].trim();
+        }
+        if (tokens.length >= 5 && !tokens[4].trim().isEmpty()) {
+            coords.type = tokens[4].trim();
+        }
+        if (tokens.length >= 6 && !tokens[5].trim().isEmpty()) {
+            coords.classifier = tokens[5].trim();
+        }
+        return coords;
+    }
+
+    /**
+     * Validates that required fields are present.
+     *
+     * @throws IllegalArgumentException if groupId or artifactId is missing
+     */
+    public void validate() {
+        if (groupId == null || groupId.isEmpty()) {
+            throw new IllegalArgumentException("groupId must not be null or empty");
+        }
+        if (artifactId == null || artifactId.isEmpty()) {
+            throw new IllegalArgumentException("artifactId must not be null or empty");
+        }
+    }
+
+    /**
+     * Returns the management key used to match dependencies: {@code groupId:artifactId:type[:classifier]}.
+     * This matches how Maven's {@link org.apache.maven.model.Dependency#getManagementKey()} works.
+     */
+    public String getManagementKey() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(groupId).append(':').append(artifactId).append(':');
+        sb.append(type != null ? type : "jar");
+        if (classifier != null && !classifier.isEmpty()) {
+            sb.append(':').append(classifier);
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(groupId).append(':').append(artifactId);
+        if (version != null) {
+            sb.append(':').append(version);
+        }
+        return sb.toString();
+    }
+
+    // Getters and setters
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getClassifier() {
+        return classifier;
+    }
+
+    public void setClassifier(String classifier) {
+        this.classifier = classifier;
+    }
+}
