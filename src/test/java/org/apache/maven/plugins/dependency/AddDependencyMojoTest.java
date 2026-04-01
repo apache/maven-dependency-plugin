@@ -132,7 +132,7 @@ class AddDependencyMojoTest {
     }
 
     @Test
-    void propertyInterpolatedDependencyBlocksEvenWithUpdateExisting() throws Exception {
+    void propertyInterpolatedDependencyBlocksUpdate() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <dependencies>\n"
@@ -156,9 +156,8 @@ class AddDependencyMojoTest {
         setVariableValueToObject(mojo, "groupId", "com.example");
         setVariableValueToObject(mojo, "artifactId", "lib");
         setVariableValueToObject(mojo, "version", "1.0");
-        setVariableValueToObject(mojo, "updateExisting", true);
 
-        // Should still block — no duplicate allowed even with updateExisting
+        // Should still block — property-interpolated deps cannot be safely updated
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
         assertTrue(ex.getMessage().contains("property references"));
     }
@@ -288,35 +287,7 @@ class AddDependencyMojoTest {
     }
 
     @Test
-    void duplicateDependencyWithoutUpdateExistingFails() throws Exception {
-        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<project>\n"
-                + "  <dependencies>\n"
-                + "    <dependency>\n"
-                + "      <groupId>com.example</groupId>\n"
-                + "      <artifactId>lib</artifactId>\n"
-                + "      <version>1.0</version>\n"
-                + "    </dependency>\n"
-                + "  </dependencies>\n"
-                + "</project>\n";
-        when(project.getFile()).thenReturn(createTempPom(pom));
-        Model originalModel = new Model();
-        Dependency d = new Dependency();
-        d.setGroupId("com.example");
-        d.setArtifactId("lib");
-        originalModel.addDependency(d);
-        when(project.getOriginalModel()).thenReturn(originalModel);
-
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
-        setVariableValueToObject(mojo, "version", "2.0");
-
-        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
-        assertTrue(ex.getMessage().contains("already exists"));
-    }
-
-    @Test
-    void updateExistingChangesVersion() throws Exception {
+    void duplicateDependencyUpdatesAutomatically() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <dependencies>\n"
@@ -339,13 +310,12 @@ class AddDependencyMojoTest {
         setVariableValueToObject(mojo, "groupId", "com.example");
         setVariableValueToObject(mojo, "artifactId", "lib");
         setVariableValueToObject(mojo, "version", "2.0");
-        setVariableValueToObject(mojo, "updateExisting", true);
 
         assertDoesNotThrow(() -> mojo.execute());
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<version>2.0</version>"), "version should be updated");
-        assertTrue(!result.contains("<version>1.0</version>"), "old version should be gone");
+        assertFalse(result.contains("<version>1.0</version>"), "old version should be gone");
     }
 
     @Test
@@ -532,7 +502,6 @@ class AddDependencyMojoTest {
         setVariableValueToObject(mojo, "artifactId", "lib");
         setVariableValueToObject(mojo, "version", "1.0");
         setVariableValueToObject(mojo, "scope", "NONE");
-        setVariableValueToObject(mojo, "updateExisting", true);
 
         assertDoesNotThrow(() -> mojo.execute());
 

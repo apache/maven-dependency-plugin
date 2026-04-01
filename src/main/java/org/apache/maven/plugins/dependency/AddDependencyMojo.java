@@ -82,7 +82,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     /**
      * Dependency scope. Validated against Maven's known scope values:
      * {@code compile}, {@code provided}, {@code runtime}, {@code test}, {@code system}, {@code import}.
-     * Use {@code NONE} with {@code -DupdateExisting} to remove an existing scope element.
+     * Use {@code NONE} to remove an existing scope element when updating.
      * Invalid values are rejected with a {@link org.apache.maven.plugin.MojoFailureException}.
      */
     @Parameter(property = "scope")
@@ -101,9 +101,8 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     private String classifier;
 
     /**
-     * Whether the dependency is optional. When updating an existing dependency
-     * ({@code -DupdateExisting}), setting {@code -Doptional=false} explicitly
-     * removes the {@code <optional>} element.
+     * Whether the dependency is optional. Setting {@code -Doptional=false} explicitly
+     * removes the {@code <optional>} element when updating an existing dependency.
      */
     @Parameter(property = "optional")
     private Boolean optional;
@@ -121,12 +120,6 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
      */
     @Parameter(property = "profile")
     private String profile;
-
-    /**
-     * When {@code true} and the dependency already exists, update it. Otherwise fail.
-     */
-    @Parameter(property = "updateExisting", defaultValue = "false")
-    private boolean updateExisting;
 
     /**
      * When {@code true}, add as a BOM import ({@code type=pom}, {@code scope=import})
@@ -195,10 +188,6 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
                     targetManaged);
 
             if (existing != null) {
-                if (!updateExisting) {
-                    throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
-                            + " already exists. Use -DupdateExisting to update it.");
-                }
                 editor.updateDependency(existing, coords);
                 getLog().info("Updated dependency " + coords + " in " + pomFile.getName());
             } else if (existsInResolvedModel(targetProject, coords, targetManaged)) {

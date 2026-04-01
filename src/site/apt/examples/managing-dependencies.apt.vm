@@ -104,19 +104,19 @@ mvn dependency:add -Dgav=com.example:lib:1.0 -Dclassifier=sources
 
 ** Updating an Existing Dependency
 
-  By default, <<<dependency:add>>> fails if the dependency already exists. Use <<<-DupdateExisting>>>
-  to update it instead:
+  If the dependency already exists, <<<dependency:add>>> updates it automatically and logs what changed,
+  similar to <<<cargo add>>> in Rust:
 
 +---+
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -DupdateExisting
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0
 +---+
 
   When updating, you can clear existing fields by setting them to <<<NONE>>>:
 
 +---+
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dscope=NONE -DupdateExisting
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dtype=NONE -DupdateExisting
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dclassifier=NONE -DupdateExisting
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dscope=NONE
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dtype=NONE
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dclassifier=NONE
 +---+
 
   The <<<NONE>>> sentinel removes the corresponding XML element from the dependency.
