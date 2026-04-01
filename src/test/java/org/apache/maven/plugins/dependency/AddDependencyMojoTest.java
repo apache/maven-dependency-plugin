@@ -225,4 +225,27 @@ class AddDependencyMojoTest {
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
         assertTrue(ex.getMessage().contains("property references"));
     }
+
+    @Test
+    void profileNotFoundThrowsClearError() throws Exception {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <profiles>\n"
+                + "    <profile>\n"
+                + "      <id>dev</id>\n"
+                + "    </profile>\n"
+                + "  </profiles>\n"
+                + "</project>\n";
+        when(project.getFile()).thenReturn(createTempPom(pom));
+        Model originalModel = new Model();
+        when(project.getOriginalModel()).thenReturn(originalModel);
+
+        setVariableValueToObject(mojo, "groupId", "com.example");
+        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "version", "1.0");
+        setVariableValueToObject(mojo, "profile", "nonexistent");
+
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("Profile 'nonexistent' not found"));
+    }
 }
