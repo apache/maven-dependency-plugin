@@ -198,8 +198,8 @@ On success, the goal logs:
 Or, when version is managed:
 
 ```
-[INFO] Added dependency com.google.adk:google-adk (scope: test) to pom.xml
 [INFO] Version managed by parent: com.google.adk:google-adk:1.0.0
+[INFO] Added dependency com.google.adk:google-adk [scope=test] to pom.xml
 ```
 
 ### 3.10 Usage Examples
@@ -362,7 +362,7 @@ When interactive mode is disabled (`-Dinteractive=false` or no console available
 [INFO]   com.google.adk           google-adk          1.0.0
 [INFO]   com.google.adk           google-adk-spring   0.5.0
 [INFO]
-[INFO] 2 results found. Use dependency:add to add one to your project:
+[INFO] 2 result(s) found. Use dependency:add to add one to your project:
 [INFO]   mvn dependency:add -Dgav="com.google.adk:google-adk:1.0.0"
 ```
 
@@ -422,8 +422,8 @@ Enter version number, 'b' to go back, or Enter for latest (1.0.0):
 | No network connectivity | `MojoFailureException`: _"Unable to reach Maven Central search API. Check your network connection."_ |
 | HTTP 429 (rate limit) | `MojoFailureException`: _"Maven Central search API rate limit exceeded (HTTP 429). Please wait a moment and try again."_ with server response body if available. |
 | Other HTTP errors (4xx/5xx) | `MojoFailureException` with HTTP status code and server response body (truncated to 500 characters). |
-| Response Content-Type is not JSON | `MojoFailureException`: _"Maven Central search API returned unexpected content type."_ |
-| Response body is not valid JSON | `MojoFailureException`: _"Maven Central search API returned a non-JSON response."_ |
+| Response Content-Type is not JSON | `MojoFailureException`: _"Maven Central search API returned unexpected content type: {type}. Expected a JSON response."_ |
+| Response body is not valid JSON | `MojoFailureException`: _"Maven Central search API returned a non-JSON response. The API endpoint may have changed or returned an error page."_ |
 | API returns malformed JSON | `MojoExecutionException`: _"Failed to parse search API response."_ |
 | Query is empty or blank | `MojoFailureException`: _"Search query must not be empty."_ |
 

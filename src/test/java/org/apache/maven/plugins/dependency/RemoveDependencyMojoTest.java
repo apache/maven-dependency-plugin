@@ -386,4 +386,39 @@ class RemoveDependencyMojoTest {
         assertTrue(ex.getMessage().contains("not found"));
         assertTrue(ex.getMessage().contains("<dependencyManagement>"), "error should mention correct section");
     }
+
+    @Test
+    void moduleTargetingResolvesCorrectProject() throws Exception {
+        File childPom = new File(tempDir, "child-pom.xml");
+        String childPomContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "      <version>1.0</version>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        Files.write(childPom.toPath(), childPomContent.getBytes(StandardCharsets.UTF_8));
+
+        MavenProject childProject = mock(MavenProject.class);
+        when(childProject.getArtifactId()).thenReturn("child-mod");
+        when(childProject.getFile()).thenReturn(childPom);
+        Model childModel = new Model();
+        when(childProject.getOriginalModel()).thenReturn(childModel);
+        when(childProject.getModules()).thenReturn(Collections.emptyList());
+
+        when(session.getProjects()).thenReturn(Arrays.asList(project, childProject));
+
+        setVariableValueToObject(mojo, "module", "child-mod");
+        setVariableValueToObject(mojo, "groupId", "com.example");
+        setVariableValueToObject(mojo, "artifactId", "lib");
+
+        assertDoesNotThrow(() -> mojo.execute());
+
+        String result = new String(Files.readAllBytes(childPom.toPath()), StandardCharsets.UTF_8);
+        assertTrue(
+                !result.contains("<groupId>com.example</groupId>"), "dependency should be removed from child module");
+    }
 }
