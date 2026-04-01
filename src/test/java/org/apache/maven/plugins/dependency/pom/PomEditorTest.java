@@ -756,7 +756,7 @@ class PomEditorTest {
     }
 
     @Test
-    void addDependencyToNewProfile() throws IOException {
+    void addDependencyToExistingProfileWithNoDeps() throws IOException {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <dependencies>\n"
@@ -765,6 +765,11 @@ class PomEditorTest {
                 + "      <artifactId>lib</artifactId>\n"
                 + "    </dependency>\n"
                 + "  </dependencies>\n"
+                + "  <profiles>\n"
+                + "    <profile>\n"
+                + "      <id>test-profile</id>\n"
+                + "    </profile>\n"
+                + "  </profiles>\n"
                 + "</project>\n";
         File pomFile = new File(tempDir, "pom.xml");
         Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
@@ -778,9 +783,7 @@ class PomEditorTest {
         editor.save();
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<profiles>"), "profiles section should be created");
-        assertTrue(result.contains("<profile>"), "profile element should be created");
-        assertTrue(result.contains("<id>test-profile</id>"), "profile id should match");
+        assertTrue(result.contains("<id>test-profile</id>"), "profile id should exist");
         assertTrue(result.contains("<groupId>com.example</groupId>"), "dependency should be added");
         assertTrue(result.contains("<scope>test</scope>"), "scope should be present");
         // Original top-level dependency should still exist
@@ -884,7 +887,7 @@ class PomEditorTest {
     }
 
     @Test
-    void profileNotFoundReturnsNull() throws IOException {
+    void findProfileReturnsNullForNonexistent() throws IOException {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <profiles>\n"
@@ -897,9 +900,19 @@ class PomEditorTest {
         Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
 
         PomEditor editor = PomEditor.load(pomFile);
-        editor.setProfileId("nonexistent");
-        Element found = editor.findDependency("com.example", "lib", false);
-        assertNull(found, "should return null for non-existent profile (no create)");
+        assertNull(editor.findProfile("nonexistent"), "should return null for non-existent profile");
+        assertNotNull(editor.findProfile("dev"), "should find existing profile");
+    }
+
+    @Test
+    void findProfileReturnsNullWhenNoProfilesSection() throws IOException {
+        String xml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "  <dependencies/>\n" + "</project>\n";
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
+
+        PomEditor editor = PomEditor.load(pomFile);
+        assertNull(editor.findProfile("any"), "should return null when no profiles section exists");
     }
 
     private static int countOccurrences(String text, String substring) {

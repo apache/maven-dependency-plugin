@@ -389,11 +389,7 @@ public class PomEditor {
         int baseDepth = 1;
 
         if (profileId != null) {
-            Element profiles = getOrCreateChildElement(root, "profiles", create, 1);
-            if (profiles == null) {
-                return null;
-            }
-            context = findOrCreateProfile(profiles, profileId, create);
+            context = findProfile(profileId);
             if (context == null) {
                 return null;
             }
@@ -412,28 +408,31 @@ public class PomEditor {
     }
 
     /**
-     * Finds or creates a {@code <profile>} element with the given {@code <id>}.
+     * Finds a {@code <profile>} element with the given {@code <id>}.
+     *
+     * @param id the profile id to find
+     * @return the matching profile element, or {@code null} if not found
      */
-    private Element findOrCreateProfile(Element profilesElement, String id, boolean create) {
-        NodeList children = profilesElement.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE && "profile".equals(localName(node))) {
-                String profileIdText = getChildText((Element) node, "id");
-                if (id.equals(profileIdText)) {
-                    return (Element) node;
+    public Element findProfile(String id) {
+        Element root = document.getDocumentElement();
+        NodeList rootChildren = root.getChildNodes();
+        for (int i = 0; i < rootChildren.getLength(); i++) {
+            Node node = rootChildren.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE && "profiles".equals(localName(node))) {
+                NodeList profileChildren = node.getChildNodes();
+                for (int j = 0; j < profileChildren.getLength(); j++) {
+                    Node pNode = profileChildren.item(j);
+                    if (pNode.getNodeType() == Node.ELEMENT_NODE && "profile".equals(localName(pNode))) {
+                        String profileIdText = getChildText((Element) pNode, "id");
+                        if (id.equals(profileIdText)) {
+                            return (Element) pNode;
+                        }
+                    }
                 }
+                break;
             }
         }
-        if (!create) {
-            return null;
-        }
-        // Create new <profile> with <id>
-        Element profile = getOrCreateChildElement(profilesElement, "profile", true, 2);
-        String childIndent = repeatIndent(3);
-        appendChildElement(profile, "id", id, childIndent);
-        ensureClosingIndent(profile, 2);
-        return profile;
+        return null;
     }
 
     private Element getOrCreateChildElement(Element parent, String tagName, boolean create, int depth) {

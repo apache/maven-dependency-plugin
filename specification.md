@@ -75,7 +75,7 @@ Adds a `<dependency>` element to the project's `pom.xml`. If the dependency alre
 | `optional`           | `optional`              | `Boolean` | No       | —         | Whether the dependency is optional. When `true`, adds `<optional>true</optional>`. When explicitly set to `false` with `-DupdateExisting`, removes an existing `<optional>` element. When not specified, the field is left unchanged during updates. |
 | `managed`            | `managed`               | `Boolean` | No       | `false`   | When `true`, insert into `<dependencyManagement>` instead of `<dependencies>`. |
 | `module`             | `module`                | `String`  | No       | —         | Target a specific child module by artifactId when running from the root of a multi-module project. |
-| `profile`            | `profile`               | `String`  | No       | —         | Target a specific Maven profile by its `<id>`. When set, the dependency is added to the profile's `<dependencies>` or `<dependencyManagement>` section. If the profile does not exist, it is created. |
+| `profile`            | `profile`               | `String`  | No       | —         | Target a specific Maven profile by its `<id>`. The profile must already exist in the POM; the goal fails if it is not found. |
 | `updateExisting`     | `updateExisting`        | `Boolean` | No       | `false`   | When `true` and the dependency already exists, update its version (and other specified fields). When `false`, fail with an error if the dependency already exists. |
 | `bom`                | `bom`                   | `Boolean` | No       | `false`   | When `true`, add as a BOM import (`type=pom`, `scope=import`) into `<dependencyManagement>`. See §3.11. |
 | `skip`               | `mdep.skip`             | `Boolean` | No       | `false`   | Skip plugin execution. |
@@ -228,9 +228,6 @@ mvn dependency:add -Dgav="com.google.adk:google-adk:2.0.0" -DupdateExisting
 
 # Add a dependency to a specific profile
 mvn dependency:add -Dgav="com.google.adk:google-adk:1.0.0" -Dprofile=dev
-
-# Add a test dependency to a profile
-mvn dependency:add -Dgav="org.mockito:mockito-core:5.0.0" -Dscope=test -Dprofile=test-support
 ```
 
 ---
@@ -259,7 +256,7 @@ Removes a `<dependency>` element from the project's `pom.xml`. The goal modifies
 | `classifier`      | `classifier`        | `String`  | No       | —         | Dependency classifier for precise matching (e.g., `sources`, `javadoc`, `tests`). Explicit `-Dclassifier` overrides the classifier from `-Dgav`. |
 | `bom`             | `bom`               | `Boolean` | No       | `false`   | When `true`, remove a BOM import (`type=pom`) from `<dependencyManagement>`. Equivalent to `-Dmanaged -Dtype=pom`. |
 | `module`          | `module`            | `String`  | No       | —         | Target a specific child module by artifactId. |
-| `profile`         | `profile`           | `String`  | No       | —         | Target a specific Maven profile by its `<id>`. When set, the dependency is removed from the profile's `<dependencies>` or `<dependencyManagement>` section. |
+| `profile`         | `profile`           | `String`  | No       | —         | Target a specific Maven profile by its `<id>`. The profile must already exist in the POM; the goal fails if it is not found. |
 | `skip`            | `mdep.skip`         | `Boolean` | No       | `false`   | Skip plugin execution. |
 
 > ¹ Either `gav` **or** both `groupId` + `artifactId` must be provided. If both forms are present, `gav` takes precedence.

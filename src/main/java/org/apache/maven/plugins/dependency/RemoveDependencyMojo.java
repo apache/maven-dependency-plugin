@@ -112,6 +112,7 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
     /**
      * Target a specific Maven profile by its {@code <id>}. When set, the dependency is removed
      * from the profile's {@code <dependencies>} or {@code <dependencyManagement>} section.
+     * The profile must already exist in the POM.
      */
     @Parameter(property = "profile")
     private String profile;
@@ -143,6 +144,9 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
         try {
             PomEditor editor = PomEditor.load(pomFile);
             if (profile != null && !profile.isEmpty()) {
+                if (editor.findProfile(profile) == null) {
+                    throw new MojoFailureException("Profile '" + profile + "' not found in " + pomFile.getName() + ".");
+                }
                 editor.setProfileId(profile);
             }
             boolean removed = editor.removeDependency(

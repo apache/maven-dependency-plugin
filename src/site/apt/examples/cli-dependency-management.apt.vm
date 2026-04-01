@@ -140,11 +140,10 @@ mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dmodule=my-service
 ** Adding to a Profile
 
   To add a dependency to a specific Maven profile, use the <<<-Dprofile>>> parameter.
-  If the profile does not exist, it is created automatically:
+  The profile must already exist in the POM:
 
 +---+
 mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dprofile=dev
-mvn dependency:add -Dgav=org.mockito:mockito-core:5.0.0 -Dscope=test -Dprofile=test-support
 +---+
 
 * Removing Dependencies
