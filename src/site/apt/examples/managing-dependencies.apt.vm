@@ -29,6 +29,8 @@ Managing Dependencies
   for managing dependencies directly from the command line: <<<dependency:add>>>,
   <<<dependency:remove>>>, and <<<dependency:search>>>.
 
+%{toc|fromDepth=2}
+
 * Adding Dependencies
 
   The <<<dependency:add>>> goal adds a dependency to your project's <<<pom.xml>>>.
