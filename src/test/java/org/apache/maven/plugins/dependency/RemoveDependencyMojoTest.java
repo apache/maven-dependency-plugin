@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.apache.maven.execution.MavenSession;
@@ -35,6 +36,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -284,5 +286,104 @@ class RemoveDependencyMojoTest {
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(!result.contains("<groupId>com.example</groupId>"), "dependency should be removed");
         assertTrue(result.contains("<id>dev</id>"), "profile should remain");
+    }
+
+    @Test
+    void managedRemovalWithChildModulesWarnsAndProceeds() throws Exception {
+        // Parent POM with managed dependency
+        String parentPom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <modules>\n"
+                + "    <module>child-a</module>\n"
+                + "  </modules>\n"
+                + "  <dependencyManagement>\n"
+                + "    <dependencies>\n"
+                + "      <dependency>\n"
+                + "        <groupId>com.example</groupId>\n"
+                + "        <artifactId>lib</artifactId>\n"
+                + "        <version>1.0</version>\n"
+                + "      </dependency>\n"
+                + "    </dependencies>\n"
+                + "  </dependencyManagement>\n"
+                + "</project>\n";
+        File pomFile = createTempPom(parentPom);
+        when(project.getFile()).thenReturn(pomFile);
+        when(project.getBasedir()).thenReturn(tempDir);
+        when(project.getModules()).thenReturn(Arrays.asList("child-a"));
+
+        // Child module POM that references the dependency without a version
+        File childDir = new File(tempDir, "child-a");
+        childDir.mkdirs();
+        String childPom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <parent>\n"
+                + "    <groupId>com.example</groupId>\n"
+                + "    <artifactId>parent</artifactId>\n"
+                + "    <version>1.0</version>\n"
+                + "  </parent>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        Files.write(new File(childDir, "pom.xml").toPath(), childPom.getBytes(StandardCharsets.UTF_8));
+
+        setVariableValueToObject(mojo, "groupId", "com.example");
+        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "managed", true);
+
+        // Should succeed (warning only, not blocking) — the dependency gets removed
+        assertDoesNotThrow(() -> mojo.execute());
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(!result.contains("<artifactId>lib</artifactId>"), "managed dep should be removed");
+    }
+
+    @Test
+    void missingGroupIdAndArtifactIdFails() throws Exception {
+        when(project.getFile()).thenReturn(createTempPom("<project></project>"));
+
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("You must specify"));
+    }
+
+    @Test
+    void malformedGavFails() throws Exception {
+        when(project.getFile()).thenReturn(createTempPom("<project></project>"));
+
+        setVariableValueToObject(mojo, "gav", "only-one-part");
+
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("GAV"));
+    }
+
+    @Test
+    void removeFromManagedSectionNotFound() throws Exception {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencyManagement>\n"
+                + "    <dependencies>\n"
+                + "      <dependency>\n"
+                + "        <groupId>other</groupId>\n"
+                + "        <artifactId>dep</artifactId>\n"
+                + "        <version>1.0</version>\n"
+                + "      </dependency>\n"
+                + "    </dependencies>\n"
+                + "  </dependencyManagement>\n"
+                + "</project>\n";
+        when(project.getFile()).thenReturn(createTempPom(pom));
+        when(project.getModules()).thenReturn(Collections.emptyList());
+        Model originalModel = new Model();
+        when(project.getOriginalModel()).thenReturn(originalModel);
+
+        setVariableValueToObject(mojo, "groupId", "nonexistent");
+        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "managed", true);
+
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("not found"));
+        assertTrue(ex.getMessage().contains("<dependencyManagement>"), "error should mention correct section");
     }
 }

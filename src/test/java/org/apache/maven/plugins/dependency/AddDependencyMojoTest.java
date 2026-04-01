@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.apache.maven.execution.MavenSession;
@@ -37,6 +38,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -408,5 +410,127 @@ class AddDependencyMojoTest {
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
         assertTrue(ex.getMessage().contains("Version is required"));
+    }
+
+    @Test
+    void versionInferredFromParentDependencyManagement() throws Exception {
+        String pom =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "  <dependencies/>\n" + "</project>\n";
+        File pomFile = createTempPom(pom);
+        when(project.getFile()).thenReturn(pomFile);
+        Model originalModel = new Model();
+        when(project.getOriginalModel()).thenReturn(originalModel);
+        when(project.getModules()).thenReturn(Collections.emptyList());
+
+        // Parent has the dependency managed
+        MavenProject parentProject = mock(MavenProject.class);
+        DependencyManagement parentDepMgmt = new DependencyManagement();
+        Dependency managed = new Dependency();
+        managed.setGroupId("com.example");
+        managed.setArtifactId("lib");
+        managed.setVersion("3.0.0");
+        parentDepMgmt.addDependency(managed);
+        when(parentProject.getDependencyManagement()).thenReturn(parentDepMgmt);
+        when(parentProject.getParent()).thenReturn(null);
+        when(project.getParent()).thenReturn(parentProject);
+        when(project.getDependencyManagement()).thenReturn(null);
+
+        // No version provided — should be inferred
+        setVariableValueToObject(mojo, "groupId", "com.example");
+        setVariableValueToObject(mojo, "artifactId", "lib");
+
+        assertDoesNotThrow(() -> mojo.execute());
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<groupId>com.example</groupId>"));
+        assertTrue(result.contains("<artifactId>lib</artifactId>"));
+        // Version should NOT be in the POM — it's managed by parent
+        assertFalse(result.contains("<version>"), "version should be omitted for managed deps");
+    }
+
+    @Test
+    void parentPomAddWarnsAboutInheritance() throws Exception {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <modules>\n"
+                + "    <module>child-a</module>\n"
+                + "  </modules>\n"
+                + "</project>\n";
+        File pomFile = createTempPom(pom);
+        when(project.getFile()).thenReturn(pomFile);
+        Model originalModel = new Model();
+        when(project.getOriginalModel()).thenReturn(originalModel);
+        when(project.getModules()).thenReturn(Arrays.asList("child-a"));
+
+        setVariableValueToObject(mojo, "groupId", "com.example");
+        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "version", "1.0");
+
+        // Should succeed but log a warning about inheritance
+        assertDoesNotThrow(() -> mojo.execute());
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<groupId>com.example</groupId>"));
+    }
+
+    @Test
+    void missingGroupIdAndArtifactIdFails() throws Exception {
+        when(project.getFile()).thenReturn(createTempPom("<project></project>"));
+
+        // Neither gav nor groupId+artifactId
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("You must specify"));
+    }
+
+    @Test
+    void malformedGavFails() throws Exception {
+        when(project.getFile()).thenReturn(createTempPom("<project></project>"));
+
+        setVariableValueToObject(mojo, "gav", "only-one-part");
+
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("GAV"));
+    }
+
+    @Test
+    void bomFlagClearsClassifier() throws Exception {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "</project>\n";
+        File pomFile = createTempPom(pom);
+        when(project.getFile()).thenReturn(pomFile);
+        Model originalModel = new Model();
+        when(project.getOriginalModel()).thenReturn(originalModel);
+
+        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0:compile:jar:sources");
+        setVariableValueToObject(mojo, "bom", true);
+
+        assertDoesNotThrow(() -> mojo.execute());
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<type>pom</type>"));
+        assertTrue(result.contains("<scope>import</scope>"));
+        assertFalse(result.contains("<classifier>"), "classifier should be cleared by -Dbom");
+    }
+
+    @Test
+    void explicitParamsOverrideGav() throws Exception {
+        String pom =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "  <dependencies/>\n" + "</project>\n";
+        File pomFile = createTempPom(pom);
+        when(project.getFile()).thenReturn(pomFile);
+        Model originalModel = new Model();
+        when(project.getOriginalModel()).thenReturn(originalModel);
+        when(project.getModules()).thenReturn(Collections.emptyList());
+
+        // GAV has version 1.0, explicit -Dversion overrides to 2.0
+        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0");
+        setVariableValueToObject(mojo, "version", "2.0");
+        setVariableValueToObject(mojo, "scope", "test");
+
+        assertDoesNotThrow(() -> mojo.execute());
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<version>2.0</version>"), "explicit -Dversion should override gav");
+        assertTrue(result.contains("<scope>test</scope>"), "explicit -Dscope should override");
+        assertFalse(result.contains("<version>1.0</version>"), "gav version should be overridden");
     }
 }

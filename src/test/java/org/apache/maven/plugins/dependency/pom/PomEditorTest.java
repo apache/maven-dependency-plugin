@@ -941,6 +941,58 @@ class PomEditorTest {
         assertTrue(result.contains("<id>dev</id>"), "profile id should remain");
     }
 
+    @Test
+    void removeDependencyWhenSectionAbsentReturnsFalse() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <modelVersion>4.0.0</modelVersion>\n"
+                + "</project>\n";
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
+
+        PomEditor editor = PomEditor.load(pomFile);
+        assertFalse(
+                editor.removeDependency("com.example", "lib", false),
+                "should return false when no dependencies section exists");
+        assertFalse(
+                editor.removeDependency("com.example", "lib", true),
+                "should return false when no dependencyManagement section exists");
+    }
+
+    @Test
+    void updateDependencyTypeAndClassifierAndOptional() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "      <version>1.0</version>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
+
+        PomEditor editor = PomEditor.load(pomFile);
+        Element dep = editor.findDependency("com.example", "lib", false);
+        assertNotNull(dep);
+
+        DependencyCoordinates coords = new DependencyCoordinates("com.example", "lib");
+        coords.setVersion("2.0");
+        coords.setType("pom");
+        coords.setClassifier("sources");
+        coords.setOptional(true);
+        editor.updateDependency(dep, coords);
+        editor.save();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<version>2.0</version>"), "version should be updated");
+        assertTrue(result.contains("<type>pom</type>"), "type should be set");
+        assertTrue(result.contains("<classifier>sources</classifier>"), "classifier should be set");
+        assertTrue(result.contains("<optional>true</optional>"), "optional should be set");
+    }
+
     private static int countOccurrences(String text, String substring) {
         int count = 0;
         int idx = 0;

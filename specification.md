@@ -80,7 +80,7 @@ Adds a `<dependency>` element to the project's `pom.xml`. If the dependency alre
 | `bom`                | `bom`                   | `Boolean` | No       | `false`   | When `true`, add as a BOM import (`type=pom`, `scope=import`) into `<dependencyManagement>`. See §3.11. |
 | `skip`               | `mdep.skip`             | `Boolean` | No       | `false`   | Skip plugin execution. |
 
-> ¹ Either `gav` **or** both `groupId` + `artifactId` must be provided. If both forms are present, `gav` takes precedence.
+> ¹ Either `gav` **or** both `groupId` + `artifactId` must be provided. If both forms are present, `gav` is parsed first, but explicit `-D` parameters (`-Dversion`, `-Dscope`, `-Dtype`, `-Dclassifier`) override the corresponding fields from `gav`.
 >
 > ² Version is required when adding to `<dependencyManagement>` (`-Dmanaged`). When adding to `<dependencies>`, version is optional if the dependency is already declared in an ancestor's `<dependencyManagement>` — in that case the `<version>` element is omitted from the inserted XML, following Maven convention.
 
@@ -259,21 +259,21 @@ Removes a `<dependency>` element from the project's `pom.xml`. The goal modifies
 | `profile`         | `profile`           | `String`  | No       | —         | Target a specific Maven profile by its `<id>`. The profile must already exist in the POM; the goal fails if it is not found. |
 | `skip`            | `mdep.skip`         | `Boolean` | No       | `false`   | Skip plugin execution. |
 
-> ¹ Either `gav` **or** both `groupId` + `artifactId` must be provided. If both forms are present, `gav` takes precedence.
+> ¹ Either `gav` **or** both `groupId` + `artifactId` must be provided. If both forms are present, `gav` is parsed first, but explicit `-Dtype` and `-Dclassifier` parameters override the corresponding fields from `gav`.
 
 ### 4.4 Behavior
 
 1. The goal locates the `<dependency>` element matching the given `groupId`, `artifactId`, `type`, and `classifier` in the target section (`<dependencies>` or `<dependencyManagement><dependencies>`).
 2. If found, the entire `<dependency>` element is removed, along with any contiguous preceding XML comment and whitespace nodes associated with it.
-3. If **not found**, the goal **fails** with a `MojoFailureException`: _"Dependency groupId:artifactId not found in `<dependencies>`."_
-4. If not found in the raw XML but detected in Maven's resolved original model (indicating the dependency uses property references like `${project.groupId}`), the goal **fails** with a message: _"Dependency groupId:artifactId exists in `<dependencies>` but uses property references in the POM. Please remove it manually."_
+3. If **not found**, the goal **fails** with a `MojoFailureException`: _"Dependency groupId:artifactId not found in `<section>`."_ (where `<section>` is `<dependencies>` or `<dependencyManagement>` as appropriate).
+4. If not found in the raw XML but detected in Maven's resolved original model (indicating the dependency uses property references like `${project.groupId}`), the goal **fails** with a message: _"Dependency groupId:artifactId exists in `<section>` but uses property references in the POM. Please remove it manually."_
 
 ### 4.5 Behavior: Managed Dependency Removal Safety Check
 
 When removing a dependency from `<dependencyManagement>` in a parent POM (i.e., the current project has `<modules>`), the goal performs a safety check:
 
 1. Scan all child module `pom.xml` files for references to the same `groupId:artifactId` in their `<dependencies>` section **without** an explicit `<version>`.
-2. If any such references are found, emit a **warning** listing the affected modules: _"Warning: The following child modules depend on groupId:artifactId without an explicit version and will break: [module-a, module-b]. Proceeding with removal."_
+2. If any such references are found, emit a **warning** listing the affected modules: _"The following child modules depend on groupId:artifactId without an explicit version and will break: [module-a, module-b]. Proceeding with removal."_
 3. The removal **proceeds** despite the warning (it is not a blocking error). Users who want a blocking check can integrate this into a CI validation step.
 
 ### 4.6 Output
@@ -326,7 +326,7 @@ Queries Maven Central's search API for artifacts matching a given search term an
 | Parameter       | Property           | Type      | Required | Default                                          | Description |
 |-----------------|--------------------|-----------|----------|--------------------------------------------------|-------------|
 | `query`         | `query`            | `String`  | Yes      | —                                                | Free-text search term, or a structured query (e.g., `g:com.google.adk`, `a:google-adk`). |
-| `rows`          | `rows`             | `Integer` | No       | `10`                                             | Maximum number of results to return. |
+| `rows`          | `rows`             | `Integer` | No       | `10`                                             | Maximum number of results to return. Must be a positive integer (≥ 1). |
 | `repositoryUrl` | `repositoryUrl`    | `String`  | No       | `https://search.maven.org/solrsearch/select`     | Maven Central Search v2 REST API endpoint. Can be overridden for private registries that expose a compatible API. |
 | `interactive`   | `interactive`      | `Boolean` | No       | `true`                                           | Enable interactive mode. When enabled and a console is available, results are shown as a numbered list for browsing and selection. Automatically disabled when no console is available (e.g., piped output or CI environments). Can be explicitly disabled with `-Dinteractive=false`. |
 | `skip`          | `mdep.skip`        | `Boolean` | No       | `false`                                          | Skip plugin execution. |
@@ -510,8 +510,7 @@ Update `src/site/site.xml` to add navigation entries for the new goals.
 
 **Phase 1 — Core infrastructure**
 - `DependencyCoordinates`: GAV parsing, validation, coordinate representation
-- `PomEditor`: DOM-based XML read/write with formatting preservation
-- `DependencyInserter`: Insert, update, and remove `<dependency>` elements
+- `PomEditor`: DOM-based XML read/write with formatting preservation, including insert, update, and remove operations for `<dependency>` elements
 - Unit tests for all utility classes
 
 **Phase 2 — `dependency:add` goal**
@@ -568,7 +567,7 @@ The following questions were evaluated and resolved:
 | 2 | **Exclusions** — inline `-Dexclusions` parameter | **No** | Exclusions should be added manually via POM editing. Keeps the CLI surface simple. |
 | 3 | **Dry-run mode** — `-DdryRun` flag to preview changes | **No** | Not needed for the initial implementation. Users can rely on version control to review changes. |
 | 4 | **Sorting** — insertion order for new dependencies | **Always append** | New dependencies are appended to the end of the `<dependencies>` or `<dependencyManagement>` list. No auto-sorting. |
-| 5 | **Search API** — legacy Solr vs. newer REST API | **Newer REST API only** | Target `search.maven.org` v2 REST API. The legacy Solr API is being phased out. |
+| 5 | **Search API** — legacy Solr vs. newer REST API | **Solr-compatible REST API** | Target `search.maven.org` Solr-compatible endpoint (`/solrsearch/select`). The `repositoryUrl` parameter allows overriding the endpoint for forward compatibility or private registries. |
 | 6 | **Property references** — create `<properties>` entries for versions | **No, always literal** | Always insert the literal version string. Property extraction is a stylistic choice best left to the developer.  |
 
 ### 8.1 Implementation Safety Measures

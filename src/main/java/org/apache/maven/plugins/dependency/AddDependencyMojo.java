@@ -289,8 +289,12 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         if (coords.getScope() != null || coords.getType() != null) {
             getLog().warn("The -Dbom flag overrides scope and type. Using scope=import and type=pom.");
         }
+        if (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) {
+            getLog().warn("The -Dbom flag clears classifier. BOM imports must not have a classifier.");
+        }
         coords.setScope("import");
         coords.setType("pom");
+        coords.setClassifier(null);
     }
 
     private String findManagedVersion(MavenProject project, String groupId, String artifactId) {

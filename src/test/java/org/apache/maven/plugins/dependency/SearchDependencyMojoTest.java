@@ -20,10 +20,14 @@ package org.apache.maven.plugins.dependency;
 
 import java.util.List;
 
+import org.apache.maven.plugin.MojoFailureException;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SearchDependencyMojoTest {
 
@@ -133,5 +137,24 @@ class SearchDependencyMojoTest {
         String empty = "{\"response\":{\"numFound\":0,\"docs\":[]}}";
         List<String> versions = SearchDependencyMojo.extractVersionList(empty);
         assertEquals(0, versions.size());
+    }
+
+    @Test
+    void emptyQueryFails() throws Exception {
+        SearchDependencyMojo mojo = new SearchDependencyMojo();
+        setVariableValueToObject(mojo, "query", "   ");
+
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("query"));
+    }
+
+    @Test
+    void negativeRowsFails() throws Exception {
+        SearchDependencyMojo mojo = new SearchDependencyMojo();
+        setVariableValueToObject(mojo, "query", "test-lib");
+        setVariableValueToObject(mojo, "rows", 0);
+
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("positive integer"));
     }
 }
