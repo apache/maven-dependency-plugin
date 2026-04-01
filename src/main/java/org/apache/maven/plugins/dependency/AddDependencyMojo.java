@@ -42,8 +42,7 @@ import org.w3c.dom.Element;
  * with version inference from managed dependencies and BOM import shorthand.
  *
  * <p>If the dependency already exists, it is updated automatically (version, scope, etc.)
- * and the change is logged. This matches the behavior of {@code cargo add}, {@code npm install},
- * and other package managers.</p>
+ * and the change is logged.</p>
  *
  * <p>The goal uses formatting-preserving DOM manipulation to maintain the POM's
  * existing structure (comments, indentation, encoding). Duplicate detection uses

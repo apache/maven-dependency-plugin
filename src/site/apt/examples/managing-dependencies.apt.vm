@@ -106,8 +106,7 @@ mvn dependency:add -Dgav=com.example:lib:1.0 -Dclassifier=sources
 
 ** Updating an Existing Dependency
 
-  If the dependency already exists, <<<dependency:add>>> updates it automatically and logs what changed,
-  similar to <<<cargo add>>> in Rust:
+  If the dependency already exists, <<<dependency:add>>> updates it automatically and logs what changed:
 
 +---+
 mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0
