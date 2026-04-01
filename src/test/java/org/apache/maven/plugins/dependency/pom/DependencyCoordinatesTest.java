@@ -138,20 +138,6 @@ class DependencyCoordinatesTest {
     }
 
     @Test
-    void managementKeyDefaultType() {
-        DependencyCoordinates coords = new DependencyCoordinates("com.example", "my-lib");
-        assertEquals("com.example:my-lib:jar", coords.getManagementKey());
-    }
-
-    @Test
-    void managementKeyWithTypeAndClassifier() {
-        DependencyCoordinates coords = new DependencyCoordinates("com.example", "my-lib");
-        coords.setType("pom");
-        coords.setClassifier("sources");
-        assertEquals("com.example:my-lib:pom:sources", coords.getManagementKey());
-    }
-
-    @Test
     void toStringWithVersion() {
         DependencyCoordinates coords = DependencyCoordinates.parse("com.example:my-lib:2.0.0");
         assertEquals("com.example:my-lib:2.0.0", coords.toString());

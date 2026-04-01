@@ -48,6 +48,8 @@ import org.xml.sax.SAXException;
  * Formatting-preserving POM editor using DOM-level XML parsing.
  * Preserves comments, whitespace, indentation style, XML namespaces,
  * BOM markers, and XML declarations when modifying {@code pom.xml} files.
+ *
+ * @since 3.11.0
  */
 public class PomEditor {
 
@@ -358,7 +360,7 @@ public class PomEditor {
                 bytes = withBom;
             }
 
-            // Atomic write: write to temp file in same directory, then rename
+            // Write to temp file in same directory, then rename to reduce corruption risk
             File tempFile = File.createTempFile("pom", ".xml.tmp", pomFile.getParentFile());
             try {
                 Files.write(tempFile.toPath(), bytes);
@@ -643,7 +645,7 @@ public class PomEditor {
      * the most common smallest indent unit (GCD of leading whitespace lengths).
      */
     static String detectIndent(String content) {
-        String[] lines = content.split("\\r?\\n");
+        String[] lines = content.split("\\r\\n|\\r|\\n");
         Map<Character, int[]> charCounts = new HashMap<>();
 
         for (String line : lines) {

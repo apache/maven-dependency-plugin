@@ -26,6 +26,8 @@ import java.util.Set;
  * Represents parsed Maven dependency coordinates (GAV + scope/type/classifier).
  * Supports parsing from a colon-separated string in the format:
  * {@code groupId:artifactId[:version[:scope[:type[:classifier]]]]}.
+ *
+ * @since 3.11.0
  */
 public class DependencyCoordinates {
 
@@ -104,20 +106,6 @@ public class DependencyCoordinates {
             throw new IllegalArgumentException(
                     "Invalid scope: '" + scope + "'. Valid scopes are: " + VALID_SCOPES + " (or NONE to clear)");
         }
-    }
-
-    /**
-     * Returns the management key used to match dependencies: {@code groupId:artifactId:type[:classifier]}.
-     * This matches how Maven's {@link org.apache.maven.model.Dependency#getManagementKey()} works.
-     */
-    public String getManagementKey() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(groupId).append(':').append(artifactId).append(':');
-        sb.append(type != null ? type : "jar");
-        if (classifier != null && !classifier.isEmpty()) {
-            sb.append(':').append(classifier);
-        }
-        return sb.toString();
     }
 
     @Override

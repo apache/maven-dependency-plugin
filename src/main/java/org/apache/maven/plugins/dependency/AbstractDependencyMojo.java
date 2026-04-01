@@ -163,9 +163,10 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
      * @throws MojoFailureException if the module is not found in the reactor
      */
     protected MavenProject resolveTargetProject(String module) throws MojoFailureException {
-        if (module == null || module.isEmpty()) {
+        if (module == null || module.trim().isEmpty()) {
             return getProject();
         }
+        module = module.trim();
         List<MavenProject> reactorProjects = session.getProjects();
         if (reactorProjects == null || reactorProjects.isEmpty()) {
             throw new MojoFailureException(

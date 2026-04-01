@@ -109,10 +109,6 @@ public class SearchDependencyMojo extends AbstractMojo {
         }
     }
 
-    String performSearch() throws MojoExecutionException, MojoFailureException {
-        return performSearch(query.trim(), rows, false);
-    }
-
     /**
      * Queries the Maven Central search API.
      *
@@ -234,38 +230,29 @@ public class SearchDependencyMojo extends AbstractMojo {
                 return;
             }
 
-            // Calculate column widths
-            int maxGroupId = "groupId".length();
-            int maxArtifactId = "artifactId".length();
-            int maxVersion = "latest version".length();
-
-            for (String[] artifact : artifacts) {
-                maxGroupId = Math.max(maxGroupId, artifact[0].length());
-                maxArtifactId = Math.max(maxArtifactId, artifact[1].length());
-                maxVersion = Math.max(maxVersion, artifact[2].length());
-            }
-
-            String headerFmt = "  %-" + maxGroupId + "s  %-" + maxArtifactId + "s  %-" + maxVersion + "s";
+            int[] colWidths = calculateColumnWidths(artifacts);
+            String headerFmt = "  %-" + colWidths[0] + "s  %-" + colWidths[1] + "s  %-" + colWidths[2] + "s";
             getLog().info(String.format(headerFmt, "groupId", "artifactId", "latest version"));
-
-            int lineLen = maxGroupId + maxArtifactId + maxVersion + 6;
-            StringBuilder separator = new StringBuilder("  ");
-            for (int i = 0; i < lineLen; i++) {
-                separator.append('\u2500');
-            }
-            getLog().info(separator.toString());
+            getLog().info(buildSeparator(colWidths[0] + colWidths[1] + colWidths[2] + 6));
 
             String firstGav = null;
             for (String[] artifact : artifacts) {
                 getLog().info(String.format(headerFmt, artifact[0], artifact[1], artifact[2]));
                 if (firstGav == null) {
-                    firstGav = artifact[0] + ":" + artifact[1] + ":" + artifact[2];
+                    String version = artifact[2];
+                    if (version != null && !version.isEmpty()) {
+                        firstGav = artifact[0] + ":" + artifact[1] + ":" + version;
+                    }
                 }
             }
 
             getLog().info("");
-            getLog().info(artifacts.size() + " result(s) found. Use dependency:add to add one to your project:");
-            getLog().info("  mvn dependency:add -Dgav=\"" + firstGav + "\"");
+            if (firstGav != null) {
+                getLog().info(artifacts.size() + " result(s) found. Use dependency:add to add one to your project:");
+                getLog().info("  mvn dependency:add -Dgav=\"" + firstGav + "\"");
+            } else {
+                getLog().info(artifacts.size() + " result(s) found.");
+            }
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to parse search API response.", e);
         }
@@ -354,29 +341,15 @@ public class SearchDependencyMojo extends AbstractMojo {
     }
 
     private void displayNumberedResults(List<String[]> artifacts, int totalFound) {
-        int maxGroupId = "groupId".length();
-        int maxArtifactId = "artifactId".length();
-        int maxVersion = "latest version".length();
-
-        for (String[] artifact : artifacts) {
-            maxGroupId = Math.max(maxGroupId, artifact[0].length());
-            maxArtifactId = Math.max(maxArtifactId, artifact[1].length());
-            maxVersion = Math.max(maxVersion, artifact[2].length());
-        }
+        int[] colWidths = calculateColumnWidths(artifacts);
 
         int numWidth = String.valueOf(artifacts.size()).length();
-        String fmt = "  %" + numWidth + "d  %-" + maxGroupId + "s  %-" + maxArtifactId + "s  %-" + maxVersion + "s";
+        String fmt = "  %" + numWidth + "d  %-" + colWidths[0] + "s  %-" + colWidths[1] + "s  %-" + colWidths[2] + "s";
         String headerFmt =
-                "  %" + numWidth + "s  %-" + maxGroupId + "s  %-" + maxArtifactId + "s  %-" + maxVersion + "s";
+                "  %" + numWidth + "s  %-" + colWidths[0] + "s  %-" + colWidths[1] + "s  %-" + colWidths[2] + "s";
 
         getLog().info(String.format(headerFmt, "#", "groupId", "artifactId", "latest version"));
-
-        int lineLen = numWidth + 2 + maxGroupId + maxArtifactId + maxVersion + 6;
-        StringBuilder separator = new StringBuilder("  ");
-        for (int i = 0; i < lineLen; i++) {
-            separator.append('\u2500');
-        }
-        getLog().info(separator.toString());
+        getLog().info(buildSeparator(numWidth + 2 + colWidths[0] + colWidths[1] + colWidths[2] + 6));
 
         for (int i = 0; i < artifacts.size(); i++) {
             String[] a = artifacts.get(i);
@@ -489,6 +462,32 @@ public class SearchDependencyMojo extends AbstractMojo {
         getLog().info("");
         getLog().info("To dependencyManagement:");
         getLog().info("  mvn dependency:add -Dgav=\"" + gav + "\" -Dmanaged");
+    }
+
+    /**
+     * Calculates minimum column widths for groupId, artifactId, and version columns.
+     */
+    private static int[] calculateColumnWidths(List<String[]> artifacts) {
+        int maxGroupId = "groupId".length();
+        int maxArtifactId = "artifactId".length();
+        int maxVersion = "latest version".length();
+        for (String[] artifact : artifacts) {
+            maxGroupId = Math.max(maxGroupId, artifact[0].length());
+            maxArtifactId = Math.max(maxArtifactId, artifact[1].length());
+            maxVersion = Math.max(maxVersion, artifact[2].length());
+        }
+        return new int[] {maxGroupId, maxArtifactId, maxVersion};
+    }
+
+    /**
+     * Builds a horizontal separator line of box-drawing characters.
+     */
+    private static String buildSeparator(int length) {
+        StringBuilder sb = new StringBuilder("  ");
+        for (int i = 0; i < length; i++) {
+            sb.append('\u2500');
+        }
+        return sb.toString();
     }
 
     /**
