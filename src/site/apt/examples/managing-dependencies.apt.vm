@@ -16,14 +16,14 @@
 ~~ under the License.    
  
   ------
-  CLI Dependency Management
+  Managing Dependencies
   ------
   Bruno Borges
   ------
   2025-06-01
   ------
 
-CLI Dependency Management
+Managing Dependencies
 
   Starting with version 3.11.0, the Maven Dependency Plugin provides three goals
   for managing dependencies directly from the command line: <<<dependency:add>>>,
