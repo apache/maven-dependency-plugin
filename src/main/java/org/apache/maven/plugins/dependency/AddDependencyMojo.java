@@ -115,12 +115,6 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     private boolean managed;
 
     /**
-     * Target a specific child module by artifactId when running from the root of a multi-module project.
-     */
-    @Parameter(property = "module")
-    private String module;
-
-    /**
      * Target a specific Maven profile by its {@code <id>}. When set, the dependency is added
      * to the profile's {@code <dependencies>} or {@code <dependencyManagement>} section.
      * The profile must already exist in the POM.
@@ -154,7 +148,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             handleBomFlag(coords);
         }
 
-        MavenProject targetProject = resolveTargetProject(module);
+        MavenProject targetProject = getProject();
         boolean targetManaged = managed || bom;
 
         // Validate version requirements
@@ -179,8 +173,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         // Warn when adding to parent <dependencies> (not managed) in a multi-module project
         if (!targetManaged
                 && targetProject.getModules() != null
-                && !targetProject.getModules().isEmpty()
-                && module == null) {
+                && !targetProject.getModules().isEmpty()) {
             getLog().warn("Adding dependency to parent POM — this will be inherited by all child modules. "
                     + "Use -Dmanaged to add to <dependencyManagement> instead.");
         }

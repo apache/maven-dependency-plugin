@@ -74,7 +74,6 @@ Adds a `<dependency>` element to the project's `pom.xml`. If the dependency alre
 | `classifier`         | `classifier`            | `String`  | No       | —         | Dependency classifier (e.g., `sources`, `javadoc`, `tests`). Use `NONE` with `-DupdateExisting` to remove an existing `<classifier>` element. |
 | `optional`           | `optional`              | `Boolean` | No       | —         | Whether the dependency is optional. When `true`, adds `<optional>true</optional>`. When explicitly set to `false` with `-DupdateExisting`, removes an existing `<optional>` element. When not specified, the field is left unchanged during updates. |
 | `managed`            | `managed`               | `Boolean` | No       | `false`   | When `true`, insert into `<dependencyManagement>` instead of `<dependencies>`. |
-| `module`             | `module`                | `String`  | No       | —         | Target a specific child module by artifactId when running from the root of a multi-module project. |
 | `profile`            | `profile`               | `String`  | No       | —         | Target a specific Maven profile by its `<id>`. The profile must already exist in the POM; the goal fails if it is not found. |
 | `updateExisting`     | `updateExisting`        | `Boolean` | No       | `false`   | When `true` and the dependency already exists, update its version (and other specified fields). When `false`, fail with an error if the dependency already exists. |
 | `bom`                | `bom`                   | `Boolean` | No       | `false`   | When `true`, add as a BOM import (`type=pom`, `scope=import`) into `<dependencyManagement>`. See §3.11. |
@@ -131,16 +130,22 @@ When the target `pom.xml` already contains a dependency with the same `groupId`,
 
 ### 3.6 Behavior: Multi-Module Projects
 
+In multi-module projects, use Maven's built-in `-pl` (project list) flag to target a specific module:
+
+```bash
+# Add to a specific child module from the root
+mvn dependency:add -Dgav="com.google.adk:google-adk:1.0.0" -pl my-service
+
+# Add to dependencyManagement in the parent
+mvn dependency:add -Dgav="com.google.adk:google-adk:1.0.0" -Dmanaged
+```
+
 | Execution context | `-Dmanaged` | Behavior |
 |-------------------|-------------|----------|
-| Child module directory | `false` | Dependency added to the child module's `<dependencies>`. |
-| Child module directory | `true` | Dependency added to the child module's `<dependencyManagement>`. |
+| Child module directory (or `-pl child`) | `false` | Dependency added to the child module's `<dependencies>`. |
+| Child module directory (or `-pl child`) | `true` | Dependency added to the child module's `<dependencyManagement>`. |
 | Root/parent directory | `false` | Dependency added to the parent's `<dependencies>`. **Warning emitted:** _"Adding dependency to parent POM — this will be inherited by all child modules. Use -Dmanaged to add to `<dependencyManagement>` instead."_ |
 | Root/parent directory | `true` | Dependency added to the parent's `<dependencyManagement>`. |
-| Root directory with `-Dmodule=X` | `false` | Dependency added to module X's `<dependencies>`. |
-| Root directory with `-Dmodule=X` | `true` | Dependency added to module X's `<dependencyManagement>`. |
-
-When `-Dmodule` is specified but the module is not found among the reactor modules, the goal **fails** with a `MojoFailureException`.
 
 ### 3.7 Version Inference
 
@@ -220,8 +225,8 @@ mvn dependency:add -Dgav="com.google.adk:google-adk:1.0.0:test"
 # Add to dependencyManagement
 mvn dependency:add -Dgav="com.google.adk:google-adk:1.0.0" -Dmanaged
 
-# Add to a specific child module from root
-mvn dependency:add -Dgav="com.google.adk:google-adk:1.0.0" -Dmodule=my-service
+# Add to a specific child module from root (using Maven's -pl)
+mvn dependency:add -Dgav="com.google.adk:google-adk:1.0.0" -pl my-service
 
 # Update an existing dependency's version
 mvn dependency:add -Dgav="com.google.adk:google-adk:2.0.0" -DupdateExisting
@@ -255,7 +260,6 @@ Removes a `<dependency>` element from the project's `pom.xml`. The goal modifies
 | `type`            | `type`              | `String`  | No       | —         | Dependency type for precise matching (e.g., `pom`, `war`, `test-jar`). When not specified, defaults to `jar`. Explicit `-Dtype` overrides the type from `-Dgav`. |
 | `classifier`      | `classifier`        | `String`  | No       | —         | Dependency classifier for precise matching (e.g., `sources`, `javadoc`, `tests`). Explicit `-Dclassifier` overrides the classifier from `-Dgav`. |
 | `bom`             | `bom`               | `Boolean` | No       | `false`   | When `true`, remove a BOM import (`type=pom`) from `<dependencyManagement>`. Equivalent to `-Dmanaged -Dtype=pom`. |
-| `module`          | `module`            | `String`  | No       | —         | Target a specific child module by artifactId. |
 | `profile`         | `profile`           | `String`  | No       | —         | Target a specific Maven profile by its `<id>`. The profile must already exist in the POM; the goal fails if it is not found. |
 | `skip`            | `mdep.skip`         | `Boolean` | No       | `false`   | Skip plugin execution. |
 
@@ -300,8 +304,8 @@ mvn dependency:remove -Dgav="org.springframework.boot:spring-boot-dependencies" 
 # Remove a specific type variant (test-jar)
 mvn dependency:remove -DgroupId=com.example -DartifactId=lib -Dtype=test-jar
 
-# Remove from a specific child module
-mvn dependency:remove -Dgav="com.google.adk:google-adk" -Dmodule=my-service
+# Remove from a specific child module (using Maven's -pl)
+mvn dependency:remove -Dgav="com.google.adk:google-adk" -pl my-service
 
 # Remove a dependency from a specific profile
 mvn dependency:remove -Dgav="com.google.adk:google-adk" -Dprofile=dev
@@ -516,7 +520,7 @@ Update `src/site/site.xml` to add navigation entries for the new goals.
 **Phase 2 — `dependency:add` goal**
 - `AddDependencyMojo` implementation
 - Version inference from `<dependencyManagement>` hierarchy
-- Multi-module support (`-Dmodule`)
+- Multi-module support via Maven's `-pl` flag
 - Unit tests and integration tests
 
 **Phase 3 — `dependency:remove` goal**

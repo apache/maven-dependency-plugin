@@ -102,12 +102,6 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
     private boolean bom;
 
     /**
-     * Target a specific child module by artifactId.
-     */
-    @Parameter(property = "module")
-    private String module;
-
-    /**
      * Target a specific Maven profile by its {@code <id>}. When set, the dependency is removed
      * from the profile's {@code <dependencies>} or {@code <dependencyManagement>} section.
      * The profile must already exist in the POM.
@@ -129,7 +123,7 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
         }
 
         boolean targetManaged = managed || bom;
-        MavenProject targetProject = resolveTargetProject(module);
+        MavenProject targetProject = getProject();
         File pomFile = targetProject.getFile();
 
         // Safety check for managed dependency removal in parent POM

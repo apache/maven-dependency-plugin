@@ -155,33 +155,6 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
     }
 
     /**
-     * Resolves the target project for dependency operations. If {@code module} is non-null,
-     * searches the reactor projects for a matching artifactId.
-     *
-     * @param module the module artifactId to target, or {@code null} for the current project
-     * @return the resolved target project
-     * @throws MojoFailureException if the module is not found in the reactor
-     */
-    protected MavenProject resolveTargetProject(String module) throws MojoFailureException {
-        if (module == null || module.trim().isEmpty()) {
-            return getProject();
-        }
-        module = module.trim();
-        List<MavenProject> reactorProjects = session.getProjects();
-        if (reactorProjects == null || reactorProjects.isEmpty()) {
-            throw new MojoFailureException(
-                    "Module '" + module + "' cannot be resolved: no reactor projects available.");
-        }
-        for (MavenProject p : reactorProjects) {
-            if (module.equals(p.getArtifactId())) {
-                return p;
-            }
-        }
-        throw new MojoFailureException("Module '" + module + "' not found in the reactor. Available modules: "
-                + getModuleNames(reactorProjects));
-    }
-
-    /**
      * Checks whether the dependency exists in the project's declared (original) model
      * after property interpolation, but before inheritance merging.
      * This catches dependencies declared with property references like {@code ${project.groupId}}
@@ -213,17 +186,5 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
             }
         }
         return false;
-    }
-
-    private static String getModuleNames(List<MavenProject> projects) {
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < projects.size(); i++) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-            sb.append(projects.get(i).getArtifactId());
-        }
-        sb.append("]");
-        return sb.toString();
     }
 }

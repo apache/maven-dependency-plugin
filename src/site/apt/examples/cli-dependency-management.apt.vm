@@ -131,10 +131,10 @@ mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dclassifier=NONE -Dup
 ** Multi-Module Projects
 
   To add a dependency to a specific child module from the root of a multi-module project,
-  use the <<<-Dmodule>>> parameter:
+  use Maven's built-in <<<-pl>>> (project list) flag:
 
 +---+
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dmodule=my-service
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -pl my-service
 +---+
 
 ** Adding to a Profile
@@ -198,10 +198,10 @@ mvn dependency:remove -Dgav=com.google.code.gson:gson -Dmanaged
 
 ** Removing from a Specific Module
 
-  In a multi-module project, target a specific child module:
+  In a multi-module project, use Maven's <<<-pl>>> flag to target a specific child module:
 
 +---+
-mvn dependency:remove -Dgav=com.google.code.gson:gson -Dmodule=my-service
+mvn dependency:remove -Dgav=com.google.code.gson:gson -pl my-service
 +---+
 
   If the dependency is not found, the goal fails with a descriptive error message.

@@ -71,34 +71,6 @@ class AddDependencyMojoTest {
     }
 
     @Test
-    void moduleWithNullReactorProjectsThrowsClearError() throws Exception {
-        when(session.getProjects()).thenReturn(null);
-        when(project.getFile()).thenReturn(createTempPom("<project></project>"));
-
-        setVariableValueToObject(mojo, "module", "some-module");
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
-        setVariableValueToObject(mojo, "version", "1.0");
-
-        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
-        assertTrue(ex.getMessage().contains("no reactor projects available"));
-    }
-
-    @Test
-    void moduleWithEmptyReactorProjectsThrowsClearError() throws Exception {
-        when(session.getProjects()).thenReturn(Collections.emptyList());
-        when(project.getFile()).thenReturn(createTempPom("<project></project>"));
-
-        setVariableValueToObject(mojo, "module", "some-module");
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
-        setVariableValueToObject(mojo, "version", "1.0");
-
-        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
-        assertTrue(ex.getMessage().contains("no reactor projects available"));
-    }
-
-    @Test
     void propertyInterpolatedDependencyBlocksAdd() throws Exception {
         // POM has a dependency using a property reference that PomEditor can't match literally
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -532,38 +504,6 @@ class AddDependencyMojoTest {
         assertTrue(result.contains("<version>2.0</version>"), "explicit -Dversion should override gav");
         assertTrue(result.contains("<scope>test</scope>"), "explicit -Dscope should override");
         assertFalse(result.contains("<version>1.0</version>"), "gav version should be overridden");
-    }
-
-    @Test
-    void moduleTargetingResolvesCorrectProject() throws Exception {
-        // Child module POM
-        File childPom = new File(tempDir, "child-pom.xml");
-        Files.write(
-                childPom.toPath(),
-                ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                                + "<project>\n"
-                                + "  <dependencies/>\n"
-                                + "</project>\n")
-                        .getBytes(StandardCharsets.UTF_8));
-
-        MavenProject childProject = mock(MavenProject.class);
-        when(childProject.getArtifactId()).thenReturn("child-mod");
-        when(childProject.getFile()).thenReturn(childPom);
-        Model childModel = new Model();
-        when(childProject.getOriginalModel()).thenReturn(childModel);
-        when(childProject.getModules()).thenReturn(Collections.emptyList());
-
-        when(session.getProjects()).thenReturn(Arrays.asList(project, childProject));
-
-        setVariableValueToObject(mojo, "module", "child-mod");
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
-        setVariableValueToObject(mojo, "version", "1.0");
-
-        assertDoesNotThrow(() -> mojo.execute());
-
-        String result = new String(Files.readAllBytes(childPom.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<groupId>com.example</groupId>"), "dependency should be added to child module");
     }
 
     @Test
