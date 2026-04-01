@@ -60,6 +60,7 @@ public class PomEditor {
     private final boolean hadXmlDeclaration;
     private final boolean hadBom;
     private final String namespaceURI;
+    private String profileId;
 
     private PomEditor(
             Document document,
@@ -120,6 +121,17 @@ public class PomEditor {
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException("Failed to parse POM file: " + pomFile, e);
         }
+    }
+
+    /**
+     * Sets the target profile for subsequent operations. When set, dependency operations
+     * target the specified profile's {@code <dependencies>} or {@code <dependencyManagement>}
+     * section instead of the top-level project sections.
+     *
+     * @param profileId the profile {@code <id>} to target, or {@code null} for top-level
+     */
+    public void setProfileId(String profileId) {
+        this.profileId = profileId;
     }
 
     /**
@@ -193,7 +205,8 @@ public class PomEditor {
      */
     public void addDependency(DependencyCoordinates coords, boolean managed) {
         Element depsElement = getDependenciesElement(managed, true);
-        int depthForDep = managed ? 3 : 2;
+        int profileOffset = (profileId != null) ? 2 : 0;
+        int depthForDep = (managed ? 3 : 2) + profileOffset;
         Element dep = buildDependencyElement(coords, depthForDep);
         String baseIndent = repeatIndent(depthForDep);
 
@@ -201,7 +214,7 @@ public class PomEditor {
         depsElement.appendChild(dep);
 
         // Ensure the closing tag is properly indented
-        ensureClosingIndent(depsElement, managed ? 2 : 1);
+        ensureClosingIndent(depsElement, (managed ? 2 : 1) + profileOffset);
     }
 
     /**
@@ -372,16 +385,55 @@ public class PomEditor {
 
     private Element getDependenciesElement(boolean managed, boolean create) {
         Element root = document.getDocumentElement();
+        Element context = root;
+        int baseDepth = 1;
+
+        if (profileId != null) {
+            Element profiles = getOrCreateChildElement(root, "profiles", create, 1);
+            if (profiles == null) {
+                return null;
+            }
+            context = findOrCreateProfile(profiles, profileId, create);
+            if (context == null) {
+                return null;
+            }
+            baseDepth = 3; // <profiles>(1) <profile>(2) <dependencies>(3)
+        }
 
         if (managed) {
-            Element depMgmt = getOrCreateChildElement(root, "dependencyManagement", create, 1);
+            Element depMgmt = getOrCreateChildElement(context, "dependencyManagement", create, baseDepth);
             if (depMgmt == null) {
                 return null;
             }
-            return getOrCreateChildElement(depMgmt, "dependencies", create, 2);
+            return getOrCreateChildElement(depMgmt, "dependencies", create, baseDepth + 1);
         } else {
-            return getOrCreateChildElement(root, "dependencies", create, 1);
+            return getOrCreateChildElement(context, "dependencies", create, baseDepth);
         }
+    }
+
+    /**
+     * Finds or creates a {@code <profile>} element with the given {@code <id>}.
+     */
+    private Element findOrCreateProfile(Element profilesElement, String id, boolean create) {
+        NodeList children = profilesElement.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node node = children.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE && "profile".equals(localName(node))) {
+                String profileIdText = getChildText((Element) node, "id");
+                if (id.equals(profileIdText)) {
+                    return (Element) node;
+                }
+            }
+        }
+        if (!create) {
+            return null;
+        }
+        // Create new <profile> with <id>
+        Element profile = getOrCreateChildElement(profilesElement, "profile", true, 2);
+        String childIndent = repeatIndent(3);
+        appendChildElement(profile, "id", id, childIndent);
+        ensureClosingIndent(profile, 2);
+        return profile;
     }
 
     private Element getOrCreateChildElement(Element parent, String tagName, boolean create, int depth) {

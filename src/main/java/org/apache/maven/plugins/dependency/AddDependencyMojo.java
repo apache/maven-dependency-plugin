@@ -122,6 +122,13 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     private String module;
 
     /**
+     * Target a specific Maven profile by its {@code <id>}. When set, the dependency is added
+     * to the profile's {@code <dependencies>} or {@code <dependencyManagement>} section.
+     */
+    @Parameter(property = "profile")
+    private String profile;
+
+    /**
      * When {@code true} and the dependency already exists, update it. Otherwise fail.
      */
     @Parameter(property = "updateExisting", defaultValue = "false")
@@ -181,6 +188,9 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         File pomFile = targetProject.getFile();
         try {
             PomEditor editor = PomEditor.load(pomFile);
+            if (profile != null && !profile.isEmpty()) {
+                editor.setProfileId(profile);
+            }
             Element existing = editor.findDependency(
                     coords.getGroupId(),
                     coords.getArtifactId(),

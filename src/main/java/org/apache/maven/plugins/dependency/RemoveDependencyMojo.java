@@ -109,6 +109,13 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
     @Parameter(property = "module")
     private String module;
 
+    /**
+     * Target a specific Maven profile by its {@code <id>}. When set, the dependency is removed
+     * from the profile's {@code <dependencies>} or {@code <dependencyManagement>} section.
+     */
+    @Parameter(property = "profile")
+    private String profile;
+
     @Inject
     public RemoveDependencyMojo(MavenSession session, BuildContext buildContext, MavenProject project) {
         super(session, buildContext, project);
@@ -135,6 +142,9 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
 
         try {
             PomEditor editor = PomEditor.load(pomFile);
+            if (profile != null && !profile.isEmpty()) {
+                editor.setProfileId(profile);
+            }
             boolean removed = editor.removeDependency(
                     coords.getGroupId(),
                     coords.getArtifactId(),

@@ -137,6 +137,16 @@ mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dclassifier=NONE -Dup
 mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dmodule=my-service
 +---+
 
+** Adding to a Profile
+
+  To add a dependency to a specific Maven profile, use the <<<-Dprofile>>> parameter.
+  If the profile does not exist, it is created automatically:
+
++---+
+mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dprofile=dev
+mvn dependency:add -Dgav=org.mockito:mockito-core:5.0.0 -Dscope=test -Dprofile=test-support
++---+
+
 * Removing Dependencies
 
   The <<<dependency:remove>>> goal removes a dependency from your project's <<<pom.xml>>>.
@@ -196,6 +206,14 @@ mvn dependency:remove -Dgav=com.google.code.gson:gson -Dmodule=my-service
 +---+
 
   If the dependency is not found, the goal fails with a descriptive error message.
+
+** Removing from a Profile
+
+  To remove a dependency from a specific Maven profile:
+
++---+
+mvn dependency:remove -Dgav=com.google.code.gson:gson -Dprofile=dev
++---+
 
 * Searching Maven Central
 

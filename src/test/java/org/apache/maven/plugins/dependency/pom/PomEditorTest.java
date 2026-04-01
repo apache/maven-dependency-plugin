@@ -754,4 +754,161 @@ class PomEditorTest {
         assertTrue(!result.contains("<type>"), "empty type should not create element");
         assertTrue(!result.contains("<classifier>"), "empty classifier should not create element");
     }
+
+    @Test
+    void addDependencyToNewProfile() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>existing</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
+
+        PomEditor editor = PomEditor.load(pomFile);
+        editor.setProfileId("test-profile");
+        DependencyCoordinates coords = new DependencyCoordinates("com.example", "test-lib");
+        coords.setVersion("1.0");
+        coords.setScope("test");
+        editor.addDependency(coords, false);
+        editor.save();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<profiles>"), "profiles section should be created");
+        assertTrue(result.contains("<profile>"), "profile element should be created");
+        assertTrue(result.contains("<id>test-profile</id>"), "profile id should match");
+        assertTrue(result.contains("<groupId>com.example</groupId>"), "dependency should be added");
+        assertTrue(result.contains("<scope>test</scope>"), "scope should be present");
+        // Original top-level dependency should still exist
+        assertTrue(result.contains("<groupId>existing</groupId>"), "existing dependency should remain");
+    }
+
+    @Test
+    void addDependencyToExistingProfile() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <profiles>\n"
+                + "    <profile>\n"
+                + "      <id>dev</id>\n"
+                + "      <dependencies>\n"
+                + "        <dependency>\n"
+                + "          <groupId>existing</groupId>\n"
+                + "          <artifactId>lib</artifactId>\n"
+                + "        </dependency>\n"
+                + "      </dependencies>\n"
+                + "    </profile>\n"
+                + "  </profiles>\n"
+                + "</project>\n";
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
+
+        PomEditor editor = PomEditor.load(pomFile);
+        editor.setProfileId("dev");
+        DependencyCoordinates coords = new DependencyCoordinates("com.example", "new-lib");
+        coords.setVersion("2.0");
+        editor.addDependency(coords, false);
+        editor.save();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<groupId>existing</groupId>"), "existing profile dep should remain");
+        assertTrue(result.contains("<groupId>com.example</groupId>"), "new dep should be added");
+        assertTrue(result.contains("<version>2.0</version>"), "version should be present");
+        // Should not create a second profile
+        assertEquals(1, countOccurrences(result, "<profile>"), "should reuse existing profile");
+    }
+
+    @Test
+    void removeDependencyFromProfile() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>top-level</artifactId>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "  <profiles>\n"
+                + "    <profile>\n"
+                + "      <id>dev</id>\n"
+                + "      <dependencies>\n"
+                + "        <dependency>\n"
+                + "          <groupId>com.example</groupId>\n"
+                + "          <artifactId>profile-lib</artifactId>\n"
+                + "          <version>1.0</version>\n"
+                + "        </dependency>\n"
+                + "      </dependencies>\n"
+                + "    </profile>\n"
+                + "  </profiles>\n"
+                + "</project>\n";
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
+
+        PomEditor editor = PomEditor.load(pomFile);
+        editor.setProfileId("dev");
+        boolean removed = editor.removeDependency("com.example", "profile-lib", false);
+        editor.save();
+
+        assertTrue(removed, "should find and remove the profile dependency");
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(!result.contains("profile-lib"), "profile dep should be removed");
+        assertTrue(result.contains("top-level"), "top-level dep should remain");
+    }
+
+    @Test
+    void findDependencyInProfileDoesNotFindTopLevel() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>top-level</artifactId>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "  <profiles>\n"
+                + "    <profile>\n"
+                + "      <id>dev</id>\n"
+                + "    </profile>\n"
+                + "  </profiles>\n"
+                + "</project>\n";
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
+
+        PomEditor editor = PomEditor.load(pomFile);
+        editor.setProfileId("dev");
+        Element found = editor.findDependency("com.example", "top-level", false);
+        assertNull(found, "should not find top-level dep when targeting a profile");
+    }
+
+    @Test
+    void profileNotFoundReturnsNull() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <profiles>\n"
+                + "    <profile>\n"
+                + "      <id>dev</id>\n"
+                + "    </profile>\n"
+                + "  </profiles>\n"
+                + "</project>\n";
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
+
+        PomEditor editor = PomEditor.load(pomFile);
+        editor.setProfileId("nonexistent");
+        Element found = editor.findDependency("com.example", "lib", false);
+        assertNull(found, "should return null for non-existent profile (no create)");
+    }
+
+    private static int countOccurrences(String text, String substring) {
+        int count = 0;
+        int idx = 0;
+        while ((idx = text.indexOf(substring, idx)) != -1) {
+            count++;
+            idx += substring.length();
+        }
+        return count;
+    }
 }
