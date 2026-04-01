@@ -23,11 +23,9 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.List;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -131,7 +129,7 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
         }
 
         boolean targetManaged = managed || bom;
-        MavenProject targetProject = resolveTargetProject();
+        MavenProject targetProject = resolveTargetProject(module);
         File pomFile = targetProject.getFile();
 
         // Safety check for managed dependency removal in parent POM
@@ -219,23 +217,6 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
         coords.setType("pom");
     }
 
-    private MavenProject resolveTargetProject() throws MojoFailureException {
-        if (module == null || module.isEmpty()) {
-            return getProject();
-        }
-        List<MavenProject> reactorProjects = session.getProjects();
-        if (reactorProjects == null || reactorProjects.isEmpty()) {
-            throw new MojoFailureException(
-                    "Module '" + module + "' cannot be resolved: no reactor projects available.");
-        }
-        for (MavenProject p : reactorProjects) {
-            if (module.equals(p.getArtifactId())) {
-                return p;
-            }
-        }
-        throw new MojoFailureException("Module '" + module + "' not found in the reactor.");
-    }
-
     private void checkChildModuleDependencies(MavenProject parentProject, String depGroupId, String depArtifactId)
             throws MojoExecutionException {
         StringBuilder affected = new StringBuilder();
@@ -271,38 +252,5 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
             getLog().warn("The following child modules depend on " + depGroupId + ":" + depArtifactId
                     + " without an explicit version and will break: [" + affected + "]. Proceeding with removal.");
         }
-    }
-
-    /**
-     * Checks whether the dependency exists in the project's declared (original) model
-     * after property interpolation, but before inheritance merging.
-     * This catches dependencies declared with property references like {@code ${project.groupId}}
-     * without false-positiving on inherited dependencies from a parent POM.
-     */
-    private static boolean existsInResolvedModel(MavenProject project, DependencyCoordinates coords, boolean managed) {
-        java.util.List<Dependency> deps;
-        org.apache.maven.model.Model originalModel = project.getOriginalModel();
-        if (managed) {
-            DependencyManagement depMgmt = originalModel != null ? originalModel.getDependencyManagement() : null;
-            deps = depMgmt != null ? depMgmt.getDependencies() : null;
-        } else {
-            deps = originalModel != null ? originalModel.getDependencies() : null;
-        }
-        if (deps == null) {
-            return false;
-        }
-        String searchType = coords.getType() != null ? coords.getType() : "jar";
-        String searchClassifier = coords.getClassifier() != null ? coords.getClassifier() : "";
-        for (Dependency dep : deps) {
-            if (coords.getGroupId().equals(dep.getGroupId())
-                    && coords.getArtifactId().equals(dep.getArtifactId())) {
-                String depType = dep.getType() != null ? dep.getType() : "jar";
-                String depClassifier = dep.getClassifier() != null ? dep.getClassifier() : "";
-                if (searchType.equals(depType) && searchClassifier.equals(depClassifier)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

@@ -22,7 +22,6 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
@@ -155,7 +154,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             handleBomFlag(coords);
         }
 
-        MavenProject targetProject = resolveTargetProject();
+        MavenProject targetProject = resolveTargetProject(module);
         boolean targetManaged = managed || bom;
 
         // Validate version requirements
@@ -294,24 +293,6 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         coords.setType("pom");
     }
 
-    private MavenProject resolveTargetProject() throws MojoFailureException {
-        if (module == null || module.isEmpty()) {
-            return getProject();
-        }
-        List<MavenProject> reactorProjects = session.getProjects();
-        if (reactorProjects == null || reactorProjects.isEmpty()) {
-            throw new MojoFailureException(
-                    "Module '" + module + "' cannot be resolved: no reactor projects available.");
-        }
-        for (MavenProject p : reactorProjects) {
-            if (module.equals(p.getArtifactId())) {
-                return p;
-            }
-        }
-        throw new MojoFailureException("Module '" + module + "' not found in the reactor. " + "Available modules: "
-                + getModuleNames(reactorProjects));
-    }
-
     private String findManagedVersion(MavenProject project, String groupId, String artifactId) {
         MavenProject current = project;
         while (current != null) {
@@ -326,50 +307,5 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             current = current.getParent();
         }
         return null;
-    }
-
-    private static String getModuleNames(List<MavenProject> projects) {
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < projects.size(); i++) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-            sb.append(projects.get(i).getArtifactId());
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-    /**
-     * Checks whether the dependency exists in the project's declared (original) model
-     * after property interpolation, but before inheritance merging.
-     * This catches dependencies declared with property references like {@code ${project.groupId}}
-     * without false-positiving on inherited dependencies from a parent POM.
-     */
-    private static boolean existsInResolvedModel(MavenProject project, DependencyCoordinates coords, boolean managed) {
-        List<Dependency> deps;
-        org.apache.maven.model.Model originalModel = project.getOriginalModel();
-        if (managed) {
-            DependencyManagement depMgmt = originalModel != null ? originalModel.getDependencyManagement() : null;
-            deps = depMgmt != null ? depMgmt.getDependencies() : null;
-        } else {
-            deps = originalModel != null ? originalModel.getDependencies() : null;
-        }
-        if (deps == null) {
-            return false;
-        }
-        String searchType = coords.getType() != null ? coords.getType() : "jar";
-        String searchClassifier = coords.getClassifier() != null ? coords.getClassifier() : "";
-        for (Dependency dep : deps) {
-            if (coords.getGroupId().equals(dep.getGroupId())
-                    && coords.getArtifactId().equals(dep.getArtifactId())) {
-                String depType = dep.getType() != null ? dep.getType() : "jar";
-                String depClassifier = dep.getClassifier() != null ? dep.getClassifier() : "";
-                if (searchType.equals(depType) && searchClassifier.equals(depClassifier)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

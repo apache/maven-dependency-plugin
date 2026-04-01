@@ -18,12 +18,17 @@
  */
 package org.apache.maven.plugins.dependency;
 
+import java.util.List;
+
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.dependency.pom.DependencyCoordinates;
 import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -147,5 +152,77 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
         } else if (getLog() instanceof DependencySilentLog) {
             setLog(new SystemStreamLog());
         }
+    }
+
+    /**
+     * Resolves the target project for dependency operations. If {@code module} is non-null,
+     * searches the reactor projects for a matching artifactId.
+     *
+     * @param module the module artifactId to target, or {@code null} for the current project
+     * @return the resolved target project
+     * @throws MojoFailureException if the module is not found in the reactor
+     */
+    protected MavenProject resolveTargetProject(String module) throws MojoFailureException {
+        if (module == null || module.isEmpty()) {
+            return getProject();
+        }
+        List<MavenProject> reactorProjects = session.getProjects();
+        if (reactorProjects == null || reactorProjects.isEmpty()) {
+            throw new MojoFailureException(
+                    "Module '" + module + "' cannot be resolved: no reactor projects available.");
+        }
+        for (MavenProject p : reactorProjects) {
+            if (module.equals(p.getArtifactId())) {
+                return p;
+            }
+        }
+        throw new MojoFailureException("Module '" + module + "' not found in the reactor. Available modules: "
+                + getModuleNames(reactorProjects));
+    }
+
+    /**
+     * Checks whether the dependency exists in the project's declared (original) model
+     * after property interpolation, but before inheritance merging.
+     * This catches dependencies declared with property references like {@code ${project.groupId}}
+     * without false-positiving on inherited dependencies from a parent POM.
+     */
+    protected static boolean existsInResolvedModel(
+            MavenProject project, DependencyCoordinates coords, boolean managed) {
+        List<Dependency> deps;
+        org.apache.maven.model.Model originalModel = project.getOriginalModel();
+        if (managed) {
+            DependencyManagement depMgmt = originalModel != null ? originalModel.getDependencyManagement() : null;
+            deps = depMgmt != null ? depMgmt.getDependencies() : null;
+        } else {
+            deps = originalModel != null ? originalModel.getDependencies() : null;
+        }
+        if (deps == null) {
+            return false;
+        }
+        String searchType = coords.getType() != null ? coords.getType() : "jar";
+        String searchClassifier = coords.getClassifier() != null ? coords.getClassifier() : "";
+        for (Dependency dep : deps) {
+            if (coords.getGroupId().equals(dep.getGroupId())
+                    && coords.getArtifactId().equals(dep.getArtifactId())) {
+                String depType = dep.getType() != null ? dep.getType() : "jar";
+                String depClassifier = dep.getClassifier() != null ? dep.getClassifier() : "";
+                if (searchType.equals(depType) && searchClassifier.equals(depClassifier)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static String getModuleNames(List<MavenProject> projects) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < projects.size(); i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(projects.get(i).getArtifactId());
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }
