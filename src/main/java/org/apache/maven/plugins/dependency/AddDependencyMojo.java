@@ -41,10 +41,17 @@ import org.w3c.dom.Element;
  * Supports adding to {@code <dependencies>} or {@code <dependencyManagement>},
  * with version inference from managed dependencies and BOM import shorthand.
  *
+ * <p>If the dependency already exists, it is updated automatically (version, scope, etc.)
+ * and the change is logged. This matches the behavior of {@code cargo add}, {@code npm install},
+ * and other package managers.</p>
+ *
  * <p>The goal uses formatting-preserving DOM manipulation to maintain the POM's
  * existing structure (comments, indentation, encoding). Duplicate detection uses
  * type and classifier-aware matching, and cross-references Maven's resolved model
- * to catch dependencies declared via property references.</p>
+ * to catch dependencies declared via property references. When a dependency is found in
+ * the effective model but not in the raw XML (i.e., declared using property interpolation
+ * such as {@code ${my.group}}), the goal fails with a descriptive error rather than
+ * risk creating a conflicting duplicate entry.</p>
  *
  * <p>Scope values are validated against Maven's known scopes:
  * {@code compile}, {@code provided}, {@code runtime}, {@code test}, {@code system}, {@code import}.</p>

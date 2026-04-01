@@ -128,6 +128,31 @@ mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dclassifier=NONE
   <<<compile>>>, <<<provided>>>, <<<runtime>>>, <<<test>>>, <<<system>>>, and <<<import>>>.
   Invalid scope values are rejected with an error.
 
+** Dependencies Using Property References
+
+  Some POMs declare dependencies using Maven property references for the <<<groupId>>> or
+  <<<artifactId>>>, for example:
+
++---+
+<dependency>
+  <groupId>${my.group}</groupId>
+  <artifactId>lib</artifactId>
+</dependency>
++---+
+
+  When <<<dependency:add>>> detects that a dependency with the same coordinates already exists
+  in the resolved (effective) model but cannot be found in the raw XML, it means the dependency
+  is declared using property interpolation. In this case, the goal <<fails>> with an error message
+  explaining that the dependency cannot be safely added or updated automatically:
+
++---+
+[ERROR] Dependency com.example:lib already exists in the POM (using property references).
+Cannot safely add or update automatically. Please edit the POM manually.
++---+
+
+  This safety check prevents <<<dependency:add>>> from inserting a duplicate entry that would
+  conflict with the property-based declaration. The same check applies to <<<dependency:remove>>>.
+
 ** Multi-Module Projects
 
   To add a dependency to a specific child module from the root of a multi-module project,
