@@ -17,3 +17,4 @@ out/
 .checkstyle
 /dependency-reduced-pom.xml
 .factorypath
+specification.md
