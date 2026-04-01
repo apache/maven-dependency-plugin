@@ -237,4 +237,52 @@ class RemoveDependencyMojoTest {
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
         assertTrue(ex.getMessage().contains("Profile 'nonexistent' not found"));
     }
+
+    @Test
+    void profileNotFoundWhenNoProfilesSectionThrowsClearError() throws Exception {
+        String pom =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "  <dependencies/>\n" + "</project>\n";
+        when(project.getFile()).thenReturn(createTempPom(pom));
+        Model originalModel = new Model();
+        when(project.getOriginalModel()).thenReturn(originalModel);
+
+        setVariableValueToObject(mojo, "groupId", "com.example");
+        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "profile", "dev");
+
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("Profile 'dev' not found"));
+    }
+
+    @Test
+    void removeDependencyFromProfileSucceeds() throws Exception {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <profiles>\n"
+                + "    <profile>\n"
+                + "      <id>dev</id>\n"
+                + "      <dependencies>\n"
+                + "        <dependency>\n"
+                + "          <groupId>com.example</groupId>\n"
+                + "          <artifactId>lib</artifactId>\n"
+                + "        </dependency>\n"
+                + "      </dependencies>\n"
+                + "    </profile>\n"
+                + "  </profiles>\n"
+                + "</project>\n";
+        File pomFile = createTempPom(pom);
+        when(project.getFile()).thenReturn(pomFile);
+        Model originalModel = new Model();
+        when(project.getOriginalModel()).thenReturn(originalModel);
+
+        setVariableValueToObject(mojo, "groupId", "com.example");
+        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "profile", "dev");
+
+        mojo.execute();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(!result.contains("<groupId>com.example</groupId>"), "dependency should be removed");
+        assertTrue(result.contains("<id>dev</id>"), "profile should remain");
+    }
 }

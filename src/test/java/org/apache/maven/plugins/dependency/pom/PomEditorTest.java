@@ -915,6 +915,32 @@ class PomEditorTest {
         assertNull(editor.findProfile("any"), "should return null when no profiles section exists");
     }
 
+    @Test
+    void addManagedDependencyToProfile() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <profiles>\n"
+                + "    <profile>\n"
+                + "      <id>dev</id>\n"
+                + "    </profile>\n"
+                + "  </profiles>\n"
+                + "</project>\n";
+        File pomFile = new File(tempDir, "pom.xml");
+        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
+
+        PomEditor editor = PomEditor.load(pomFile);
+        editor.setProfileId("dev");
+        DependencyCoordinates coords = new DependencyCoordinates("com.example", "lib");
+        coords.setVersion("1.0");
+        editor.addDependency(coords, true);
+        editor.save();
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<dependencyManagement>"), "dependencyManagement should be created in profile");
+        assertTrue(result.contains("<groupId>com.example</groupId>"), "dependency should be added");
+        assertTrue(result.contains("<id>dev</id>"), "profile id should remain");
+    }
+
     private static int countOccurrences(String text, String substring) {
         int count = 0;
         int idx = 0;
