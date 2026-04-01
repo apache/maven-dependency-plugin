@@ -292,4 +292,121 @@ class AddDependencyMojoTest {
         assertTrue(result.contains("<groupId>com.example</groupId>"));
         assertTrue(result.contains("<id>dev</id>"));
     }
+
+    @Test
+    void basicAddWithGavShorthand() throws Exception {
+        String pom =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "  <dependencies/>\n" + "</project>\n";
+        File pomFile = createTempPom(pom);
+        when(project.getFile()).thenReturn(pomFile);
+        Model originalModel = new Model();
+        when(project.getOriginalModel()).thenReturn(originalModel);
+
+        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0:test");
+
+        assertDoesNotThrow(() -> mojo.execute());
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<groupId>com.example</groupId>"));
+        assertTrue(result.contains("<artifactId>lib</artifactId>"));
+        assertTrue(result.contains("<version>1.0</version>"));
+        assertTrue(result.contains("<scope>test</scope>"));
+    }
+
+    @Test
+    void duplicateDependencyWithoutUpdateExistingFails() throws Exception {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "      <version>1.0</version>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        when(project.getFile()).thenReturn(createTempPom(pom));
+        Model originalModel = new Model();
+        Dependency d = new Dependency();
+        d.setGroupId("com.example");
+        d.setArtifactId("lib");
+        originalModel.addDependency(d);
+        when(project.getOriginalModel()).thenReturn(originalModel);
+
+        setVariableValueToObject(mojo, "groupId", "com.example");
+        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "version", "2.0");
+
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("already exists"));
+    }
+
+    @Test
+    void updateExistingChangesVersion() throws Exception {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "      <version>1.0</version>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        File pomFile = createTempPom(pom);
+        when(project.getFile()).thenReturn(pomFile);
+        Model originalModel = new Model();
+        Dependency d = new Dependency();
+        d.setGroupId("com.example");
+        d.setArtifactId("lib");
+        originalModel.addDependency(d);
+        when(project.getOriginalModel()).thenReturn(originalModel);
+
+        setVariableValueToObject(mojo, "groupId", "com.example");
+        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "version", "2.0");
+        setVariableValueToObject(mojo, "updateExisting", true);
+
+        assertDoesNotThrow(() -> mojo.execute());
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<version>2.0</version>"), "version should be updated");
+        assertTrue(!result.contains("<version>1.0</version>"), "old version should be gone");
+    }
+
+    @Test
+    void bomFlagSetsTypeAndScopeAndManaged() throws Exception {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "</project>\n";
+        File pomFile = createTempPom(pom);
+        when(project.getFile()).thenReturn(pomFile);
+        Model originalModel = new Model();
+        when(project.getOriginalModel()).thenReturn(originalModel);
+
+        setVariableValueToObject(mojo, "groupId", "org.springframework.boot");
+        setVariableValueToObject(mojo, "artifactId", "spring-boot-dependencies");
+        setVariableValueToObject(mojo, "version", "3.2.0");
+        setVariableValueToObject(mojo, "bom", true);
+
+        assertDoesNotThrow(() -> mojo.execute());
+
+        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(result.contains("<dependencyManagement>"), "should be in dependencyManagement");
+        assertTrue(result.contains("<type>pom</type>"), "type should be pom");
+        assertTrue(result.contains("<scope>import</scope>"), "scope should be import");
+    }
+
+    @Test
+    void managedWithoutVersionFails() throws Exception {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "</project>\n";
+        when(project.getFile()).thenReturn(createTempPom(pom));
+        Model originalModel = new Model();
+        when(project.getOriginalModel()).thenReturn(originalModel);
+
+        setVariableValueToObject(mojo, "groupId", "com.example");
+        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "managed", true);
+
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("Version is required"));
+    }
 }
