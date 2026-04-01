@@ -714,3 +714,60 @@ mvn dependency:analyze-exclusions
 [WARNING]         - javax.annotation:javax.annotation-api
 [WARNING]         - javax.activation:javax.activation-api
 +---+
+
+* <<<dependency:add>>>
+
+  This goal adds a dependency to the project's <<<pom.xml>>> directly from the command line.
+  If the dependency already exists, it is updated automatically. For detailed examples, see
+  {{{./examples/managing-dependencies.html}Managing Dependencies}}.
+
+---
+mvn dependency:add -Dgav="com.google.code.gson:gson:2.11.0"
+mvn dependency:add -DgroupId=com.google.code.gson -DartifactId=gson -Dversion=2.11.0 -Dscope=test
+---
+
+  Add to <<<\<dependencyManagement\>>>>:
+
+---
+mvn dependency:add -Dgav="com.google.code.gson:gson:2.11.0" -Dmanaged
+---
+
+  Add a BOM import:
+
+---
+mvn dependency:add -Dgav="org.springframework.boot:spring-boot-dependencies:3.2.0" -Dbom
+---
+
+  In multi-module projects, use Maven's <<<-pl>>> flag to target a specific module:
+
+---
+mvn dependency:add -Dgav="com.google.code.gson:gson:2.11.0" -pl my-service
+---
+
+* <<<dependency:remove>>>
+
+  This goal removes a dependency from the project's <<<pom.xml>>> directly from the command line.
+  For detailed examples, see {{{./examples/managing-dependencies.html}Managing Dependencies}}.
+
+---
+mvn dependency:remove -Dgav="com.google.code.gson:gson"
+mvn dependency:remove -Dgav="com.google.code.gson:gson" -Dmanaged
+---
+
+  When removing a managed dependency from a parent POM, the goal warns if child modules still
+  reference that dependency without an explicit version.
+
+* <<<dependency:search>>>
+
+  This goal queries Maven Central for artifacts matching a search term. It does not require
+  a project. For detailed examples, see
+  {{{./examples/managing-dependencies.html}Managing Dependencies}}.
+
+---
+mvn dependency:search -Dquery=google-adk
+mvn dependency:search -Dquery=jackson -Drows=20
+---
+
+  When run from an interactive terminal, the goal enters an interactive mode that allows
+  browsing artifacts, viewing available versions, and copying ready-to-use
+  <<<mvn dependency:add>>> commands.
