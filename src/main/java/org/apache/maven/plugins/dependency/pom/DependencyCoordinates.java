@@ -37,7 +37,7 @@ import java.util.Set;
 public class DependencyCoordinates {
 
     private static final Set<String> VALID_SCOPES =
-            new HashSet<>(Arrays.asList("compile", "provided", "runtime", "test", "system", "import", "test-runtime"));
+            new HashSet<>(Arrays.asList("compile", "provided", "runtime", "test", "system", "import"));
 
     private String groupId;
     private String artifactId;

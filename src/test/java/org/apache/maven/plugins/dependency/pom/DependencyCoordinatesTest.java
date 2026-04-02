@@ -218,7 +218,7 @@ class DependencyCoordinatesTest {
 
     @Test
     void validateAcceptsValidScopes() {
-        String[] validScopes = {"compile", "provided", "runtime", "test", "system", "import", "test-runtime"};
+        String[] validScopes = {"compile", "provided", "runtime", "test", "system", "import"};
         for (String scope : validScopes) {
             DependencyCoordinates coords = new DependencyCoordinates("g", "a");
             coords.setScope(scope);
