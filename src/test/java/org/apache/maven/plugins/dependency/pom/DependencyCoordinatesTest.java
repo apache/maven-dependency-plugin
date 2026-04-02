@@ -46,33 +46,35 @@ class DependencyCoordinatesTest {
     }
 
     @Test
-    void parseWithVersionAndScope() {
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.google.adk:google-adk:1.0.0:test");
+    void parseWithExtensionAndVersion() {
+        // g:a:ext:v format
+        DependencyCoordinates coords = DependencyCoordinates.parse("com.google.adk:google-adk:pom:1.0.0");
         assertEquals("com.google.adk", coords.getGroupId());
         assertEquals("google-adk", coords.getArtifactId());
         assertEquals("1.0.0", coords.getVersion());
-        assertEquals("test", coords.getScope());
+        assertEquals("pom", coords.getType());
     }
 
     @Test
     void parseFullForm() {
-        DependencyCoordinates coords =
-                DependencyCoordinates.parse("com.google.adk:google-adk:1.0.0:compile:jar:sources");
+        // g:a:ext:cls:v format
+        DependencyCoordinates coords = DependencyCoordinates.parse("com.google.adk:google-adk:jar:sources:1.0.0");
         assertEquals("com.google.adk", coords.getGroupId());
         assertEquals("google-adk", coords.getArtifactId());
         assertEquals("1.0.0", coords.getVersion());
-        assertEquals("compile", coords.getScope());
+        assertNull(coords.getScope());
         assertEquals("jar", coords.getType());
         assertEquals("sources", coords.getClassifier());
     }
 
     @Test
     void parseEmptyOptionalFields() {
-        DependencyCoordinates coords = DependencyCoordinates.parse("g:a::test");
+        // g:a:ext:v with empty extension
+        DependencyCoordinates coords = DependencyCoordinates.parse("g:a::1.0.0");
         assertEquals("g", coords.getGroupId());
         assertEquals("a", coords.getArtifactId());
-        assertNull(coords.getVersion());
-        assertEquals("test", coords.getScope());
+        assertEquals("1.0.0", coords.getVersion());
+        assertNull(coords.getType());
     }
 
     @Test
@@ -82,7 +84,7 @@ class DependencyCoordinatesTest {
 
     @Test
     void parseInvalidTooManyTokens() {
-        assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse("a:b:c:d:e:f:g"));
+        assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse("a:b:c:d:e:f"));
     }
 
     @Test
@@ -216,7 +218,7 @@ class DependencyCoordinatesTest {
 
     @Test
     void validateAcceptsValidScopes() {
-        String[] validScopes = {"compile", "provided", "runtime", "test", "system", "import"};
+        String[] validScopes = {"compile", "provided", "runtime", "test", "system", "import", "test-runtime"};
         for (String scope : validScopes) {
             DependencyCoordinates coords = new DependencyCoordinates("g", "a");
             coords.setScope(scope);
@@ -238,16 +240,16 @@ class DependencyCoordinatesTest {
     }
 
     @Test
-    void validateAcceptsNoneScopeForClearing() {
-        DependencyCoordinates coords = new DependencyCoordinates("g", "a");
-        coords.setScope("NONE");
-        coords.validate(); // NONE is accepted as a sentinel for clearing
-    }
-
-    @Test
     void validateAcceptsEmptyScopeForClearing() {
         DependencyCoordinates coords = new DependencyCoordinates("g", "a");
         coords.setScope("");
-        coords.validate(); // empty scope is accepted (used internally after NONE conversion)
+        coords.validate(); // empty scope is accepted
+    }
+
+    @Test
+    void validateRejectsNoneScope() {
+        DependencyCoordinates coords = new DependencyCoordinates("g", "a");
+        coords.setScope("NONE");
+        assertThrows(IllegalArgumentException.class, coords::validate);
     }
 }

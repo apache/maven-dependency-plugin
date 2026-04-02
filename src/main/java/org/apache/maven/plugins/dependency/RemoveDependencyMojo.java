@@ -26,6 +26,7 @@ import java.io.Reader;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -67,7 +68,8 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
     private String artifactId;
 
     /**
-     * Shorthand coordinates: {@code groupId:artifactId[:version[:scope[:type[:classifier]]]]}.
+     * Shorthand coordinates: {@code groupId:artifactId[:version]}
+     * or {@code groupId:artifactId[:extension[:classifier]]:version}.
      * Only groupId and artifactId are required. Type and classifier, if provided,
      * are used for precise matching when multiple dependency variants exist
      * (e.g., jar vs test-jar).
@@ -163,6 +165,24 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
             }
 
             editor.save();
+
+            // Sync in-memory model so chained goals see the change
+            Model model = targetProject.getModel();
+            if (model != null) {
+                if (targetManaged) {
+                    DependencyManagement dm = model.getDependencyManagement();
+                    if (dm != null && dm.getDependencies() != null) {
+                        dm.getDependencies()
+                                .removeIf(d -> coords.getGroupId().equals(d.getGroupId())
+                                        && coords.getArtifactId().equals(d.getArtifactId()));
+                    }
+                } else if (model.getDependencies() != null) {
+                    model.getDependencies()
+                            .removeIf(d -> coords.getGroupId().equals(d.getGroupId())
+                                    && coords.getArtifactId().equals(d.getArtifactId()));
+                }
+            }
+
             getLog().info("Removed dependency " + coords.getGroupId() + ":" + coords.getArtifactId() + " from "
                     + pomFile.getName());
         } catch (IOException e) {

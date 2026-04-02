@@ -275,19 +275,20 @@ class AddDependencyMojoTest {
         Model originalModel = new Model();
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0:test");
+        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0");
+        setVariableValueToObject(mojo, "scope", "test");
 
         assertDoesNotThrow(() -> mojo.execute());
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<groupId>com.example</groupId>"));
-        assertTrue(result.contains("<artifactId>lib</artifactId>"));
-        assertTrue(result.contains("<version>1.0</version>"));
-        assertTrue(result.contains("<scope>test</scope>"));
+        assertTrue(result.contains("<groupId>com.example</groupId>"), result);
+        assertTrue(result.contains("<artifactId>lib</artifactId>"), result);
+        assertTrue(result.contains("<version>1.0</version>"), result);
+        assertTrue(result.contains("<scope>test</scope>"), result);
     }
 
     @Test
-    void duplicateDependencyUpdatesAutomatically() throws Exception {
+    void duplicateDependencyFailsWithError() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <dependencies>\n"
@@ -311,11 +312,8 @@ class AddDependencyMojoTest {
         setVariableValueToObject(mojo, "artifactId", "lib");
         setVariableValueToObject(mojo, "version", "2.0");
 
-        assertDoesNotThrow(() -> mojo.execute());
-
-        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<version>2.0</version>"), "version should be updated");
-        assertFalse(result.contains("<version>1.0</version>"), "old version should be gone");
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
+        assertTrue(ex.getMessage().contains("already exists"), ex.getMessage());
     }
 
     @Test
@@ -442,7 +440,7 @@ class AddDependencyMojoTest {
         Model originalModel = new Model();
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0:compile:jar:sources");
+        setVariableValueToObject(mojo, "gav", "com.example:lib:jar:sources:1.0");
         setVariableValueToObject(mojo, "bom", true);
 
         assertDoesNotThrow(() -> mojo.execute());
@@ -474,38 +472,5 @@ class AddDependencyMojoTest {
         assertTrue(result.contains("<version>2.0</version>"), "explicit -Dversion should override gav");
         assertTrue(result.contains("<scope>test</scope>"), "explicit -Dscope should override");
         assertFalse(result.contains("<version>1.0</version>"), "gav version should be overridden");
-    }
-
-    @Test
-    void noneSentinelClearsScopeOnUpdate() throws Exception {
-        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<project>\n"
-                + "  <dependencies>\n"
-                + "    <dependency>\n"
-                + "      <groupId>com.example</groupId>\n"
-                + "      <artifactId>lib</artifactId>\n"
-                + "      <version>1.0</version>\n"
-                + "      <scope>test</scope>\n"
-                + "    </dependency>\n"
-                + "  </dependencies>\n"
-                + "</project>\n";
-        File pomFile = createTempPom(pom);
-        when(project.getFile()).thenReturn(pomFile);
-        Model originalModel = new Model();
-        Dependency d = new Dependency();
-        d.setGroupId("com.example");
-        d.setArtifactId("lib");
-        originalModel.addDependency(d);
-        when(project.getOriginalModel()).thenReturn(originalModel);
-
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
-        setVariableValueToObject(mojo, "version", "1.0");
-        setVariableValueToObject(mojo, "scope", "NONE");
-
-        assertDoesNotThrow(() -> mojo.execute());
-
-        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertFalse(result.contains("<scope>"), "scope should be removed by NONE sentinel");
     }
 }

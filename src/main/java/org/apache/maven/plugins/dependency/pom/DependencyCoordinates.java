@@ -25,14 +25,19 @@ import java.util.Set;
 /**
  * Represents parsed Maven dependency coordinates (GAV + scope/type/classifier).
  * Supports parsing from a colon-separated string in the format:
- * {@code groupId:artifactId[:version[:scope[:type[:classifier]]]]}.
+ * {@code groupId:artifactId[:version]} or
+ * {@code groupId:artifactId[:extension[:classifier]]:version}.
+ *
+ * <p>This follows the standard Maven coordinate convention used by
+ * {@code org.eclipse.aether.artifact.DefaultArtifact}. Scope and optional
+ * are not part of coordinates and must be specified as separate parameters.</p>
  *
  * @since 3.11.0
  */
 public class DependencyCoordinates {
 
     private static final Set<String> VALID_SCOPES =
-            new HashSet<>(Arrays.asList("compile", "provided", "runtime", "test", "system", "import"));
+            new HashSet<>(Arrays.asList("compile", "provided", "runtime", "test", "system", "import", "test-runtime"));
 
     private String groupId;
     private String artifactId;
@@ -50,21 +55,29 @@ public class DependencyCoordinates {
     }
 
     /**
-     * Parses a colon-separated GAV string.
+     * Parses a colon-separated coordinate string following Maven conventions.
      *
-     * @param gav the coordinate string in format {@code groupId:artifactId[:version[:scope[:type[:classifier]]]]}
+     * <p>Supported formats:</p>
+     * <ul>
+     *   <li>{@code groupId:artifactId} — minimum</li>
+     *   <li>{@code groupId:artifactId:version}</li>
+     *   <li>{@code groupId:artifactId:extension:version}</li>
+     *   <li>{@code groupId:artifactId:extension:classifier:version}</li>
+     * </ul>
+     *
+     * @param gav the coordinate string
      * @return the parsed coordinates
-     * @throws IllegalArgumentException if the string has fewer than 2 or more than 6 segments
+     * @throws IllegalArgumentException if the string has fewer than 2 or more than 5 segments
      */
     public static DependencyCoordinates parse(String gav) {
         if (gav == null || gav.trim().isEmpty()) {
             throw new IllegalArgumentException("GAV string must not be null or empty");
         }
-        // Use split with -1 limit to preserve trailing empty segments for validation
         String[] tokens = gav.split(":", -1);
-        if (tokens.length < 2 || tokens.length > 6) {
-            throw new IllegalArgumentException("Invalid GAV format: '" + gav
-                    + "'. Expected groupId:artifactId[:version[:scope[:type[:classifier]]]]");
+        if (tokens.length < 2 || tokens.length > 5) {
+            throw new IllegalArgumentException(
+                    "Invalid GAV format: '" + gav
+                            + "'. Expected groupId:artifactId[:version] or groupId:artifactId[:extension[:classifier]]:version");
         }
         DependencyCoordinates coords = new DependencyCoordinates();
         coords.groupId = tokens[0].trim();
@@ -75,17 +88,36 @@ public class DependencyCoordinates {
         if (coords.artifactId.isEmpty()) {
             throw new IllegalArgumentException("Invalid GAV format: '" + gav + "'. artifactId must not be empty.");
         }
-        if (tokens.length >= 3 && !tokens[2].trim().isEmpty()) {
-            coords.version = tokens[2].trim();
-        }
-        if (tokens.length >= 4 && !tokens[3].trim().isEmpty()) {
-            coords.scope = tokens[3].trim();
-        }
-        if (tokens.length >= 5 && !tokens[4].trim().isEmpty()) {
-            coords.type = tokens[4].trim();
-        }
-        if (tokens.length >= 6 && !tokens[5].trim().isEmpty()) {
-            coords.classifier = tokens[5].trim();
+        switch (tokens.length) {
+            case 3:
+                // g:a:v
+                if (!tokens[2].trim().isEmpty()) {
+                    coords.version = tokens[2].trim();
+                }
+                break;
+            case 4:
+                // g:a:ext:v
+                if (!tokens[2].trim().isEmpty()) {
+                    coords.type = tokens[2].trim();
+                }
+                if (!tokens[3].trim().isEmpty()) {
+                    coords.version = tokens[3].trim();
+                }
+                break;
+            case 5:
+                // g:a:ext:cls:v
+                if (!tokens[2].trim().isEmpty()) {
+                    coords.type = tokens[2].trim();
+                }
+                if (!tokens[3].trim().isEmpty()) {
+                    coords.classifier = tokens[3].trim();
+                }
+                if (!tokens[4].trim().isEmpty()) {
+                    coords.version = tokens[4].trim();
+                }
+                break;
+            default:
+                break;
         }
         return coords;
     }
@@ -102,9 +134,8 @@ public class DependencyCoordinates {
         if (artifactId == null || artifactId.isEmpty()) {
             throw new IllegalArgumentException("artifactId must not be null or empty");
         }
-        if (scope != null && !scope.isEmpty() && !"NONE".equals(scope) && !VALID_SCOPES.contains(scope)) {
-            throw new IllegalArgumentException(
-                    "Invalid scope: '" + scope + "'. Valid scopes are: " + VALID_SCOPES + " (or NONE to clear)");
+        if (scope != null && !scope.isEmpty() && !VALID_SCOPES.contains(scope)) {
+            throw new IllegalArgumentException("Invalid scope: '" + scope + "'. Valid scopes are: " + VALID_SCOPES);
         }
     }
 

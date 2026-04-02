@@ -95,10 +95,10 @@ class PomEditorTest {
         editor.save();
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<groupId>com.google.adk</groupId>"));
-        assertTrue(result.contains("<scope>test</scope>"));
+        assertTrue(result.contains("<groupId>com.google.adk</groupId>"), result);
+        assertTrue(result.contains("<scope>test</scope>"), result);
         // Original dependency still present
-        assertTrue(result.contains("<groupId>junit</groupId>"));
+        assertTrue(result.contains("<groupId>junit</groupId>"), result);
     }
 
     @Test
@@ -120,7 +120,7 @@ class PomEditorTest {
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<dependencyManagement>"), "Should contain <dependencyManagement>");
-        assertTrue(result.contains("<groupId>com.google.adk</groupId>"));
+        assertTrue(result.contains("<groupId>com.google.adk</groupId>"), result);
     }
 
     @Test
@@ -141,7 +141,7 @@ class PomEditorTest {
         editor.save();
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<groupId>com.google.adk</groupId>"));
+        assertTrue(result.contains("<groupId>com.google.adk</groupId>"), result);
         // Verify the dependency block doesn't contain <version> (project's own <version> may exist)
         int depStart = result.indexOf("<groupId>com.google.adk</groupId>");
         int depBlockEnd = result.indexOf("</dependency>", depStart);
@@ -318,9 +318,9 @@ class PomEditorTest {
         editor.save();
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<dependencyManagement>"));
-        assertTrue(result.contains("<scope>import</scope>"));
-        assertTrue(result.contains("<type>pom</type>"));
+        assertTrue(result.contains("<dependencyManagement>"), result);
+        assertTrue(result.contains("<scope>import</scope>"), result);
+        assertTrue(result.contains("<type>pom</type>"), result);
     }
 
     @Test
@@ -356,7 +356,7 @@ class PomEditorTest {
         editor.save();
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<groupId>com.google.adk</groupId>"));
+        assertTrue(result.contains("<groupId>com.google.adk</groupId>"), result);
         assertTrue(result.contains("xmlns=\"http://maven.apache.org/POM/4.0.0\""), "Namespace should be preserved");
     }
 
@@ -400,7 +400,7 @@ class PomEditorTest {
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertFalse(result.startsWith("<?xml"), "Should not add XML declaration if original didn't have one");
-        assertTrue(result.contains("<groupId>com.example</groupId>"));
+        assertTrue(result.contains("<groupId>com.example</groupId>"), result);
     }
 
     @Test
@@ -573,8 +573,8 @@ class PomEditorTest {
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         // The default jar variant should still be there
-        assertTrue(result.contains("<groupId>junit</groupId>"));
-        assertFalse(result.contains("<type>test-jar</type>"));
+        assertTrue(result.contains("<groupId>junit</groupId>"), result);
+        assertFalse(result.contains("<type>test-jar</type>"), result);
     }
 
     @Test
@@ -662,7 +662,7 @@ class PomEditorTest {
         assertEquals((byte) 0xBF, resultBytes[2]);
         // XML declaration should be preserved
         String result = new String(resultBytes, StandardCharsets.UTF_8);
-        assertTrue(result.contains("<?xml"));
+        assertTrue(result.contains("<?xml"), result);
     }
 
     @Test

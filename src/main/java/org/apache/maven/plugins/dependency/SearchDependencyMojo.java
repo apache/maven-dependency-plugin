@@ -18,10 +18,9 @@
  */
 package org.apache.maven.plugins.dependency;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -34,6 +33,7 @@ import java.util.regex.Pattern;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
@@ -73,18 +73,6 @@ public class SearchDependencyMojo extends AbstractMojo {
     @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
 
-    /**
-     * Enable interactive mode for browsing and selecting search results.
-     * When enabled and a console is available, results are displayed as a
-     * numbered list. You can select an artifact, browse its versions, and
-     * get the {@code dependency:add} command to run.
-     *
-     * <p>Automatically disabled when no console is available (e.g., piped output
-     * or CI environments). Can be explicitly disabled with {@code -Dinteractive=false}.</p>
-     */
-    @Parameter(property = "interactive", defaultValue = "true")
-    private boolean interactive;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (skip) {
@@ -100,13 +88,8 @@ public class SearchDependencyMojo extends AbstractMojo {
             throw new MojoFailureException("The 'rows' parameter must be a positive integer, got: " + rows);
         }
 
-        String jsonResponse = performSearch(query.trim(), rows, false);
-
-        if (isInteractive()) {
-            interactiveLoop(jsonResponse);
-        } else {
-            displayResults(jsonResponse);
-        }
+        String jsonResponse = performSearch(query.trim(), rows);
+        displayResults(jsonResponse);
     }
 
     /**
@@ -114,17 +97,12 @@ public class SearchDependencyMojo extends AbstractMojo {
      *
      * @param searchQuery the Solr query string
      * @param maxRows     maximum results to return
-     * @param gavMode     if true, appends {@code &core=gav} for per-version results
      */
-    String performSearch(String searchQuery, int maxRows, boolean gavMode)
-            throws MojoExecutionException, MojoFailureException {
+    String performSearch(String searchQuery, int maxRows) throws MojoExecutionException, MojoFailureException {
         HttpURLConnection connection = null;
         try {
             String encodedQuery = URLEncoder.encode(searchQuery, StandardCharsets.UTF_8.name());
             String urlStr = repositoryUrl + "?q=" + encodedQuery + "&rows=" + maxRows + "&wt=json";
-            if (gavMode) {
-                urlStr += "&core=gav";
-            }
             URL url = new URL(urlStr);
 
             connection = (HttpURLConnection) url.openConnection();
@@ -137,7 +115,7 @@ public class SearchDependencyMojo extends AbstractMojo {
 
             int status = connection.getResponseCode();
             if (status != HttpURLConnection.HTTP_OK) {
-                String errorBody = readErrorResponse(connection);
+                String errorBody = readStream(connection.getErrorStream());
                 if (status == 429) {
                     throw new MojoFailureException("Maven Central search API rate limit exceeded (HTTP 429). "
                             + "Please wait a moment and try again."
@@ -153,7 +131,7 @@ public class SearchDependencyMojo extends AbstractMojo {
                         + contentType + ". Expected a JSON response.");
             }
 
-            String response = readResponse(connection.getInputStream());
+            String response = readStream(connection.getInputStream());
 
             if (response.isEmpty() || response.charAt(0) != '{') {
                 throw new MojoFailureException("Maven Central search API returned a non-JSON response. "
@@ -175,48 +153,23 @@ public class SearchDependencyMojo extends AbstractMojo {
         }
     }
 
-    private String readResponse(InputStream inputStream) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-        }
-        return sb.toString();
-    }
-
-    private static String readErrorResponse(HttpURLConnection connection) {
-        try {
-            InputStream errorStream = connection.getErrorStream();
-            if (errorStream == null) {
-                return "";
-            }
-            StringBuilder sb = new StringBuilder();
-            try (BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line);
-                    if (sb.length() > 500) {
-                        sb.setLength(500);
-                        sb.append("...");
-                        break;
-                    }
-                }
-            }
-            return sb.toString();
-        } catch (IOException e) {
+    private static String readStream(InputStream inputStream) throws IOException {
+        if (inputStream == null) {
             return "";
+        }
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                baos.write(buffer, 0, bytesRead);
+            }
+            return baos.toString(StandardCharsets.UTF_8.name());
         }
     }
 
     void displayResults(String jsonResponse) throws MojoExecutionException {
         try {
             int numFound = extractInt(jsonResponse, "numFound");
-
-            getLog().info("Search results for: " + query);
-            getLog().info("");
 
             if (numFound == 0) {
                 getLog().info("No artifacts found matching '" + query + "'.");
@@ -232,12 +185,19 @@ public class SearchDependencyMojo extends AbstractMojo {
 
             int[] colWidths = calculateColumnWidths(artifacts);
             String headerFmt = "  %-" + colWidths[0] + "s  %-" + colWidths[1] + "s  %-" + colWidths[2] + "s";
-            getLog().info(String.format(headerFmt, "groupId", "artifactId", "latest version"));
-            getLog().info(buildSeparator(colWidths[0] + colWidths[1] + colWidths[2] + 6));
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Search results for: ").append(query).append('\n');
+            sb.append('\n');
+            sb.append(String.format(headerFmt, "groupId", "artifactId", "latest version"))
+                    .append('\n');
+            sb.append(buildSeparator(colWidths[0] + colWidths[1] + colWidths[2] + 6))
+                    .append('\n');
 
             String firstGav = null;
             for (String[] artifact : artifacts) {
-                getLog().info(String.format(headerFmt, artifact[0], artifact[1], artifact[2]));
+                sb.append(String.format(headerFmt, artifact[0], artifact[1], artifact[2]))
+                        .append('\n');
                 if (firstGav == null) {
                     String version = artifact[2];
                     if (version != null && !version.isEmpty()) {
@@ -246,222 +206,19 @@ public class SearchDependencyMojo extends AbstractMojo {
                 }
             }
 
-            getLog().info("");
+            sb.append('\n');
             if (firstGav != null) {
-                getLog().info(artifacts.size() + " result(s) found. Use dependency:add to add one to your project:");
-                getLog().info("  mvn dependency:add -Dgav=\"" + firstGav + "\"");
+                sb.append(artifacts.size())
+                        .append(" result(s) found. Use dependency:add to add one to your project:\n");
+                sb.append("  mvn dependency:add -Dgav=\"").append(firstGav).append('"');
             } else {
-                getLog().info(artifacts.size() + " result(s) found.");
+                sb.append(artifacts.size()).append(" result(s) found.");
             }
+
+            getLog().info(sb.toString());
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to parse search API response.", e);
         }
-    }
-
-    // ── Interactive mode ────────────────────────────────────────────────
-
-    /**
-     * Whether interactive mode should be used. Package-private for testing.
-     */
-    boolean isInteractive() {
-        return interactive && System.console() != null;
-    }
-
-    /**
-     * Reads a line of input from the user. Package-private so tests can override via spy.
-     *
-     * @return the user input, or {@code null} if no console is available
-     */
-    String readLine(String prompt) {
-        if (System.console() == null) {
-            return null;
-        }
-        return System.console().readLine("%s", prompt);
-    }
-
-    private void interactiveLoop(String initialJson) throws MojoExecutionException, MojoFailureException {
-        String currentJson = initialJson;
-        String currentQuery = query.trim();
-
-        while (true) {
-            List<String[]> artifacts = extractArtifacts(currentJson);
-            int numFound = extractInt(currentJson, "numFound");
-
-            getLog().info("Search results for: " + currentQuery);
-            getLog().info("");
-
-            if (artifacts.isEmpty()) {
-                getLog().info("No artifacts found matching '" + currentQuery + "'.");
-                getLog().info("");
-                String input = readLine("Enter a new search term, or 'q' to quit: ");
-                if (input == null
-                        || input.trim().isEmpty()
-                        || "q".equalsIgnoreCase(input.trim())
-                        || "quit".equalsIgnoreCase(input.trim())) {
-                    return;
-                }
-                currentQuery = input.trim();
-                currentJson = performSearch(currentQuery, rows, false);
-                continue;
-            }
-
-            displayNumberedResults(artifacts, numFound);
-
-            String input = readLine("Enter number to select, text to search again, 'q' to quit: ");
-            if (input == null
-                    || input.trim().isEmpty()
-                    || "q".equalsIgnoreCase(input.trim())
-                    || "quit".equalsIgnoreCase(input.trim())) {
-                return;
-            }
-
-            input = input.trim();
-
-            try {
-                int selection = Integer.parseInt(input);
-                if (selection >= 1 && selection <= artifacts.size()) {
-                    String[] selected = artifacts.get(selection - 1);
-                    if (handleVersionSelection(selected[0], selected[1], selected[2])) {
-                        return;
-                    }
-                    // User chose 'b' to go back — redisplay same results
-                    continue;
-                } else {
-                    getLog().warn("Invalid selection: " + selection + ". Enter a number between 1 and "
-                            + artifacts.size() + ".");
-                    continue;
-                }
-            } catch (NumberFormatException e) {
-                // Not a number — treat as a new search query
-            }
-
-            currentQuery = input;
-            currentJson = performSearch(currentQuery, rows, false);
-        }
-    }
-
-    private void displayNumberedResults(List<String[]> artifacts, int totalFound) {
-        int[] colWidths = calculateColumnWidths(artifacts);
-
-        int numWidth = String.valueOf(artifacts.size()).length();
-        String fmt = "  %" + numWidth + "d  %-" + colWidths[0] + "s  %-" + colWidths[1] + "s  %-" + colWidths[2] + "s";
-        String headerFmt =
-                "  %" + numWidth + "s  %-" + colWidths[0] + "s  %-" + colWidths[1] + "s  %-" + colWidths[2] + "s";
-
-        getLog().info(String.format(headerFmt, "#", "groupId", "artifactId", "latest version"));
-        getLog().info(buildSeparator(numWidth + 2 + colWidths[0] + colWidths[1] + colWidths[2] + 6));
-
-        for (int i = 0; i < artifacts.size(); i++) {
-            String[] a = artifacts.get(i);
-            getLog().info(String.format(fmt, i + 1, a[0], a[1], a[2]));
-        }
-
-        getLog().info("");
-        if (totalFound > artifacts.size()) {
-            getLog().info(artifacts.size() + " of " + totalFound + " result(s) shown.");
-        } else {
-            getLog().info(artifacts.size() + " result(s) found.");
-        }
-        getLog().info("");
-    }
-
-    /**
-     * Handles version selection for a chosen artifact.
-     *
-     * @return {@code true} if the user completed selection (or quit),
-     *         {@code false} if they chose to go back to the artifact list
-     */
-    private boolean handleVersionSelection(String groupId, String artifactId, String latestVersion)
-            throws MojoExecutionException, MojoFailureException {
-        getLog().info("");
-        getLog().info("Fetching versions for " + groupId + ":" + artifactId + "...");
-
-        List<String> versions;
-        int totalVersions = 0;
-        try {
-            String versionJson = performSearch("g:\"" + groupId + "\" AND a:\"" + artifactId + "\"", 20, true);
-            versions = extractVersionList(versionJson);
-            totalVersions = extractInt(versionJson, "numFound");
-        } catch (Exception e) {
-            getLog().debug("Failed to fetch versions: " + e.getMessage());
-            versions = new ArrayList<>();
-        }
-
-        // Resolve the effective default version: prefer latestVersion from initial search,
-        // fall back to first version from the GAV query, or fail gracefully.
-        String defaultVersion = (latestVersion != null && !latestVersion.isEmpty())
-                ? latestVersion
-                : (!versions.isEmpty() ? versions.get(0) : null);
-
-        if (versions.isEmpty() && defaultVersion != null) {
-            versions = new ArrayList<>();
-            versions.add(defaultVersion);
-        }
-
-        if (versions.isEmpty()) {
-            getLog().warn("No version information available for " + groupId + ":" + artifactId + ".");
-            return false;
-        }
-
-        getLog().info("");
-        getLog().info("Versions of " + groupId + ":" + artifactId + ":");
-        getLog().info("");
-
-        for (int i = 0; i < versions.size(); i++) {
-            String marker = versions.get(i).equals(defaultVersion) ? " (latest)" : "";
-            getLog().info("  " + (i + 1) + ") " + versions.get(i) + marker);
-        }
-        if (totalVersions > versions.size()) {
-            getLog().info("  ... and " + (totalVersions - versions.size()) + " older version(s) not shown.");
-        }
-        getLog().info("");
-
-        String input = readLine("Enter version number, 'b' to go back, or Enter for latest (" + defaultVersion + "): ");
-
-        if (input == null || input.trim().isEmpty()) {
-            printAddCommand(groupId, artifactId, defaultVersion);
-            return true;
-        }
-
-        input = input.trim();
-
-        if ("b".equalsIgnoreCase(input) || "back".equalsIgnoreCase(input)) {
-            return false;
-        }
-
-        if ("q".equalsIgnoreCase(input) || "quit".equalsIgnoreCase(input)) {
-            return true;
-        }
-
-        String selectedVersion = defaultVersion;
-        try {
-            int sel = Integer.parseInt(input);
-            if (sel >= 1 && sel <= versions.size()) {
-                selectedVersion = versions.get(sel - 1);
-            } else {
-                getLog().warn("Invalid selection, using latest version.");
-            }
-        } catch (NumberFormatException e) {
-            getLog().warn("Invalid input, using latest version.");
-        }
-
-        printAddCommand(groupId, artifactId, selectedVersion);
-        return true;
-    }
-
-    private void printAddCommand(String groupId, String artifactId, String version) {
-        String gav = groupId + ":" + artifactId + ":" + version;
-        getLog().info("");
-        getLog().info("Selected: " + gav);
-        getLog().info("");
-        getLog().info("To add this dependency to your project:");
-        getLog().info("  mvn dependency:add -Dgav=\"" + gav + "\"");
-        getLog().info("");
-        getLog().info("With a specific scope:");
-        getLog().info("  mvn dependency:add -Dgav=\"" + gav + "\" -Dscope=test");
-        getLog().info("");
-        getLog().info("To dependencyManagement:");
-        getLog().info("  mvn dependency:add -Dgav=\"" + gav + "\" -Dmanaged");
     }
 
     /**
@@ -666,9 +423,12 @@ public class SearchDependencyMojo extends AbstractMojo {
     }
 
     private String getPluginVersion() {
-        Package pkg = getClass().getPackage();
-        if (pkg != null && pkg.getImplementationVersion() != null) {
-            return pkg.getImplementationVersion();
+        java.util.Map<String, Object> ctx = getPluginContext();
+        if (ctx != null) {
+            PluginDescriptor pluginDescriptor = (PluginDescriptor) ctx.get("pluginDescriptor");
+            if (pluginDescriptor != null && pluginDescriptor.getVersion() != null) {
+                return pluginDescriptor.getVersion();
+            }
         }
         return "SNAPSHOT";
     }

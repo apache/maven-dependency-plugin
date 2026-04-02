@@ -26,6 +26,7 @@ import java.io.IOException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.Model;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -41,16 +42,13 @@ import org.w3c.dom.Element;
  * Supports adding to {@code <dependencies>} or {@code <dependencyManagement>},
  * with version inference from managed dependencies and BOM import shorthand.
  *
- * <p>If the dependency already exists, it is updated automatically (version, scope, etc.)
- * and the change is logged.</p>
+ * <p>If the dependency already exists, the goal fails with a descriptive error
+ * directing the user to remove it first.</p>
  *
  * <p>The goal uses formatting-preserving DOM manipulation to maintain the POM's
  * existing structure (comments, indentation, encoding). Duplicate detection uses
  * type and classifier-aware matching, and cross-references Maven's resolved model
- * to catch dependencies declared via property references. When a dependency is found in
- * the effective model but not in the raw XML (i.e., declared using property interpolation
- * such as {@code ${my.group}}), the goal fails with a descriptive error rather than
- * risk creating a conflicting duplicate entry.</p>
+ * to catch dependencies declared via property references.</p>
  *
  * <p>Scope values are validated against Maven's known scopes:
  * {@code compile}, {@code provided}, {@code runtime}, {@code test}, {@code system}, {@code import}.</p>
@@ -80,7 +78,9 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     private String version;
 
     /**
-     * Shorthand coordinates: {@code groupId:artifactId[:version[:scope[:type[:classifier]]]]}.
+     * Shorthand coordinates: {@code groupId:artifactId[:version]}
+     * or {@code groupId:artifactId[:extension[:classifier]]:version}.
+     * Scope must be specified separately via {@code -Dscope=...}.
      */
     @Parameter(property = "gav")
     private String gav;
@@ -88,7 +88,6 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     /**
      * Dependency scope. Validated against Maven's known scope values:
      * {@code compile}, {@code provided}, {@code runtime}, {@code test}, {@code system}, {@code import}.
-     * Use {@code NONE} to remove an existing scope element when updating.
      * Invalid values are rejected with a {@link org.apache.maven.plugin.MojoFailureException}.
      */
     @Parameter(property = "scope")
@@ -107,8 +106,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     private String classifier;
 
     /**
-     * Whether the dependency is optional. Setting {@code -Doptional=false} explicitly
-     * removes the {@code <optional>} element when updating an existing dependency.
+     * Whether the dependency is optional.
      */
     @Parameter(property = "optional")
     private Boolean optional;
@@ -194,8 +192,9 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
                     targetManaged);
 
             if (existing != null) {
-                editor.updateDependency(existing, coords);
-                getLog().info("Updated dependency " + coords + " in " + pomFile.getName());
+                throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
+                        + " already exists in " + pomFile.getName()
+                        + ". Remove it first with dependency:remove, then re-add.");
             } else if (existsInResolvedModel(targetProject, coords, targetManaged)) {
                 // Dependency exists in the resolved model but not in raw XML — property interpolation
                 throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
@@ -207,6 +206,39 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             }
 
             editor.save();
+
+            // Sync in-memory model so chained goals see the change
+            Model model = targetProject.getModel();
+            if (model != null) {
+                Dependency modelDep = new Dependency();
+                modelDep.setGroupId(coords.getGroupId());
+                modelDep.setArtifactId(coords.getArtifactId());
+                if (coords.getVersion() != null) {
+                    modelDep.setVersion(coords.getVersion());
+                }
+                if (coords.getScope() != null && !coords.getScope().isEmpty()) {
+                    modelDep.setScope(coords.getScope());
+                }
+                if (coords.getType() != null && !coords.getType().isEmpty()) {
+                    modelDep.setType(coords.getType());
+                }
+                if (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) {
+                    modelDep.setClassifier(coords.getClassifier());
+                }
+                if (coords.getOptional() != null) {
+                    modelDep.setOptional(String.valueOf(coords.getOptional()));
+                }
+                if (targetManaged) {
+                    DependencyManagement dm = model.getDependencyManagement();
+                    if (dm == null) {
+                        dm = new DependencyManagement();
+                        model.setDependencyManagement(dm);
+                    }
+                    dm.addDependency(modelDep);
+                } else {
+                    model.addDependency(modelDep);
+                }
+            }
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to modify POM file: " + pomFile, e);
         }
@@ -225,7 +257,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             coords = new DependencyCoordinates(groupId, artifactId);
         } else {
             throw new MojoFailureException("You must specify either -Dgav=groupId:artifactId[:version] "
-                    + "or both -DgroupId=... and -DartifactId=...");
+                    + "or both -DgroupId=... and -DartifactId=... (with optional -Dversion=...)");
         }
 
         // Explicit parameters override GAV shorthand values
@@ -257,17 +289,6 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             coords.validate();
         } catch (IllegalArgumentException e) {
             throw new MojoFailureException(e.getMessage());
-        }
-
-        // Convert NONE sentinels to empty strings (signals field removal during update)
-        if ("NONE".equals(coords.getScope())) {
-            coords.setScope("");
-        }
-        if ("NONE".equals(coords.getType())) {
-            coords.setType("");
-        }
-        if ("NONE".equals(coords.getClassifier())) {
-            coords.setClassifier("");
         }
 
         return coords;
