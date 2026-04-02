@@ -17,7 +17,7 @@
  * under the License.
  */
 
-def pom = new XmlSlurper().parse( new File( basedir, "pom.xml" ) )
+def pom = new groovy.xml.XmlSlurper().parse( new File( basedir, "pom.xml" ) )
 def deps = pom.dependencies.dependency
 
 def dep = deps.find { it.groupId == 'org.junit.jupiter' && it.artifactId == 'junit-jupiter-api' }

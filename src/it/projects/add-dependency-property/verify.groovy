@@ -29,7 +29,7 @@ assert pomText.contains( '${guava.version}' ) :
     "Dependency version should reference \${guava.version}"
 
 // Also verify via XML parsing that the dependency exists
-def pom = new XmlSlurper().parse( new File( basedir, "pom.xml" ) )
+def pom = new groovy.xml.XmlSlurper().parse( new File( basedir, "pom.xml" ) )
 def dep = pom.dependencies.dependency.find { it.artifactId == 'guava' }
 assert dep != null : "guava dependency should have been added"
 

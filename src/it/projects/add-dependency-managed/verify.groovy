@@ -17,7 +17,7 @@
  * under the License.
  */
 
-def pom = new XmlSlurper().parse( new File( basedir, "pom.xml" ) )
+def pom = new groovy.xml.XmlSlurper().parse( new File( basedir, "pom.xml" ) )
 
 // Verify dependency was added to dependencyManagement
 def managedDeps = pom.dependencyManagement.dependencies.dependency

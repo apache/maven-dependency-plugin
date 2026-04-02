@@ -202,6 +202,11 @@ under the License.
     <!-- domtrip -->
     <dependency>
       <groupId>eu.maveniverse.maven.domtrip</groupId>
+      <artifactId>domtrip-core</artifactId>
+      <version>${domtripVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>eu.maveniverse.maven.domtrip</groupId>
       <artifactId>domtrip-maven</artifactId>
       <version>${domtripVersion}</version>
     </dependency>

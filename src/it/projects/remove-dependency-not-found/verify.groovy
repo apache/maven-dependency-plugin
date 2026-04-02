@@ -22,7 +22,7 @@ def buildLog = new File( basedir, "build.log" ).text
 assert buildLog.contains( 'not found in' ) : "Should report dependency not found"
 
 // POM should be unchanged
-def pom = new XmlSlurper().parse( new File( basedir, "pom.xml" ) )
+def pom = new groovy.xml.XmlSlurper().parse( new File( basedir, "pom.xml" ) )
 def deps = pom.dependencies.dependency
 assert deps.size() == 1 : "POM should still have exactly 1 dependency"
 assert deps[0].artifactId == 'slf4j-api'

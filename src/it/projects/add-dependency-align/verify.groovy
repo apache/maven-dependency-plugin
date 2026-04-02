@@ -18,7 +18,7 @@
  */
 
 def pomText = new File( basedir, "pom.xml" ).text
-def pom = new XmlSlurper().parse( new File( basedir, "pom.xml" ) )
+def pom = new groovy.xml.XmlSlurper().parse( new File( basedir, "pom.xml" ) )
 
 // Verify auto-detection created a version property following the .version convention
 assert pomText.contains( '<guava.version>33.0.0-jre</guava.version>' ) :
