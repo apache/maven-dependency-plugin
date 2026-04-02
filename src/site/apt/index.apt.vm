@@ -34,6 +34,9 @@ ${project.name}
 
   The Dependency plugin has several goals:
 
+  *{{{./add-mojo.html}dependency:add}} adds or updates a dependency in the project's <<<pom.xml>>>, with optional
+  convention auto-detection for managed dependencies and version properties.
+
   *{{{./analyze-mojo.html}dependency:analyze}} analyzes the dependencies of this project and determines which are: used
   and declared; used and undeclared; unused and declared.
 
@@ -106,8 +109,12 @@ ${project.name}
   *{{{./unpack-dependencies-mojo.html}dependency:unpack-dependencies}} like
   copy-dependencies but unpacks.
 
+  *{{{./remove-mojo.html}dependency:remove}} removes a dependency from the project's <<<pom.xml>>>.
+
   *{{{./render-dependencies-mojo.html}dependency:render-dependencies}} like
   build-classpath but with a custom Velocity template.
+
+  *{{{./search-mojo.html}dependency:search}} searches Maven Central for artifacts matching a query string.
 
   []
 
@@ -156,6 +163,8 @@ ${project.name}
   * {{{./examples/tree-mojo.html}Tree Mojo}}
 
   * {{{./examples/render-dependencies.html}Render Dependencies}}
+
+  * {{{./examples/adding-removing-dependencies.html}Adding and Removing Dependencies}}
 
   []
 

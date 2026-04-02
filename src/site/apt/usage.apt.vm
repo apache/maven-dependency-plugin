@@ -714,3 +714,87 @@ mvn dependency:analyze-exclusions
 [WARNING]         - javax.annotation:javax.annotation-api
 [WARNING]         - javax.activation:javax.activation-api
 +---+
+
+
+* <<<dependency:add>>>
+
+  This goal adds or updates a dependency in the project's <<<pom.xml>>>. It uses lossless XML editing
+  (DomTrip) to preserve formatting, comments, and whitespace.
+
+  By default (<<<align=true>>>), the goal auto-detects the project's dependency management conventions
+  by analyzing existing dependencies. If the project uses <<<\<dependencyManagement\>>>>, the version is
+  added to the managed section (in the appropriate parent POM) and a version-less entry to
+  <<<\<dependencies\>>>>. If existing versions use property references (<<<$\{...\}>>>), a property is
+  created following the detected naming convention.
+
+  In its simplest form:
+
+---
+mvn dependency:add -Dgav=com.google.guava:guava:33.0.0-jre
+---
+
+  With an explicit scope:
+
+---
+mvn dependency:add -Dgav=com.google.guava:guava:33.0.0-jre -Dscope=test
+---
+
+  Disabling convention alignment and explicitly requesting a managed dependency:
+
+---
+mvn dependency:add -Dgav=com.google.guava:guava:33.0.0-jre -Dalign=false -Dmanaged=true
+---
+
+  Using an explicit version property name:
+
+---
+mvn dependency:add -Dgav=com.google.guava:guava:33.0.0-jre -DpropertyName=guava.version
+---
+
+  See {{{./examples/adding-removing-dependencies.html}Adding and Removing Dependencies}} for more
+  detailed examples including multi-module projects.
+
+
+* <<<dependency:remove>>>
+
+  This goal removes a dependency from the project's <<<pom.xml>>>. Like <<<dependency:add>>>, it uses
+  lossless XML editing to preserve formatting.
+
+---
+mvn dependency:remove -Dgav=com.google.guava:guava
+---
+
+  To remove from <<<\<dependencyManagement\>>>> instead of <<<\<dependencies\>>>>:
+
+---
+mvn dependency:remove -Dgav=com.google.guava:guava -Dmanaged=true
+---
+
+  The goal will fail with a <<<MojoFailureException>>> if the specified dependency is not found.
+
+
+* <<<dependency:search>>>
+
+  This goal searches Maven Central for artifacts matching a query string. It does not require a project
+  and can be run from any directory.
+
+---
+mvn dependency:search -Dquery=guava
+---
+
+  By default, up to 20 results are displayed. Use the <<<rows>>> parameter to change the limit:
+
+---
+mvn dependency:search -Dquery=guava -Drows=5
+---
+
+  Sample output:
+
++---+
+[INFO] Search results for: guava
+[INFO] ----------
+[INFO] GroupId                                   ArtifactId                     Version
+[INFO] com.google.guava                          guava                          33.0.0-jre
+[INFO] com.google.guava                          guava-testlib                  33.0.0-jre
+...
++---+

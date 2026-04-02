@@ -305,6 +305,19 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
                 // No parent with managed deps found on disk — fall back to current POM
                 conventions.managedPomFile = pomFile;
             }
+
+            // 3. Also scan the managed deps POM for property patterns (the child POM
+            //    may have only version-less deps, so patterns live in the parent)
+            if (!conventions.useProperty
+                    && conventions.managedPomFile != null
+                    && !conventions.managedPomFile.equals(pomFile)) {
+                try {
+                    Document managedDoc = Document.of(conventions.managedPomFile.toPath());
+                    analyzePropertyPatterns(managedDoc, conventions);
+                } catch (Exception e) {
+                    getLog().debug("Could not analyze managed POM conventions: " + e.getMessage());
+                }
+            }
         }
 
         // Use detected pattern for property name
@@ -327,21 +340,20 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         int propertyVersions = 0;
         int totalVersions = 0;
 
-        // Scan <dependencies> and <dependencyManagement><dependencies>
-        scanVersionPatterns(root, "dependencies", patternCounts, new int[] {0, 0});
-        Element dm = root.childElement("dependencyManagement").orElse(null);
-        if (dm != null) {
-            int[] counts = {0, 0}; // [propertyVersions, totalVersions]
-            scanVersionPatterns(dm, "dependencies", patternCounts, counts);
-            propertyVersions += counts[0];
-            totalVersions += counts[1];
-        }
-
-        // Also count from <dependencies> directly
+        // Scan <dependencies>
         int[] directCounts = {0, 0};
         scanVersionPatterns(root, "dependencies", patternCounts, directCounts);
         propertyVersions += directCounts[0];
         totalVersions += directCounts[1];
+
+        // Scan <dependencyManagement><dependencies>
+        Element dm = root.childElement("dependencyManagement").orElse(null);
+        if (dm != null) {
+            int[] counts = {0, 0};
+            scanVersionPatterns(dm, "dependencies", patternCounts, counts);
+            propertyVersions += counts[0];
+            totalVersions += counts[1];
+        }
 
         // If majority of versioned deps use properties, adopt that convention
         if (totalVersions > 0 && propertyVersions * 2 >= totalVersions) {
@@ -387,9 +399,12 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         if (artifactId == null) {
             return null;
         }
-        // Check suffix patterns: artifactId.version, artifactId-version, artifactIdVersion
+        // Check exact suffix patterns: artifactId.version, artifactId-version
         if (propertyName.equals(artifactId + ".version")) {
             return "suffix:.version";
+        }
+        if (propertyName.equals(artifactId + "-version")) {
+            return "suffix:-version";
         }
         if (propertyName.equals("version." + artifactId)) {
             return "prefix:version.";
@@ -400,13 +415,19 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             if (propertyName.equals(simplified + ".version")) {
                 return "suffix:.version";
             }
+            if (propertyName.equals(simplified + "-version")) {
+                return "suffix:-version";
+            }
             if (propertyName.equals("version." + simplified)) {
                 return "prefix:version.";
             }
         }
-        // Check if ends with .version or Version regardless
+        // Check if ends with .version, -version, or Version regardless
         if (propertyName.endsWith(".version")) {
             return "suffix:.version";
+        }
+        if (propertyName.endsWith("-version")) {
+            return "suffix:-version";
         }
         if (propertyName.endsWith("Version")) {
             return "suffix:Version";

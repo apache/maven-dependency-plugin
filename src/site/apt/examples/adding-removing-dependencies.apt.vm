@@ -1,0 +1,164 @@
+~~ Licensed to the Apache Software Foundation (ASF) under one
+~~ or more contributor license agreements.  See the NOTICE file
+~~ distributed with this work for additional information
+~~ regarding copyright ownership.  The ASF licenses this file
+~~ to you under the Apache License, Version 2.0 (the
+~~ "License"); you may not use this file except in compliance
+~~ with the License.  You may obtain a copy of the License at
+~~
+~~ http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing,
+~~ software distributed under the License is distributed on an
+~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+~~ KIND, either express or implied.  See the License for the
+~~ specific language governing permissions and limitations
+~~ under the License.
+
+  ------
+  Adding and Removing Dependencies
+  ------
+  Apache Maven Team
+  ------
+  2024-01-01
+  ------
+
+Adding and Removing Dependencies
+
+%{toc|fromDepth=2}
+
+* Adding a dependency
+
+  The <<<dependency:add>>> goal adds a dependency to the project's <<<pom.xml>>> using lossless XML editing
+  that preserves formatting, comments, and whitespace.
+
+  The coordinates are specified using the <<<gav>>> parameter in the format
+  <<<groupId:artifactId[:version[:classifier[:type]]]>>>.
+
+** Basic usage
+
+---
+mvn dependency:add -Dgav=com.google.guava:guava:33.0.0-jre
+---
+
+  This adds the following to your <<<pom.xml>>>:
+
++---+
+<dependencies>
+    <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>33.0.0-jre</version>
+    </dependency>
+</dependencies>
++---+
+
+** Adding with a scope
+
+  Use the <<<scope>>> parameter to set the dependency scope:
+
+---
+mvn dependency:add -Dgav=junit:junit:4.13.2 -Dscope=test
+---
+
+** Convention auto-detection (align)
+
+  By default, <<<align=true>>> causes the goal to analyze existing dependencies and follow the
+  project's conventions:
+
+  * <<Managed dependencies>>: If most existing dependencies are version-less (delegated to
+    <<<\<dependencyManagement\>>>>), the new dependency is added the same way.
+
+  * <<Version properties>>: If existing versions use property references (e.g., <<<$\{guava.version\}>>>),
+    a property is created following the detected naming convention.
+
+  * <<Parent POM>>: In multi-module projects, managed dependencies and properties are added to the
+    appropriate parent POM.
+
+  []
+
+  For example, in a project where all dependencies use <<<$\{artifactId.version\}>>> properties
+  and managed dependencies:
+
+---
+mvn dependency:add -Dgav=com.google.guava:guava:33.0.0-jre
+---
+
+  This will automatically:
+
+  [[1]] Add <<<\<guava.version\>33.0.0-jre\</guava.version\>>>> to <<<\<properties\>>>>
+
+  [[2]] Add a managed dependency with <<<\<version\>$\{guava.version\}\</version\>>>> to <<<\<dependencyManagement\>>>>
+
+  [[3]] Add a version-less <<<\<dependency\>>>> entry to <<<\<dependencies\>>>>
+
+  []
+
+** Multi-module projects
+
+  In a multi-module project, when running from a child module that inherits managed dependencies
+  from a parent, the goal will:
+
+  * Detect that existing dependencies are version-less (managed by parent)
+
+  * Walk the parent POM chain to find the POM with <<<\<dependencyManagement\>>>>
+
+  * Scan the parent POM's managed dependencies for property naming patterns
+
+  * Add the version property and managed dependency to the parent POM
+
+  * Add a version-less dependency to the child POM
+
+  []
+
+---
+cd child-module
+mvn dependency:add -Dgav=com.google.guava:guava:33.0.0-jre
+---
+
+** Explicit overrides
+
+  You can override auto-detected conventions with explicit flags:
+
+  * <<<-Dmanaged=true>>> / <<<-Dmanaged=false>>>: Force or prevent using <<<\<dependencyManagement\>>>>
+
+  * <<<-DuseProperty=true>>> / <<<-DuseProperty=false>>>: Force or prevent using a version property
+
+  * <<<-DpropertyName=my.version>>>: Use a specific property name (implies <<<useProperty=true>>>)
+
+  * <<<-Dalign=false>>>: Disable convention detection entirely
+
+  []
+
+---
+mvn dependency:add -Dgav=com.google.guava:guava:33.0.0-jre -Dalign=false -DpropertyName=guava.version
+---
+
+
+* Removing a dependency
+
+  The <<<dependency:remove>>> goal removes a dependency from the project's <<<pom.xml>>>.
+  Only <<<groupId>>> and <<<artifactId>>> are required.
+
+---
+mvn dependency:remove -Dgav=com.google.guava:guava
+---
+
+  To remove from <<<\<dependencyManagement\>>>> instead of <<<\<dependencies\>>>>:
+
+---
+mvn dependency:remove -Dgav=com.google.guava:guava -Dmanaged=true
+---
+
+  The goal fails with an error if the specified dependency is not found in the POM.
+
+
+* Searching for dependencies
+
+  The <<<dependency:search>>> goal searches Maven Central for artifacts. It does not require a project.
+
+---
+mvn dependency:search -Dquery=guava
+mvn dependency:search -Dquery="g:com.google.guava"
+mvn dependency:search -Dquery=guava -Drows=5
+---
