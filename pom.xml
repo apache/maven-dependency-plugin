@@ -96,6 +96,7 @@ under the License.
     <slf4jVersion>1.7.36</slf4jVersion>
     <jettyVersion>9.4.58.v20250814</jettyVersion>
     <mockito.version>4.11.0</mockito.version>
+    <domtripVersion>0.6.0</domtripVersion>
     <plexus-archiver.version>4.11.0</plexus-archiver.version>
     <pluginTestingVersion>3.5.1</pluginTestingVersion>
 
@@ -196,6 +197,13 @@ under the License.
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-i18n</artifactId>
       <version>1.1.0</version>
+    </dependency>
+
+    <!-- domtrip -->
+    <dependency>
+      <groupId>eu.maveniverse.maven.domtrip</groupId>
+      <artifactId>domtrip-maven</artifactId>
+      <version>${domtripVersion}</version>
     </dependency>
 
     <!-- shared -->
@@ -319,7 +327,6 @@ under the License.
       <groupId>org.glassfish</groupId>
       <artifactId>jakarta.json</artifactId>
       <version>2.0.1</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-testing</groupId>
