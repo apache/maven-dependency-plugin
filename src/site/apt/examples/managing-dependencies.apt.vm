@@ -25,9 +25,9 @@
 
 Managing Dependencies
 
-  Starting with version 3.11.0, the Maven Dependency Plugin provides three goals
-  for managing dependencies directly from the command line: <<<dependency:add>>>,
-  <<<dependency:remove>>>, and <<<dependency:search>>>.
+  Starting with version 3.11.0, the Maven Dependency Plugin provides two goals
+  for managing dependencies directly from the command line: <<<dependency:add>>>
+  and <<<dependency:remove>>>.
 
 %{toc|fromDepth=2}
 
@@ -240,78 +240,3 @@ mvn dependency:remove -Dgav=com.google.code.gson:gson -pl my-service
 mvn dependency:remove -Dgav=com.google.code.gson:gson -Dprofile=dev
 +---+
 
-* Searching Maven Central
-
-  The <<<dependency:search>>> goal queries Maven Central for matching artifacts. This goal
-  does not require a project — it can be run from any directory.
-
-  By default, search runs in <interactive mode>: results are shown as a numbered list,
-  and you can select an artifact to browse its versions and get the <<<dependency:add>>>
-  command. To disable interactive mode (e.g., for scripting), pass <<<-Dinteractive=false>>>.
-
-** Basic Usage
-
-+---+
-mvn dependency:search -Dquery=gson
-+---+
-
-  In interactive mode, you'll see a numbered list and be prompted to select an artifact,
-  then a version. After selection, the goal prints the <<<dependency:add>>> command.
-
-  The following commands are available at any prompt:
-
-  * <<<q>>> or <<<quit>>> — exit interactive mode
-
-  * <<<b>>> or <<<back>>> — return to the previous list (version selection only)
-
-  * Any text — triggers a new search with that text
-
-  []
-
-  In non-interactive mode (<<<-Dinteractive=false>>>), a table is displayed:
-
-+---+
-[INFO] Search results for: gson
-[INFO]
-[INFO]   groupId                  artifactId          latest version
-[INFO]   ─────────────────────────────────────────────────────────────
-[INFO]   com.google.code.gson     gson                2.10.1
-[INFO]
-[INFO] 1 result(s) found. Use dependency:add to add one to your project:
-[INFO]   mvn dependency:add -Dgav="com.google.code.gson:gson:2.10.1"
-+---+
-
-** Structured Queries
-
-  You can search by groupId or artifactId using structured query syntax:
-
-+---+
-mvn dependency:search -Dquery="g:com.google.code.gson"
-mvn dependency:search -Dquery="a:gson"
-mvn dependency:search -Dquery="g:com.google AND a:gson"
-+---+
-
-** Limiting Results
-
-  Use <<<-Drows>>> to control the number of results returned:
-
-+---+
-mvn dependency:search -Dquery=jackson -Drows=20
-+---+
-
-** Custom Repository Endpoint
-
-  To search against a private registry that exposes a compatible search API:
-
-+---+
-mvn dependency:search -Dquery=my-lib -DrepositoryUrl=https://nexus.example.com/solrsearch/select
-+---+
-
-** Disabling Interactive Mode
-
-  Interactive mode is enabled by default when a console is available. To disable it
-  (e.g., for CI pipelines or scripts), use <<<-Dinteractive=false>>>:
-
-+---+
-mvn dependency:search -Dquery=gson -Dinteractive=false
-+---+

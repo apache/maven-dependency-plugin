@@ -756,18 +756,3 @@ mvn dependency:remove -Dgav="com.google.code.gson:gson" -Dmanaged
 
   When removing a managed dependency from a parent POM, the goal warns if child modules still
   reference that dependency without an explicit version.
-
-* <<<dependency:search>>>
-
-  This goal queries Maven Central for artifacts matching a search term. It does not require
-  a project. For detailed examples, see
-  {{{./examples/managing-dependencies.html}Managing Dependencies}}.
-
----
-mvn dependency:search -Dquery=google-adk
-mvn dependency:search -Dquery=jackson -Drows=20
----
-
-  When run from an interactive terminal, the goal enters an interactive mode that allows
-  browsing artifacts, viewing available versions, and copying ready-to-use
-  <<<mvn dependency:add>>> commands.

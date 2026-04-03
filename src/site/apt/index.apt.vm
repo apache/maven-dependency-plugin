@@ -105,10 +105,6 @@ ${project.name}
   *{{{./resolve-sources-mojo.html}dependency:resolve-sources}} tells Maven to resolve all dependencies and their source attachments,
   and displays the version.
 
-  *{{{./search-mojo.html}dependency:search}} queries Maven Central for artifacts matching a search term and displays
-  results in a formatted table. Supports interactive mode for browsing versions.
-  See {{{./examples/managing-dependencies.html}Managing Dependencies}}.
-
   *{{{./sources-mojo.html}dependency:sources}} has been deprecated for removal in favor of {{{./resolve-sources-mojo.html}dependency:resolve-sources}}.
 
   *{{{./tree-mojo.html}dependency:tree}} displays the dependency tree for this project.
