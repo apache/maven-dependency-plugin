@@ -131,8 +131,8 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
 
         // Validate version requirements
         if (targetManaged && coords.getVersion() == null) {
-            throw new MojoFailureException(
-                    "Version is required when adding to <dependencyManagement>. Provide a version with -Dversion=...");
+            throw new MojoFailureException("Version is required when adding to <dependencyManagement>."
+                    + " Include version in -Dgav (e.g. groupId:artifactId:version)");
         }
 
         // Version inference for non-managed dependencies
@@ -144,7 +144,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             } else {
                 throw new MojoFailureException("No version specified and no managed version found for "
                         + coords.getGroupId() + ":" + coords.getArtifactId()
-                        + ". Provide a version with -Dversion=...");
+                        + ". Include version in -Dgav (e.g. groupId:artifactId:version)");
             }
         }
 
