@@ -28,7 +28,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.dependency.pom.DependencyCoordinates;
+import org.apache.maven.plugins.dependency.pom.DependencyEntry;
 import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -160,8 +160,7 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
      * This catches dependencies declared with property references like {@code ${project.groupId}}
      * without false-positiving on inherited dependencies from a parent POM.
      */
-    protected static boolean existsInResolvedModel(
-            MavenProject project, DependencyCoordinates coords, boolean managed) {
+    protected static boolean existsInResolvedModel(MavenProject project, DependencyEntry coords, boolean managed) {
         List<Dependency> deps;
         org.apache.maven.model.Model originalModel = project.getOriginalModel();
         if (managed) {

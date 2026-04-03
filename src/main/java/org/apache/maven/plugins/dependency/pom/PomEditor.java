@@ -138,7 +138,7 @@ public class PomEditor {
      * @param coords the dependency coordinates
      * @param managed if {@code true}, add to {@code <dependencyManagement>}
      */
-    public void addDependency(DependencyCoordinates coords, boolean managed) {
+    public void addDependency(DependencyEntry coords, boolean managed) {
         Element depsElement = getDependenciesElement(managed, true);
 
         Element dep = editor.addElement(depsElement, "dependency");
@@ -169,7 +169,7 @@ public class PomEditor {
      * @param existing the existing dependency element
      * @param coords   the new coordinate values
      */
-    public void updateDependency(Element existing, DependencyCoordinates coords) {
+    public void updateDependency(Element existing, DependencyEntry coords) {
         if (coords.getVersion() != null) {
             setOrRemoveChild(existing, "version", coords.getVersion());
         }

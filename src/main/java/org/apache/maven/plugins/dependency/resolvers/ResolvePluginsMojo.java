@@ -153,7 +153,7 @@ public class ResolvePluginsMojo extends AbstractDependencyMojo {
     @Override
     protected void doExecute() throws MojoExecutionException {
         try {
-            // ideally this should either be DependencyCoordinates or DependencyNode
+            // ideally this should either be DependencyEntry or DependencyNode
             final Set<Plugin> plugins = getProjectPlugins();
 
             StringBuilder sb = new StringBuilder();

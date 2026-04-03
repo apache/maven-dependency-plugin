@@ -58,7 +58,7 @@ class PomEditorTest {
         File pomFile = createTempPom(pom);
         PomEditor editor = PomEditor.load(pomFile);
 
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.google.adk:google-adk:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.google.adk:google-adk:1.0.0");
         editor.addDependency(coords, false);
         editor.save();
 
@@ -89,7 +89,7 @@ class PomEditorTest {
         File pomFile = createTempPom(pom);
         PomEditor editor = PomEditor.load(pomFile);
 
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.google.adk:google-adk:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.google.adk:google-adk:1.0.0");
         coords.setScope("test");
         editor.addDependency(coords, false);
         editor.save();
@@ -114,7 +114,7 @@ class PomEditorTest {
         File pomFile = createTempPom(pom);
         PomEditor editor = PomEditor.load(pomFile);
 
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.google.adk:google-adk:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.google.adk:google-adk:1.0.0");
         editor.addDependency(coords, true);
         editor.save();
 
@@ -136,7 +136,7 @@ class PomEditorTest {
         File pomFile = createTempPom(pom);
         PomEditor editor = PomEditor.load(pomFile);
 
-        DependencyCoordinates coords = new DependencyCoordinates("com.google.adk", "google-adk");
+        DependencyEntry coords = new DependencyEntry("com.google.adk", "google-adk");
         editor.addDependency(coords, false);
         editor.save();
 
@@ -257,7 +257,7 @@ class PomEditorTest {
         Element existing = editor.findDependency("junit", "junit", false);
         assertNotNull(existing);
 
-        DependencyCoordinates newCoords = new DependencyCoordinates("junit", "junit");
+        DependencyEntry newCoords = new DependencyEntry("junit", "junit");
         newCoords.setVersion("5.0.0");
         newCoords.setScope("test");
         editor.updateDependency(existing, newCoords);
@@ -289,7 +289,7 @@ class PomEditorTest {
         File pomFile = createTempPom(pom);
         PomEditor editor = PomEditor.load(pomFile);
 
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:new-lib:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.example:new-lib:1.0.0");
         editor.addDependency(coords, false);
         editor.save();
 
@@ -310,8 +310,7 @@ class PomEditorTest {
         File pomFile = createTempPom(pom);
         PomEditor editor = PomEditor.load(pomFile);
 
-        DependencyCoordinates coords =
-                DependencyCoordinates.parse("org.springframework.boot:spring-boot-dependencies:3.2.0");
+        DependencyEntry coords = DependencyEntry.parse("org.springframework.boot:spring-boot-dependencies:3.2.0");
         coords.setScope("import");
         coords.setType("pom");
         editor.addDependency(coords, true);
@@ -351,7 +350,7 @@ class PomEditorTest {
         assertNotNull(found, "Should find dependency in namespaced POM");
 
         // Should add new dependency to namespaced POM
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.google.adk:google-adk:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.google.adk:google-adk:1.0.0");
         editor.addDependency(coords, false);
         editor.save();
 
@@ -373,7 +372,7 @@ class PomEditorTest {
         File pomFile = createTempPom(pom);
         PomEditor editor = PomEditor.load(pomFile);
 
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:optional-lib:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.example:optional-lib:1.0.0");
         coords.setOptional(true);
         editor.addDependency(coords, false);
         editor.save();
@@ -394,7 +393,7 @@ class PomEditorTest {
         File pomFile = createTempPom(pom);
         PomEditor editor = PomEditor.load(pomFile);
 
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.example:lib:1.0.0");
         editor.addDependency(coords, false);
         editor.save();
 
@@ -459,7 +458,7 @@ class PomEditorTest {
         Files.write(pomFile.toPath(), withBom);
 
         PomEditor editor = PomEditor.load(pomFile);
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.example:lib:1.0.0");
         editor.addDependency(coords, false);
         editor.save();
 
@@ -610,7 +609,7 @@ class PomEditorTest {
         Files.write(pomFile.toPath(), bomPrefixed);
 
         PomEditor editor = PomEditor.load(pomFile);
-        DependencyCoordinates coords = new DependencyCoordinates("junit", "junit");
+        DependencyEntry coords = new DependencyEntry("junit", "junit");
         coords.setVersion("4.13");
         editor.addDependency(coords, false);
         editor.save();
@@ -647,7 +646,7 @@ class PomEditorTest {
         assertNotNull(dep);
 
         // Empty string signals removal
-        DependencyCoordinates coords = new DependencyCoordinates("com.example", "lib");
+        DependencyEntry coords = new DependencyEntry("com.example", "lib");
         coords.setScope(""); // clear scope
         coords.setOptional(false); // clear optional
 
@@ -681,7 +680,7 @@ class PomEditorTest {
         assertNotNull(dep);
 
         // Only update version, leave scope (null means don't touch)
-        DependencyCoordinates coords = new DependencyCoordinates("com.example", "lib");
+        DependencyEntry coords = new DependencyEntry("com.example", "lib");
         coords.setVersion("2.0");
 
         editor.updateDependency(dep, coords);
@@ -700,7 +699,7 @@ class PomEditorTest {
         Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
 
         PomEditor editor = PomEditor.load(pomFile);
-        DependencyCoordinates coords = new DependencyCoordinates("com.example", "lib");
+        DependencyEntry coords = new DependencyEntry("com.example", "lib");
         coords.setVersion("1.0");
         coords.setScope(""); // empty = NONE sentinel, should not create element
         coords.setType(""); // same
@@ -736,7 +735,7 @@ class PomEditorTest {
 
         PomEditor editor = PomEditor.load(pomFile);
         editor.setProfileId("test-profile");
-        DependencyCoordinates coords = new DependencyCoordinates("com.example", "test-lib");
+        DependencyEntry coords = new DependencyEntry("com.example", "test-lib");
         coords.setVersion("1.0");
         coords.setScope("test");
         editor.addDependency(coords, false);
@@ -771,7 +770,7 @@ class PomEditorTest {
 
         PomEditor editor = PomEditor.load(pomFile);
         editor.setProfileId("dev");
-        DependencyCoordinates coords = new DependencyCoordinates("com.example", "new-lib");
+        DependencyEntry coords = new DependencyEntry("com.example", "new-lib");
         coords.setVersion("2.0");
         editor.addDependency(coords, false);
         editor.save();
@@ -890,7 +889,7 @@ class PomEditorTest {
 
         PomEditor editor = PomEditor.load(pomFile);
         editor.setProfileId("dev");
-        DependencyCoordinates coords = new DependencyCoordinates("com.example", "lib");
+        DependencyEntry coords = new DependencyEntry("com.example", "lib");
         coords.setVersion("1.0");
         editor.addDependency(coords, true);
         editor.save();
@@ -938,7 +937,7 @@ class PomEditorTest {
         Element dep = editor.findDependency("com.example", "lib", false);
         assertNotNull(dep);
 
-        DependencyCoordinates coords = new DependencyCoordinates("com.example", "lib");
+        DependencyEntry coords = new DependencyEntry("com.example", "lib");
         coords.setVersion("2.0");
         coords.setType("pom");
         coords.setClassifier("sources");

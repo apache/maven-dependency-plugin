@@ -33,7 +33,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.dependency.pom.DependencyCoordinates;
+import org.apache.maven.plugins.dependency.pom.DependencyEntry;
 import org.apache.maven.plugins.dependency.pom.PomEditor;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.XmlStreamReader;
@@ -106,7 +106,7 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
 
     @Override
     protected void doExecute() throws MojoExecutionException, MojoFailureException {
-        DependencyCoordinates coords = resolveCoordinates();
+        DependencyEntry coords = resolveCoordinates();
 
         if (bom) {
             handleBomFlag(coords);
@@ -178,14 +178,14 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
         }
     }
 
-    private DependencyCoordinates resolveCoordinates() throws MojoFailureException {
+    private DependencyEntry resolveCoordinates() throws MojoFailureException {
         if (gav == null || gav.isEmpty()) {
             throw new MojoFailureException("You must specify -Dgav=groupId:artifactId");
         }
 
-        DependencyCoordinates coords;
+        DependencyEntry coords;
         try {
-            coords = DependencyCoordinates.parse(gav);
+            coords = DependencyEntry.parse(gav);
         } catch (IllegalArgumentException e) {
             throw new MojoFailureException(e.getMessage());
         }
@@ -207,7 +207,7 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
         return coords;
     }
 
-    private void handleBomFlag(DependencyCoordinates coords) {
+    private void handleBomFlag(DependencyEntry coords) {
         if (coords.getType() != null && !"pom".equals(coords.getType())) {
             getLog().warn("The -Dbom flag overrides type. Using type=pom.");
         }

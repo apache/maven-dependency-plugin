@@ -32,7 +32,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.dependency.pom.DependencyCoordinates;
+import org.apache.maven.plugins.dependency.pom.DependencyEntry;
 import org.apache.maven.plugins.dependency.pom.PomEditor;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -120,7 +120,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
 
     @Override
     protected void doExecute() throws MojoExecutionException, MojoFailureException {
-        DependencyCoordinates coords = resolveCoordinates();
+        DependencyEntry coords = resolveCoordinates();
 
         if (bom) {
             handleBomFlag(coords);
@@ -225,14 +225,14 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         }
     }
 
-    private DependencyCoordinates resolveCoordinates() throws MojoFailureException {
+    private DependencyEntry resolveCoordinates() throws MojoFailureException {
         if (gav == null || gav.isEmpty()) {
             throw new MojoFailureException("You must specify -Dgav=groupId:artifactId[:version]");
         }
 
-        DependencyCoordinates coords;
+        DependencyEntry coords;
         try {
-            coords = DependencyCoordinates.parse(gav);
+            coords = DependencyEntry.parse(gav);
         } catch (IllegalArgumentException e) {
             throw new MojoFailureException(e.getMessage());
         }
@@ -261,7 +261,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         return coords;
     }
 
-    private void handleBomFlag(DependencyCoordinates coords) {
+    private void handleBomFlag(DependencyEntry coords) {
         if (coords.getScope() != null || coords.getType() != null) {
             getLog().warn("The -Dbom flag overrides scope and type. Using scope=import and type=pom.");
         }

@@ -34,7 +34,7 @@ import java.util.Set;
  *
  * @since 3.11.0
  */
-public class DependencyCoordinates {
+public class DependencyEntry {
 
     private static final Set<String> VALID_SCOPES =
             new HashSet<>(Arrays.asList("compile", "provided", "runtime", "test", "system", "import"));
@@ -47,9 +47,9 @@ public class DependencyCoordinates {
     private String classifier;
     private Boolean optional;
 
-    public DependencyCoordinates() {}
+    public DependencyEntry() {}
 
-    public DependencyCoordinates(String groupId, String artifactId) {
+    public DependencyEntry(String groupId, String artifactId) {
         this.groupId = groupId;
         this.artifactId = artifactId;
     }
@@ -69,7 +69,7 @@ public class DependencyCoordinates {
      * @return the parsed coordinates
      * @throws IllegalArgumentException if the string has fewer than 2 or more than 5 segments
      */
-    public static DependencyCoordinates parse(String gav) {
+    public static DependencyEntry parse(String gav) {
         if (gav == null || gav.trim().isEmpty()) {
             throw new IllegalArgumentException("GAV string must not be null or empty");
         }
@@ -79,7 +79,7 @@ public class DependencyCoordinates {
                     "Invalid GAV format: '" + gav
                             + "'. Expected groupId:artifactId[:version] or groupId:artifactId[:extension[:classifier]]:version");
         }
-        DependencyCoordinates coords = new DependencyCoordinates();
+        DependencyEntry coords = new DependencyEntry();
         coords.groupId = tokens[0].trim();
         coords.artifactId = tokens[1].trim();
         if (coords.groupId.isEmpty()) {

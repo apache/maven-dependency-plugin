@@ -24,11 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class DependencyCoordinatesTest {
+class DependencyEntryTest {
 
     @Test
     void parseMinimalGav() {
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.google.adk:google-adk");
+        DependencyEntry coords = DependencyEntry.parse("com.google.adk:google-adk");
         assertEquals("com.google.adk", coords.getGroupId());
         assertEquals("google-adk", coords.getArtifactId());
         assertNull(coords.getVersion());
@@ -39,7 +39,7 @@ class DependencyCoordinatesTest {
 
     @Test
     void parseWithVersion() {
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.google.adk:google-adk:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.google.adk:google-adk:1.0.0");
         assertEquals("com.google.adk", coords.getGroupId());
         assertEquals("google-adk", coords.getArtifactId());
         assertEquals("1.0.0", coords.getVersion());
@@ -48,7 +48,7 @@ class DependencyCoordinatesTest {
     @Test
     void parseWithExtensionAndVersion() {
         // g:a:ext:v format
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.google.adk:google-adk:pom:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.google.adk:google-adk:pom:1.0.0");
         assertEquals("com.google.adk", coords.getGroupId());
         assertEquals("google-adk", coords.getArtifactId());
         assertEquals("1.0.0", coords.getVersion());
@@ -58,7 +58,7 @@ class DependencyCoordinatesTest {
     @Test
     void parseFullForm() {
         // g:a:ext:cls:v format
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.google.adk:google-adk:jar:sources:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.google.adk:google-adk:jar:sources:1.0.0");
         assertEquals("com.google.adk", coords.getGroupId());
         assertEquals("google-adk", coords.getArtifactId());
         assertEquals("1.0.0", coords.getVersion());
@@ -70,7 +70,7 @@ class DependencyCoordinatesTest {
     @Test
     void parseEmptyOptionalFields() {
         // g:a:ext:v with empty extension
-        DependencyCoordinates coords = DependencyCoordinates.parse("g:a::1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("g:a::1.0.0");
         assertEquals("g", coords.getGroupId());
         assertEquals("a", coords.getArtifactId());
         assertEquals("1.0.0", coords.getVersion());
@@ -79,33 +79,33 @@ class DependencyCoordinatesTest {
 
     @Test
     void parseInvalidTooFewTokens() {
-        assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse("only-one"));
+        assertThrows(IllegalArgumentException.class, () -> DependencyEntry.parse("only-one"));
     }
 
     @Test
     void parseInvalidTooManyTokens() {
-        assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse("a:b:c:d:e:f"));
+        assertThrows(IllegalArgumentException.class, () -> DependencyEntry.parse("a:b:c:d:e:f"));
     }
 
     @Test
     void parseTrailingColonRejectsEmptyGroupId() {
-        assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse(":artifactId"));
+        assertThrows(IllegalArgumentException.class, () -> DependencyEntry.parse(":artifactId"));
     }
 
     @Test
     void parseTrailingColonRejectsEmptyArtifactId() {
-        assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse("groupId:"));
+        assertThrows(IllegalArgumentException.class, () -> DependencyEntry.parse("groupId:"));
     }
 
     @Test
     void parseDoubleColonRejectsEmptyFields() {
-        assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse("::"));
+        assertThrows(IllegalArgumentException.class, () -> DependencyEntry.parse("::"));
     }
 
     @Test
     void parseTrailingColonsAcceptedWhenOptionalFieldsEmpty() {
         // "g:a:" has 3 tokens with -1 split limit, 3rd is empty = valid (version empty)
-        DependencyCoordinates coords = DependencyCoordinates.parse("g:a:");
+        DependencyEntry coords = DependencyEntry.parse("g:a:");
         assertEquals("g", coords.getGroupId());
         assertEquals("a", coords.getArtifactId());
         assertNull(coords.getVersion());
@@ -113,47 +113,47 @@ class DependencyCoordinatesTest {
 
     @Test
     void parseNullThrows() {
-        assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse(null));
+        assertThrows(IllegalArgumentException.class, () -> DependencyEntry.parse(null));
     }
 
     @Test
     void parseEmptyThrows() {
-        assertThrows(IllegalArgumentException.class, () -> DependencyCoordinates.parse(""));
+        assertThrows(IllegalArgumentException.class, () -> DependencyEntry.parse(""));
     }
 
     @Test
     void validateSuccess() {
-        DependencyCoordinates coords = new DependencyCoordinates("g", "a");
+        DependencyEntry coords = new DependencyEntry("g", "a");
         coords.validate(); // should not throw
     }
 
     @Test
     void validateMissingGroupId() {
-        DependencyCoordinates coords = new DependencyCoordinates(null, "a");
+        DependencyEntry coords = new DependencyEntry(null, "a");
         assertThrows(IllegalArgumentException.class, coords::validate);
     }
 
     @Test
     void validateMissingArtifactId() {
-        DependencyCoordinates coords = new DependencyCoordinates("g", null);
+        DependencyEntry coords = new DependencyEntry("g", null);
         assertThrows(IllegalArgumentException.class, coords::validate);
     }
 
     @Test
     void toStringWithVersion() {
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:my-lib:2.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.example:my-lib:2.0.0");
         assertEquals("com.example:my-lib:2.0.0", coords.toString());
     }
 
     @Test
     void toStringWithoutVersion() {
-        DependencyCoordinates coords = new DependencyCoordinates("com.example", "my-lib");
+        DependencyEntry coords = new DependencyEntry("com.example", "my-lib");
         assertEquals("com.example:my-lib", coords.toString());
     }
 
     @Test
     void settersWork() {
-        DependencyCoordinates coords = new DependencyCoordinates();
+        DependencyEntry coords = new DependencyEntry();
         coords.setGroupId("g");
         coords.setArtifactId("a");
         coords.setVersion("v");
@@ -173,7 +173,7 @@ class DependencyCoordinatesTest {
 
     @Test
     void parseTrimsWhitespace() {
-        DependencyCoordinates coords = DependencyCoordinates.parse(" com.example : my-lib : 1.0.0 ");
+        DependencyEntry coords = DependencyEntry.parse(" com.example : my-lib : 1.0.0 ");
         assertEquals("com.example", coords.getGroupId());
         assertEquals("my-lib", coords.getArtifactId());
         assertEquals("1.0.0", coords.getVersion());
@@ -181,28 +181,28 @@ class DependencyCoordinatesTest {
 
     @Test
     void toStringIncludesScope() {
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.example:lib:1.0.0");
         coords.setScope("test");
         assertEquals("com.example:lib:1.0.0 [scope=test]", coords.toString());
     }
 
     @Test
     void toStringIncludesNonJarType() {
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.example:lib:1.0.0");
         coords.setType("pom");
         assertEquals("com.example:lib:1.0.0 [type=pom]", coords.toString());
     }
 
     @Test
     void toStringIncludesClassifier() {
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.example:lib:1.0.0");
         coords.setClassifier("sources");
         assertEquals("com.example:lib:1.0.0 [classifier=sources]", coords.toString());
     }
 
     @Test
     void toStringIncludesAllDetails() {
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.example:lib:1.0.0");
         coords.setType("pom");
         coords.setClassifier("linux");
         coords.setScope("provided");
@@ -211,7 +211,7 @@ class DependencyCoordinatesTest {
 
     @Test
     void toStringOmitsDefaultJarType() {
-        DependencyCoordinates coords = DependencyCoordinates.parse("com.example:lib:1.0.0");
+        DependencyEntry coords = DependencyEntry.parse("com.example:lib:1.0.0");
         coords.setType("jar");
         assertEquals("com.example:lib:1.0.0", coords.toString());
     }
@@ -220,7 +220,7 @@ class DependencyCoordinatesTest {
     void validateAcceptsValidScopes() {
         String[] validScopes = {"compile", "provided", "runtime", "test", "system", "import"};
         for (String scope : validScopes) {
-            DependencyCoordinates coords = new DependencyCoordinates("g", "a");
+            DependencyEntry coords = new DependencyEntry("g", "a");
             coords.setScope(scope);
             coords.validate(); // should not throw
         }
@@ -228,27 +228,27 @@ class DependencyCoordinatesTest {
 
     @Test
     void validateRejectsInvalidScope() {
-        DependencyCoordinates coords = new DependencyCoordinates("g", "a");
+        DependencyEntry coords = new DependencyEntry("g", "a");
         coords.setScope("bananas");
         assertThrows(IllegalArgumentException.class, coords::validate);
     }
 
     @Test
     void validateAcceptsNullScope() {
-        DependencyCoordinates coords = new DependencyCoordinates("g", "a");
+        DependencyEntry coords = new DependencyEntry("g", "a");
         coords.validate(); // null scope is fine (defaults to compile)
     }
 
     @Test
     void validateAcceptsEmptyScopeForClearing() {
-        DependencyCoordinates coords = new DependencyCoordinates("g", "a");
+        DependencyEntry coords = new DependencyEntry("g", "a");
         coords.setScope("");
         coords.validate(); // empty scope is accepted
     }
 
     @Test
     void validateRejectsNoneScope() {
-        DependencyCoordinates coords = new DependencyCoordinates("g", "a");
+        DependencyEntry coords = new DependencyEntry("g", "a");
         coords.setScope("NONE");
         assertThrows(IllegalArgumentException.class, coords::validate);
     }
