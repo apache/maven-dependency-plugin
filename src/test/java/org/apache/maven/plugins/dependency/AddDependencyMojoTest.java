@@ -96,9 +96,7 @@ class AddDependencyMojoTest {
         when(project.getOriginalModel()).thenReturn(originalModel);
         when(project.getModules()).thenReturn(Collections.emptyList());
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
-        setVariableValueToObject(mojo, "version", "2.0");
+        setVariableValueToObject(mojo, "gav", "com.example:lib:2.0");
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
         assertTrue(ex.getMessage().contains("property references"));
@@ -120,9 +118,7 @@ class AddDependencyMojoTest {
         when(project.getOriginalModel()).thenReturn(originalModel);
         when(project.getModules()).thenReturn(Collections.emptyList());
 
-        setVariableValueToObject(mojo, "groupId", "junit");
-        setVariableValueToObject(mojo, "artifactId", "junit");
-        setVariableValueToObject(mojo, "version", "4.13");
+        setVariableValueToObject(mojo, "gav", "junit:junit:4.13");
 
         // Should succeed — inherited dep should not block adding to child
         assertDoesNotThrow(() -> mojo.execute());
@@ -153,9 +149,7 @@ class AddDependencyMojoTest {
         when(project.getOriginalModel()).thenReturn(originalModel);
         when(project.getModules()).thenReturn(Collections.emptyList());
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
-        setVariableValueToObject(mojo, "version", "1.0");
+        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0");
 
         // Should still block — property-interpolated deps cannot be safely updated
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
@@ -190,9 +184,7 @@ class AddDependencyMojoTest {
         when(project.getOriginalModel()).thenReturn(originalModel);
         when(project.getModules()).thenReturn(Collections.emptyList());
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "managed-lib");
-        setVariableValueToObject(mojo, "version", "2.0");
+        setVariableValueToObject(mojo, "gav", "com.example:managed-lib:2.0");
         setVariableValueToObject(mojo, "managed", true);
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
@@ -213,9 +205,7 @@ class AddDependencyMojoTest {
         Model originalModel = new Model();
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
-        setVariableValueToObject(mojo, "version", "1.0");
+        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0");
         setVariableValueToObject(mojo, "profile", "nonexistent");
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
@@ -230,9 +220,7 @@ class AddDependencyMojoTest {
         Model originalModel = new Model();
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
-        setVariableValueToObject(mojo, "version", "1.0");
+        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0");
         setVariableValueToObject(mojo, "profile", "dev");
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
@@ -254,9 +242,7 @@ class AddDependencyMojoTest {
         Model originalModel = new Model();
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
-        setVariableValueToObject(mojo, "version", "1.0");
+        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0");
         setVariableValueToObject(mojo, "profile", "dev");
 
         assertDoesNotThrow(() -> mojo.execute());
@@ -308,9 +294,7 @@ class AddDependencyMojoTest {
         originalModel.addDependency(d);
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
-        setVariableValueToObject(mojo, "version", "2.0");
+        setVariableValueToObject(mojo, "gav", "com.example:lib:2.0");
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
         assertTrue(ex.getMessage().contains("already exists"), ex.getMessage());
@@ -324,9 +308,7 @@ class AddDependencyMojoTest {
         Model originalModel = new Model();
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "groupId", "org.springframework.boot");
-        setVariableValueToObject(mojo, "artifactId", "spring-boot-dependencies");
-        setVariableValueToObject(mojo, "version", "3.2.0");
+        setVariableValueToObject(mojo, "gav", "org.springframework.boot:spring-boot-dependencies:3.2.0");
         setVariableValueToObject(mojo, "bom", true);
 
         assertDoesNotThrow(() -> mojo.execute());
@@ -344,8 +326,7 @@ class AddDependencyMojoTest {
         Model originalModel = new Model();
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "gav", "com.example:lib");
         setVariableValueToObject(mojo, "managed", true);
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
@@ -376,8 +357,7 @@ class AddDependencyMojoTest {
         when(project.getDependencyManagement()).thenReturn(null);
 
         // No version provided — should be inferred
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "gav", "com.example:lib");
 
         assertDoesNotThrow(() -> mojo.execute());
 
@@ -402,11 +382,7 @@ class AddDependencyMojoTest {
         when(project.getOriginalModel()).thenReturn(originalModel);
         when(project.getModules()).thenReturn(Arrays.asList("child-a"));
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
-        setVariableValueToObject(mojo, "version", "1.0");
-
-        // Should succeed but log a warning about inheritance
+        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0");
         assertDoesNotThrow(() -> mojo.execute());
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
@@ -414,12 +390,12 @@ class AddDependencyMojoTest {
     }
 
     @Test
-    void missingGroupIdAndArtifactIdFails() throws Exception {
+    void missingGavFails() throws Exception {
         when(project.getFile()).thenReturn(createTempPom("<project></project>"));
 
-        // Neither gav nor groupId+artifactId
+        // No gav set
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
-        assertTrue(ex.getMessage().contains("You must specify"));
+        assertTrue(ex.getMessage().contains("You must specify -Dgav=groupId:artifactId[:version]"));
     }
 
     @Test
@@ -461,16 +437,14 @@ class AddDependencyMojoTest {
         when(project.getOriginalModel()).thenReturn(originalModel);
         when(project.getModules()).thenReturn(Collections.emptyList());
 
-        // GAV has version 1.0, explicit -Dversion overrides to 2.0
+        // GAV has version 1.0, explicit -Dscope overrides
         setVariableValueToObject(mojo, "gav", "com.example:lib:1.0");
-        setVariableValueToObject(mojo, "version", "2.0");
         setVariableValueToObject(mojo, "scope", "test");
 
         assertDoesNotThrow(() -> mojo.execute());
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<version>2.0</version>"), "explicit -Dversion should override gav");
+        assertTrue(result.contains("<version>1.0</version>"), "version from gav should be used");
         assertTrue(result.contains("<scope>test</scope>"), "explicit -Dscope should override");
-        assertFalse(result.contains("<version>1.0</version>"), "gav version should be overridden");
     }
 }

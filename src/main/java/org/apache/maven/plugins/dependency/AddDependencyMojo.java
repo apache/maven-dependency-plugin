@@ -59,28 +59,9 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 public class AddDependencyMojo extends AbstractDependencyMojo {
 
     /**
-     * The dependency's groupId. Ignored if {@link #gav} is used.
-     */
-    @Parameter(property = "groupId")
-    private String groupId;
-
-    /**
-     * The dependency's artifactId. Ignored if {@link #gav} is used.
-     */
-    @Parameter(property = "artifactId")
-    private String artifactId;
-
-    /**
-     * The dependency's version. Required when adding to {@code <dependencyManagement>}.
-     * Optional when adding to {@code <dependencies>} if the version is managed by an ancestor.
-     */
-    @Parameter(property = "version")
-    private String version;
-
-    /**
-     * Shorthand coordinates: {@code groupId:artifactId[:version]}
+     * Dependency coordinates: {@code groupId:artifactId[:version]}
      * or {@code groupId:artifactId[:extension[:classifier]]:version}.
-     * Scope must be specified separately via {@code -Dscope=...}.
+     * Scope, type, classifier, and optional can be overridden via separate parameters.
      */
     @Parameter(property = "gav")
     private String gav;
@@ -245,39 +226,25 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     }
 
     private DependencyCoordinates resolveCoordinates() throws MojoFailureException {
-        DependencyCoordinates coords;
+        if (gav == null || gav.isEmpty()) {
+            throw new MojoFailureException("You must specify -Dgav=groupId:artifactId[:version]");
+        }
 
-        if (gav != null && !gav.isEmpty()) {
-            try {
-                coords = DependencyCoordinates.parse(gav);
-            } catch (IllegalArgumentException e) {
-                throw new MojoFailureException(e.getMessage());
-            }
-        } else if (groupId != null && artifactId != null) {
-            coords = new DependencyCoordinates(groupId, artifactId);
-        } else {
-            throw new MojoFailureException("You must specify either -Dgav=groupId:artifactId[:version] "
-                    + "or both -DgroupId=... and -DartifactId=... (with optional -Dversion=...)");
+        DependencyCoordinates coords;
+        try {
+            coords = DependencyCoordinates.parse(gav);
+        } catch (IllegalArgumentException e) {
+            throw new MojoFailureException(e.getMessage());
         }
 
         // Explicit parameters override GAV shorthand values
-        if (gav != null) {
-            if (version != null) {
-                coords.setVersion(version);
-            }
-            if (scope != null) {
-                coords.setScope(scope);
-            }
-            if (type != null) {
-                coords.setType(type);
-            }
-            if (classifier != null) {
-                coords.setClassifier(classifier);
-            }
-        } else {
-            coords.setVersion(version);
+        if (scope != null) {
             coords.setScope(scope);
+        }
+        if (type != null) {
             coords.setType(type);
+        }
+        if (classifier != null) {
             coords.setClassifier(classifier);
         }
 

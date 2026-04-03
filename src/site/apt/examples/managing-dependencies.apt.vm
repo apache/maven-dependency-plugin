@@ -37,13 +37,7 @@ Managing Dependencies
 
 ** Basic Usage
 
-  You can add a dependency by specifying its coordinates individually:
-
-+---+
-mvn dependency:add -DgroupId=com.google.code.gson -DartifactId=gson -Dversion=2.10.1
-+---+
-
-  Or use the shorter <<<gav>>> shorthand format:
+  You can add a dependency by specifying its coordinates with the <<<gav>>> parameter:
 
 +---+
 mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1
@@ -178,16 +172,10 @@ mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dprofile=dev
 
 ** Basic Usage
 
-  Remove a dependency using the <<<gav>>> shorthand:
+  Remove a dependency using the <<<gav>>> parameter:
 
 +---+
 mvn dependency:remove -Dgav=com.google.code.gson:gson
-+---+
-
-  Or using explicit coordinates:
-
-+---+
-mvn dependency:remove -DgroupId=com.google.code.gson -DartifactId=gson
 +---+
 
   Only <<<groupId>>> and <<<artifactId>>> are required to identify the dependency to remove.
@@ -198,11 +186,11 @@ mvn dependency:remove -DgroupId=com.google.code.gson -DartifactId=gson
   and <<<-Dclassifier>>> to target a specific one:
 
 +---+
-mvn dependency:remove -DgroupId=com.example -DartifactId=lib -Dtype=test-jar
-mvn dependency:remove -DgroupId=com.example -DartifactId=lib -Dclassifier=sources
+mvn dependency:remove -Dgav=com.example:lib -Dtype=test-jar
+mvn dependency:remove -Dgav=com.example:lib -Dclassifier=sources
 +---+
 
-  Explicit <<<-Dtype>>> and <<<-Dclassifier>>> override any values from the <<<-Dgav>>> shorthand.
+  Explicit <<<-Dtype>>> and <<<-Dclassifier>>> override any values from the <<<-Dgav>>> parameter.
 
 ** Removing a BOM Import
 

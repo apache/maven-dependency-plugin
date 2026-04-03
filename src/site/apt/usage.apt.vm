@@ -723,7 +723,7 @@ mvn dependency:analyze-exclusions
 
 ---
 mvn dependency:add -Dgav="com.google.code.gson:gson:2.11.0"
-mvn dependency:add -DgroupId=com.google.code.gson -DartifactId=gson -Dversion=2.11.0 -Dscope=test
+mvn dependency:add -Dgav="com.google.code.gson:gson:2.11.0" -Dscope=test
 ---
 
   Add to <<<\<dependencyManagement\>>>>:

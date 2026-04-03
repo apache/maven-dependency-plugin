@@ -94,8 +94,7 @@ class RemoveDependencyMojoTest {
         originalModel.addDependency(dep);
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "gav", "com.example:lib");
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
         assertTrue(ex.getMessage().contains("property references"));
@@ -120,8 +119,7 @@ class RemoveDependencyMojoTest {
         Model originalModel = new Model();
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "groupId", "nonexistent");
-        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "gav", "nonexistent:lib");
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
         assertTrue(ex.getMessage().contains("not found"));
@@ -147,8 +145,7 @@ class RemoveDependencyMojoTest {
         when(project.getFile()).thenReturn(pomFile);
         when(project.getModules()).thenReturn(Collections.emptyList());
 
-        setVariableValueToObject(mojo, "groupId", "org.springframework.boot");
-        setVariableValueToObject(mojo, "artifactId", "spring-boot-dependencies");
+        setVariableValueToObject(mojo, "gav", "org.springframework.boot:spring-boot-dependencies");
         setVariableValueToObject(mojo, "bom", true);
 
         mojo.execute();
@@ -180,9 +177,7 @@ class RemoveDependencyMojoTest {
         when(project.getFile()).thenReturn(pomFile);
         when(project.getModules()).thenReturn(Collections.emptyList());
 
-        // Remove only the test-jar variant
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "gav", "com.example:lib");
         setVariableValueToObject(mojo, "type", "test-jar");
 
         mojo.execute();
@@ -206,8 +201,7 @@ class RemoveDependencyMojoTest {
         Model originalModel = new Model();
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "gav", "com.example:lib");
         setVariableValueToObject(mojo, "profile", "nonexistent");
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
@@ -222,8 +216,7 @@ class RemoveDependencyMojoTest {
         Model originalModel = new Model();
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "gav", "com.example:lib");
         setVariableValueToObject(mojo, "profile", "dev");
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
@@ -251,8 +244,7 @@ class RemoveDependencyMojoTest {
         Model originalModel = new Model();
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "gav", "com.example:lib");
         setVariableValueToObject(mojo, "profile", "dev");
 
         mojo.execute();
@@ -304,8 +296,7 @@ class RemoveDependencyMojoTest {
                 + "</project>\n";
         Files.write(new File(childDir, "pom.xml").toPath(), childPom.getBytes(StandardCharsets.UTF_8));
 
-        setVariableValueToObject(mojo, "groupId", "com.example");
-        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "gav", "com.example:lib");
         setVariableValueToObject(mojo, "managed", true);
 
         // Should succeed (warning only, not blocking) — the dependency gets removed
@@ -316,11 +307,11 @@ class RemoveDependencyMojoTest {
     }
 
     @Test
-    void missingGroupIdAndArtifactIdFails() throws Exception {
+    void missingGavFails() throws Exception {
         when(project.getFile()).thenReturn(createTempPom("<project></project>"));
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
-        assertTrue(ex.getMessage().contains("You must specify"));
+        assertTrue(ex.getMessage().contains("You must specify -Dgav=groupId:artifactId"));
     }
 
     @Test
@@ -352,8 +343,7 @@ class RemoveDependencyMojoTest {
         Model originalModel = new Model();
         when(project.getOriginalModel()).thenReturn(originalModel);
 
-        setVariableValueToObject(mojo, "groupId", "nonexistent");
-        setVariableValueToObject(mojo, "artifactId", "lib");
+        setVariableValueToObject(mojo, "gav", "nonexistent:lib");
         setVariableValueToObject(mojo, "managed", true);
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());

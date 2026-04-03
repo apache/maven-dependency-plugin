@@ -56,19 +56,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 public class RemoveDependencyMojo extends AbstractDependencyMojo {
 
     /**
-     * The dependency's groupId. Ignored if {@link #gav} is used.
-     */
-    @Parameter(property = "groupId")
-    private String groupId;
-
-    /**
-     * The dependency's artifactId. Ignored if {@link #gav} is used.
-     */
-    @Parameter(property = "artifactId")
-    private String artifactId;
-
-    /**
-     * Shorthand coordinates: {@code groupId:artifactId[:version]}
+     * Dependency coordinates: {@code groupId:artifactId[:version]}
      * or {@code groupId:artifactId[:extension[:classifier]]:version}.
      * Only groupId and artifactId are required. Type and classifier, if provided,
      * are used for precise matching when multiple dependency variants exist
@@ -191,28 +179,23 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
     }
 
     private DependencyCoordinates resolveCoordinates() throws MojoFailureException {
-        DependencyCoordinates coords;
+        if (gav == null || gav.isEmpty()) {
+            throw new MojoFailureException("You must specify -Dgav=groupId:artifactId");
+        }
 
-        if (gav != null && !gav.isEmpty()) {
-            try {
-                coords = DependencyCoordinates.parse(gav);
-            } catch (IllegalArgumentException e) {
-                throw new MojoFailureException(e.getMessage());
-            }
-            // Explicit parameters override GAV shorthand values
-            if (type != null) {
-                coords.setType(type);
-            }
-            if (classifier != null) {
-                coords.setClassifier(classifier);
-            }
-        } else if (groupId != null && artifactId != null) {
-            coords = new DependencyCoordinates(groupId, artifactId);
+        DependencyCoordinates coords;
+        try {
+            coords = DependencyCoordinates.parse(gav);
+        } catch (IllegalArgumentException e) {
+            throw new MojoFailureException(e.getMessage());
+        }
+
+        // Explicit parameters override GAV shorthand values
+        if (type != null) {
             coords.setType(type);
+        }
+        if (classifier != null) {
             coords.setClassifier(classifier);
-        } else {
-            throw new MojoFailureException(
-                    "You must specify either -Dgav=groupId:artifactId " + "or both -DgroupId=... and -DartifactId=...");
         }
 
         try {
