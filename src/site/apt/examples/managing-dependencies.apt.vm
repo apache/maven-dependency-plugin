@@ -40,14 +40,14 @@ Managing Dependencies
   You can add a dependency by specifying its coordinates with the <<<gav>>> parameter:
 
 +---+
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0
 +---+
 
   The <<<gav>>> parameter accepts the format <<<groupId:artifactId[:extension[:classifier]]:version>>>.
   Scope must be specified separately with <<<-Dscope>>>:
 
 +---+
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dscope=test
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dscope=test
 +---+
 
 ** Adding to dependencyManagement
@@ -56,7 +56,7 @@ mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dscope=test
   instead of <<<\<dependencies\>>>>:
 
 +---+
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dmanaged
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dmanaged
 +---+
 
 ** Adding a BOM Import
@@ -75,7 +75,7 @@ mvn dependency:add -Dgav=org.springframework.boot:spring-boot-dependencies:pom:3
   <<<\<dependencyManagement\>>>>, you can omit the version:
 
 +---+
-mvn dependency:add -Dgav=com.google.code.gson:gson
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3
 +---+
 
   The goal will detect the managed version and omit the <<<\<version\>>>> element from the inserted
@@ -97,15 +97,15 @@ mvn dependency:add -Dgav=com.example:lib:1.0 -Dclassifier=sources
   If the dependency already exists, <<<dependency:add>>> updates it automatically and logs what changed:
 
 +---+
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0
 +---+
 
   When updating, you can clear existing fields by setting them to <<<NONE>>>:
 
 +---+
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dscope=NONE
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dtype=NONE
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.11.0 -Dclassifier=NONE
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dscope=NONE
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dtype=NONE
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dclassifier=NONE
 +---+
 
   The <<<NONE>>> sentinel removes the corresponding XML element from the dependency.
@@ -148,7 +148,7 @@ Cannot safely add or update automatically. Please edit the POM manually.
   use Maven's built-in <<<-pl>>> (project list) flag:
 
 +---+
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -pl my-service
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -pl my-service
 +---+
 
 ** Adding to a Profile
@@ -157,7 +157,7 @@ mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -pl my-service
   The profile must already exist in the POM:
 
 +---+
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dprofile=dev
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dprofile=dev
 +---+
 
 * Removing Dependencies
@@ -169,7 +169,7 @@ mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dprofile=dev
   Remove a dependency using the <<<gav>>> parameter:
 
 +---+
-mvn dependency:remove -Dgav=com.google.code.gson:gson
+mvn dependency:remove -Dgav=org.apache.commons:commons-lang3
 +---+
 
   Only <<<groupId>>> and <<<artifactId>>> are required to identify the dependency to remove.
@@ -199,7 +199,7 @@ mvn dependency:remove -Dgav=org.springframework.boot:spring-boot-dependencies -D
   To remove a dependency from <<<\<dependencyManagement\>>>> instead of <<<\<dependencies\>>>>:
 
 +---+
-mvn dependency:remove -Dgav=com.google.code.gson:gson -Dmanaged
+mvn dependency:remove -Dgav=org.apache.commons:commons-lang3 -Dmanaged
 +---+
 
 ** Removing from a Specific Module
@@ -207,7 +207,7 @@ mvn dependency:remove -Dgav=com.google.code.gson:gson -Dmanaged
   In a multi-module project, use Maven's <<<-pl>>> flag to target a specific child module:
 
 +---+
-mvn dependency:remove -Dgav=com.google.code.gson:gson -pl my-service
+mvn dependency:remove -Dgav=org.apache.commons:commons-lang3 -pl my-service
 +---+
 
   If the dependency is not found, the goal fails with a descriptive error message.
@@ -217,6 +217,6 @@ mvn dependency:remove -Dgav=com.google.code.gson:gson -pl my-service
   To remove a dependency from a specific Maven profile:
 
 +---+
-mvn dependency:remove -Dgav=com.google.code.gson:gson -Dprofile=dev
+mvn dependency:remove -Dgav=org.apache.commons:commons-lang3 -Dprofile=dev
 +---+
 

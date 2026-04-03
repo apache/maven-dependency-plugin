@@ -20,5 +20,5 @@
 File pom = new File(basedir, "pom.xml")
 assert pom.exists()
 def content = pom.text
-assert !content.contains('<groupId>com.google.code.gson</groupId>')
-assert !content.contains('gson')
+assert !content.contains('<groupId>org.apache.commons</groupId>')
+assert !content.contains('commons-lang3')

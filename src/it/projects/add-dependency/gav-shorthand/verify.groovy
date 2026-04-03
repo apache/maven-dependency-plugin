@@ -20,7 +20,7 @@
 File pom = new File(basedir, "pom.xml")
 assert pom.exists()
 def content = pom.text
-assert content.contains('<groupId>com.google.code.gson</groupId>')
-assert content.contains('<artifactId>gson</artifactId>')
+assert content.contains('<groupId>org.apache.commons</groupId>')
+assert content.contains('<artifactId>commons-lang3</artifactId>')
 assert content.contains('<version>2.10.1</version>')
 assert content.contains('<scope>test</scope>')

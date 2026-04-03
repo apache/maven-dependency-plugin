@@ -21,5 +21,5 @@ File pom = new File(basedir, "pom.xml")
 assert pom.exists()
 def content = pom.text
 assert content.contains('<dependencyManagement>')
-assert content.contains('<groupId>com.google.code.gson</groupId>')
+assert content.contains('<groupId>org.apache.commons</groupId>')
 assert content.contains('<version>2.10.1</version>')
