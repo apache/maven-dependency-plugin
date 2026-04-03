@@ -176,8 +176,13 @@ mvn dependency:remove -Dgav=org.apache.commons:commons-lang3
 
 ** Type and Classifier Matching
 
-  When multiple variants of a dependency exist (e.g., jar and test-jar), use <<<-Dtype>>>
-  and <<<-Dclassifier>>> to target a specific one:
+  Maven allows the same <<<groupId:artifactId>>> to appear multiple times in a POM
+  with different types or classifiers (e.g., both the main jar and a test-jar). These
+  are distinct dependencies.
+
+  When no <<<-Dtype>>> or <<<-Dclassifier>>> is specified, <<<dependency:remove>>> targets
+  the default variant (<<<type=jar>>>, no classifier). To remove a specific variant, use
+  <<<-Dtype>>> and/or <<<-Dclassifier>>>:
 
 +---+
 mvn dependency:remove -Dgav=com.example:lib -Dtype=test-jar
@@ -185,6 +190,10 @@ mvn dependency:remove -Dgav=com.example:lib -Dclassifier=sources
 +---+
 
   Explicit <<<-Dtype>>> and <<<-Dclassifier>>> override any values from the <<<-Dgav>>> parameter.
+
+  Similarly, <<<dependency:add>>> uses <<<groupId:artifactId:type:classifier>>> matching for
+  duplicate detection. Adding <<<com.example:lib:test-jar:1.0>>> will succeed even if
+  <<<com.example:lib:jar:1.0>>> already exists, since they are distinct dependencies.
 
 ** Removing a BOM Import
 

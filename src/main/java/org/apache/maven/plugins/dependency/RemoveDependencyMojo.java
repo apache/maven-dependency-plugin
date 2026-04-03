@@ -146,17 +146,23 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
             // Sync in-memory model so chained goals see the change
             Model model = targetProject.getModel();
             if (model != null) {
+                String removeType = coords.getType() != null ? coords.getType() : "jar";
+                String removeClassifier = coords.getClassifier() != null ? coords.getClassifier() : "";
                 if (targetManaged) {
                     DependencyManagement dm = model.getDependencyManagement();
                     if (dm != null && dm.getDependencies() != null) {
                         dm.getDependencies()
                                 .removeIf(d -> coords.getGroupId().equals(d.getGroupId())
-                                        && coords.getArtifactId().equals(d.getArtifactId()));
+                                        && coords.getArtifactId().equals(d.getArtifactId())
+                                        && removeType.equals(d.getType() != null ? d.getType() : "jar")
+                                        && removeClassifier.equals(d.getClassifier() != null ? d.getClassifier() : ""));
                     }
                 } else if (model.getDependencies() != null) {
                     model.getDependencies()
                             .removeIf(d -> coords.getGroupId().equals(d.getGroupId())
-                                    && coords.getArtifactId().equals(d.getArtifactId()));
+                                    && coords.getArtifactId().equals(d.getArtifactId())
+                                    && removeType.equals(d.getType() != null ? d.getType() : "jar")
+                                    && removeClassifier.equals(d.getClassifier() != null ? d.getClassifier() : ""));
                 }
             }
 
