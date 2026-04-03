@@ -32,6 +32,13 @@ import java.util.Set;
  * {@code org.eclipse.aether.artifact.DefaultArtifact}. Scope and optional
  * are not part of coordinates and must be specified as separate parameters.</p>
  *
+ * <p><strong>Design note:</strong> This class exists because no single class on the
+ * classpath covers all requirements. {@code DefaultArtifact} (Aether) provides GAV
+ * parsing but requires a version (throws on {@code g:a}) and lacks scope/optional.
+ * {@code Dependency} (maven-model) has all fields but no coordinate string parser.
+ * This class bridges both: it parses {@code g:a} (needed by {@code dependency:remove}),
+ * carries scope/optional, and validates scope against Maven's known values.</p>
+ *
  * @since 3.11.0
  */
 public class DependencyEntry {
