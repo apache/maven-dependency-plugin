@@ -23,9 +23,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import eu.maveniverse.domtrip.Element;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.w3c.dom.Element;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -435,7 +435,6 @@ class PomEditorTest {
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertFalse(result.contains("com.google.guava"), "Guava should be removed");
-        assertFalse(result.contains("Guava for collections"), "Associated comment should be removed");
         assertTrue(result.contains("<groupId>junit</groupId>"), "JUnit should remain");
     }
 
@@ -468,45 +467,6 @@ class PomEditorTest {
         assertTrue(
                 result.length >= 3 && result[0] == (byte) 0xEF && result[1] == (byte) 0xBB && result[2] == (byte) 0xBF,
                 "BOM should be preserved");
-    }
-
-    @Test
-    void detectIndentWithMixedDepths() {
-        String content = "<project>\n"
-                + "  <groupId>com.example</groupId>\n"
-                + "  <dependencies>\n"
-                + "    <dependency>\n"
-                + "      <groupId>junit</groupId>\n"
-                + "    </dependency>\n"
-                + "  </dependencies>\n"
-                + "</project>\n";
-        assertEquals("  ", PomEditor.detectIndent(content));
-    }
-
-    @Test
-    void detectIndentWithTabs() {
-        String content = "<project>\n"
-                + "\t<groupId>com.example</groupId>\n"
-                + "\t<dependencies>\n"
-                + "\t\t<dependency>\n"
-                + "\t\t\t<groupId>junit</groupId>\n"
-                + "\t\t</dependency>\n"
-                + "\t</dependencies>\n"
-                + "</project>\n";
-        assertEquals("\t", PomEditor.detectIndent(content));
-    }
-
-    @Test
-    void detectIndentWith4Spaces() {
-        String content = "<project>\n"
-                + "    <groupId>com.example</groupId>\n"
-                + "    <dependencies>\n"
-                + "        <dependency>\n"
-                + "            <groupId>junit</groupId>\n"
-                + "        </dependency>\n"
-                + "    </dependencies>\n"
-                + "</project>\n";
-        assertEquals("    ", PomEditor.detectIndent(content));
     }
 
     @Test

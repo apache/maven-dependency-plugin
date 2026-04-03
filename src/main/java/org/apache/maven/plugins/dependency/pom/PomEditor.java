@@ -18,34 +18,22 @@
  */
 package org.apache.maven.plugins.dependency.pom;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+import eu.maveniverse.domtrip.Document;
+import eu.maveniverse.domtrip.Editor;
+import eu.maveniverse.domtrip.Element;
 
 /**
- * Formatting-preserving POM editor using DOM-level XML parsing.
+ * Formatting-preserving POM editor built on
+ * <a href="https://github.com/maveniverse/domtrip">DomTrip</a>.
  * Preserves comments, whitespace, indentation style, XML namespaces,
  * BOM markers, and XML declarations when modifying {@code pom.xml} files.
  *
@@ -53,32 +41,13 @@ import org.xml.sax.SAXException;
  */
 public class PomEditor {
 
-    private static final byte[] UTF8_BOM = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
-
-    private final Document document;
+    private final Editor editor;
     private final File pomFile;
-    private final String indent;
-    private final String lineEnding;
-    private final boolean hadXmlDeclaration;
-    private final boolean hadBom;
-    private final String namespaceURI;
     private String profileId;
 
-    private PomEditor(
-            Document document,
-            File pomFile,
-            String indent,
-            String lineEnding,
-            boolean hadXmlDeclaration,
-            boolean hadBom,
-            String namespaceURI) {
-        this.document = document;
+    private PomEditor(Editor editor, File pomFile) {
+        this.editor = editor;
         this.pomFile = pomFile;
-        this.indent = indent;
-        this.lineEnding = lineEnding;
-        this.hadXmlDeclaration = hadXmlDeclaration;
-        this.hadBom = hadBom;
-        this.namespaceURI = namespaceURI;
     }
 
     /**
@@ -90,37 +59,23 @@ public class PomEditor {
      */
     public static PomEditor load(File pomFile) throws IOException {
         try {
-            byte[] rawBytes = Files.readAllBytes(pomFile.toPath());
-            boolean hasBom = hasBom(rawBytes);
+            // Reject DOCTYPE declarations to prevent XXE attacks
+            String content = new String(Files.readAllBytes(pomFile.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+            if (content.contains("<!DOCTYPE")) {
+                throw new IOException("DOCTYPE declarations are not allowed in POM files (security risk)");
+            }
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            factory.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(pomFile);
+            Document doc = Document.of(pomFile.toPath());
+            Editor ed = new Editor(doc);
 
-            // Verify root element is <project>
-            String rootName = localName(doc.getDocumentElement());
+            String rootName = ed.root().name();
             if (!"project".equals(rootName)) {
                 throw new IOException(
                         "Not a valid POM file: expected <project> root element but found <" + rootName + ">");
             }
 
-            Charset encoding = detectEncoding(doc);
-            String content = new String(rawBytes, encoding);
-            String lineEnding = detectLineEnding(content);
-            String indent = detectIndent(content);
-            boolean hadXmlDecl = stripBomChar(content).trim().startsWith("<?xml");
-
-            // Capture the namespace URI from the root element
-            String nsURI = doc.getDocumentElement().getNamespaceURI();
-
-            return new PomEditor(doc, pomFile, indent, lineEnding, hadXmlDecl, hasBom, nsURI);
-        } catch (ParserConfigurationException | SAXException e) {
+            return new PomEditor(ed, pomFile);
+        } catch (RuntimeException e) {
             throw new IOException("Failed to parse POM file: " + pomFile, e);
         }
     }
@@ -138,11 +93,11 @@ public class PomEditor {
 
     /**
      * Finds an existing dependency matching the given groupId and artifactId
-     * in the specified section. Matches on groupId and artifactId only (ignoring type/classifier).
+     * in the specified section.
      *
      * @param groupId    the groupId to match
      * @param artifactId the artifactId to match
-     * @param managed    if {@code true}, search in {@code <dependencyManagement>}; otherwise in {@code <dependencies>}
+     * @param managed    if {@code true}, search in {@code <dependencyManagement>}
      * @return the matching {@code <dependency>} element, or {@code null} if not found
      */
     public Element findDependency(String groupId, String artifactId, boolean managed) {
@@ -150,17 +105,16 @@ public class PomEditor {
     }
 
     /**
-     * Finds a dependency element matching groupId, artifactId, type, and classifier
-     * in the specified section.
+     * Finds a dependency element matching groupId, artifactId, type, and classifier.
      *
-     * <p>Type matching: {@code null} and {@code "jar"} are treated as equivalent (Maven's default).
+     * <p>Type matching: {@code null} and {@code "jar"} are treated as equivalent.
      * Classifier matching: {@code null} matches only dependencies without a classifier.
      *
      * @param groupId    the groupId to match
      * @param artifactId the artifactId to match
      * @param type       the type to match ({@code null} matches "jar" or absent)
      * @param classifier the classifier to match ({@code null} matches absent)
-     * @param managed    if {@code true}, search in {@code <dependencyManagement>}; otherwise in {@code <dependencies>}
+     * @param managed    if {@code true}, search in {@code <dependencyManagement>}
      * @return the matching {@code <dependency>} element, or {@code null} if not found
      */
     public Element findDependency(String groupId, String artifactId, String type, String classifier, boolean managed) {
@@ -168,35 +122,14 @@ public class PomEditor {
         if (depsElement == null) {
             return null;
         }
-        NodeList children = depsElement.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE && "dependency".equals(localName(node))) {
-                Element dep = (Element) node;
-                String g = getChildText(dep, "groupId");
-                String a = getChildText(dep, "artifactId");
-                if (!groupId.equals(g) || !artifactId.equals(a)) {
-                    continue;
-                }
 
-                String depType = getChildText(dep, "type");
-                String effectiveSearchType = (type == null || type.isEmpty()) ? "jar" : type;
-                String effectiveDepType = (depType == null || depType.isEmpty()) ? "jar" : depType;
-                if (!effectiveSearchType.equals(effectiveDepType)) {
-                    continue;
-                }
-
-                String depClassifier = getChildText(dep, "classifier");
-                String effectiveSearchClassifier = (classifier == null) ? "" : classifier;
-                String effectiveDepClassifier = (depClassifier == null) ? "" : depClassifier;
-                if (!effectiveSearchClassifier.equals(effectiveDepClassifier)) {
-                    continue;
-                }
-
-                return dep;
-            }
-        }
-        return null;
+        return dependencyStream(depsElement)
+                .filter(dep -> groupId.equals(childText(dep, "groupId"))
+                        && artifactId.equals(childText(dep, "artifactId"))
+                        && typeMatches(childText(dep, "type"), type)
+                        && classifierMatches(childText(dep, "classifier"), classifier))
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -207,66 +140,59 @@ public class PomEditor {
      */
     public void addDependency(DependencyCoordinates coords, boolean managed) {
         Element depsElement = getDependenciesElement(managed, true);
-        int profileOffset = (profileId != null) ? 2 : 0;
-        int depthForDep = (managed ? 3 : 2) + profileOffset;
-        Element dep = buildDependencyElement(coords, depthForDep);
-        String baseIndent = repeatIndent(depthForDep);
 
-        depsElement.appendChild(document.createTextNode(lineEnding + baseIndent));
-        depsElement.appendChild(dep);
+        Element dep = editor.addElement(depsElement, "dependency");
+        editor.addElement(dep, "groupId", coords.getGroupId());
+        editor.addElement(dep, "artifactId", coords.getArtifactId());
 
-        // Ensure the closing tag is properly indented
-        ensureClosingIndent(depsElement, (managed ? 2 : 1) + profileOffset);
+        if (coords.getVersion() != null && !coords.getVersion().isEmpty()) {
+            editor.addElement(dep, "version", coords.getVersion());
+        }
+        if (coords.getScope() != null && !coords.getScope().isEmpty()) {
+            editor.addElement(dep, "scope", coords.getScope());
+        }
+        if (coords.getType() != null && !coords.getType().isEmpty()) {
+            editor.addElement(dep, "type", coords.getType());
+        }
+        if (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) {
+            editor.addElement(dep, "classifier", coords.getClassifier());
+        }
+        if (coords.getOptional() != null && coords.getOptional()) {
+            editor.addElement(dep, "optional", "true");
+        }
     }
 
     /**
      * Updates an existing dependency element with the provided coordinate fields.
-     * Only updates fields that are non-null in the provided coordinates.
-     * A field set to an empty string signals removal of that element.
+     * Only updates fields that are non-null. Empty string signals removal.
      *
      * @param existing the existing dependency element
      * @param coords   the new coordinate values
      */
     public void updateDependency(Element existing, DependencyCoordinates coords) {
         if (coords.getVersion() != null) {
-            if (coords.getVersion().isEmpty()) {
-                removeChild(existing, "version");
-            } else {
-                setOrCreateChild(existing, "version", coords.getVersion());
-            }
+            setOrRemoveChild(existing, "version", coords.getVersion());
         }
         if (coords.getScope() != null) {
-            if (coords.getScope().isEmpty()) {
-                removeChild(existing, "scope");
-            } else {
-                setOrCreateChild(existing, "scope", coords.getScope());
-            }
+            setOrRemoveChild(existing, "scope", coords.getScope());
         }
         if (coords.getType() != null) {
-            if (coords.getType().isEmpty()) {
-                removeChild(existing, "type");
-            } else {
-                setOrCreateChild(existing, "type", coords.getType());
-            }
+            setOrRemoveChild(existing, "type", coords.getType());
         }
         if (coords.getClassifier() != null) {
-            if (coords.getClassifier().isEmpty()) {
-                removeChild(existing, "classifier");
-            } else {
-                setOrCreateChild(existing, "classifier", coords.getClassifier());
-            }
+            setOrRemoveChild(existing, "classifier", coords.getClassifier());
         }
         if (coords.getOptional() != null) {
             if (coords.getOptional()) {
-                setOrCreateChild(existing, "optional", "true");
+                setOrRemoveChild(existing, "optional", "true");
             } else {
-                removeChild(existing, "optional");
+                removeChildElement(existing, "optional");
             }
         }
     }
 
     /**
-     * Removes a dependency element matching groupId and artifactId (any type/classifier).
+     * Removes a dependency matching groupId and artifactId (any type/classifier).
      *
      * @param groupId    the groupId to match
      * @param artifactId the artifactId to match
@@ -278,8 +204,7 @@ public class PomEditor {
     }
 
     /**
-     * Removes a dependency element from the POM, matching on groupId, artifactId, type, and classifier.
-     * Also removes any immediately preceding XML comment associated with the dependency.
+     * Removes a dependency from the POM matching on groupId, artifactId, type, and classifier.
      *
      * @param groupId    the groupId to match
      * @param artifactId the artifactId to match
@@ -290,19 +215,11 @@ public class PomEditor {
      */
     public boolean removeDependency(
             String groupId, String artifactId, String type, String classifier, boolean managed) {
-        Element depsElement = getDependenciesElement(managed, false);
-        if (depsElement == null) {
-            return false;
-        }
         Element dep = findDependency(groupId, artifactId, type, classifier, managed);
         if (dep == null) {
             return false;
         }
-
-        // Remove preceding whitespace and associated comment nodes
-        removePrecedingWhitespaceAndComments(depsElement, dep);
-
-        depsElement.removeChild(dep);
+        editor.removeElement(dep);
         return true;
     }
 
@@ -312,100 +229,16 @@ public class PomEditor {
      * @throws IOException if the file cannot be written
      */
     public void save() throws IOException {
+        Path target = pomFile.toPath();
+        File tempFile = File.createTempFile("pom", ".xml.tmp", pomFile.getParentFile());
         try {
-            TransformerFactory tf = TransformerFactory.newInstance();
-            Transformer transformer = tf.newTransformer();
-
-            if (hadXmlDeclaration) {
-                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-                Charset enc = detectEncoding(document);
-                transformer.setOutputProperty(OutputKeys.ENCODING, enc.name());
-            } else {
-                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            try (OutputStream os = Files.newOutputStream(tempFile.toPath())) {
+                editor.document().toXml(os);
             }
-
-            StringWriter writer = new StringWriter();
-            transformer.transform(new DOMSource(document), new StreamResult(writer));
-
-            String output = writer.toString();
-
-            // Remove standalone attribute if not in the original
-            // The transformer may add standalone="no" which wasn't in the original
-            if (hadXmlDeclaration) {
-                output = output.replaceFirst("<\\?xml([^?]*) standalone=\"no\"([^?]*)\\?>", "<?xml$1$2?>");
-                // Clean up any double spaces left behind
-                output = output.replaceFirst("<\\?xml\\s+", "<?xml ");
-                output = output.replaceFirst("\\s+\\?>", "?>");
-            }
-
-            // Normalize line endings to match original
-            output = output.replace("\r\n", "\n").replace("\r", "\n");
-            if (!"\n".equals(lineEnding)) {
-                output = output.replace("\n", lineEnding);
-            }
-
-            // Ensure file ends with newline
-            if (!output.endsWith(lineEnding)) {
-                output += lineEnding;
-            }
-
-            Charset encoding = detectEncoding(document);
-            byte[] bytes = output.getBytes(encoding);
-
-            // Re-add BOM if original had one
-            if (hadBom) {
-                byte[] withBom = new byte[UTF8_BOM.length + bytes.length];
-                System.arraycopy(UTF8_BOM, 0, withBom, 0, UTF8_BOM.length);
-                System.arraycopy(bytes, 0, withBom, UTF8_BOM.length, bytes.length);
-                bytes = withBom;
-            }
-
-            // Write to temp file in same directory, then rename to reduce corruption risk
-            File tempFile = File.createTempFile("pom", ".xml.tmp", pomFile.getParentFile());
-            try {
-                Files.write(tempFile.toPath(), bytes);
-                Files.move(tempFile.toPath(), pomFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                // Clean up temp file on failure
-                tempFile.delete();
-                throw e;
-            }
-        } catch (TransformerException e) {
-            throw new IOException("Failed to write POM file: " + pomFile, e);
-        }
-    }
-
-    // --- Private helpers ---
-
-    /**
-     * Returns the local name of a node, handling both namespace-aware and non-namespace-aware cases.
-     */
-    private static String localName(Node node) {
-        String local = node.getLocalName();
-        return local != null ? local : node.getNodeName();
-    }
-
-    private Element getDependenciesElement(boolean managed, boolean create) {
-        Element root = document.getDocumentElement();
-        Element context = root;
-        int baseDepth = 1;
-
-        if (profileId != null) {
-            context = findProfile(profileId);
-            if (context == null) {
-                return null;
-            }
-            baseDepth = 3; // <profiles>(1) <profile>(2) <dependencies>(3)
-        }
-
-        if (managed) {
-            Element depMgmt = getOrCreateChildElement(context, "dependencyManagement", create, baseDepth);
-            if (depMgmt == null) {
-                return null;
-            }
-            return getOrCreateChildElement(depMgmt, "dependencies", create, baseDepth + 1);
-        } else {
-            return getOrCreateChildElement(context, "dependencies", create, baseDepth);
+            Files.move(tempFile.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            tempFile.delete();
+            throw e;
         }
     }
 
@@ -416,282 +249,95 @@ public class PomEditor {
      * @return the matching profile element, or {@code null} if not found
      */
     public Element findProfile(String id) {
-        Element root = document.getDocumentElement();
-        NodeList rootChildren = root.getChildNodes();
-        for (int i = 0; i < rootChildren.getLength(); i++) {
-            Node node = rootChildren.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE && "profiles".equals(localName(node))) {
-                NodeList profileChildren = node.getChildNodes();
-                for (int j = 0; j < profileChildren.getLength(); j++) {
-                    Node pNode = profileChildren.item(j);
-                    if (pNode.getNodeType() == Node.ELEMENT_NODE && "profile".equals(localName(pNode))) {
-                        String profileIdText = getChildText((Element) pNode, "id");
-                        if (id.equals(profileIdText)) {
-                            return (Element) pNode;
-                        }
-                    }
-                }
-                break;
-            }
-        }
-        return null;
+        return editor.root()
+                .childElement("profiles")
+                .map(profiles -> profiles.childElements("profile")
+                        .filter(p -> p.childElement("id")
+                                .map(idEl -> id.equals(idEl.textContent()))
+                                .orElse(false))
+                        .findFirst()
+                        .orElse(null))
+                .orElse(null);
     }
 
-    private Element getOrCreateChildElement(Element parent, String tagName, boolean create, int depth) {
-        NodeList children = parent.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE && tagName.equals(localName(node))) {
-                return (Element) node;
+    /**
+     * Returns the text content of a child element, or {@code null} if not present.
+     */
+    static String getChildText(Element parent, String tagName) {
+        return parent.childElement(tagName).map(el -> el.textContent().trim()).orElse(null);
+    }
+
+    // --- Private helpers ---
+
+    private Element getDependenciesElement(boolean managed, boolean create) {
+        Element context = editor.root();
+
+        if (profileId != null) {
+            context = findProfile(profileId);
+            if (context == null) {
+                return null;
             }
+        }
+
+        if (managed) {
+            Element depMgmt = getOrCreateChild(context, "dependencyManagement", create);
+            if (depMgmt == null) {
+                return null;
+            }
+            return getOrCreateChild(depMgmt, "dependencies", create);
+        } else {
+            return getOrCreateChild(context, "dependencies", create);
+        }
+    }
+
+    private Element getOrCreateChild(Element parent, String name, boolean create) {
+        Optional<Element> existing = parent.childElement(name);
+        if (existing.isPresent()) {
+            return existing.get();
         }
         if (!create) {
             return null;
         }
-        String baseIndent = repeatIndent(depth);
-        Element newElement = createElementWithNS(tagName);
-
-        parent.appendChild(document.createTextNode(lineEnding + baseIndent));
-        parent.appendChild(newElement);
-        ensureClosingIndent(parent, depth - 1);
-
-        return newElement;
+        return editor.addElement(parent, name);
     }
 
-    /**
-     * Creates an element in the same namespace as the root element, if any.
-     */
-    private Element createElementWithNS(String tagName) {
-        if (namespaceURI != null) {
-            return document.createElementNS(namespaceURI, tagName);
-        }
-        return document.createElement(tagName);
+    private Stream<Element> dependencyStream(Element depsElement) {
+        return depsElement.childElements("dependency");
     }
 
-    private Element buildDependencyElement(DependencyCoordinates coords, int depth) {
-        Element dep = createElementWithNS("dependency");
-        String childIndent = repeatIndent(depth + 1);
-
-        appendChildElement(dep, "groupId", coords.getGroupId(), childIndent);
-        appendChildElement(dep, "artifactId", coords.getArtifactId(), childIndent);
-
-        if (coords.getVersion() != null && !coords.getVersion().isEmpty()) {
-            appendChildElement(dep, "version", coords.getVersion(), childIndent);
-        }
-        if (coords.getScope() != null && !coords.getScope().isEmpty()) {
-            appendChildElement(dep, "scope", coords.getScope(), childIndent);
-        }
-        if (coords.getType() != null && !coords.getType().isEmpty()) {
-            appendChildElement(dep, "type", coords.getType(), childIndent);
-        }
-        if (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) {
-            appendChildElement(dep, "classifier", coords.getClassifier(), childIndent);
-        }
-        if (coords.getOptional() != null && coords.getOptional()) {
-            appendChildElement(dep, "optional", "true", childIndent);
-        }
-
-        dep.appendChild(document.createTextNode(lineEnding + repeatIndent(depth)));
-
-        return dep;
+    private static String childText(Element parent, String name) {
+        return parent.childElement(name)
+                .map(Element::textContent)
+                .map(String::trim)
+                .orElse(null);
     }
 
-    private void appendChildElement(Element parent, String tagName, String value, String indentStr) {
-        parent.appendChild(document.createTextNode(lineEnding + indentStr));
-        Element child = createElementWithNS(tagName);
-        child.setTextContent(value);
-        parent.appendChild(child);
+    private static boolean typeMatches(String depType, String searchType) {
+        String effective = (depType == null || depType.isEmpty()) ? "jar" : depType;
+        String target = (searchType == null || searchType.isEmpty()) ? "jar" : searchType;
+        return effective.equals(target);
     }
 
-    private void setOrCreateChild(Element parent, String tagName, String value) {
-        NodeList children = parent.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE && tagName.equals(localName(node))) {
-                node.setTextContent(value);
-                return;
-            }
-        }
-        int depth = getElementDepth(parent);
-        String childIndent = repeatIndent(depth + 1);
-        appendChildElement(parent, tagName, value, childIndent);
+    private static boolean classifierMatches(String depClassifier, String searchClassifier) {
+        String effective = (depClassifier == null) ? "" : depClassifier;
+        String target = (searchClassifier == null) ? "" : searchClassifier;
+        return effective.equals(target);
     }
 
-    /**
-     * Removes a child element and its preceding whitespace text node, if present.
-     */
-    private void removeChild(Element parent, String tagName) {
-        NodeList children = parent.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE && tagName.equals(localName(node))) {
-                // Remove preceding whitespace text node
-                if (i > 0 && children.item(i - 1).getNodeType() == Node.TEXT_NODE) {
-                    parent.removeChild(children.item(i - 1));
-                    // After removal, the element moved to index i-1
-                    parent.removeChild(children.item(i - 1));
-                } else {
-                    parent.removeChild(node);
-                }
-                return;
-            }
-        }
-    }
-
-    private int getElementDepth(Node node) {
-        int depth = 0;
-        Node current = node;
-        while (current.getParentNode() != null && current.getParentNode() != document) {
-            depth++;
-            current = current.getParentNode();
-        }
-        return depth;
-    }
-
-    /**
-     * Removes preceding whitespace text nodes and any immediately preceding XML comment
-     * that is associated with the dependency element (no blank line separating them).
-     */
-    private void removePrecedingWhitespaceAndComments(Element parent, Node target) {
-        Node prev = target.getPreviousSibling();
-
-        // Walk backwards through whitespace and comment nodes
-        while (prev != null) {
-            if (prev.getNodeType() == Node.TEXT_NODE
-                    && prev.getTextContent().trim().isEmpty()) {
-                // Whitespace-only text node
-                Node toRemove = prev;
-                prev = prev.getPreviousSibling();
-                parent.removeChild(toRemove);
-            } else if (prev.getNodeType() == Node.COMMENT_NODE) {
-                // Remove associated comment (directly preceding, no blank line gap)
-                Node toRemove = prev;
-                prev = prev.getPreviousSibling();
-                parent.removeChild(toRemove);
-            } else {
-                break;
-            }
-        }
-    }
-
-    private void ensureClosingIndent(Element element, int depth) {
-        Node last = element.getLastChild();
-        String closingIndent = lineEnding + repeatIndent(depth);
-        if (last != null && last.getNodeType() == Node.TEXT_NODE) {
-            last.setTextContent(closingIndent);
+    private void setOrRemoveChild(Element parent, String name, String value) {
+        if (value.isEmpty()) {
+            removeChildElement(parent, name);
         } else {
-            element.appendChild(document.createTextNode(closingIndent));
-        }
-    }
-
-    private String repeatIndent(int times) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < times; i++) {
-            sb.append(indent);
-        }
-        return sb.toString();
-    }
-
-    static String getChildText(Element parent, String tagName) {
-        NodeList children = parent.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE && tagName.equals(localName(node))) {
-                return node.getTextContent().trim();
+            Optional<Element> existing = parent.childElement(name);
+            if (existing.isPresent()) {
+                editor.setTextContent(existing.get(), value);
+            } else {
+                editor.addElement(parent, name, value);
             }
         }
-        return null;
     }
 
-    private static boolean hasBom(byte[] bytes) {
-        return bytes.length >= 3 && bytes[0] == UTF8_BOM[0] && bytes[1] == UTF8_BOM[1] && bytes[2] == UTF8_BOM[2];
-    }
-
-    /**
-     * Strips the Unicode BOM character (U+FEFF) from the start of a string if present.
-     * Java's String.trim() only removes ASCII whitespace (chars &lt;= 0x20) and does not
-     * remove the BOM character.
-     */
-    private static String stripBomChar(String s) {
-        if (s != null && !s.isEmpty() && s.charAt(0) == '\uFEFF') {
-            return s.substring(1);
-        }
-        return s;
-    }
-
-    private static Charset detectEncoding(Document doc) {
-        String encoding = doc.getXmlEncoding();
-        if (encoding != null) {
-            try {
-                return Charset.forName(encoding);
-            } catch (Exception e) {
-                // fall through
-            }
-        }
-        return StandardCharsets.UTF_8;
-    }
-
-    private static String detectLineEnding(String content) {
-        if (content.contains("\r\n")) {
-            return "\r\n";
-        } else if (content.contains("\r")) {
-            return "\r";
-        }
-        return "\n";
-    }
-
-    /**
-     * Detects the indentation unit by analyzing all indented lines and finding
-     * the most common smallest indent unit (GCD of leading whitespace lengths).
-     */
-    static String detectIndent(String content) {
-        String[] lines = content.split("\\r\\n|\\r|\\n");
-        Map<Character, int[]> charCounts = new HashMap<>();
-
-        for (String line : lines) {
-            if (line.isEmpty() || (line.charAt(0) != ' ' && line.charAt(0) != '\t')) {
-                continue;
-            }
-            char indentChar = line.charAt(0);
-            int end = 0;
-            while (end < line.length() && line.charAt(end) == indentChar) {
-                end++;
-            }
-            // Only count lines that have content after the indent
-            if (end < line.length()) {
-                int[] counts = charCounts.computeIfAbsent(indentChar, k -> new int[] {0, 0});
-                counts[0]++; // frequency
-                if (counts[1] == 0) {
-                    counts[1] = end;
-                } else {
-                    counts[1] = gcd(counts[1], end);
-                }
-            }
-        }
-
-        if (charCounts.containsKey('\t')) {
-            return "\t";
-        }
-        if (charCounts.containsKey(' ')) {
-            int unit = charCounts.get(' ')[1];
-            if (unit <= 0) {
-                unit = 4;
-            }
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < unit; i++) {
-                sb.append(' ');
-            }
-            return sb.toString();
-        }
-        return "    ";
-    }
-
-    private static int gcd(int a, int b) {
-        while (b != 0) {
-            int t = b;
-            b = a % b;
-            a = t;
-        }
-        return a;
+    private void removeChildElement(Element parent, String name) {
+        parent.childElement(name).ifPresent(editor::removeElement);
     }
 }

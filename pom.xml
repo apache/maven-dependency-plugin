@@ -143,6 +143,13 @@ under the License.
       <scope>provided</scope>
     </dependency>
 
+    <!-- domtrip -->
+    <dependency>
+      <groupId>eu.maveniverse.maven.domtrip</groupId>
+      <artifactId>domtrip-maven</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
     <!-- doxia -->
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>

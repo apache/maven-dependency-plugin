@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 
+import eu.maveniverse.domtrip.Element;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
@@ -35,7 +36,6 @@ import org.apache.maven.plugins.dependency.pom.DependencyCoordinates;
 import org.apache.maven.plugins.dependency.pom.PomEditor;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
-import org.w3c.dom.Element;
 
 /**
  * Adds a dependency to the project's {@code pom.xml}.
