@@ -43,14 +43,8 @@ Managing Dependencies
 mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1
 +---+
 
-  The <<<gav>>> parameter accepts the format <<<groupId:artifactId[:version[:scope[:type[:classifier]]]]>>>.
-  For example, to add a test-scoped dependency:
-
-+---+
-mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1:test
-+---+
-
-  You can also specify <<<scope>>> separately:
+  The <<<gav>>> parameter accepts the format <<<groupId:artifactId[:extension[:classifier]]:version>>>.
+  Scope must be specified separately with <<<-Dscope>>>:
 
 +---+
 mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dscope=test
