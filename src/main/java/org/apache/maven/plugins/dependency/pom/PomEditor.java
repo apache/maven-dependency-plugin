@@ -119,6 +119,9 @@ public class PomEditor {
      * @return the matching {@code <dependency>} element, or {@code null} if not found
      */
     public Element findDependency(String groupId, String artifactId, String type, String classifier, boolean managed) {
+        if (groupId == null || artifactId == null) {
+            throw new IllegalArgumentException("groupId and artifactId must not be null");
+        }
         Element depsElement = getDependenciesElement(managed, false);
         if (depsElement == null) {
             return null;

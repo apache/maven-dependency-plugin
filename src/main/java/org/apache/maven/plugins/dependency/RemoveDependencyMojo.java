@@ -104,6 +104,9 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
         boolean targetManaged = managed;
         MavenProject targetProject = getProject();
         File pomFile = targetProject.getFile();
+        if (pomFile == null) {
+            throw new MojoExecutionException("Cannot remove dependency: project has no POM file to modify.");
+        }
 
         // Safety check for managed dependency removal in parent POM
         if (targetManaged
@@ -208,6 +211,10 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
 
     private void checkChildModuleDependencies(MavenProject parentProject, String depGroupId, String depArtifactId)
             throws MojoExecutionException {
+        if (parentProject.getBasedir() == null) {
+            getLog().debug("Parent project basedir is null, skipping child module dependency check");
+            return;
+        }
         StringBuilder affected = new StringBuilder();
         MavenXpp3Reader pomReader = new MavenXpp3Reader();
 

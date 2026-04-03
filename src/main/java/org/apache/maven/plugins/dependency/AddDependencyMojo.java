@@ -146,6 +146,9 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         }
 
         File pomFile = targetProject.getFile();
+        if (pomFile == null) {
+            throw new MojoExecutionException("Cannot add dependency: project has no POM file to modify.");
+        }
         try {
             PomEditor editor = PomEditor.load(pomFile);
             if (profile != null && !profile.isEmpty()) {

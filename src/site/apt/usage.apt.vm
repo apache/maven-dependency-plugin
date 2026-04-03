@@ -718,30 +718,31 @@ mvn dependency:analyze-exclusions
 * <<<dependency:add>>>
 
   This goal adds a dependency to the project's <<<pom.xml>>> directly from the command line.
-  If the dependency already exists, it is updated automatically. For detailed examples, see
+  If the dependency already exists, the goal fails with a descriptive error directing you to
+  remove it first. For detailed examples, see
   {{{./examples/managing-dependencies.html}Managing Dependencies}}.
 
 ---
-mvn dependency:add -Dgav="org.apache.commons:commons-lang3:3.17.0"
-mvn dependency:add -Dgav="org.apache.commons:commons-lang3:3.17.0" -Dscope=test
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dscope=test
 ---
 
   Add to <<<\<dependencyManagement\>>>>:
 
 ---
-mvn dependency:add -Dgav="org.apache.commons:commons-lang3:3.17.0" -Dmanaged
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dmanaged
 ---
 
   Add a BOM import:
 
 ---
-mvn dependency:add -Dgav="org.springframework.boot:spring-boot-dependencies:pom:3.2.0" -Dscope=import -Dmanaged
+mvn dependency:add -Dgav=org.springframework.boot:spring-boot-dependencies:pom:3.2.0 -Dscope=import -Dmanaged
 ---
 
   In multi-module projects, use Maven's <<<-pl>>> flag to target a specific module:
 
 ---
-mvn dependency:add -Dgav="org.apache.commons:commons-lang3:3.17.0" -pl my-service
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -pl my-service
 ---
 
 * <<<dependency:remove>>>
@@ -750,8 +751,8 @@ mvn dependency:add -Dgav="org.apache.commons:commons-lang3:3.17.0" -pl my-servic
   For detailed examples, see {{{./examples/managing-dependencies.html}Managing Dependencies}}.
 
 ---
-mvn dependency:remove -Dgav="org.apache.commons:commons-lang3"
-mvn dependency:remove -Dgav="org.apache.commons:commons-lang3" -Dmanaged
+mvn dependency:remove -Dgav=org.apache.commons:commons-lang3
+mvn dependency:remove -Dgav=org.apache.commons:commons-lang3 -Dmanaged
 ---
 
   When removing a managed dependency from a parent POM, the goal warns if child modules still
