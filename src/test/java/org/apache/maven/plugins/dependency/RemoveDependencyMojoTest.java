@@ -126,35 +126,6 @@ class RemoveDependencyMojoTest {
     }
 
     @Test
-    void bomFlagSetsTypeAndManaged() throws Exception {
-        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<project>\n"
-                + "  <dependencyManagement>\n"
-                + "    <dependencies>\n"
-                + "      <dependency>\n"
-                + "        <groupId>org.springframework.boot</groupId>\n"
-                + "        <artifactId>spring-boot-dependencies</artifactId>\n"
-                + "        <version>3.2.0</version>\n"
-                + "        <type>pom</type>\n"
-                + "        <scope>import</scope>\n"
-                + "      </dependency>\n"
-                + "    </dependencies>\n"
-                + "  </dependencyManagement>\n"
-                + "</project>\n";
-        File pomFile = createTempPom(pom);
-        when(project.getFile()).thenReturn(pomFile);
-        when(project.getModules()).thenReturn(Collections.emptyList());
-
-        setVariableValueToObject(mojo, "gav", "org.springframework.boot:spring-boot-dependencies");
-        setVariableValueToObject(mojo, "bom", true);
-
-        mojo.execute();
-
-        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(!result.contains("spring-boot-dependencies"), "BOM should be removed");
-    }
-
-    @Test
     void typeParameterUsedForMatching() throws Exception {
         // POM has both jar and pom variants
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"

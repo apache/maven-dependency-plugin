@@ -67,10 +67,10 @@ mvn dependency:add -Dgav=com.google.code.gson:gson:2.10.1 -Dmanaged
 
 ** Adding a BOM Import
 
-  To import a BOM (Bill of Materials) into <<<\<dependencyManagement\>>>>, use the <<<-Dbom>>> flag:
+  To import a BOM (Bill of Materials) into <<<\<dependencyManagement\>>>>, specify the type and scope explicitly:
 
 +---+
-mvn dependency:add -Dgav=org.springframework.boot:spring-boot-dependencies:3.2.0 -Dbom
+mvn dependency:add -Dgav=org.springframework.boot:spring-boot-dependencies:pom:3.2.0 -Dscope=import -Dmanaged
 +---+
 
   This inserts a dependency with <<<type=pom>>> and <<<scope=import>>> into <<<\<dependencyManagement\>>>>.
@@ -194,13 +194,11 @@ mvn dependency:remove -Dgav=com.example:lib -Dclassifier=sources
 
 ** Removing a BOM Import
 
-  To remove a BOM import from <<<\<dependencyManagement\>>>>, use the <<<-Dbom>>> flag:
+  To remove a BOM import from <<<\<dependencyManagement\>>>>, specify the type and use <<<-Dmanaged>>>:
 
 +---+
-mvn dependency:remove -Dgav=org.springframework.boot:spring-boot-dependencies -Dbom
+mvn dependency:remove -Dgav=org.springframework.boot:spring-boot-dependencies -Dtype=pom -Dmanaged
 +---+
-
-  This is equivalent to <<<-Dmanaged -Dtype=pom>>>.
 
 ** Removing from dependencyManagement
 

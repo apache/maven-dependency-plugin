@@ -106,13 +106,6 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     @Parameter(property = "profile")
     private String profile;
 
-    /**
-     * When {@code true}, add as a BOM import ({@code type=pom}, {@code scope=import})
-     * into {@code <dependencyManagement>}.
-     */
-    @Parameter(property = "bom", defaultValue = "false")
-    private boolean bom;
-
     @Inject
     public AddDependencyMojo(MavenSession session, BuildContext buildContext, MavenProject project) {
         super(session, buildContext, project);
@@ -122,12 +115,8 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     protected void doExecute() throws MojoExecutionException, MojoFailureException {
         DependencyEntry coords = resolveCoordinates();
 
-        if (bom) {
-            handleBomFlag(coords);
-        }
-
         MavenProject targetProject = getProject();
-        boolean targetManaged = managed || bom;
+        boolean targetManaged = managed;
 
         // Validate version requirements
         if (targetManaged && coords.getVersion() == null) {
@@ -259,18 +248,6 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         }
 
         return coords;
-    }
-
-    private void handleBomFlag(DependencyEntry coords) {
-        if (coords.getScope() != null || coords.getType() != null) {
-            getLog().warn("The -Dbom flag overrides scope and type. Using scope=import and type=pom.");
-        }
-        if (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) {
-            getLog().warn("The -Dbom flag clears classifier. BOM imports must not have a classifier.");
-        }
-        coords.setScope("import");
-        coords.setType("pom");
-        coords.setClassifier(null);
     }
 
     private String findManagedVersion(MavenProject project, String groupId, String artifactId) {

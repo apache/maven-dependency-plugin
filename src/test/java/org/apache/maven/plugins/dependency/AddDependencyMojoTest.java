@@ -301,25 +301,6 @@ class AddDependencyMojoTest {
     }
 
     @Test
-    void bomFlagSetsTypeAndScopeAndManaged() throws Exception {
-        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "</project>\n";
-        File pomFile = createTempPom(pom);
-        when(project.getFile()).thenReturn(pomFile);
-        Model originalModel = new Model();
-        when(project.getOriginalModel()).thenReturn(originalModel);
-
-        setVariableValueToObject(mojo, "gav", "org.springframework.boot:spring-boot-dependencies:3.2.0");
-        setVariableValueToObject(mojo, "bom", true);
-
-        assertDoesNotThrow(() -> mojo.execute());
-
-        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<dependencyManagement>"), "should be in dependencyManagement");
-        assertTrue(result.contains("<type>pom</type>"), "type should be pom");
-        assertTrue(result.contains("<scope>import</scope>"), "scope should be import");
-    }
-
-    @Test
     void managedWithoutVersionFails() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "</project>\n";
         when(project.getFile()).thenReturn(createTempPom(pom));
@@ -406,25 +387,6 @@ class AddDependencyMojoTest {
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
         assertTrue(ex.getMessage().contains("GAV"));
-    }
-
-    @Test
-    void bomFlagClearsClassifier() throws Exception {
-        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "</project>\n";
-        File pomFile = createTempPom(pom);
-        when(project.getFile()).thenReturn(pomFile);
-        Model originalModel = new Model();
-        when(project.getOriginalModel()).thenReturn(originalModel);
-
-        setVariableValueToObject(mojo, "gav", "com.example:lib:jar:sources:1.0");
-        setVariableValueToObject(mojo, "bom", true);
-
-        assertDoesNotThrow(() -> mojo.execute());
-
-        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<type>pom</type>"));
-        assertTrue(result.contains("<scope>import</scope>"));
-        assertFalse(result.contains("<classifier>"), "classifier should be cleared by -Dbom");
     }
 
     @Test

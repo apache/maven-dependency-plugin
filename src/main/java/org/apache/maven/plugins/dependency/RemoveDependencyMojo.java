@@ -85,13 +85,6 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
     private String classifier;
 
     /**
-     * When {@code true}, remove a BOM import ({@code type=pom}) from {@code <dependencyManagement>}.
-     * Equivalent to {@code -Dmanaged -Dtype=pom}.
-     */
-    @Parameter(property = "bom", defaultValue = "false")
-    private boolean bom;
-
-    /**
      * Target a specific Maven profile by its {@code <id>}. When set, the dependency is removed
      * from the profile's {@code <dependencies>} or {@code <dependencyManagement>} section.
      * The profile must already exist in the POM.
@@ -108,11 +101,7 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
     protected void doExecute() throws MojoExecutionException, MojoFailureException {
         DependencyEntry coords = resolveCoordinates();
 
-        if (bom) {
-            handleBomFlag(coords);
-        }
-
-        boolean targetManaged = managed || bom;
+        boolean targetManaged = managed;
         MavenProject targetProject = getProject();
         File pomFile = targetProject.getFile();
 
@@ -205,13 +194,6 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
         }
 
         return coords;
-    }
-
-    private void handleBomFlag(DependencyEntry coords) {
-        if (coords.getType() != null && !"pom".equals(coords.getType())) {
-            getLog().warn("The -Dbom flag overrides type. Using type=pom.");
-        }
-        coords.setType("pom");
     }
 
     private void checkChildModuleDependencies(MavenProject parentProject, String depGroupId, String depArtifactId)

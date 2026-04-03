@@ -735,7 +735,7 @@ mvn dependency:add -Dgav="com.google.code.gson:gson:2.11.0" -Dmanaged
   Add a BOM import:
 
 ---
-mvn dependency:add -Dgav="org.springframework.boot:spring-boot-dependencies:3.2.0" -Dbom
+mvn dependency:add -Dgav="org.springframework.boot:spring-boot-dependencies:pom:3.2.0" -Dscope=import -Dmanaged
 ---
 
   In multi-module projects, use Maven's <<<-pl>>> flag to target a specific module:
