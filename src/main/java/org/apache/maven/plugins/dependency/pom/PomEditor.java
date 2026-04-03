@@ -212,7 +212,7 @@ public class PomEditor {
             success = true;
         } finally {
             if (!success) {
-                tempFile.delete();
+                Files.deleteIfExists(tempFile.toPath());
             }
         }
     }
@@ -224,6 +224,9 @@ public class PomEditor {
      * @return the matching profile element, or {@code null} if not found
      */
     public Element findProfile(String id) {
+        if (id == null) {
+            return null;
+        }
         return editor.root()
                 .childElement("profiles")
                 .map(profiles -> profiles.childElements("profile")

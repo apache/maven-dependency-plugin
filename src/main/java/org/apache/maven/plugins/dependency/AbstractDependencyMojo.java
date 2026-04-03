@@ -172,8 +172,9 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
         if (deps == null) {
             return false;
         }
-        String searchType = coords.getType() != null ? coords.getType() : "jar";
-        String searchClassifier = coords.getClassifier() != null ? coords.getClassifier() : "";
+        String searchType = (coords.getType() != null && !coords.getType().isEmpty()) ? coords.getType() : "jar";
+        String searchClassifier =
+                (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) ? coords.getClassifier() : "";
         for (Dependency dep : deps) {
             if (coords.getGroupId().equals(dep.getGroupId())
                     && coords.getArtifactId().equals(dep.getArtifactId())) {

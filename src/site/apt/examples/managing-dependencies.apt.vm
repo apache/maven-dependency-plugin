@@ -92,24 +92,24 @@ mvn dependency:add -Dgav=com.example:lib:1.0 -Dtype=test-jar
 mvn dependency:add -Dgav=com.example:lib:1.0 -Dclassifier=sources
 +---+
 
-** Updating an Existing Dependency
+** Duplicate Detection
 
-  If the dependency already exists, <<<dependency:add>>> updates it automatically and logs what changed:
-
-+---+
-mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0
-+---+
-
-  When updating, you can clear existing fields by setting them to <<<NONE>>>:
+  If the dependency already exists in the POM (matching on <<<groupId>>>, <<<artifactId>>>,
+  <<<type>>>, and <<<classifier>>>), the goal fails with a descriptive error directing you to
+  remove the existing dependency first:
 
 +---+
-mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dscope=NONE
-mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dtype=NONE
-mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dclassifier=NONE
+mvn dependency:remove -Dgav=org.apache.commons:commons-lang3
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dscope=test
 +---+
 
-  The <<<NONE>>> sentinel removes the corresponding XML element from the dependency.
-  Fields not specified are left unchanged.
+** Optional Dependencies
+
+  Mark a dependency as optional using the <<<optional>>> parameter:
+
++---+
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Doptional=true
++---+
 
 ** Scope Validation
 
