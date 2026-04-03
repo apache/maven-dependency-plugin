@@ -159,6 +159,57 @@ class RemoveDependencyMojoTest {
     }
 
     @Test
+    void modelSyncPreservesOtherVariantsOnRemove() throws Exception {
+        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "      <version>1.0</version>\n"
+                + "    </dependency>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>lib</artifactId>\n"
+                + "      <version>1.0</version>\n"
+                + "      <type>test-jar</type>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n";
+        File pomFile = createTempPom(pom);
+        when(project.getFile()).thenReturn(pomFile);
+        when(project.getModules()).thenReturn(Collections.emptyList());
+
+        // Set up in-memory model with both variants
+        Model model = new Model();
+        Dependency jarDep = new Dependency();
+        jarDep.setGroupId("com.example");
+        jarDep.setArtifactId("lib");
+        jarDep.setVersion("1.0");
+        Dependency testJarDep = new Dependency();
+        testJarDep.setGroupId("com.example");
+        testJarDep.setArtifactId("lib");
+        testJarDep.setVersion("1.0");
+        testJarDep.setType("test-jar");
+        model.addDependency(jarDep);
+        model.addDependency(testJarDep);
+        when(project.getModel()).thenReturn(model);
+
+        // Remove only the test-jar variant
+        setVariableValueToObject(mojo, "gav", "com.example:lib");
+        setVariableValueToObject(mojo, "type", "test-jar");
+
+        mojo.execute();
+
+        // In-memory model should still have the jar variant
+        assertTrue(model.getDependencies().size() == 1, "model should have 1 dependency remaining");
+        assertTrue(
+                "jar".equals(model.getDependencies().get(0).getType())
+                        || model.getDependencies().get(0).getType() == null,
+                "remaining dependency should be the jar variant");
+    }
+
+    @Test
     void profileNotFoundThrowsClearError() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
