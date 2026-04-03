@@ -235,40 +235,6 @@ class PomEditorTest {
     }
 
     @Test
-    void updateExistingDependency() throws IOException {
-        String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<project>\n"
-                + "    <modelVersion>4.0.0</modelVersion>\n"
-                + "    <groupId>com.example</groupId>\n"
-                + "    <artifactId>test</artifactId>\n"
-                + "    <version>1.0</version>\n"
-                + "    <dependencies>\n"
-                + "        <dependency>\n"
-                + "            <groupId>junit</groupId>\n"
-                + "            <artifactId>junit</artifactId>\n"
-                + "            <version>4.13.2</version>\n"
-                + "        </dependency>\n"
-                + "    </dependencies>\n"
-                + "</project>\n";
-
-        File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
-
-        Element existing = editor.findDependency("junit", "junit", false);
-        assertNotNull(existing);
-
-        DependencyEntry newCoords = new DependencyEntry("junit", "junit");
-        newCoords.setVersion("5.0.0");
-        newCoords.setScope("test");
-        editor.updateDependency(existing, newCoords);
-        editor.save();
-
-        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<version>5.0.0</version>"), "Version should be updated");
-        assertTrue(result.contains("<scope>test</scope>"), "Scope should be added");
-    }
-
-    @Test
     void preservesXmlComments() throws IOException {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
@@ -593,6 +559,19 @@ class PomEditorTest {
     }
 
     @Test
+    void rejectsDoctypeDeclarationCaseInsensitive() throws IOException {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<!doctype project [\n"
+                + "  <!entity xxe \"malicious\">\n"
+                + "]>\n"
+                + "<project>\n"
+                + "  <groupId>&xxe;</groupId>\n"
+                + "</project>\n";
+        File pomFile = createTempPom(xml);
+        assertThrows(IOException.class, () -> PomEditor.load(pomFile));
+    }
+
+    @Test
     void bomPrefixedFilePreservesXmlDeclaration() throws IOException {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
@@ -622,73 +601,6 @@ class PomEditorTest {
         // XML declaration should be preserved
         String result = new String(resultBytes, StandardCharsets.UTF_8);
         assertTrue(result.contains("<?xml"), result);
-    }
-
-    @Test
-    void updateDependencyClearsFieldsWithEmptyString() throws IOException {
-        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<project>\n"
-                + "  <dependencies>\n"
-                + "    <dependency>\n"
-                + "      <groupId>com.example</groupId>\n"
-                + "      <artifactId>lib</artifactId>\n"
-                + "      <version>1.0</version>\n"
-                + "      <scope>test</scope>\n"
-                + "      <optional>true</optional>\n"
-                + "    </dependency>\n"
-                + "  </dependencies>\n"
-                + "</project>\n";
-        File pomFile = new File(tempDir, "pom.xml");
-        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
-
-        PomEditor editor = PomEditor.load(pomFile);
-        Element dep = editor.findDependency("com.example", "lib", false);
-        assertNotNull(dep);
-
-        // Empty string signals removal
-        DependencyEntry coords = new DependencyEntry("com.example", "lib");
-        coords.setScope(""); // clear scope
-        coords.setOptional(false); // clear optional
-
-        editor.updateDependency(dep, coords);
-        editor.save();
-
-        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(!result.contains("<scope>"), "scope element should be removed");
-        assertTrue(!result.contains("<optional>"), "optional element should be removed");
-        assertTrue(result.contains("<version>1.0</version>"), "version should remain");
-    }
-
-    @Test
-    void updateDependencyPreservesFieldsWhenNull() throws IOException {
-        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<project>\n"
-                + "  <dependencies>\n"
-                + "    <dependency>\n"
-                + "      <groupId>com.example</groupId>\n"
-                + "      <artifactId>lib</artifactId>\n"
-                + "      <version>1.0</version>\n"
-                + "      <scope>test</scope>\n"
-                + "    </dependency>\n"
-                + "  </dependencies>\n"
-                + "</project>\n";
-        File pomFile = new File(tempDir, "pom.xml");
-        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
-
-        PomEditor editor = PomEditor.load(pomFile);
-        Element dep = editor.findDependency("com.example", "lib", false);
-        assertNotNull(dep);
-
-        // Only update version, leave scope (null means don't touch)
-        DependencyEntry coords = new DependencyEntry("com.example", "lib");
-        coords.setVersion("2.0");
-
-        editor.updateDependency(dep, coords);
-        editor.save();
-
-        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<version>2.0</version>"), "version should be updated");
-        assertTrue(result.contains("<scope>test</scope>"), "scope should be preserved");
     }
 
     @Test
@@ -916,40 +828,6 @@ class PomEditorTest {
         assertFalse(
                 editor.removeDependency("com.example", "lib", true),
                 "should return false when no dependencyManagement section exists");
-    }
-
-    @Test
-    void updateDependencyTypeAndClassifierAndOptional() throws IOException {
-        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<project>\n"
-                + "  <dependencies>\n"
-                + "    <dependency>\n"
-                + "      <groupId>com.example</groupId>\n"
-                + "      <artifactId>lib</artifactId>\n"
-                + "      <version>1.0</version>\n"
-                + "    </dependency>\n"
-                + "  </dependencies>\n"
-                + "</project>\n";
-        File pomFile = new File(tempDir, "pom.xml");
-        Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
-
-        PomEditor editor = PomEditor.load(pomFile);
-        Element dep = editor.findDependency("com.example", "lib", false);
-        assertNotNull(dep);
-
-        DependencyEntry coords = new DependencyEntry("com.example", "lib");
-        coords.setVersion("2.0");
-        coords.setType("pom");
-        coords.setClassifier("sources");
-        coords.setOptional(true);
-        editor.updateDependency(dep, coords);
-        editor.save();
-
-        String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(result.contains("<version>2.0</version>"), "version should be updated");
-        assertTrue(result.contains("<type>pom</type>"), "type should be set");
-        assertTrue(result.contains("<classifier>sources</classifier>"), "classifier should be set");
-        assertTrue(result.contains("<optional>true</optional>"), "optional should be set");
     }
 
     private static int countOccurrences(String text, String substring) {

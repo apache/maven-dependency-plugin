@@ -40,7 +40,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 /**
  * Adds a dependency to the project's {@code pom.xml}.
  * Supports adding to {@code <dependencies>} or {@code <dependencyManagement>},
- * with version inference from managed dependencies and BOM import shorthand.
+ * with version inference from managed dependencies.
  *
  * <p>If the dependency already exists, the goal fails with a descriptive error
  * directing the user to remove it first.</p>

@@ -61,8 +61,9 @@ public class PomEditor {
         try {
             // Reject DOCTYPE declarations to prevent XXE attacks
             String content = new String(Files.readAllBytes(pomFile.toPath()), java.nio.charset.StandardCharsets.UTF_8);
-            if (content.contains("<!DOCTYPE")) {
-                throw new IOException("DOCTYPE declarations are not allowed in POM files (security risk)");
+            String upper = content.toUpperCase(java.util.Locale.ROOT);
+            if (upper.contains("<!DOCTYPE") || upper.contains("<!ENTITY")) {
+                throw new IOException("DOCTYPE/ENTITY declarations are not allowed in POM files (security risk)");
             }
 
             Document doc = Document.of(pomFile.toPath());
@@ -163,35 +164,6 @@ public class PomEditor {
     }
 
     /**
-     * Updates an existing dependency element with the provided coordinate fields.
-     * Only updates fields that are non-null. Empty string signals removal.
-     *
-     * @param existing the existing dependency element
-     * @param coords   the new coordinate values
-     */
-    public void updateDependency(Element existing, DependencyEntry coords) {
-        if (coords.getVersion() != null) {
-            setOrRemoveChild(existing, "version", coords.getVersion());
-        }
-        if (coords.getScope() != null) {
-            setOrRemoveChild(existing, "scope", coords.getScope());
-        }
-        if (coords.getType() != null) {
-            setOrRemoveChild(existing, "type", coords.getType());
-        }
-        if (coords.getClassifier() != null) {
-            setOrRemoveChild(existing, "classifier", coords.getClassifier());
-        }
-        if (coords.getOptional() != null) {
-            if (coords.getOptional()) {
-                setOrRemoveChild(existing, "optional", "true");
-            } else {
-                removeChildElement(existing, "optional");
-            }
-        }
-    }
-
-    /**
      * Removes a dependency matching groupId and artifactId (any type/classifier).
      *
      * @param groupId    the groupId to match
@@ -231,14 +203,17 @@ public class PomEditor {
     public void save() throws IOException {
         Path target = pomFile.toPath();
         File tempFile = File.createTempFile("pom", ".xml.tmp", pomFile.getParentFile());
+        boolean success = false;
         try {
             try (OutputStream os = Files.newOutputStream(tempFile.toPath())) {
                 editor.document().toXml(os);
             }
             Files.move(tempFile.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            tempFile.delete();
-            throw e;
+            success = true;
+        } finally {
+            if (!success) {
+                tempFile.delete();
+            }
         }
     }
 
@@ -322,22 +297,5 @@ public class PomEditor {
         String effective = (depClassifier == null) ? "" : depClassifier;
         String target = (searchClassifier == null) ? "" : searchClassifier;
         return effective.equals(target);
-    }
-
-    private void setOrRemoveChild(Element parent, String name, String value) {
-        if (value.isEmpty()) {
-            removeChildElement(parent, name);
-        } else {
-            Optional<Element> existing = parent.childElement(name);
-            if (existing.isPresent()) {
-                editor.setTextContent(existing.get(), value);
-            } else {
-                editor.addElement(parent, name, value);
-            }
-        }
-    }
-
-    private void removeChildElement(Element parent, String name) {
-        parent.childElement(name).ifPresent(editor::removeElement);
     }
 }
