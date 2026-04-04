@@ -22,6 +22,11 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import eu.maveniverse.domtrip.Element;
 import org.apache.maven.execution.MavenSession;
@@ -99,6 +104,41 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     private boolean managed;
 
     /**
+     * When {@code true} (the default), automatically detect and follow the project's existing
+     * dependency management conventions:
+     * <ul>
+     *   <li>If most existing dependencies are version-less, add managed dependency to parent POM</li>
+     *   <li>If versions use {@code ${...}} property references, create a version property</li>
+     *   <li>Property naming follows the detected pattern (e.g., {@code .version}, {@code -version})</li>
+     * </ul>
+     * Explicit parameters ({@code managed}, {@code useProperty}, {@code propertyName}) override
+     * detected conventions.
+     *
+     * @since 3.11.0
+     */
+    @Parameter(property = "align", defaultValue = "true")
+    private boolean align;
+
+    /**
+     * When set, controls whether a version property is created in {@code <properties>}.
+     * When {@code null} (the default), the behavior is auto-detected from existing conventions
+     * if {@code align=true}.
+     *
+     * @since 3.11.0
+     */
+    @Parameter(property = "useProperty")
+    private Boolean useProperty;
+
+    /**
+     * Explicit property name for the version (e.g., {@code guava.version}).
+     * When not set, the name is derived from the detected naming convention.
+     *
+     * @since 3.11.0
+     */
+    @Parameter(property = "propertyName")
+    private String propertyName;
+
+    /**
      * Target a specific Maven profile by its {@code <id>}. When set, the dependency is added
      * to the profile's {@code <dependencies>} or {@code <dependencyManagement>} section.
      * The profile must already exist in the POM.
@@ -116,16 +156,25 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         DependencyEntry coords = resolveCoordinates();
 
         MavenProject targetProject = getProject();
-        boolean targetManaged = managed;
+        boolean effectiveManaged = managed;
+
+        // Convention auto-detection when align=true
+        Conventions conventions = null;
+        if (align && coords.getVersion() != null) {
+            conventions = detectConventions(targetProject);
+            if (!managed) {
+                effectiveManaged = conventions.useManaged;
+            }
+        }
 
         // Validate version requirements
-        if (targetManaged && coords.getVersion() == null) {
+        if (effectiveManaged && coords.getVersion() == null) {
             throw new MojoFailureException("Version is required when adding to <dependencyManagement>."
                     + " Include version in -Dgav (e.g. groupId:artifactId:version)");
         }
 
         // Version inference for non-managed dependencies
-        if (!targetManaged && coords.getVersion() == null) {
+        if (!effectiveManaged && coords.getVersion() == null) {
             String managedVersion = findManagedVersion(targetProject, coords.getGroupId(), coords.getArtifactId());
             if (managedVersion != null) {
                 getLog().info("Version managed by parent: " + coords.getGroupId() + ":" + coords.getArtifactId() + ":"
@@ -137,6 +186,137 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             }
         }
 
+        // Determine effective property usage
+        boolean effectiveUseProperty = false;
+        String effectivePropertyName = null;
+        if (conventions != null && coords.getVersion() != null) {
+            effectiveUseProperty = useProperty != null ? useProperty : conventions.useProperty;
+            if (effectiveUseProperty) {
+                effectivePropertyName = propertyName != null ? propertyName : conventions.derivePropertyName(coords);
+            }
+        }
+
+        // Determine the target POM for managed deps
+        File managedPomFile = null;
+        if (effectiveManaged && conventions != null && conventions.managedPomFile != null) {
+            managedPomFile = conventions.managedPomFile;
+        }
+
+        // Cross-POM mode: add managed dep + property to parent, version-less dep to child
+        File pomFile = targetProject.getFile();
+        if (pomFile == null) {
+            throw new MojoExecutionException("Cannot add dependency: project has no POM file to modify.");
+        }
+
+        boolean crossPom = effectiveManaged
+                && managedPomFile != null
+                && !managedPomFile.getAbsolutePath().equals(pomFile.getAbsolutePath());
+
+        try {
+            if (crossPom) {
+                addCrossPom(coords, pomFile, managedPomFile, effectiveUseProperty, effectivePropertyName);
+            } else {
+                addSinglePom(
+                        coords, targetProject, pomFile, effectiveManaged, effectiveUseProperty, effectivePropertyName);
+            }
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to modify POM file: " + pomFile, e);
+        }
+    }
+
+    /**
+     * Cross-POM mode: adds a managed dependency (with optional property) to the parent POM,
+     * and a version-less dependency reference to the child POM.
+     */
+    private void addCrossPom(
+            DependencyEntry coords,
+            File childPomFile,
+            File parentPomFile,
+            boolean effectiveUseProperty,
+            String effectivePropertyName)
+            throws IOException, MojoFailureException {
+        // 1. Modify parent POM: add property + managed dependency
+        PomEditor parentEditor = PomEditor.load(parentPomFile);
+        Element existingManaged = parentEditor.findDependency(
+                coords.getGroupId(), coords.getArtifactId(), coords.getType(), coords.getClassifier(), true);
+        if (existingManaged != null) {
+            throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
+                    + " already exists in " + parentPomFile.getName() + " <dependencyManagement>."
+                    + " Remove it first with dependency:remove, then re-add.");
+        }
+
+        String versionRef = coords.getVersion();
+        if (effectiveUseProperty && effectivePropertyName != null) {
+            parentEditor.addProperty(effectivePropertyName, coords.getVersion());
+            versionRef = "${" + effectivePropertyName + "}";
+            getLog().info("Added property " + effectivePropertyName + "=" + coords.getVersion() + " to "
+                    + parentPomFile.getName());
+        }
+
+        DependencyEntry managedCoords = new DependencyEntry(coords.getGroupId(), coords.getArtifactId());
+        managedCoords.setVersion(versionRef);
+        if (coords.getType() != null && !coords.getType().isEmpty()) {
+            managedCoords.setType(coords.getType());
+        }
+        if (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) {
+            managedCoords.setClassifier(coords.getClassifier());
+        }
+        parentEditor.addDependency(managedCoords, true);
+        parentEditor.save();
+        getLog().info("Added managed dependency " + coords.getGroupId() + ":" + coords.getArtifactId() + ":"
+                + versionRef + " to " + parentPomFile.getName());
+
+        // 2. Modify child POM: add version-less dependency
+        PomEditor childEditor = PomEditor.load(childPomFile);
+        if (profile != null && !profile.isEmpty()) {
+            if (childEditor.findProfile(profile) == null) {
+                throw new MojoFailureException(
+                        "Profile '" + profile + "' not found in " + childPomFile.getName() + ".");
+            }
+            childEditor.setProfileId(profile);
+        }
+        Element existingChild = childEditor.findDependency(
+                coords.getGroupId(), coords.getArtifactId(), coords.getType(), coords.getClassifier(), false);
+        if (existingChild != null) {
+            throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
+                    + " already exists in " + childPomFile.getName()
+                    + ". Remove it first with dependency:remove, then re-add.");
+        }
+
+        DependencyEntry childCoords = new DependencyEntry(coords.getGroupId(), coords.getArtifactId());
+        if (coords.getScope() != null && !coords.getScope().isEmpty()) {
+            childCoords.setScope(coords.getScope());
+        }
+        if (coords.getType() != null && !coords.getType().isEmpty()) {
+            childCoords.setType(coords.getType());
+        }
+        if (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) {
+            childCoords.setClassifier(coords.getClassifier());
+        }
+        if (coords.getOptional() != null) {
+            childCoords.setOptional(coords.getOptional());
+        }
+        childEditor.addDependency(childCoords, false);
+        childEditor.save();
+        getLog().info("Added version-less dependency " + coords.getGroupId() + ":" + coords.getArtifactId() + " to "
+                + childPomFile.getName());
+
+        // Sync in-memory model
+        syncInMemoryModel(getProject(), coords, false, true);
+    }
+
+    /**
+     * Single-POM mode: adds the dependency (optionally with a version property) to the current POM.
+     */
+    private void addSinglePom(
+            DependencyEntry coords,
+            MavenProject targetProject,
+            File pomFile,
+            boolean targetManaged,
+            boolean effectiveUseProperty,
+            String effectivePropertyName)
+            throws IOException, MojoFailureException {
+
         // Warn when adding to parent <dependencies> (not managed) in a multi-module project
         if (!targetManaged
                 && targetProject.getModules() != null
@@ -145,75 +325,75 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
                     + "Use -Dmanaged to add to <dependencyManagement> instead.");
         }
 
-        File pomFile = targetProject.getFile();
-        if (pomFile == null) {
-            throw new MojoExecutionException("Cannot add dependency: project has no POM file to modify.");
+        PomEditor editor = PomEditor.load(pomFile);
+        if (profile != null && !profile.isEmpty()) {
+            if (editor.findProfile(profile) == null) {
+                throw new MojoFailureException("Profile '" + profile + "' not found in " + pomFile.getName() + ".");
+            }
+            editor.setProfileId(profile);
         }
-        try {
-            PomEditor editor = PomEditor.load(pomFile);
-            if (profile != null && !profile.isEmpty()) {
-                if (editor.findProfile(profile) == null) {
-                    throw new MojoFailureException("Profile '" + profile + "' not found in " + pomFile.getName() + ".");
-                }
-                editor.setProfileId(profile);
-            }
-            Element existing = editor.findDependency(
-                    coords.getGroupId(),
-                    coords.getArtifactId(),
-                    coords.getType(),
-                    coords.getClassifier(),
-                    targetManaged);
+        Element existing = editor.findDependency(
+                coords.getGroupId(), coords.getArtifactId(), coords.getType(), coords.getClassifier(), targetManaged);
 
-            if (existing != null) {
-                throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
-                        + " already exists in " + pomFile.getName()
-                        + ". Remove it first with dependency:remove, then re-add.");
-            } else if (existsInResolvedModel(targetProject, coords, targetManaged)) {
-                // Dependency exists in the resolved model but not in raw XML — property interpolation
-                throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
-                        + " already exists in the POM (using property references). "
-                        + "Cannot safely add or update automatically. Please edit the POM manually.");
+        if (existing != null) {
+            throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
+                    + " already exists in " + pomFile.getName()
+                    + ". Remove it first with dependency:remove, then re-add.");
+        } else if (existsInResolvedModel(targetProject, coords, targetManaged)) {
+            throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
+                    + " already exists in the POM (using property references). "
+                    + "Cannot safely add or update automatically. Please edit the POM manually.");
+        } else {
+            // Handle version property
+            if (effectiveUseProperty && effectivePropertyName != null && coords.getVersion() != null) {
+                editor.addProperty(effectivePropertyName, coords.getVersion());
+                getLog().info("Added property " + effectivePropertyName + "=" + coords.getVersion());
+                coords.setVersion("${" + effectivePropertyName + "}");
+            }
+            editor.addDependency(coords, targetManaged);
+            getLog().info("Added dependency " + coords + " to " + pomFile.getName());
+        }
+
+        editor.save();
+
+        syncInMemoryModel(targetProject, coords, targetManaged, false);
+    }
+
+    /**
+     * Syncs the in-memory Maven model after POM modifications.
+     */
+    private void syncInMemoryModel(
+            MavenProject targetProject, DependencyEntry coords, boolean targetManaged, boolean versionless) {
+        Model model = targetProject.getModel();
+        if (model != null) {
+            Dependency modelDep = new Dependency();
+            modelDep.setGroupId(coords.getGroupId());
+            modelDep.setArtifactId(coords.getArtifactId());
+            if (!versionless && coords.getVersion() != null) {
+                modelDep.setVersion(coords.getVersion());
+            }
+            if (coords.getScope() != null && !coords.getScope().isEmpty()) {
+                modelDep.setScope(coords.getScope());
+            }
+            if (coords.getType() != null && !coords.getType().isEmpty()) {
+                modelDep.setType(coords.getType());
+            }
+            if (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) {
+                modelDep.setClassifier(coords.getClassifier());
+            }
+            if (coords.getOptional() != null) {
+                modelDep.setOptional(String.valueOf(coords.getOptional()));
+            }
+            if (targetManaged) {
+                DependencyManagement dm = model.getDependencyManagement();
+                if (dm == null) {
+                    dm = new DependencyManagement();
+                    model.setDependencyManagement(dm);
+                }
+                dm.addDependency(modelDep);
             } else {
-                editor.addDependency(coords, targetManaged);
-                getLog().info("Added dependency " + coords + " to " + pomFile.getName());
+                model.addDependency(modelDep);
             }
-
-            editor.save();
-
-            // Sync in-memory model so chained goals see the change
-            Model model = targetProject.getModel();
-            if (model != null) {
-                Dependency modelDep = new Dependency();
-                modelDep.setGroupId(coords.getGroupId());
-                modelDep.setArtifactId(coords.getArtifactId());
-                if (coords.getVersion() != null) {
-                    modelDep.setVersion(coords.getVersion());
-                }
-                if (coords.getScope() != null && !coords.getScope().isEmpty()) {
-                    modelDep.setScope(coords.getScope());
-                }
-                if (coords.getType() != null && !coords.getType().isEmpty()) {
-                    modelDep.setType(coords.getType());
-                }
-                if (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) {
-                    modelDep.setClassifier(coords.getClassifier());
-                }
-                if (coords.getOptional() != null) {
-                    modelDep.setOptional(String.valueOf(coords.getOptional()));
-                }
-                if (targetManaged) {
-                    DependencyManagement dm = model.getDependencyManagement();
-                    if (dm == null) {
-                        dm = new DependencyManagement();
-                        model.setDependencyManagement(dm);
-                    }
-                    dm.addDependency(modelDep);
-                } else {
-                    model.addDependency(modelDep);
-                }
-            }
-        } catch (IOException e) {
-            throw new MojoExecutionException("Failed to modify POM file: " + pomFile, e);
         }
     }
 
@@ -267,5 +447,154 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             current = current.getParent();
         }
         return null;
+    }
+
+    // --- Convention detection ---
+
+    /**
+     * Detects the project's dependency management conventions by analyzing existing dependencies.
+     */
+    private Conventions detectConventions(MavenProject project) throws MojoExecutionException {
+        Conventions conv = new Conventions();
+
+        File pomFile = project.getFile();
+        if (pomFile == null) {
+            return conv;
+        }
+
+        try {
+            PomEditor editor = PomEditor.load(pomFile);
+
+            // Analyze managed dependency usage: count deps with/without version
+            long totalDeps = editor.getDependencyCount(false);
+            List<String> depVersions = editor.getDependencyVersions(false);
+            long depsWithVersion = depVersions.size();
+
+            if (totalDeps > 0 && depsWithVersion < totalDeps / 2.0) {
+                // Majority of deps are version-less → use managed deps
+                conv.useManaged = true;
+                getLog().debug("Convention detected: majority of dependencies are version-less (useManaged=true)");
+            }
+
+            // Find the POM that has <dependencyManagement>
+            conv.managedPomFile = findManagedDepsPom(project);
+
+            // Analyze property patterns from child POM versions
+            List<String> allVersions = new java.util.ArrayList<>(depVersions);
+            allVersions.addAll(editor.getDependencyVersions(true));
+
+            // If child has mostly version-less deps, also scan the parent POM for property patterns
+            if (conv.managedPomFile != null
+                    && !conv.managedPomFile.getAbsolutePath().equals(pomFile.getAbsolutePath())) {
+                PomEditor parentEditor = PomEditor.load(conv.managedPomFile);
+                allVersions.addAll(parentEditor.getDependencyVersions(true));
+                allVersions.addAll(parentEditor.getDependencyVersions(false));
+            }
+
+            // Count property references vs literal versions
+            long propertyRefs = allVersions.stream()
+                    .filter(v -> v.startsWith("${") && v.endsWith("}"))
+                    .count();
+            if (!allVersions.isEmpty() && propertyRefs > allVersions.size() / 2.0) {
+                conv.useProperty = true;
+                getLog().debug("Convention detected: majority of versions use property references (useProperty=true)");
+
+                // Detect property naming pattern
+                conv.pattern = detectPropertyPattern(allVersions);
+                if (conv.pattern != null) {
+                    getLog().debug("Convention detected: property naming pattern=" + conv.pattern);
+                }
+            }
+        } catch (IOException e) {
+            getLog().debug("Could not analyze POM conventions: " + e.getMessage());
+        }
+
+        return conv;
+    }
+
+    /**
+     * Walks the parent chain to find the nearest POM that declares {@code <dependencyManagement>}.
+     */
+    private File findManagedDepsPom(MavenProject project) {
+        MavenProject current = project.getParent();
+        while (current != null) {
+            File pf = current.getFile();
+            if (pf != null) {
+                DependencyManagement dm = current.getOriginalModel().getDependencyManagement();
+                if (dm != null
+                        && dm.getDependencies() != null
+                        && !dm.getDependencies().isEmpty()) {
+                    return pf;
+                }
+            }
+            current = current.getParent();
+        }
+        return null;
+    }
+
+    private static final Pattern PROPERTY_REF = Pattern.compile("^\\$\\{(.+)}$");
+
+    /**
+     * Analyzes property reference names to detect the naming convention.
+     * Returns one of: "suffix:.version", "suffix:-version", "suffix:Version",
+     * "prefix:version.", or null if no clear pattern is found.
+     */
+    private String detectPropertyPattern(List<String> versions) {
+        Map<String, Integer> patternCounts = new HashMap<>();
+        for (String version : versions) {
+            Matcher m = PROPERTY_REF.matcher(version);
+            if (m.matches()) {
+                String propName = m.group(1);
+                if (propName.endsWith(".version")) {
+                    patternCounts.merge("suffix:.version", 1, Integer::sum);
+                } else if (propName.endsWith("-version")) {
+                    patternCounts.merge("suffix:-version", 1, Integer::sum);
+                } else if (propName.endsWith("Version")) {
+                    patternCounts.merge("suffix:Version", 1, Integer::sum);
+                } else if (propName.startsWith("version.")) {
+                    patternCounts.merge("prefix:version.", 1, Integer::sum);
+                }
+            }
+        }
+        if (patternCounts.isEmpty()) {
+            return null;
+        }
+        // Return the most common pattern
+        return patternCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+    }
+
+    /**
+     * Holds the detected conventions for the project.
+     */
+    static class Conventions {
+        boolean useManaged;
+        boolean useProperty;
+        String pattern;
+        File managedPomFile;
+
+        /**
+         * Derives a property name for the given dependency based on the detected pattern.
+         */
+        String derivePropertyName(DependencyEntry coords) {
+            String artifactId = coords.getArtifactId();
+            if (pattern == null) {
+                return artifactId + ".version";
+            }
+            switch (pattern) {
+                case "suffix:.version":
+                    return artifactId + ".version";
+                case "suffix:-version":
+                    return artifactId + "-version";
+                case "suffix:Version":
+                    return artifactId + "Version";
+                case "prefix:version.":
+                    return "version." + artifactId;
+                default:
+                    return artifactId + ".version";
+            }
+        }
     }
 }

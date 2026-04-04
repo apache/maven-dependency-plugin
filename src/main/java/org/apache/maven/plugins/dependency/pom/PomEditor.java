@@ -24,6 +24,8 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -239,6 +241,58 @@ public class PomEditor {
                         .findFirst()
                         .orElse(null))
                 .orElse(null);
+    }
+
+    /**
+     * Adds or updates a property in the {@code <properties>} section.
+     *
+     * @param name  the property name
+     * @param value the property value
+     */
+    public void addProperty(String name, String value) {
+        Element properties = getOrCreateChild(editor.root(), "properties", true);
+        Optional<Element> existing = properties.childElement(name);
+        if (existing.isPresent()) {
+            editor.setTextContent(existing.get(), value);
+        } else {
+            editor.addElement(properties, name, value);
+        }
+    }
+
+    /**
+     * Returns the version strings from all {@code <dependency>} elements in the given section.
+     * Only returns dependencies that have an explicit {@code <version>} child element.
+     *
+     * @param managed if {@code true}, scan {@code <dependencyManagement><dependencies>}
+     * @return a list of version strings (raw text, may include {@code ${...}} references)
+     */
+    public List<String> getDependencyVersions(boolean managed) {
+        List<String> versions = new ArrayList<>();
+        Element depsElement = getDependenciesElement(managed, false);
+        if (depsElement == null) {
+            return versions;
+        }
+        dependencyStream(depsElement).forEach(dep -> {
+            String version = childText(dep, "version");
+            if (version != null && !version.isEmpty()) {
+                versions.add(version);
+            }
+        });
+        return versions;
+    }
+
+    /**
+     * Returns the total count of {@code <dependency>} elements in the given section.
+     *
+     * @param managed if {@code true}, count in {@code <dependencyManagement><dependencies>}
+     * @return the number of dependency elements
+     */
+    public long getDependencyCount(boolean managed) {
+        Element depsElement = getDependenciesElement(managed, false);
+        if (depsElement == null) {
+            return 0;
+        }
+        return dependencyStream(depsElement).count();
     }
 
     /**
