@@ -24,21 +24,26 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.dependency.pom.DependencyEntry;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -408,5 +413,169 @@ class AddDependencyMojoTest {
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<version>1.0</version>"), "version from gav should be used");
         assertTrue(result.contains("<scope>test</scope>"), "explicit -Dscope should override");
+    }
+
+    // --- Convention detection unit tests ---
+
+    @Nested
+    class DetectPropertyPatternTest {
+
+        @Test
+        void detectsDotVersionSuffix() {
+            List<String> versions = Arrays.asList("${guava.version}", "${junit.version}", "${slf4j.version}");
+            assertEquals(
+                    AddDependencyMojo.PropertyPattern.DOT_VERSION, AddDependencyMojo.detectPropertyPattern(versions));
+        }
+
+        @Test
+        void detectsDashVersionSuffix() {
+            List<String> versions = Arrays.asList("${guava-version}", "${junit-version}", "${slf4j-version}");
+            assertEquals(
+                    AddDependencyMojo.PropertyPattern.DASH_VERSION, AddDependencyMojo.detectPropertyPattern(versions));
+        }
+
+        @Test
+        void detectsCamelCaseVersionSuffix() {
+            List<String> versions = Arrays.asList("${guavaVersion}", "${junitVersion}", "${slf4jVersion}");
+            assertEquals(
+                    AddDependencyMojo.PropertyPattern.CAMEL_VERSION, AddDependencyMojo.detectPropertyPattern(versions));
+        }
+
+        @Test
+        void detectsVersionDotPrefix() {
+            List<String> versions = Arrays.asList("${version.guava}", "${version.junit}", "${version.slf4j}");
+            assertEquals(
+                    AddDependencyMojo.PropertyPattern.VERSION_PREFIX,
+                    AddDependencyMojo.detectPropertyPattern(versions));
+        }
+
+        @Test
+        void returnsNullForEmptyList() {
+            assertNull(AddDependencyMojo.detectPropertyPattern(Collections.emptyList()));
+        }
+
+        @Test
+        void returnsNullForLiteralVersionsOnly() {
+            List<String> versions = Arrays.asList("1.0.0", "2.3.4", "5.0");
+            assertNull(AddDependencyMojo.detectPropertyPattern(versions));
+        }
+
+        @Test
+        void returnsNullForUnrecognizedPropertyPattern() {
+            List<String> versions = Arrays.asList("${custom_ver}", "${another_ver}");
+            assertNull(AddDependencyMojo.detectPropertyPattern(versions));
+        }
+
+        @Test
+        void majorityWinsWithMixedPatterns() {
+            List<String> versions =
+                    Arrays.asList("${guava.version}", "${junit.version}", "${slf4j.version}", "${commons-version}");
+            assertEquals(
+                    AddDependencyMojo.PropertyPattern.DOT_VERSION, AddDependencyMojo.detectPropertyPattern(versions));
+        }
+
+        @Test
+        void handlesSinglePropertyRef() {
+            List<String> versions = Collections.singletonList("${guava-version}");
+            assertEquals(
+                    AddDependencyMojo.PropertyPattern.DASH_VERSION, AddDependencyMojo.detectPropertyPattern(versions));
+        }
+
+        @Test
+        void ignoresNonPropertyVersionsInMix() {
+            List<String> versions = Arrays.asList("1.0.0", "${guava.version}", "2.3.4", "${junit.version}");
+            assertEquals(
+                    AddDependencyMojo.PropertyPattern.DOT_VERSION, AddDependencyMojo.detectPropertyPattern(versions));
+        }
+    }
+
+    @Nested
+    class ConventionsTest {
+
+        @Test
+        void derivePropertyNameWithDotVersionPattern() {
+            AddDependencyMojo.Conventions conv = new AddDependencyMojo.Conventions();
+            conv.pattern = AddDependencyMojo.PropertyPattern.DOT_VERSION;
+            DependencyEntry coords = new DependencyEntry("com.google.guava", "guava");
+            assertEquals("guava.version", conv.derivePropertyName(coords));
+        }
+
+        @Test
+        void derivePropertyNameWithDashVersionPattern() {
+            AddDependencyMojo.Conventions conv = new AddDependencyMojo.Conventions();
+            conv.pattern = AddDependencyMojo.PropertyPattern.DASH_VERSION;
+            DependencyEntry coords = new DependencyEntry("com.google.guava", "guava");
+            assertEquals("guava-version", conv.derivePropertyName(coords));
+        }
+
+        @Test
+        void derivePropertyNameWithCamelVersionPattern() {
+            AddDependencyMojo.Conventions conv = new AddDependencyMojo.Conventions();
+            conv.pattern = AddDependencyMojo.PropertyPattern.CAMEL_VERSION;
+            DependencyEntry coords = new DependencyEntry("com.google.guava", "guava");
+            assertEquals("guavaVersion", conv.derivePropertyName(coords));
+        }
+
+        @Test
+        void derivePropertyNameWithVersionPrefixPattern() {
+            AddDependencyMojo.Conventions conv = new AddDependencyMojo.Conventions();
+            conv.pattern = AddDependencyMojo.PropertyPattern.VERSION_PREFIX;
+            DependencyEntry coords = new DependencyEntry("com.google.guava", "guava");
+            assertEquals("version.guava", conv.derivePropertyName(coords));
+        }
+
+        @Test
+        void derivePropertyNameDefaultsWhenPatternIsNull() {
+            AddDependencyMojo.Conventions conv = new AddDependencyMojo.Conventions();
+            conv.pattern = null;
+            DependencyEntry coords = new DependencyEntry("com.google.guava", "guava");
+            assertEquals("guava.version", conv.derivePropertyName(coords));
+        }
+
+        @Test
+        void defaultConventionsAreAllFalse() {
+            AddDependencyMojo.Conventions conv = new AddDependencyMojo.Conventions();
+            assertFalse(conv.useManaged);
+            assertFalse(conv.useProperty);
+            assertNull(conv.pattern);
+            assertNull(conv.managedPomFile);
+        }
+    }
+
+    @Nested
+    class PropertyPatternTest {
+
+        @Test
+        void dotVersionMatchesCorrectly() {
+            assertTrue(AddDependencyMojo.PropertyPattern.DOT_VERSION.matches("guava.version"));
+            assertFalse(AddDependencyMojo.PropertyPattern.DOT_VERSION.matches("guava-version"));
+            assertFalse(AddDependencyMojo.PropertyPattern.DOT_VERSION.matches("version.guava"));
+        }
+
+        @Test
+        void dashVersionMatchesCorrectly() {
+            assertTrue(AddDependencyMojo.PropertyPattern.DASH_VERSION.matches("guava-version"));
+            assertFalse(AddDependencyMojo.PropertyPattern.DASH_VERSION.matches("guava.version"));
+        }
+
+        @Test
+        void camelVersionMatchesCorrectly() {
+            assertTrue(AddDependencyMojo.PropertyPattern.CAMEL_VERSION.matches("guavaVersion"));
+            assertFalse(AddDependencyMojo.PropertyPattern.CAMEL_VERSION.matches("guava.version"));
+        }
+
+        @Test
+        void versionPrefixMatchesCorrectly() {
+            assertTrue(AddDependencyMojo.PropertyPattern.VERSION_PREFIX.matches("version.guava"));
+            assertFalse(AddDependencyMojo.PropertyPattern.VERSION_PREFIX.matches("guava.version"));
+        }
+
+        @Test
+        void toPropertyNameProducesExpectedResults() {
+            assertEquals("guava.version", AddDependencyMojo.PropertyPattern.DOT_VERSION.toPropertyName("guava"));
+            assertEquals("guava-version", AddDependencyMojo.PropertyPattern.DASH_VERSION.toPropertyName("guava"));
+            assertEquals("guavaVersion", AddDependencyMojo.PropertyPattern.CAMEL_VERSION.toPropertyName("guava"));
+            assertEquals("version.guava", AddDependencyMojo.PropertyPattern.VERSION_PREFIX.toPropertyName("guava"));
+        }
     }
 }

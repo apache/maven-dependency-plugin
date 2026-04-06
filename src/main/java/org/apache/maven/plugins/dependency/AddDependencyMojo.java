@@ -281,6 +281,10 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
                     + " already exists in " + childPomFile.getName()
                     + ". Remove it first with dependency:remove, then re-add.");
+        } else if (existsInResolvedModel(getProject(), coords, false)) {
+            throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
+                    + " already exists in the POM (using property references). "
+                    + "Cannot safely add or update automatically. Please edit the POM manually.");
         }
 
         DependencyEntry childCoords = new DependencyEntry(coords.getGroupId(), coords.getArtifactId());
@@ -535,31 +539,85 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     private static final Pattern PROPERTY_REF = Pattern.compile("^\\$\\{(.+)}$");
 
     /**
-     * Analyzes property reference names to detect the naming convention.
-     * Returns one of: "suffix:.version", "suffix:-version", "suffix:Version",
-     * "prefix:version.", or null if no clear pattern is found.
+     * Property naming conventions detected in existing POM files.
      */
-    private String detectPropertyPattern(List<String> versions) {
-        Map<String, Integer> patternCounts = new HashMap<>();
+    enum PropertyPattern {
+        /** {@code artifactId.version} (e.g., {@code guava.version}) */
+        DOT_VERSION {
+            @Override
+            String toPropertyName(String artifactId) {
+                return artifactId + ".version";
+            }
+
+            @Override
+            boolean matches(String propName) {
+                return propName.endsWith(".version");
+            }
+        },
+        /** {@code artifactId-version} (e.g., {@code guava-version}) */
+        DASH_VERSION {
+            @Override
+            String toPropertyName(String artifactId) {
+                return artifactId + "-version";
+            }
+
+            @Override
+            boolean matches(String propName) {
+                return propName.endsWith("-version");
+            }
+        },
+        /** {@code artifactIdVersion} (camelCase, e.g., {@code guavaVersion}) */
+        CAMEL_VERSION {
+            @Override
+            String toPropertyName(String artifactId) {
+                return artifactId + "Version";
+            }
+
+            @Override
+            boolean matches(String propName) {
+                return propName.endsWith("Version");
+            }
+        },
+        /** {@code version.artifactId} (prefix, e.g., {@code version.guava}) */
+        VERSION_PREFIX {
+            @Override
+            String toPropertyName(String artifactId) {
+                return "version." + artifactId;
+            }
+
+            @Override
+            boolean matches(String propName) {
+                return propName.startsWith("version.");
+            }
+        };
+
+        abstract String toPropertyName(String artifactId);
+
+        abstract boolean matches(String propName);
+    }
+
+    /**
+     * Analyzes property reference names to detect the naming convention.
+     *
+     * @return the most common {@link PropertyPattern}, or {@code null} if no clear pattern is found
+     */
+    static PropertyPattern detectPropertyPattern(List<String> versions) {
+        Map<PropertyPattern, Integer> patternCounts = new HashMap<>();
         for (String version : versions) {
             Matcher m = PROPERTY_REF.matcher(version);
             if (m.matches()) {
                 String propName = m.group(1);
-                if (propName.endsWith(".version")) {
-                    patternCounts.merge("suffix:.version", 1, Integer::sum);
-                } else if (propName.endsWith("-version")) {
-                    patternCounts.merge("suffix:-version", 1, Integer::sum);
-                } else if (propName.endsWith("Version")) {
-                    patternCounts.merge("suffix:Version", 1, Integer::sum);
-                } else if (propName.startsWith("version.")) {
-                    patternCounts.merge("prefix:version.", 1, Integer::sum);
+                for (PropertyPattern pp : PropertyPattern.values()) {
+                    if (pp.matches(propName)) {
+                        patternCounts.merge(pp, 1, Integer::sum);
+                        break;
+                    }
                 }
             }
         }
         if (patternCounts.isEmpty()) {
             return null;
         }
-        // Return the most common pattern
         return patternCounts.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
@@ -572,29 +630,15 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     static class Conventions {
         boolean useManaged;
         boolean useProperty;
-        String pattern;
+        PropertyPattern pattern;
         File managedPomFile;
 
         /**
          * Derives a property name for the given dependency based on the detected pattern.
          */
         String derivePropertyName(DependencyEntry coords) {
-            String artifactId = coords.getArtifactId();
-            if (pattern == null) {
-                return artifactId + ".version";
-            }
-            switch (pattern) {
-                case "suffix:.version":
-                    return artifactId + ".version";
-                case "suffix:-version":
-                    return artifactId + "-version";
-                case "suffix:Version":
-                    return artifactId + "Version";
-                case "prefix:version.":
-                    return "version." + artifactId;
-                default:
-                    return artifactId + ".version";
-            }
+            PropertyPattern effective = pattern != null ? pattern : PropertyPattern.DOT_VERSION;
+            return effective.toPropertyName(coords.getArtifactId());
         }
     }
 }
