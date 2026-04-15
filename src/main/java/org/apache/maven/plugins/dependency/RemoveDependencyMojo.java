@@ -22,8 +22,18 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Locale;
 
+import eu.maveniverse.domtrip.Document;
+import eu.maveniverse.domtrip.Element;
+import eu.maveniverse.domtrip.maven.Coordinates;
+import eu.maveniverse.domtrip.maven.PomEditor;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
@@ -34,7 +44,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.pom.DependencyEntry;
-import org.apache.maven.plugins.dependency.pom.PomEditor;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.XmlStreamReader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -116,19 +125,13 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
         }
 
         try {
-            PomEditor editor = PomEditor.load(pomFile);
-            if (profile != null && !profile.isEmpty()) {
-                if (editor.findProfile(profile) == null) {
-                    throw new MojoFailureException("Profile '" + profile + "' not found in " + pomFile.getName() + ".");
-                }
-                editor.setProfileId(profile);
-            }
-            boolean removed = editor.removeDependency(
-                    coords.getGroupId(),
-                    coords.getArtifactId(),
-                    coords.getType(),
-                    coords.getClassifier(),
-                    targetManaged);
+            PomEditor editor = loadPomEditor(pomFile);
+            PomEditor.Dependencies dependencies = dependenciesFor(editor, pomFile);
+            Coordinates coordinates = Coordinates.of(
+                    coords.getGroupId(), coords.getArtifactId(), null, coords.getClassifier(), coords.getType());
+            boolean removed = targetManaged
+                    ? dependencies.deleteManagedDependency(coordinates)
+                    : dependencies.deleteDependency(coordinates);
 
             if (!removed) {
                 // Cross-reference with resolved model to detect property-interpolated coords
@@ -144,7 +147,7 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
                         + " not found in " + section + ".");
             }
 
-            editor.save();
+            savePomEditor(editor, pomFile);
 
             // Sync in-memory model so chained goals see the change
             Model model = targetProject.getModel();
@@ -177,6 +180,55 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
                     + pomFile.getName());
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to modify POM file: " + pomFile, e);
+        }
+    }
+
+    private PomEditor.Dependencies dependenciesFor(PomEditor editor, File pomFile) throws MojoFailureException {
+        PomEditor.Dependencies dependencies = editor.dependencies();
+        if (profile == null || profile.isEmpty()) {
+            return dependencies;
+        }
+        Element profileElement = editor.profiles().findProfile(profile);
+        if (profileElement == null) {
+            throw new MojoFailureException("Profile '" + profile + "' not found in " + pomFile.getName() + ".");
+        }
+        return dependencies.forProfile(profileElement);
+    }
+
+    private static PomEditor loadPomEditor(File pomFile) throws IOException {
+        try {
+            String content = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+            String upper = content.toUpperCase(Locale.ROOT);
+            if (upper.contains("<!DOCTYPE") || upper.contains("<!ENTITY")) {
+                throw new IOException("DOCTYPE/ENTITY declarations are not allowed in POM files (security risk)");
+            }
+
+            PomEditor editor = new PomEditor(Document.of(pomFile.toPath()));
+            String rootName = editor.root().name();
+            if (!"project".equals(rootName)) {
+                throw new IOException(
+                        "Not a valid POM file: expected <project> root element but found <" + rootName + ">");
+            }
+            return editor;
+        } catch (RuntimeException e) {
+            throw new IOException("Failed to parse POM file: " + pomFile, e);
+        }
+    }
+
+    private static void savePomEditor(PomEditor editor, File pomFile) throws IOException {
+        Path target = pomFile.toPath();
+        File tempFile = File.createTempFile("pom", ".xml.tmp", pomFile.getParentFile());
+        boolean success = false;
+        try {
+            try (OutputStream os = Files.newOutputStream(tempFile.toPath())) {
+                editor.document().toXml(os);
+            }
+            Files.move(tempFile.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
+            success = true;
+        } finally {
+            if (!success) {
+                Files.deleteIfExists(tempFile.toPath());
+            }
         }
     }
 

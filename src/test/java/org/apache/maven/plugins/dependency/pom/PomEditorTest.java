@@ -20,10 +20,17 @@ package org.apache.maven.plugins.dependency.pom;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Locale;
 
+import eu.maveniverse.domtrip.Document;
 import eu.maveniverse.domtrip.Element;
+import eu.maveniverse.domtrip.maven.Coordinates;
+import eu.maveniverse.domtrip.maven.PomEditor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -45,6 +52,130 @@ class PomEditorTest {
         return pomFile;
     }
 
+    private static PomEditor loadPomEditor(File pomFile) throws IOException {
+        try {
+            String content = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+            String upper = content.toUpperCase(Locale.ROOT);
+            if (upper.contains("<!DOCTYPE") || upper.contains("<!ENTITY")) {
+                throw new IOException("DOCTYPE/ENTITY declarations are not allowed in POM files (security risk)");
+            }
+
+            PomEditor editor = new PomEditor(Document.of(pomFile.toPath()));
+            String rootName = editor.root().name();
+            if (!"project".equals(rootName)) {
+                throw new IOException(
+                        "Not a valid POM file: expected <project> root element but found <" + rootName + ">");
+            }
+            return editor;
+        } catch (RuntimeException e) {
+            throw new IOException("Failed to parse POM file: " + pomFile, e);
+        }
+    }
+
+    private static void savePomEditor(PomEditor editor, File pomFile) throws IOException {
+        Path target = pomFile.toPath();
+        File tempFile = File.createTempFile("pom", ".xml.tmp", pomFile.getParentFile());
+        boolean success = false;
+        try {
+            try (OutputStream os = Files.newOutputStream(tempFile.toPath())) {
+                editor.document().toXml(os);
+            }
+            Files.move(tempFile.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
+            success = true;
+        } finally {
+            if (!success) {
+                Files.deleteIfExists(tempFile.toPath());
+            }
+        }
+    }
+
+    private static void addDependency(PomEditor editor, String profileId, DependencyEntry coords, boolean managed) {
+        PomEditor.Dependencies dependencies = profileId == null
+                ? editor.dependencies()
+                : editor.dependencies().forProfile(profileId);
+        Coordinates coordinates = Coordinates.of(
+                coords.getGroupId(),
+                coords.getArtifactId(),
+                coords.getVersion(),
+                coords.getClassifier(),
+                coords.getType());
+        if (managed) {
+            dependencies.updateManagedDependency(true, coordinates);
+        } else {
+            dependencies.updateDependency(true, coordinates);
+        }
+        Element dependency = findDependency(
+                editor,
+                profileId,
+                coords.getGroupId(),
+                coords.getArtifactId(),
+                coords.getType(),
+                coords.getClassifier(),
+                managed);
+        if (dependency != null) {
+            if (coords.getScope() != null && !coords.getScope().isEmpty()) {
+                editor.updateOrCreateChildElement(dependency, "scope", coords.getScope());
+            }
+            if (coords.getOptional() != null && coords.getOptional()) {
+                editor.updateOrCreateChildElement(dependency, "optional", "true");
+            }
+        }
+    }
+
+    private static boolean removeDependency(
+            PomEditor editor,
+            String profileId,
+            String groupId,
+            String artifactId,
+            String type,
+            String classifier,
+            boolean managed) {
+        PomEditor.Dependencies dependencies = profileId == null
+                ? editor.dependencies()
+                : editor.dependencies().forProfile(profileId);
+        Coordinates coordinates = Coordinates.of(groupId, artifactId, null, classifier, type);
+        return managed ? dependencies.deleteManagedDependency(coordinates) : dependencies.deleteDependency(coordinates);
+    }
+
+    private static Element findDependency(
+            PomEditor editor,
+            String profileId,
+            String groupId,
+            String artifactId,
+            String type,
+            String classifier,
+            boolean managed) {
+        Element dependencies = getDependenciesElement(editor, profileId, managed);
+        if (dependencies == null) {
+            return null;
+        }
+        Coordinates coordinates = Coordinates.of(groupId, artifactId, null, classifier, type);
+        return dependencies
+                .childElements("dependency")
+                .filter(coordinates.predicateGATC())
+                .findFirst()
+                .orElse(null);
+    }
+
+    private static Element getDependenciesElement(PomEditor editor, String profileId, boolean managed) {
+        Element context = profileId == null ? editor.root() : editor.profiles().findProfile(profileId);
+        if (context == null) {
+            return null;
+        }
+        if (managed) {
+            Element depMgmt = editor.findChildElement(context, "dependencyManagement");
+            return depMgmt != null ? editor.findChildElement(depMgmt, "dependencies") : null;
+        }
+        return editor.findChildElement(context, "dependencies");
+    }
+
+    private static String childText(Element element, String name) {
+        return element.childElement(name)
+                .map(Element::textContent)
+                .map(String::trim)
+                .orElse(null);
+    }
+
     @Test
     void addDependencyToEmptyProject() throws IOException {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -56,11 +187,11 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
         DependencyEntry coords = DependencyEntry.parse("com.google.adk:google-adk:1.0.0");
-        editor.addDependency(coords, false);
-        editor.save();
+        addDependency(editor, null, coords, false);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<dependencies>"), "Should contain <dependencies>");
@@ -87,12 +218,12 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
         DependencyEntry coords = DependencyEntry.parse("com.google.adk:google-adk:1.0.0");
         coords.setScope("test");
-        editor.addDependency(coords, false);
-        editor.save();
+        addDependency(editor, null, coords, false);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<groupId>com.google.adk</groupId>"), result);
@@ -112,11 +243,11 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
         DependencyEntry coords = DependencyEntry.parse("com.google.adk:google-adk:1.0.0");
-        editor.addDependency(coords, true);
-        editor.save();
+        addDependency(editor, null, coords, true);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<dependencyManagement>"), "Should contain <dependencyManagement>");
@@ -134,11 +265,11 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
         DependencyEntry coords = new DependencyEntry("com.google.adk", "google-adk");
-        editor.addDependency(coords, false);
-        editor.save();
+        addDependency(editor, null, coords, false);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<groupId>com.google.adk</groupId>"), result);
@@ -167,12 +298,12 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
-        Element found = editor.findDependency("junit", "junit", false);
+        Element found = findDependency(editor, null, "junit", "junit", null, null, false);
         assertNotNull(found, "Should find existing dependency");
 
-        Element notFound = editor.findDependency("com.example", "nonexistent", false);
+        Element notFound = findDependency(editor, null, "com.example", "nonexistent", null, null, false);
         assertNull(notFound, "Should not find nonexistent dependency");
     }
 
@@ -199,11 +330,11 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
-        boolean removed = editor.removeDependency("com.google.guava", "guava", false);
+        boolean removed = removeDependency(editor, null, "com.google.guava", "guava", null, null, false);
         assertTrue(removed, "Should successfully remove dependency");
-        editor.save();
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertFalse(result.contains("<groupId>com.google.guava</groupId>"), "Guava should be removed");
@@ -228,9 +359,9 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
-        boolean removed = editor.removeDependency("com.nonexistent", "lib", false);
+        boolean removed = removeDependency(editor, null, "com.nonexistent", "lib", null, null, false);
         assertFalse(removed, "Should return false for nonexistent dependency");
     }
 
@@ -253,11 +384,11 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
         DependencyEntry coords = DependencyEntry.parse("com.example:new-lib:1.0.0");
-        editor.addDependency(coords, false);
-        editor.save();
+        addDependency(editor, null, coords, false);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<!-- This is a comment -->"), "XML comment should be preserved");
@@ -274,13 +405,13 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
         DependencyEntry coords = DependencyEntry.parse("org.springframework.boot:spring-boot-dependencies:3.2.0");
         coords.setScope("import");
         coords.setType("pom");
-        editor.addDependency(coords, true);
-        editor.save();
+        addDependency(editor, null, coords, true);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<dependencyManagement>"), result);
@@ -309,16 +440,16 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
         // Should find existing dependency in namespaced POM
-        Element found = editor.findDependency("junit", "junit", false);
+        Element found = findDependency(editor, null, "junit", "junit", null, null, false);
         assertNotNull(found, "Should find dependency in namespaced POM");
 
         // Should add new dependency to namespaced POM
         DependencyEntry coords = DependencyEntry.parse("com.google.adk:google-adk:1.0.0");
-        editor.addDependency(coords, false);
-        editor.save();
+        addDependency(editor, null, coords, false);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<groupId>com.google.adk</groupId>"), result);
@@ -336,12 +467,12 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
         DependencyEntry coords = DependencyEntry.parse("com.example:optional-lib:1.0.0");
         coords.setOptional(true);
-        editor.addDependency(coords, false);
-        editor.save();
+        addDependency(editor, null, coords, false);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<optional>true</optional>"), "Should contain <optional>true</optional>");
@@ -357,11 +488,11 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
         DependencyEntry coords = DependencyEntry.parse("com.example:lib:1.0.0");
-        editor.addDependency(coords, false);
-        editor.save();
+        addDependency(editor, null, coords, false);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertFalse(result.startsWith("<?xml"), "Should not add XML declaration if original didn't have one");
@@ -392,11 +523,11 @@ class PomEditorTest {
                 + "</project>\n";
 
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
-        boolean removed = editor.removeDependency("com.google.guava", "guava", false);
+        boolean removed = removeDependency(editor, null, "com.google.guava", "guava", null, null, false);
         assertTrue(removed);
-        editor.save();
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertFalse(result.contains("com.google.guava"), "Guava should be removed");
@@ -423,10 +554,10 @@ class PomEditorTest {
         File pomFile = new File(tempDir, "bom-pom.xml");
         Files.write(pomFile.toPath(), withBom);
 
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
         DependencyEntry coords = DependencyEntry.parse("com.example:lib:1.0.0");
-        editor.addDependency(coords, false);
-        editor.save();
+        addDependency(editor, null, coords, false);
+        savePomEditor(editor, pomFile);
 
         byte[] result = Files.readAllBytes(pomFile.toPath());
         assertTrue(
@@ -454,20 +585,20 @@ class PomEditorTest {
                 + "  </dependencies>\n"
                 + "</project>\n";
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
         // Default (no type/classifier) matches the first (jar) entry
-        Element defaultMatch = editor.findDependency("junit", "junit", null, null, false);
+        Element defaultMatch = findDependency(editor, null, "junit", "junit", null, null, false);
         assertNotNull(defaultMatch);
-        assertNull(PomEditor.getChildText(defaultMatch, "type"));
+        assertNull(childText(defaultMatch, "type"));
 
         // Explicit test-jar type matches the second entry
-        Element testJarMatch = editor.findDependency("junit", "junit", "test-jar", null, false);
+        Element testJarMatch = findDependency(editor, null, "junit", "junit", "test-jar", null, false);
         assertNotNull(testJarMatch);
-        assertEquals("test-jar", PomEditor.getChildText(testJarMatch, "type"));
+        assertEquals("test-jar", childText(testJarMatch, "type"));
 
         // Non-existent classifier returns null
-        Element noMatch = editor.findDependency("junit", "junit", null, "sources", false);
+        Element noMatch = findDependency(editor, null, "junit", "junit", null, "sources", false);
         assertNull(noMatch);
     }
 
@@ -490,11 +621,11 @@ class PomEditorTest {
                 + "  </dependencies>\n"
                 + "</project>\n";
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
         // Remove only the test-jar variant
-        assertTrue(editor.removeDependency("junit", "junit", "test-jar", null, false));
-        editor.save();
+        assertTrue(removeDependency(editor, null, "junit", "junit", "test-jar", null, false));
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         // The default jar variant should still be there
@@ -521,17 +652,17 @@ class PomEditorTest {
                 + "  </dependencies>\n"
                 + "</project>\n";
         File pomFile = createTempPom(pom);
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
 
         // Match by classifier
-        Element sourcesMatch = editor.findDependency("com.example", "lib", null, "sources", false);
+        Element sourcesMatch = findDependency(editor, null, "com.example", "lib", null, "sources", false);
         assertNotNull(sourcesMatch);
-        assertEquals("sources", PomEditor.getChildText(sourcesMatch, "classifier"));
+        assertEquals("sources", childText(sourcesMatch, "classifier"));
 
         // Default (no classifier) matches the one without classifier
-        Element defaultMatch = editor.findDependency("com.example", "lib", null, null, false);
+        Element defaultMatch = findDependency(editor, null, "com.example", "lib", null, null, false);
         assertNotNull(defaultMatch);
-        assertNull(PomEditor.getChildText(defaultMatch, "classifier"));
+        assertNull(childText(defaultMatch, "classifier"));
     }
 
     @Test
@@ -541,7 +672,7 @@ class PomEditorTest {
                 + "  <localRepository>/tmp/repo</localRepository>\n"
                 + "</settings>\n";
         File pomFile = createTempPom(xml);
-        IOException ex = assertThrows(IOException.class, () -> PomEditor.load(pomFile));
+        IOException ex = assertThrows(IOException.class, () -> loadPomEditor(pomFile));
         assertTrue(ex.getMessage().contains("<settings>"));
     }
 
@@ -555,7 +686,7 @@ class PomEditorTest {
                 + "  <groupId>&xxe;</groupId>\n"
                 + "</project>\n";
         File pomFile = createTempPom(xml);
-        assertThrows(IOException.class, () -> PomEditor.load(pomFile));
+        assertThrows(IOException.class, () -> loadPomEditor(pomFile));
     }
 
     @Test
@@ -568,7 +699,7 @@ class PomEditorTest {
                 + "  <groupId>&xxe;</groupId>\n"
                 + "</project>\n";
         File pomFile = createTempPom(xml);
-        assertThrows(IOException.class, () -> PomEditor.load(pomFile));
+        assertThrows(IOException.class, () -> loadPomEditor(pomFile));
     }
 
     @Test
@@ -587,11 +718,11 @@ class PomEditorTest {
         File pomFile = new File(tempDir, "pom.xml");
         Files.write(pomFile.toPath(), bomPrefixed);
 
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
         DependencyEntry coords = new DependencyEntry("junit", "junit");
         coords.setVersion("4.13");
-        editor.addDependency(coords, false);
-        editor.save();
+        addDependency(editor, null, coords, false);
+        savePomEditor(editor, pomFile);
 
         byte[] resultBytes = Files.readAllBytes(pomFile.toPath());
         // BOM should still be present
@@ -610,14 +741,14 @@ class PomEditorTest {
         File pomFile = new File(tempDir, "pom.xml");
         Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
 
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
         DependencyEntry coords = new DependencyEntry("com.example", "lib");
         coords.setVersion("1.0");
         coords.setScope(""); // empty = NONE sentinel, should not create element
         coords.setType(""); // same
         coords.setClassifier(""); // same
-        editor.addDependency(coords, false);
-        editor.save();
+        addDependency(editor, null, coords, false);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<version>1.0</version>"), "version should be present");
@@ -645,13 +776,12 @@ class PomEditorTest {
         File pomFile = new File(tempDir, "pom.xml");
         Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
 
-        PomEditor editor = PomEditor.load(pomFile);
-        editor.setProfileId("test-profile");
+        PomEditor editor = loadPomEditor(pomFile);
         DependencyEntry coords = new DependencyEntry("com.example", "test-lib");
         coords.setVersion("1.0");
         coords.setScope("test");
-        editor.addDependency(coords, false);
-        editor.save();
+        addDependency(editor, "test-profile", coords, false);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<id>test-profile</id>"), "profile id should exist");
@@ -680,12 +810,11 @@ class PomEditorTest {
         File pomFile = new File(tempDir, "pom.xml");
         Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
 
-        PomEditor editor = PomEditor.load(pomFile);
-        editor.setProfileId("dev");
+        PomEditor editor = loadPomEditor(pomFile);
         DependencyEntry coords = new DependencyEntry("com.example", "new-lib");
         coords.setVersion("2.0");
-        editor.addDependency(coords, false);
-        editor.save();
+        addDependency(editor, "dev", coords, false);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<groupId>existing</groupId>"), "existing profile dep should remain");
@@ -721,10 +850,9 @@ class PomEditorTest {
         File pomFile = new File(tempDir, "pom.xml");
         Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
 
-        PomEditor editor = PomEditor.load(pomFile);
-        editor.setProfileId("dev");
-        boolean removed = editor.removeDependency("com.example", "profile-lib", false);
-        editor.save();
+        PomEditor editor = loadPomEditor(pomFile);
+        boolean removed = removeDependency(editor, "dev", "com.example", "profile-lib", null, null, false);
+        savePomEditor(editor, pomFile);
 
         assertTrue(removed, "should find and remove the profile dependency");
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
@@ -751,9 +879,8 @@ class PomEditorTest {
         File pomFile = new File(tempDir, "pom.xml");
         Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
 
-        PomEditor editor = PomEditor.load(pomFile);
-        editor.setProfileId("dev");
-        Element found = editor.findDependency("com.example", "top-level", false);
+        PomEditor editor = loadPomEditor(pomFile);
+        Element found = findDependency(editor, "dev", "com.example", "top-level", null, null, false);
         assertNull(found, "should not find top-level dep when targeting a profile");
     }
 
@@ -770,9 +897,9 @@ class PomEditorTest {
         File pomFile = new File(tempDir, "pom.xml");
         Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
 
-        PomEditor editor = PomEditor.load(pomFile);
-        assertNull(editor.findProfile("nonexistent"), "should return null for non-existent profile");
-        assertNotNull(editor.findProfile("dev"), "should find existing profile");
+        PomEditor editor = loadPomEditor(pomFile);
+        assertNull(editor.profiles().findProfile("nonexistent"), "should return null for non-existent profile");
+        assertNotNull(editor.profiles().findProfile("dev"), "should find existing profile");
     }
 
     @Test
@@ -782,8 +909,8 @@ class PomEditorTest {
         File pomFile = new File(tempDir, "pom.xml");
         Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
 
-        PomEditor editor = PomEditor.load(pomFile);
-        assertNull(editor.findProfile("any"), "should return null when no profiles section exists");
+        PomEditor editor = loadPomEditor(pomFile);
+        assertNull(editor.profiles().findProfile("any"), "should return null when no profiles section exists");
     }
 
     @Test
@@ -799,12 +926,11 @@ class PomEditorTest {
         File pomFile = new File(tempDir, "pom.xml");
         Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
 
-        PomEditor editor = PomEditor.load(pomFile);
-        editor.setProfileId("dev");
+        PomEditor editor = loadPomEditor(pomFile);
         DependencyEntry coords = new DependencyEntry("com.example", "lib");
         coords.setVersion("1.0");
-        editor.addDependency(coords, true);
-        editor.save();
+        addDependency(editor, "dev", coords, true);
+        savePomEditor(editor, pomFile);
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<dependencyManagement>"), "dependencyManagement should be created in profile");
@@ -821,12 +947,12 @@ class PomEditorTest {
         File pomFile = new File(tempDir, "pom.xml");
         Files.write(pomFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
 
-        PomEditor editor = PomEditor.load(pomFile);
+        PomEditor editor = loadPomEditor(pomFile);
         assertFalse(
-                editor.removeDependency("com.example", "lib", false),
+                removeDependency(editor, null, "com.example", "lib", null, null, false),
                 "should return false when no dependencies section exists");
         assertFalse(
-                editor.removeDependency("com.example", "lib", true),
+                removeDependency(editor, null, "com.example", "lib", null, null, true),
                 "should return false when no dependencyManagement section exists");
     }
 

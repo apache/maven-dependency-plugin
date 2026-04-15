@@ -22,13 +22,23 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import eu.maveniverse.domtrip.Document;
 import eu.maveniverse.domtrip.Element;
+import eu.maveniverse.domtrip.maven.Coordinates;
+import eu.maveniverse.domtrip.maven.PomEditor;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
@@ -38,7 +48,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.pom.DependencyEntry;
-import org.apache.maven.plugins.dependency.pom.PomEditor;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -236,9 +245,15 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
             String effectivePropertyName)
             throws IOException, MojoFailureException {
         // 1. Modify parent POM: add property + managed dependency
-        PomEditor parentEditor = PomEditor.load(parentPomFile);
-        Element existingManaged = parentEditor.findDependency(
-                coords.getGroupId(), coords.getArtifactId(), coords.getType(), coords.getClassifier(), true);
+        PomEditor parentEditor = loadPomEditor(parentPomFile);
+        Element existingManaged = findDependency(
+                parentEditor,
+                null,
+                coords.getGroupId(),
+                coords.getArtifactId(),
+                coords.getType(),
+                coords.getClassifier(),
+                true);
         if (existingManaged != null) {
             throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
                     + " already exists in " + parentPomFile.getName() + " <dependencyManagement>."
@@ -247,7 +262,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
 
         String versionRef = coords.getVersion();
         if (effectiveUseProperty && effectivePropertyName != null) {
-            parentEditor.addProperty(effectivePropertyName, coords.getVersion());
+            parentEditor.properties().updateProperty(true, effectivePropertyName, coords.getVersion());
             versionRef = "${" + effectivePropertyName + "}";
             getLog().info("Added property " + effectivePropertyName + "=" + coords.getVersion() + " to "
                     + parentPomFile.getName());
@@ -261,22 +276,21 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         if (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) {
             managedCoords.setClassifier(coords.getClassifier());
         }
-        parentEditor.addDependency(managedCoords, true);
-        parentEditor.save();
+        addDependency(parentEditor, parentPomFile, null, managedCoords, true);
+        savePomEditor(parentEditor, parentPomFile);
         getLog().info("Added managed dependency " + coords.getGroupId() + ":" + coords.getArtifactId() + ":"
                 + versionRef + " to " + parentPomFile.getName());
 
         // 2. Modify child POM: add version-less dependency
-        PomEditor childEditor = PomEditor.load(childPomFile);
-        if (profile != null && !profile.isEmpty()) {
-            if (childEditor.findProfile(profile) == null) {
-                throw new MojoFailureException(
-                        "Profile '" + profile + "' not found in " + childPomFile.getName() + ".");
-            }
-            childEditor.setProfileId(profile);
-        }
-        Element existingChild = childEditor.findDependency(
-                coords.getGroupId(), coords.getArtifactId(), coords.getType(), coords.getClassifier(), false);
+        PomEditor childEditor = loadPomEditor(childPomFile);
+        Element existingChild = findDependency(
+                childEditor,
+                profile,
+                coords.getGroupId(),
+                coords.getArtifactId(),
+                coords.getType(),
+                coords.getClassifier(),
+                false);
         if (existingChild != null) {
             throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
                     + " already exists in " + childPomFile.getName()
@@ -300,8 +314,8 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         if (coords.getOptional() != null) {
             childCoords.setOptional(coords.getOptional());
         }
-        childEditor.addDependency(childCoords, false);
-        childEditor.save();
+        addDependency(childEditor, childPomFile, profile, childCoords, false);
+        savePomEditor(childEditor, childPomFile);
         getLog().info("Added version-less dependency " + coords.getGroupId() + ":" + coords.getArtifactId() + " to "
                 + childPomFile.getName());
 
@@ -329,15 +343,15 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
                     + "Use -Dmanaged to add to <dependencyManagement> instead.");
         }
 
-        PomEditor editor = PomEditor.load(pomFile);
-        if (profile != null && !profile.isEmpty()) {
-            if (editor.findProfile(profile) == null) {
-                throw new MojoFailureException("Profile '" + profile + "' not found in " + pomFile.getName() + ".");
-            }
-            editor.setProfileId(profile);
-        }
-        Element existing = editor.findDependency(
-                coords.getGroupId(), coords.getArtifactId(), coords.getType(), coords.getClassifier(), targetManaged);
+        PomEditor editor = loadPomEditor(pomFile);
+        Element existing = findDependency(
+                editor,
+                profile,
+                coords.getGroupId(),
+                coords.getArtifactId(),
+                coords.getType(),
+                coords.getClassifier(),
+                targetManaged);
 
         if (existing != null) {
             throw new MojoFailureException("Dependency " + coords.getGroupId() + ":" + coords.getArtifactId()
@@ -350,15 +364,15 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         } else {
             // Handle version property
             if (effectiveUseProperty && effectivePropertyName != null && coords.getVersion() != null) {
-                editor.addProperty(effectivePropertyName, coords.getVersion());
+                editor.properties().updateProperty(true, effectivePropertyName, coords.getVersion());
                 getLog().info("Added property " + effectivePropertyName + "=" + coords.getVersion());
                 coords.setVersion("${" + effectivePropertyName + "}");
             }
-            editor.addDependency(coords, targetManaged);
+            addDependency(editor, pomFile, profile, coords, targetManaged);
             getLog().info("Added dependency " + coords + " to " + pomFile.getName());
         }
 
-        editor.save();
+        savePomEditor(editor, pomFile);
 
         syncInMemoryModel(targetProject, coords, targetManaged, false);
     }
@@ -453,6 +467,151 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         return null;
     }
 
+    private void addDependency(
+            PomEditor editor, File pomFile, String profileId, DependencyEntry coords, boolean managed)
+            throws MojoFailureException {
+        PomEditor.Dependencies dependencies = dependenciesFor(editor, pomFile, profileId);
+        Coordinates coordinates = Coordinates.of(
+                coords.getGroupId(),
+                coords.getArtifactId(),
+                coords.getVersion(),
+                coords.getClassifier(),
+                coords.getType());
+
+        if (managed) {
+            dependencies.updateManagedDependency(true, coordinates);
+        } else {
+            dependencies.updateDependency(true, coordinates);
+        }
+
+        Element dependency = findDependency(
+                editor,
+                profileId,
+                coords.getGroupId(),
+                coords.getArtifactId(),
+                coords.getType(),
+                coords.getClassifier(),
+                managed);
+        if (dependency != null) {
+            if (coords.getScope() != null && !coords.getScope().isEmpty()) {
+                editor.updateOrCreateChildElement(dependency, "scope", coords.getScope());
+            }
+            if (coords.getOptional() != null && coords.getOptional()) {
+                editor.updateOrCreateChildElement(dependency, "optional", "true");
+            }
+        }
+    }
+
+    private PomEditor.Dependencies dependenciesFor(PomEditor editor, File pomFile, String profileId)
+            throws MojoFailureException {
+        PomEditor.Dependencies dependencies = editor.dependencies();
+        if (profileId == null || profileId.isEmpty()) {
+            return dependencies;
+        }
+        Element profileElement = editor.profiles().findProfile(profileId);
+        if (profileElement == null) {
+            throw new MojoFailureException("Profile '" + profileId + "' not found in " + pomFile.getName() + ".");
+        }
+        return dependencies.forProfile(profileElement);
+    }
+
+    private static PomEditor loadPomEditor(File pomFile) throws IOException {
+        try {
+            String content = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
+            String upper = content.toUpperCase(Locale.ROOT);
+            if (upper.contains("<!DOCTYPE") || upper.contains("<!ENTITY")) {
+                throw new IOException("DOCTYPE/ENTITY declarations are not allowed in POM files (security risk)");
+            }
+
+            PomEditor editor = new PomEditor(Document.of(pomFile.toPath()));
+            String rootName = editor.root().name();
+            if (!"project".equals(rootName)) {
+                throw new IOException(
+                        "Not a valid POM file: expected <project> root element but found <" + rootName + ">");
+            }
+            return editor;
+        } catch (RuntimeException e) {
+            throw new IOException("Failed to parse POM file: " + pomFile, e);
+        }
+    }
+
+    private static void savePomEditor(PomEditor editor, File pomFile) throws IOException {
+        Path target = pomFile.toPath();
+        File tempFile = File.createTempFile("pom", ".xml.tmp", pomFile.getParentFile());
+        boolean success = false;
+        try {
+            try (OutputStream os = Files.newOutputStream(tempFile.toPath())) {
+                editor.document().toXml(os);
+            }
+            Files.move(tempFile.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
+            success = true;
+        } finally {
+            if (!success) {
+                Files.deleteIfExists(tempFile.toPath());
+            }
+        }
+    }
+
+    private static Element findDependency(
+            PomEditor editor,
+            String profileId,
+            String groupId,
+            String artifactId,
+            String type,
+            String classifier,
+            boolean managed) {
+        if (groupId == null || artifactId == null) {
+            throw new IllegalArgumentException("groupId and artifactId must not be null");
+        }
+        Element depsElement = getDependenciesElement(editor, profileId, managed);
+        if (depsElement == null) {
+            return null;
+        }
+
+        Coordinates coordinates = Coordinates.of(groupId, artifactId, null, classifier, type);
+        return depsElement
+                .childElements("dependency")
+                .filter(coordinates.predicateGATC())
+                .findFirst()
+                .orElse(null);
+    }
+
+    private static Element getDependenciesElement(PomEditor editor, String profileId, boolean managed) {
+        Element context = editor.root();
+        if (profileId != null && !profileId.isEmpty()) {
+            context = editor.profiles().findProfile(profileId);
+            if (context == null) {
+                return null;
+            }
+        }
+
+        if (managed) {
+            Element depMgmt = editor.findChildElement(context, "dependencyManagement");
+            return depMgmt != null ? editor.findChildElement(depMgmt, "dependencies") : null;
+        }
+        return editor.findChildElement(context, "dependencies");
+    }
+
+    private static List<String> getDependencyVersions(PomEditor editor, boolean managed) {
+        List<String> versions = new ArrayList<>();
+        Element depsElement = getDependenciesElement(editor, null, managed);
+        if (depsElement == null) {
+            return versions;
+        }
+        depsElement.childElements("dependency").forEach(dep -> {
+            String version = dep.childTextOr("version", null);
+            if (version != null && !version.isEmpty()) {
+                versions.add(version);
+            }
+        });
+        return versions;
+    }
+
+    private static long getDependencyCount(PomEditor editor, boolean managed) {
+        Element depsElement = getDependenciesElement(editor, null, managed);
+        return depsElement != null ? depsElement.childElements("dependency").count() : 0;
+    }
+
     // --- Convention detection ---
 
     /**
@@ -467,11 +626,11 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         }
 
         try {
-            PomEditor editor = PomEditor.load(pomFile);
+            PomEditor editor = loadPomEditor(pomFile);
 
             // Analyze managed dependency usage: count deps with/without version
-            long totalDeps = editor.getDependencyCount(false);
-            List<String> depVersions = editor.getDependencyVersions(false);
+            long totalDeps = getDependencyCount(editor, false);
+            List<String> depVersions = getDependencyVersions(editor, false);
             long depsWithVersion = depVersions.size();
 
             if (totalDeps > 0 && depsWithVersion < totalDeps / 2.0) {
@@ -485,14 +644,14 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
 
             // Analyze property patterns from child POM versions
             List<String> allVersions = new java.util.ArrayList<>(depVersions);
-            allVersions.addAll(editor.getDependencyVersions(true));
+            allVersions.addAll(getDependencyVersions(editor, true));
 
             // If child has mostly version-less deps, also scan the parent POM for property patterns
             if (conv.managedPomFile != null
                     && !conv.managedPomFile.getAbsolutePath().equals(pomFile.getAbsolutePath())) {
-                PomEditor parentEditor = PomEditor.load(conv.managedPomFile);
-                allVersions.addAll(parentEditor.getDependencyVersions(true));
-                allVersions.addAll(parentEditor.getDependencyVersions(false));
+                PomEditor parentEditor = loadPomEditor(conv.managedPomFile);
+                allVersions.addAll(getDependencyVersions(parentEditor, true));
+                allVersions.addAll(getDependencyVersions(parentEditor, false));
             }
 
             // Count property references vs literal versions
