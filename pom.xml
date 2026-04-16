@@ -149,6 +149,11 @@ under the License.
       <artifactId>domtrip-maven</artifactId>
       <version>1.2.0</version>
     </dependency>
+    <dependency>
+      <groupId>eu.maveniverse.maven.domtrip</groupId>
+      <artifactId>domtrip-core</artifactId>
+      <version>1.2.0</version>
+    </dependency>
 
     <!-- doxia -->
     <dependency>
