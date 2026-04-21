@@ -34,6 +34,10 @@ ${project.name}
 
   The Dependency plugin has several goals:
 
+  *{{{./add-mojo.html}dependency:add}} adds a dependency to the project's <<<pom.xml>>> from the command line.
+  Supports GAV shorthand, version inference from <<<\<dependencyManagement\>>>>, BOM imports, profile targeting, and more.
+  See {{{./examples/managing-dependencies.html}Managing Dependencies}}.
+
   *{{{./analyze-mojo.html}dependency:analyze}} analyzes the dependencies of this project and determines which are: used
   and declared; used and undeclared; unused and declared.
 
@@ -88,6 +92,10 @@ ${project.name}
 
   *{{{./purge-local-repository-mojo.html}dependency:purge-local-repository}} tells Maven to clear dependency artifact
   files out of the local repository, and optionally re-resolve them.
+
+  *{{{./remove-mojo.html}dependency:remove}} removes a dependency from the project's <<<pom.xml>>> from the command line.
+  Supports <<<\<dependencyManagement\>>>>, BOM imports, profile targeting, and child module safety checks.
+  See {{{./examples/managing-dependencies.html}Managing Dependencies}}.
 
   *{{{./resolve-mojo.html}dependency:resolve}} tells Maven to resolve all dependencies and displays the version. <<JAVA 9 NOTE:>> <will display the
   module name when running with Java 9.>
@@ -150,6 +158,8 @@ ${project.name}
   * {{{./examples/exclude-dependencies-from-dependency-analysis.html}Exclude Dependencies from Dependency Analysis}}
 
   * {{{./examples/filtering-the-dependency-tree.html}Filtering the Dependency Tree}}
+
+  * {{{./examples/managing-dependencies.html}Managing Dependencies}}
 
   * {{{./examples/purging-local-repository.html}Purging the local repository}}
 
