@@ -23,27 +23,30 @@ import javax.inject.Inject;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import org.apache.maven.api.plugin.testing.InjectMojo;
 import org.apache.maven.api.plugin.testing.MojoExtension;
 import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugins.dependency.utils.ParamArtifact;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-@MojoTest
-public class TestPropertiesMojo {
+@MojoTest(realRepositorySession = true)
+class TestPropertiesMojo {
 
     @Inject
     private MavenProject project;
 
     @Test
     @InjectMojo(goal = "properties")
-    public void testSetProperties(PropertiesMojo mojo) throws Exception {
+    void testSetProperties(PropertiesMojo mojo) throws Exception {
 
         Artifact artifact1 = Mockito.mock(Artifact.class);
         Artifact artifact2 = Mockito.mock(Artifact.class);
@@ -62,5 +65,46 @@ public class TestPropertiesMojo {
         // Verify that properties are set correctly
         assertTrue(project.getProperties().getProperty("group1:artifact1").endsWith("artifact1.jar"));
         assertTrue(project.getProperties().getProperty("group2:artifact2").endsWith("artifact2.jar"));
+    }
+
+    /**
+     * tests the proper discovery and configuration of the mojo for extra artifacts
+     * Each artifact should be resolved and set a property in the project
+     * @throws Exception in case of errors
+     */
+    @Test
+    @InjectMojo(goal = "properties")
+    void testSetPropertiesForExtractArtifacts(PropertiesMojo mojo) throws Exception {
+        
+        String depId1 = "org.apache.commons:commons-lang3:jar";
+        String depId2 = "org.apache.commons:commons-collections4:jar";
+        
+        ParamArtifact a1 = new ParamArtifact();
+        a1.setGroupId("org.apache.commons");
+        a1.setArtifactId("commons-lang3");
+        a1.setVersion("3.6");
+
+        ParamArtifact a2 = new ParamArtifact();
+        a2.setGroupId("org.apache.commons");
+        a2.setArtifactId("commons-collections4");
+        a2.setVersion("4.4");
+
+        List<ParamArtifact> artifacts = Arrays.asList(a1, a2);
+
+        // 3. Inject into private field
+        ReflectionUtils.setVariableValueInObject(
+            mojo,
+            "extraArtifacts",
+            artifacts
+        );
+        
+        mojo.execute();
+
+        assertTrue(project.getProperties().containsKey(depId1));
+        assertTrue(new File(project.getProperties().getProperty(depId1)).exists());
+
+        assertTrue(project.getProperties().containsKey(depId2));
+        assertTrue(new File(project.getProperties().getProperty(depId1)).exists());
+
     }
 }
