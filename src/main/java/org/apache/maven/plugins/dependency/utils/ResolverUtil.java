@@ -38,6 +38,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.ModelBase;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginContainer;
+import org.apache.maven.model.PluginManagement;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.Reporting;
 import org.apache.maven.project.MavenProject;
@@ -342,7 +343,7 @@ public class ResolverUtil {
     }
 
     /**
-     * Retrieve all plugins used in project either in build or reporting section.
+     * Retrieve all plugins used in a project either in the build, plugin management, or reporting section.
      *
      * @param project a maven project
      * @return a collection of plugins
@@ -358,9 +359,14 @@ public class ResolverUtil {
 
         List<Plugin> projectPlugins = project.getBuild().getPlugins();
 
+        List<Plugin> managementPlugins = Optional.ofNullable(project.getPluginManagement())
+                .map(PluginManagement::getPlugins)
+                .orElse(Collections.emptyList());
+
         LinkedHashSet<Plugin> result = new LinkedHashSet<>(reportPlugins.size() + projectPlugins.size());
         result.addAll(reportPlugins);
         result.addAll(projectPlugins);
+        result.addAll(managementPlugins);
         return result;
     }
 
