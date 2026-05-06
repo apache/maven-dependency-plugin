@@ -1,0 +1,231 @@
+~~ Licensed to the Apache Software Foundation (ASF) under one
+~~ or more contributor license agreements.  See the NOTICE file
+~~ distributed with this work for additional information
+~~ regarding copyright ownership.  The ASF licenses this file
+~~ to you under the Apache License, Version 2.0 (the
+~~ "License"); you may not use this file except in compliance
+~~ with the License.  You may obtain a copy of the License at
+~~
+~~ http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing,
+~~ software distributed under the License is distributed on an
+~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+~~ KIND, either express or implied.  See the License for the
+~~ specific language governing permissions and limitations
+~~ under the License.    
+ 
+  ------
+  Managing Dependencies
+  ------
+  Bruno Borges
+  ------
+  2025-06-01
+  ------
+
+Managing Dependencies
+
+  Starting with version 3.11.0, the Maven Dependency Plugin provides two goals
+  for managing dependencies directly from the command line: <<<dependency:add>>>
+  and <<<dependency:remove>>>.
+
+%{toc|fromDepth=2}
+
+* Adding Dependencies
+
+  The <<<dependency:add>>> goal adds a dependency to your project's <<<pom.xml>>>.
+
+** Basic Usage
+
+  You can add a dependency by specifying its coordinates with the <<<gav>>> parameter:
+
++---+
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0
++---+
+
+  The <<<gav>>> parameter accepts the format <<<groupId:artifactId[:extension[:classifier]]:version>>>.
+  Scope must be specified separately with <<<-Dscope>>>:
+
++---+
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dscope=test
++---+
+
+** Adding to dependencyManagement
+
+  Use the <<<-Dmanaged>>> flag to add a dependency to the <<<\<dependencyManagement\>>>> section
+  instead of <<<\<dependencies\>>>>:
+
++---+
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dmanaged
++---+
+
+** Adding a BOM Import
+
+  To import a BOM (Bill of Materials) into <<<\<dependencyManagement\>>>>, specify the type and scope explicitly:
+
++---+
+mvn dependency:add -Dgav=org.springframework.boot:spring-boot-dependencies:pom:3.2.0 -Dscope=import -Dmanaged
++---+
+
+  This inserts a dependency with <<<type=pom>>> and <<<scope=import>>> into <<<\<dependencyManagement\>>>>.
+
+** Version Inference
+
+  When adding to <<<\<dependencies\>>>> and the version is already managed by a parent POM's
+  <<<\<dependencyManagement\>>>>, you can omit the version:
+
++---+
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3
++---+
+
+  The goal will detect the managed version and omit the <<<\<version\>>>> element from the inserted
+  dependency, following Maven convention. If no managed version is found, the goal fails with
+  a descriptive error.
+
+** Additional Parameters
+
+  You can also specify <<<type>>> and <<<classifier>>> explicitly. These override any values
+  provided in the <<<gav>>> shorthand:
+
++---+
+mvn dependency:add -Dgav=com.example:lib:1.0 -Dtype=test-jar
+mvn dependency:add -Dgav=com.example:lib:1.0 -Dclassifier=sources
++---+
+
+** Duplicate Detection
+
+  If the dependency already exists in the POM (matching on <<<groupId>>>, <<<artifactId>>>,
+  <<<type>>>, and <<<classifier>>>), the goal fails with a descriptive error directing you to
+  remove the existing dependency first:
+
++---+
+mvn dependency:remove -Dgav=org.apache.commons:commons-lang3
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dscope=test
++---+
+
+** Optional Dependencies
+
+  Mark a dependency as optional using the <<<optional>>> parameter:
+
++---+
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Doptional=true
++---+
+
+** Scope Validation
+
+  The <<<scope>>> parameter is validated against Maven's known scope values:
+  <<<compile>>>, <<<provided>>>, <<<runtime>>>, <<<test>>>, <<<system>>>, and <<<import>>>.
+  Invalid scope values are rejected with an error.
+
+** Dependencies Using Property References
+
+  Some POMs declare dependencies using Maven property references for the <<<groupId>>> or
+  <<<artifactId>>>, for example:
+
++---+
+<dependency>
+  <groupId>${my.group}</groupId>
+  <artifactId>lib</artifactId>
+</dependency>
++---+
+
+  When <<<dependency:add>>> detects that a dependency with the same coordinates already exists
+  in the resolved (effective) model but cannot be found in the raw XML, it means the dependency
+  is declared using property interpolation. In this case, the goal <<fails>> with an error message
+  explaining that the dependency cannot be safely added or updated automatically:
+
++---+
+[ERROR] Dependency com.example:lib already exists in the POM (using property references).
+Cannot safely add or update automatically. Please edit the POM manually.
++---+
+
+  This safety check prevents <<<dependency:add>>> from inserting a duplicate entry that would
+  conflict with the property-based declaration. The same check applies to <<<dependency:remove>>>.
+
+** Multi-Module Projects
+
+  To add a dependency to a specific child module from the root of a multi-module project,
+  use Maven's built-in <<<-pl>>> (project list) flag:
+
++---+
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -pl my-service
++---+
+
+** Adding to a Profile
+
+  To add a dependency to a specific Maven profile, use the <<<-Dprofile>>> parameter.
+  The profile must already exist in the POM:
+
++---+
+mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dprofile=dev
++---+
+
+* Removing Dependencies
+
+  The <<<dependency:remove>>> goal removes a dependency from your project's <<<pom.xml>>>.
+
+** Basic Usage
+
+  Remove a dependency using the <<<gav>>> parameter:
+
++---+
+mvn dependency:remove -Dgav=org.apache.commons:commons-lang3
++---+
+
+  Only <<<groupId>>> and <<<artifactId>>> are required to identify the dependency to remove.
+
+** Type and Classifier Matching
+
+  Maven allows the same <<<groupId:artifactId>>> to appear multiple times in a POM
+  with different types or classifiers (e.g., both the main jar and a test-jar). These
+  are distinct dependencies.
+
+  When no <<<-Dtype>>> or <<<-Dclassifier>>> is specified, <<<dependency:remove>>> targets
+  the default variant (<<<type=jar>>>, no classifier). To remove a specific variant, use
+  <<<-Dtype>>> and/or <<<-Dclassifier>>>:
+
++---+
+mvn dependency:remove -Dgav=com.example:lib -Dtype=test-jar
+mvn dependency:remove -Dgav=com.example:lib -Dclassifier=sources
++---+
+
+  Explicit <<<-Dtype>>> and <<<-Dclassifier>>> override any values from the <<<-Dgav>>> parameter.
+
+  Similarly, <<<dependency:add>>> uses <<<groupId:artifactId:type:classifier>>> matching for
+  duplicate detection. Adding <<<com.example:lib:test-jar:1.0>>> will succeed even if
+  <<<com.example:lib:jar:1.0>>> already exists, since they are distinct dependencies.
+
+** Removing a BOM Import
+
+  To remove a BOM import from <<<\<dependencyManagement\>>>>, specify the type and use <<<-Dmanaged>>>:
+
++---+
+mvn dependency:remove -Dgav=org.springframework.boot:spring-boot-dependencies -Dtype=pom -Dmanaged
++---+
+
+** Removing from dependencyManagement
+
+  To remove a dependency from <<<\<dependencyManagement\>>>> instead of <<<\<dependencies\>>>>:
+
++---+
+mvn dependency:remove -Dgav=org.apache.commons:commons-lang3 -Dmanaged
++---+
+
+** Removing from a Specific Module
+
+  In a multi-module project, use Maven's <<<-pl>>> flag to target a specific child module:
+
++---+
+mvn dependency:remove -Dgav=org.apache.commons:commons-lang3 -pl my-service
++---+
+
+  If the dependency is not found, the goal fails with a descriptive error message.
+
+** Removing from a Profile
+
+  To remove a dependency from a specific Maven profile:
+
++---+
+mvn dependency:remove -Dgav=org.apache.commons:commons-lang3 -Dprofile=dev
++---+
+
