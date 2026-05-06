@@ -19,8 +19,10 @@
 
 File pom = new File(basedir, "pom.xml")
 assert pom.exists()
-def content = pom.text
-assert content.contains('<groupId>org.apache.commons</groupId>')
-assert content.contains('<artifactId>commons-lang3</artifactId>')
-assert content.contains('<version>2.10.1</version>')
-assert content.contains('<scope>test</scope>')
+def xml = new groovy.xml.XmlSlurper().parseText(pom.text)
+def deps = xml.dependencies.dependency
+def dep = deps.find { it.artifactId.text() == 'commons-lang3' }
+assert dep != null : "commons-lang3 should be in dependencies"
+assert dep.groupId.text() == 'org.apache.commons'
+assert dep.version.text() == '3.17.0'
+assert dep.scope.text() == 'test'

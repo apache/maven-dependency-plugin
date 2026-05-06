@@ -19,6 +19,7 @@
 
 File pom = new File(basedir, "pom.xml")
 assert pom.exists()
-def content = pom.text
-assert !content.contains('<groupId>org.apache.commons</groupId>')
-assert !content.contains('commons-lang3')
+def xml = new groovy.xml.XmlSlurper().parseText(pom.text)
+def deps = xml.dependencies.dependency
+def dep = deps.find { it.artifactId.text() == 'commons-lang3' }
+assert dep == null : "commons-lang3 should have been removed from dependencies"

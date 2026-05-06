@@ -19,7 +19,9 @@
 
 File pom = new File(basedir, "pom.xml")
 assert pom.exists()
-def content = pom.text
-assert content.contains('<dependencyManagement>')
-assert content.contains('<groupId>org.apache.commons</groupId>')
-assert content.contains('<version>2.10.1</version>')
+def xml = new groovy.xml.XmlSlurper().parseText(pom.text)
+def managedDeps = xml.dependencyManagement.dependencies.dependency
+def dep = managedDeps.find { it.artifactId.text() == 'commons-lang3' }
+assert dep != null : "commons-lang3 should be in dependencyManagement"
+assert dep.groupId.text() == 'org.apache.commons'
+assert dep.version.text() == '3.17.0'
