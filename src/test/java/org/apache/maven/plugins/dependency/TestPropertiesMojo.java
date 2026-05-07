@@ -75,10 +75,10 @@ class TestPropertiesMojo {
     @Test
     @InjectMojo(goal = "properties")
     void testSetPropertiesForExtractArtifacts(PropertiesMojo mojo) throws Exception {
-        
+
         String depId1 = "org.apache.commons:commons-lang3:jar";
         String depId2 = "org.apache.commons:commons-collections4:jar";
-        
+
         ParamArtifact a1 = new ParamArtifact();
         a1.setGroupId("org.apache.commons");
         a1.setArtifactId("commons-lang3");
@@ -92,12 +92,8 @@ class TestPropertiesMojo {
         List<ParamArtifact> artifacts = Arrays.asList(a1, a2);
 
         // 3. Inject into private field
-        ReflectionUtils.setVariableValueInObject(
-            mojo,
-            "extraArtifacts",
-            artifacts
-        );
-        
+        ReflectionUtils.setVariableValueInObject(mojo, "extraArtifacts", artifacts);
+
         mojo.execute();
 
         assertTrue(project.getProperties().containsKey(depId1));
@@ -105,6 +101,5 @@ class TestPropertiesMojo {
 
         assertTrue(project.getProperties().containsKey(depId2));
         assertTrue(new File(project.getProperties().getProperty(depId1)).exists());
-
     }
 }

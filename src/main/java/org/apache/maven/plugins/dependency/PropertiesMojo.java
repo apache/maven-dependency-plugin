@@ -58,7 +58,7 @@ public class PropertiesMojo extends AbstractMojo {
     private final MavenProject project;
 
     private final ResolverUtil resolverUtil;
-    
+
     @Inject
     public PropertiesMojo(MavenProject project, ResolverUtil resolverUtil) {
         this.project = project;
@@ -72,7 +72,7 @@ public class PropertiesMojo extends AbstractMojo {
      */
     @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
-    
+
     /**
      * Extra artifacts that can be provided to the plugin. For each artifact in this list a property will be set
      * similar to the project artifacts discovered. This allows callers to supply additional
@@ -125,14 +125,14 @@ public class PropertiesMojo extends AbstractMojo {
                         throw new MojoExecutionException("You must specify an artifact OR GAV separately");
                     }
 
-                    org.eclipse.aether.artifact.Artifact artifact = resolverUtil.createArtifactFromParams(paramArtifact);
+                    org.eclipse.aether.artifact.Artifact artifact =
+                            resolverUtil.createArtifactFromParams(paramArtifact);
                     artifact = resolverUtil.resolveArtifact(artifact, project.getRemoteProjectRepositories());
 
                     this.project
                             .getProperties()
                             .setProperty(
-                                    toConflictId(artifact),
-                                    artifact.getFile().getAbsolutePath());
+                                    toConflictId(artifact), artifact.getFile().getAbsolutePath());
                 }
             } catch (ArtifactResolutionException e) {
                 throw new MojoExecutionException("Couldn't download artifact: " + e.getMessage(), e);
@@ -148,9 +148,14 @@ public class PropertiesMojo extends AbstractMojo {
     }
 
     private String toConflictId(org.eclipse.aether.artifact.Artifact artifact) {
-        // The conflict ID is the same as the one used by Maven's Artifact class, which is groupId:artifactId:type[:classifier]
+        // The conflict ID is the same as the one used by Maven's Artifact class, which is
+        // groupId:artifactId:type[:classifier]
         StringBuilder sb = new StringBuilder();
-        sb.append(artifact.getGroupId()).append(":").append(artifact.getArtifactId()).append(":").append(artifact.getExtension());
+        sb.append(artifact.getGroupId())
+                .append(":")
+                .append(artifact.getArtifactId())
+                .append(":")
+                .append(artifact.getExtension());
         if (artifact.getClassifier() != null && !artifact.getClassifier().isEmpty()) {
             sb.append(":").append(artifact.getClassifier());
         }
