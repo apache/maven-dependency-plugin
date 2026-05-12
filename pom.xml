@@ -352,12 +352,6 @@ under the License.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.fusesource.jansi</groupId>
-      <artifactId>jansi</artifactId>
-      <version>2.4.3</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <version>3.27.7</version>
@@ -442,11 +436,9 @@ under the License.
                 <failOnWarning>true</failOnWarning>
                 <ignoredUnusedDeclaredDependencies combine.children="append">
                   <!-- used in tests runtime -->
-                  <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.apache.maven.resolver:maven-resolver-connector-basic</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.apache.maven.resolver:maven-resolver-transport-file</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.apache.maven.resolver:maven-resolver-transport-http</ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
