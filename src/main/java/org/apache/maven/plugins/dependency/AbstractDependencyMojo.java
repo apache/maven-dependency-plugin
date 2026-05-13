@@ -18,12 +18,17 @@
  */
 package org.apache.maven.plugins.dependency;
 
+import java.util.List;
+
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.dependency.pom.DependencyEntry;
 import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -147,5 +152,39 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
         } else if (getLog() instanceof DependencySilentLog) {
             setLog(new SystemStreamLog());
         }
+    }
+
+    /**
+     * Checks whether the dependency exists in the project's declared (original) model
+     * after property interpolation, but before inheritance merging.
+     * This catches dependencies declared with property references like {@code ${project.groupId}}
+     * without false-positiving on inherited dependencies from a parent POM.
+     */
+    protected static boolean existsInResolvedModel(MavenProject project, DependencyEntry coords, boolean managed) {
+        List<Dependency> deps;
+        org.apache.maven.model.Model originalModel = project.getOriginalModel();
+        if (managed) {
+            DependencyManagement depMgmt = originalModel != null ? originalModel.getDependencyManagement() : null;
+            deps = depMgmt != null ? depMgmt.getDependencies() : null;
+        } else {
+            deps = originalModel != null ? originalModel.getDependencies() : null;
+        }
+        if (deps == null) {
+            return false;
+        }
+        String searchType = (coords.getType() != null && !coords.getType().isEmpty()) ? coords.getType() : "jar";
+        String searchClassifier =
+                (coords.getClassifier() != null && !coords.getClassifier().isEmpty()) ? coords.getClassifier() : "";
+        for (Dependency dep : deps) {
+            if (coords.getGroupId().equals(dep.getGroupId())
+                    && coords.getArtifactId().equals(dep.getArtifactId())) {
+                String depType = dep.getType() != null ? dep.getType() : "jar";
+                String depClassifier = dep.getClassifier() != null ? dep.getClassifier() : "";
+                if (searchType.equals(depType) && searchClassifier.equals(depClassifier)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
