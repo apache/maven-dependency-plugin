@@ -28,9 +28,14 @@
     <version>1.0-SNAPSHOT</version>
     <dependencies>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.18.0</version>
+            <groupId>org.apache.maven.its.dependency</groupId>
+            <artifactId>a1</artifactId>
+            <version>1.0.0</version>
         </dependency>
+      <dependency>
+        <groupId>org.apache.maven.its.dependency</groupId>
+        <artifactId>a2</artifactId>
+        <version>1.0.0</version>
+      </dependency>
     </dependencies>
 </project>

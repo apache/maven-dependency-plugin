@@ -18,4 +18,5 @@
  */
 
 def log = new File(basedir, "build.log")
-assert log.text.contains('not found')
+assert log.text.contains('Dependency nonexistent:lib not found in <dependencies>') :
+        "Expected error message about nonexistent dependency should be in build log"

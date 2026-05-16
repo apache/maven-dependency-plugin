@@ -21,5 +21,7 @@ File pom = new File(basedir, "pom.xml")
 assert pom.exists()
 def xml = new groovy.xml.XmlSlurper().parseText(pom.text)
 def deps = xml.dependencies.dependency
-def dep = deps.find { it.artifactId.text() == 'commons-lang3' }
-assert dep == null : "commons-lang3 should have been removed from dependencies"
+assert deps.size() == 1 : "there should be only one dependency left"
+
+def dep = deps.find { it.artifactId.text() == 'a1' }
+assert dep.isEmpty() : "a1 should have been removed from dependencies"
