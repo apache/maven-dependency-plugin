@@ -491,6 +491,7 @@ under the License.
               </pomExcludes>
               <pomIncludes>
                 <pomInclude>*/pom.xml</pomInclude>
+                <pomInclude>add-dependency/*/pom.xml</pomInclude>
                 <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
               <!-- for mrm -->

@@ -21,8 +21,8 @@ File pom = new File(basedir, "pom.xml")
 assert pom.exists()
 def xml = new groovy.xml.XmlSlurper().parseText(pom.text)
 def deps = xml.dependencies.dependency
-def dep = deps.find { it.artifactId.text() == 'commons-lang3' }
-assert dep != null : "commons-lang3 should be in dependencies"
-assert dep.groupId.text() == 'org.apache.commons'
-assert dep.version.text() == '3.17.0'
+def dep = deps.find { it.artifactId.text() == 'a1' }
+assert dep != null : "test-dep should be in dependencies"
+assert dep.groupId.text() == 'org.apache.maven.its.dependency'
+assert dep.version.text() == '1.0.0'
 assert dep.scope.text() == 'test'
