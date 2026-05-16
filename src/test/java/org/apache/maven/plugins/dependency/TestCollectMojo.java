@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -105,7 +106,7 @@ class TestCollectMojo {
         assertFalse(mojo.getLog() instanceof DependencySilentLog);
 
         mojo.setSilent(true);
-        assertTrue(mojo.getLog() instanceof DependencySilentLog);
+        assertInstanceOf(DependencySilentLog.class, mojo.getLog());
 
         mojo.setSilent(false);
         assertFalse(mojo.getLog() instanceof DependencySilentLog);

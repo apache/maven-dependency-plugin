@@ -141,8 +141,8 @@ class TestClassifierTypeTranslator {
                 org.eclipse.aether.artifact.Artifact translatedArtifact = resultIter.next();
                 if (artifact.getArtifactId() == translatedArtifact.getArtifactId()
                         && artifact.getGroupId() == translatedArtifact.getGroupId()) {
-                    assertEquals(translatedArtifact.getClassifier(), classifier);
-                    assertEquals(translatedArtifact.getExtension(), type);
+                    assertEquals(classifier, translatedArtifact.getClassifier());
+                    assertEquals(type, translatedArtifact.getExtension());
 
                     found = true;
                     break;

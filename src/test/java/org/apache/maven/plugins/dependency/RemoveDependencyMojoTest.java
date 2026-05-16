@@ -38,6 +38,8 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.contains;
@@ -157,7 +159,7 @@ class RemoveDependencyMojoTest {
         mojo.execute();
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(!result.contains("test-jar"), "test-jar variant should be removed");
+        assertFalse(result.contains("test-jar"), "test-jar variant should be removed");
         assertTrue(result.contains("com.example"), "jar variant should remain");
     }
 
@@ -205,7 +207,7 @@ class RemoveDependencyMojoTest {
         mojo.execute();
 
         // In-memory model should still have the jar variant
-        assertTrue(model.getDependencies().size() == 1, "model should have 1 dependency remaining");
+        assertEquals(1, model.getDependencies().size(), "model should have 1 dependency remaining");
         assertTrue(
                 "jar".equals(model.getDependencies().get(0).getType())
                         || model.getDependencies().get(0).getType() == null,
@@ -275,7 +277,8 @@ class RemoveDependencyMojoTest {
         mojo.execute();
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(!result.contains("<groupId>com.example</groupId>"), "dependency should be removed");
+        assertFalse(result.contains("<groupId>com.example</groupId>"),
+          "dependency should be removed");
         assertTrue(result.contains("<id>dev</id>"), "profile should remain");
     }
 
@@ -328,7 +331,7 @@ class RemoveDependencyMojoTest {
         assertDoesNotThrow(() -> mojo.execute());
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(!result.contains("<artifactId>lib</artifactId>"), "managed dep should be removed");
+        assertFalse(result.contains("<artifactId>lib</artifactId>"), "managed dep should be removed");
     }
 
     @Test
@@ -374,7 +377,7 @@ class RemoveDependencyMojoTest {
         assertDoesNotThrow(() -> mojo.execute());
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(!result.contains("<artifactId>lib</artifactId>"), "managed dep should be removed");
+        assertFalse(result.contains("<artifactId>lib</artifactId>"), "managed dep should be removed");
         verify(log).warn(contains("child-a/my-pom.xml"));
     }
 

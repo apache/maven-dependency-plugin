@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
 
@@ -77,7 +78,7 @@ class TestResolveMojo {
         assertFalse(mojo.getLog() instanceof DependencySilentLog);
 
         mojo.setSilent(true);
-        assertTrue(mojo.getLog() instanceof DependencySilentLog);
+        assertInstanceOf(DependencySilentLog.class, mojo.getLog());
 
         mojo.setSilent(false);
         assertFalse(mojo.getLog() instanceof DependencySilentLog);

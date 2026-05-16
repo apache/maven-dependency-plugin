@@ -752,9 +752,9 @@ class PomEditorTest {
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<version>1.0</version>"), "version should be present");
-        assertTrue(!result.contains("<scope>"), "empty scope should not create element");
-        assertTrue(!result.contains("<type>"), "empty type should not create element");
-        assertTrue(!result.contains("<classifier>"), "empty classifier should not create element");
+        assertFalse(result.contains("<scope>"), "empty scope should not create element");
+        assertFalse(result.contains("<type>"), "empty type should not create element");
+        assertFalse(result.contains("<classifier>"), "empty classifier should not create element");
     }
 
     @Test
@@ -856,7 +856,7 @@ class PomEditorTest {
 
         assertTrue(removed, "should find and remove the profile dependency");
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertTrue(!result.contains("profile-lib"), "profile dep should be removed");
+        assertFalse(result.contains("profile-lib"), "profile dep should be removed");
         assertTrue(result.contains("top-level"), "top-level dep should remain");
     }
 
