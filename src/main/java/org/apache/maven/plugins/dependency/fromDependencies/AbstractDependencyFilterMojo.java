@@ -383,7 +383,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             buildingRequest.setProcessPlugins(false);
             return projectBuilder.build(artifact, buildingRequest).getProject();
         } catch (ProjectBuildingException e) {
-            throw new MojoExecutionException("Coud not build project for " + artifact.getId(), e);
+            throw new MojoExecutionException("Could not build project for " + artifact.getId(), e);
         }
     }
 

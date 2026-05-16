@@ -104,7 +104,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean ignoreAllNonTestScoped;
 
     /**
-     * Output the xml for the missing dependencies (used but not declared).
+     * Output the XML for the missing dependencies (used but not declared).
      *
      * @since 2.0-alpha-5
      */

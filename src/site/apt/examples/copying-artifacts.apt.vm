@@ -201,7 +201,7 @@ Copying specific artifacts
         <version>${project.version}</version>
         <executions>
           <execution>
-            <id>copy-with-alternalte-repo</id>
+            <id>copy-with-alternate-repo</id>
             <phase>install</phase>
             <goals>
               <goal>copy</goal>

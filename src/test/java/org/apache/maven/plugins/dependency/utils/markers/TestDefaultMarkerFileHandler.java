@@ -113,7 +113,7 @@ class TestDefaultMarkerFileHandler {
         theArtifact.setFile(theFile);
         DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler(theArtifact, this.outputFolder);
         assertFalse(handler.isMarkerSet());
-        // if the marker is not set, assume it is infinately older than the
+        // if the marker is not set, assume it is infinitely older than the
         // artifact.
         assertTrue(handler.isMarkerOlder(theArtifact));
         handler.setMarker();

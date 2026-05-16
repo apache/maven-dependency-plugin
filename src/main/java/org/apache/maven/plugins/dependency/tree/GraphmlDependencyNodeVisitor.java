@@ -35,7 +35,7 @@ import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 public class GraphmlDependencyNodeVisitor extends AbstractSerializingVisitor implements DependencyNodeVisitor {
 
     /**
-     * Graphml xml file header. Define Schema and root element. We also define 2 key as meta data.
+     * GraphML XML file header. Define Schema and root element. We also define 2 key as meta data.
      */
     private static final String GRAPHML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> "
             + "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
@@ -48,7 +48,7 @@ public class GraphmlDependencyNodeVisitor extends AbstractSerializingVisitor imp
             + "<graph id=\"dependencies\" edgedefault=\"directed\">" + System.lineSeparator();
 
     /**
-     * Graphml xml file footer.
+     * GraphML XML file footer.
      */
     private static final String GRAPHML_FOOTER = "</graph></graphml>";
 

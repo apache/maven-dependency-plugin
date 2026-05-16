@@ -311,7 +311,7 @@ class TestDependencyUtil {
         expectedResult = "two.war";
         assertEquals(expectedResult, name);
 
-        // test that we pickup the correct extension in the file name if set.
+        // test that we pick up the correct extension in the file name if set.
         ah = new DefaultArtifactHandlerStub("jar", null);
         artifact = new DefaultArtifact("test", "two", vr, Artifact.SCOPE_PROVIDED, "war", "", ah, false);
         name = DependencyUtil.getFormattedFileName(artifact, true);

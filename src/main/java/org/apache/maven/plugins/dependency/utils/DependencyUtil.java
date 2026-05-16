@@ -92,7 +92,7 @@ public final class DependencyUtil {
      * @param removeVersion specifies if the version should be removed from the file name
      * @param prependGroupId specifies if the groupId should be prepended to the file name
      * @param useBaseVersion specifies if the baseVersion of the artifact should be used instead of the version
-     * @param removeClassifier specifies if the classifier of the artifact should be remved from the file name
+     * @param removeClassifier specifies if the classifier of the artifact should be removed from the file name
      * @return formatted file name in the format [groupId].artifactId-[version]-[classifier].[type]
      */
     public static String getFormattedFileName(

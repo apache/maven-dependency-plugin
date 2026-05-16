@@ -200,7 +200,7 @@ public class ArtifactItem implements DependableCoordinate {
     }
 
     /**
-     * @return teturns the base version
+     * @return the base version
      */
     public String getBaseVersion() {
         return ArtifactUtils.toSnapshotVersion(version);
@@ -273,7 +273,7 @@ public class ArtifactItem implements DependableCoordinate {
     }
 
     /**
-     * @return teturns the overWriteSnapshots
+     * @return the overWriteSnapshots
      */
     public String getOverWrite() {
         return this.overWrite;
@@ -287,7 +287,7 @@ public class ArtifactItem implements DependableCoordinate {
     }
 
     /**
-     * @return returns the encoding
+     * @return the encoding
      * @since 3.0
      */
     public String getEncoding() {
@@ -303,7 +303,7 @@ public class ArtifactItem implements DependableCoordinate {
     }
 
     /**
-     * @return returns the artifact
+     * @return the artifact
      */
     public Artifact getArtifact() {
         return this.artifact;
@@ -317,7 +317,7 @@ public class ArtifactItem implements DependableCoordinate {
     }
 
     /**
-     * @return returns a comma separated list of excluded items
+     * @return a comma separated list of excluded items
      */
     public String getExcludes() {
         return DependencyUtil.cleanToBeTokenizedString(this.excludes);
@@ -331,7 +331,7 @@ public class ArtifactItem implements DependableCoordinate {
     }
 
     /**
-     * @return returns a comma separated list of items to include
+     * @return a comma separated list of items to include
      */
     public String getIncludes() {
         return DependencyUtil.cleanToBeTokenizedString(this.includes);

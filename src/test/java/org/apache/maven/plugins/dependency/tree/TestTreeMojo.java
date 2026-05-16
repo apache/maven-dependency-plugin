@@ -206,7 +206,7 @@ class TestTreeMojo {
     }
 
     /*
-     * Test parsing of Json output and verify all key-value pairs
+     * Test parsing of JSON output and verify all key-value pairs
      */
     @Test
     @InjectMojo(goal = "tree")
