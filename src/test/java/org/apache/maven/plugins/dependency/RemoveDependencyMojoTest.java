@@ -277,8 +277,7 @@ class RemoveDependencyMojoTest {
         mojo.execute();
 
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
-        assertFalse(result.contains("<groupId>com.example</groupId>"),
-          "dependency should be removed");
+        assertFalse(result.contains("<groupId>com.example</groupId>"), "dependency should be removed");
         assertTrue(result.contains("<id>dev</id>"), "profile should remain");
     }
 
