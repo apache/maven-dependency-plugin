@@ -269,13 +269,15 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
 
     /**
      * Appends the artifact path to the specified StringBuilder.
-     *
-     * @param art {@link Artifact}
-     * @param sb {@link StringBuilder}
      */
-    protected void appendArtifactPath(Artifact art, StringBuilder sb) {
+    protected void appendArtifactPath(Artifact artifact, StringBuilder sb) {
         if (prefix == null) {
-            String file = art.getFile().getPath();
+            File artifactFile = artifact.getFile();
+            if (artifactFile == null) {
+                this.getLog().warn(artifact + " file is null.");
+                return;
+            }
+            String file = artifactFile.getPath();
             // substitute the property for the local repo path to make the classpath file portable.
             if (localRepoProperty != null && !localRepoProperty.isEmpty()) {
                 File localBasedir =
@@ -287,7 +289,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
             sb.append(prefix);
             sb.append(File.separator);
             sb.append(DependencyUtil.getFormattedFileName(
-                    art, this.stripVersion, this.prependGroupId, this.useBaseVersion, this.stripClassifier));
+                    artifact, this.stripVersion, this.prependGroupId, this.useBaseVersion, this.stripClassifier));
         }
     }
 
