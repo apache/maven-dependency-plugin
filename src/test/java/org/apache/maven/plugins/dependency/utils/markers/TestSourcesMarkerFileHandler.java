@@ -197,7 +197,7 @@ class TestSourcesMarkerFileHandler {
 
         assertFalse(resolvedHandler.isMarkerSet());
         assertFalse(unResolvedHandler.isMarkerSet());
-        // if the marker is not set, assume it is infinately older than the
+        // if the marker is not set, assume it is infinitely older than the
         // artifact.
         assertTrue(resolvedHandler.isMarkerOlder(theArtifact));
         assertTrue(unResolvedHandler.isMarkerOlder(theArtifact));

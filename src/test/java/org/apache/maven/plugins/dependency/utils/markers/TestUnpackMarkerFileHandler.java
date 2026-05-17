@@ -118,7 +118,7 @@ class TestUnpackMarkerFileHandler {
         theArtifact.setFile(theFile);
         UnpackFileMarkerHandler handler = new UnpackFileMarkerHandler(theArtifactItem, this.outputFolder);
         assertFalse(handler.isMarkerSet());
-        // if the marker is not set, assume it is infinately older than the
+        // if the marker is not set, assume it is infinitely older than the
         // artifact.
         assertTrue(handler.isMarkerOlder(theArtifact));
         handler.setMarker();

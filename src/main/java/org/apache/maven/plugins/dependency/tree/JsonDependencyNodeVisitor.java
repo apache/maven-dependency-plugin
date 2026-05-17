@@ -146,8 +146,8 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      *
      * @param sb  the string builder to append to
      * @param indent  the current indent level
-     * @param key  the key used as json key
-     * @param value  the value used as json value
+     * @param key  the key used as JSON key
+     * @param value  the value used as JSON value
      */
     private void appendKeyValue(StringBuilder sb, int indent, String key, String value) {
         if (value == null) {
@@ -171,8 +171,8 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      *
      * @param sb  the string builder to append to
      * @param indent  the current indent level
-     * @param key  the key used as json key
-     * @param value  the value used as json value
+     * @param key  the key used as JSON key
+     * @param value  the value used as JSON value
      */
     private void appendKeyWithoutComma(StringBuilder sb, int indent, String key, String value) {
         if (value == null) {

@@ -201,7 +201,7 @@ class TestCopyMojo {
         assertFalse(mojo.getArtifactItems().isEmpty());
 
         for (ArtifactItem item : mojo.getArtifactItems()) {
-            // these will be null because no processing has occured only when everything is skipped
+            // these will be null because no processing has occurred only when everything is skipped
             assertNull(item.getOutputDirectory());
             assertNull(item.getDestFileName());
         }
@@ -736,7 +736,7 @@ class TestCopyMojo {
 
     @Test
     @InjectMojo(goal = "copy")
-    void testCopyFileWithOverideLocalRepo(CopyMojo mojo) throws Exception {
+    void testCopyFileWithOverrideLocalRepo(CopyMojo mojo) throws Exception {
 
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
 

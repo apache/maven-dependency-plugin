@@ -80,7 +80,7 @@ public class GetMojo extends AbstractMojo {
     private final DefaultDependableCoordinate coordinate = new DefaultDependableCoordinate();
 
     /**
-     * Repositories in the format id::[layout]::url or just url, separated by comma. ie.
+     * Repositories in the format id::[layout]::url or just url, separated by comma. i.e.
      * central::default::https://repo.maven.apache.org/maven2,myrepo::::https://repo.acme.com,https://repo.acme2.com.
      */
     @Parameter(property = "remoteRepositories")

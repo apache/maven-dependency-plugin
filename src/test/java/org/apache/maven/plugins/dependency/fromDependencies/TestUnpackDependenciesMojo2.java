@@ -70,9 +70,9 @@ class TestUnpackDependenciesMojo2 {
         stubFactory = new DependencyArtifactStubFactory(tempDir, true, false);
         session.getRequest().setLocalRepositoryPath(new File(tempDir, "localTestRepo"));
 
-        // it needs to get the archivermanager
+        // it needs to get the archiverManager
         stubFactory.setUnpackableFile(archiverManager);
-        // i'm using one file repeatedly to archive so I can test the name
+        // I'm using one file repeatedly to archive so I can test the name
         // programmatically.
         stubFactory.setSrcFile(MojoExtension.getTestFile(UNPACKABLE_FILE));
 

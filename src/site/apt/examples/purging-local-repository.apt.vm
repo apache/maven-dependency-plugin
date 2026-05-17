@@ -47,7 +47,7 @@ mvn dependency:purge-local-repository
   dependency tree information before beginning the purge process.
 
   To avoid this pre-download step, the plugin can be configured to operate only
-  on the direct dependencies of the project using the "actTranstively" parameter.
+  on the direct dependencies of the project using the "actTransitively" parameter.
 
 +---+
 mvn dependency:purge-local-repository -DactTransitively=false
