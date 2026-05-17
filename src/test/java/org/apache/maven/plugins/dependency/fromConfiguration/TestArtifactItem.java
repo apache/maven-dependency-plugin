@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class TestArtifactItem {
 
     @Test
-    void testArtifactItemConstructor() throws IOException {
+    void testArtifactItemConstructor() {
         Artifact artifact = new DefaultArtifact("g", "a", "1.0", Artifact.SCOPE_COMPILE, "jar", "one", null);
 
         ArtifactItem item = new ArtifactItem(artifact);
