@@ -156,32 +156,30 @@ public class UnpackUtil {
     }
 
     private void logUnpack(Log logger, File file, File location, String includes, String excludes) {
-        if (logger.isInfoEnabled()) {
-            return;
+        if (logger.isDebugEnabled()) {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Unpacking ");
+            msg.append(file);
+            msg.append(" to ");
+            msg.append(location);
+    
+            if (includes != null && excludes != null) {
+                msg.append(" with includes \"");
+                msg.append(includes);
+                msg.append("\" and excludes \"");
+                msg.append(excludes);
+                msg.append("\"");
+            } else if (includes != null) {
+                msg.append(" with includes \"");
+                msg.append(includes);
+                msg.append("\"");
+            } else if (excludes != null) {
+                msg.append(" with excludes \"");
+                msg.append(excludes);
+                msg.append("\"");
+            }
+    
+            logger.info(msg.toString());
         }
-
-        StringBuilder msg = new StringBuilder();
-        msg.append("Unpacking ");
-        msg.append(file);
-        msg.append(" to ");
-        msg.append(location);
-
-        if (includes != null && excludes != null) {
-            msg.append(" with includes \"");
-            msg.append(includes);
-            msg.append("\" and excludes \"");
-            msg.append(excludes);
-            msg.append("\"");
-        } else if (includes != null) {
-            msg.append(" with includes \"");
-            msg.append(includes);
-            msg.append("\"");
-        } else if (excludes != null) {
-            msg.append(" with excludes \"");
-            msg.append(excludes);
-            msg.append("\"");
-        }
-
-        logger.info(msg.toString());
     }
 }
