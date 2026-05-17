@@ -162,7 +162,7 @@ public class UnpackUtil {
             msg.append(file);
             msg.append(" to ");
             msg.append(location);
-    
+
             if (includes != null && excludes != null) {
                 msg.append(" with includes \"");
                 msg.append(includes);
@@ -178,8 +178,8 @@ public class UnpackUtil {
                 msg.append(excludes);
                 msg.append("\"");
             }
-    
-            logger.info(msg.toString());
+
+            logger.debug(msg.toString());
         }
     }
 }
