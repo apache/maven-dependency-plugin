@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
@@ -449,7 +450,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     }
 
     private void filterArtifactsByScope(Set<Artifact> artifacts, String scope) {
-        artifacts.removeIf(artifact -> artifact.getScope().equals(scope));
+        artifacts.removeIf(artifact -> Objects.equals(artifact.getScope(), scope));
     }
 
     private void logArtifacts(Set<Artifact> artifacts, boolean warn) {
