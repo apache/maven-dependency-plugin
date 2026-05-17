@@ -18,8 +18,6 @@
  */
 package org.apache.maven.plugins.dependency.fromConfiguration;
 
-import java.io.IOException;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.junit.jupiter.api.Test;
