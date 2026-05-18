@@ -139,7 +139,7 @@ class AnalyzeExclusionsMojoTest {
         dependencyWithWildcardExclusion.addExclusion(exclusion("*", "*"));
         when(project.getDependencies()).thenReturn(Collections.singletonList(dependencyWithWildcardExclusion));
 
-        when(resolverUtil.collectDependencies(any()))
+        when(resolverUtil.collectDependenciesWithDirectDependencies(any(), any()))
                 .thenReturn(Collections.singletonList(new org.eclipse.aether.graph.Dependency(
                         new DefaultArtifact("whatever", "ok", "jar", "1.0"), "")));
 
@@ -168,7 +168,7 @@ class AnalyzeExclusionsMojoTest {
         dependencies.add(dependency);
         when(project.getDependencies()).thenReturn(dependencies);
 
-        when(resolverUtil.collectDependencies(any()))
+        when(resolverUtil.collectDependenciesWithDirectDependencies(any(), any()))
                 .thenReturn(Collections.singletonList(
                         new org.eclipse.aether.graph.Dependency(new DefaultArtifact("ok", "ok", "jar", "1.0"), "")));
 

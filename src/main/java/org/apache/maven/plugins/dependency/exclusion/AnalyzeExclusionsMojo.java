@@ -144,7 +144,8 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
 
             Collection<org.eclipse.aether.graph.Dependency> actualDependencies;
             try {
-                actualDependencies = resolverUtil.collectDependencies(
+                actualDependencies = resolverUtil.collectDependenciesWithDirectDependencies(
+                        null,
                         RepositoryUtils.toDependency(currentCoordinates.getDependency(), artifactTypeRegistry)
                                 .setExclusions(null));
             } catch (DependencyCollectionException e) {

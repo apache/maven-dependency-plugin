@@ -24,6 +24,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -86,11 +87,23 @@ public class ResolverUtil {
      * @return a resolved dependencies collections
      */
     public Collection<Dependency> collectDependencies(Dependency root) throws DependencyCollectionException {
+        return collectDependenciesWithDirectDependencies(root);
+    }
+
+    /**
+     * Collects the transitive dependencies.
+     *
+     * @param root a root dependency for collections
+     * @return a resolved dependencies collections
+     */
+    public Collection<Dependency> collectDependenciesWithDirectDependencies(Dependency root, Dependency... dependencies)
+            throws DependencyCollectionException {
 
         MavenSession session = mavenSessionProvider.get();
 
         CollectRequest request =
                 new CollectRequest(root, session.getCurrentProject().getRemoteProjectRepositories());
+        Arrays.stream(dependencies).forEach(request::addDependency);
         CollectResult result = repositorySystem.collectDependencies(session.getRepositorySession(), request);
 
         PreorderNodeListGenerator nodeListGenerator = new PreorderNodeListGenerator();
