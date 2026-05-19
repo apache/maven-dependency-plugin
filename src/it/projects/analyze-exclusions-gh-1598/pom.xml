@@ -33,15 +33,17 @@
     Should be ok with Maven 3.x
   </description>
 
+  <url>https://github.com/apache/maven-dependency-plugin/issues/1598</url>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.hadoop</groupId>
+      <groupId>org.apache.maven.its.dependency</groupId>
       <artifactId>hadoop-client</artifactId>
-      <version>3.4.3</version>
+      <version>1.0.0-test</version>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
