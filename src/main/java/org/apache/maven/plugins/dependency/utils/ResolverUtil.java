@@ -82,15 +82,17 @@ public class ResolverUtil {
     /**
      * Collects the transitive dependencies.
      *
-     * @param root a root dependency for collections
-     * @return a resolved dependencies collections
+     * @param dependency a dependency for collections
+     * @return a resolved dependencies collection
      */
-    public Collection<Dependency> collectDependencies(Dependency root) throws DependencyCollectionException {
+    public Collection<Dependency> collectDependencies(Dependency dependency) throws DependencyCollectionException {
 
         MavenSession session = mavenSessionProvider.get();
 
         CollectRequest request =
-                new CollectRequest(root, session.getCurrentProject().getRemoteProjectRepositories());
+                new CollectRequest(null, session.getCurrentProject().getRemoteProjectRepositories());
+        request.addDependency(dependency);
+
         CollectResult result = repositorySystem.collectDependencies(session.getRepositorySession(), request);
 
         PreorderNodeListGenerator nodeListGenerator = new PreorderNodeListGenerator();
