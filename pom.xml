@@ -104,6 +104,18 @@ under the License.
     <project.build.outputTimestamp>2026-05-16T08:21:34Z</project.build.outputTimestamp>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <!-- check to remove with next version of maven-dependency-analyzer -->
+        <!-- manage version to support JDK 27 -->
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>9.10</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <!-- maven -->
     <dependency>

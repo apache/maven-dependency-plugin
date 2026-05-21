@@ -91,7 +91,7 @@ public class PropertiesMojo extends AbstractMojo {
      *   &lt;/extraArtifact&gt;
      * &lt;/extraArtifacts&gt;
      * </pre>
-     * @since 3.10.1
+     * @since 3.11.0
      */
     @Parameter
     private List<ParamArtifact> extraArtifacts;
