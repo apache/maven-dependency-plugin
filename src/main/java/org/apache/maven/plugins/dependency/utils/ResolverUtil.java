@@ -54,6 +54,9 @@ import org.eclipse.aether.collection.DependencyCollectionException;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
+import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
+import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
@@ -101,7 +104,7 @@ public class ResolverUtil {
     }
 
     /**
-     * Resolve given artifact.
+     * Resolve a given artifact.
      *
      * @param artifact     an artifact to resolve
      * @param repositories remote repositories list
@@ -109,10 +112,31 @@ public class ResolverUtil {
      * @throws ArtifactResolutionException if the artifact could not be resolved
      */
     public Artifact resolveArtifact(Artifact artifact, List<RemoteRepository> repositories)
-            throws ArtifactResolutionException {
+            throws ArtifactResolutionException, ArtifactDescriptorException {
         MavenSession session = mavenSessionProvider.get();
-        ArtifactRequest request = new ArtifactRequest(artifact, repositories, null);
-        ArtifactResult result = repositorySystem.resolveArtifact(session.getRepositorySession(), request);
+        return resolveArtifact(artifact, repositories, session.getRepositorySession());
+    }
+
+    /**
+     * Resolve a given artifact.
+     *
+     * @param artifact     an artifact to resolve
+     * @param repositories remote repositories list
+     * @param session      a repository system session
+     * @return resolved artifact
+     * @throws ArtifactResolutionException if the artifact could not be resolved
+     */
+    public Artifact resolveArtifact(
+            Artifact artifact, List<RemoteRepository> repositories, RepositorySystemSession session)
+            throws ArtifactResolutionException, ArtifactDescriptorException {
+
+        ArtifactDescriptorResult artifactDescriptorResult = repositorySystem.readArtifactDescriptor(
+                session, new ArtifactDescriptorRequest(artifact, repositories, null));
+
+        Artifact artifactToResolve = artifactDescriptorResult.getArtifact();
+
+        ArtifactRequest request = new ArtifactRequest(artifactToResolve, repositories, null);
+        ArtifactResult result = repositorySystem.resolveArtifact(session, request);
         return result.getArtifact();
     }
 
@@ -123,7 +147,7 @@ public class ResolverUtil {
      * @return resolved artifact
      * @throws ArtifactResolutionException if the artifact could not be resolved
      */
-    public Artifact resolvePlugin(Plugin plugin) throws ArtifactResolutionException {
+    public Artifact resolvePlugin(Plugin plugin) throws ArtifactResolutionException, ArtifactDescriptorException {
         MavenSession session = mavenSessionProvider.get();
         Artifact artifact = toArtifact(plugin);
         return resolveArtifact(artifact, session.getCurrentProject().getRemotePluginRepositories());

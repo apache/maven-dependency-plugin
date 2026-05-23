@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
   ~ Licensed to the Apache Software Foundation (ASF) under one
   ~ or more contributor license agreements.  See the NOTICE file
@@ -17,42 +18,45 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-
+  
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
 
+  <modelVersion>4.0.0</modelVersion>
+  
   <groupId>org.apache.maven.its.dependency</groupId>
   <artifactId>test</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <name>Test</name>
   <description>
-    Test dependency:copy
+    Test dependency:unpack with relocation
   </description>
-
+  
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-
+  
   <build>
+
     <plugins>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>@project.version@</version>
         <executions>
           <execution>
-            <id>test</id>
+            <id>unpack</id>
             <goals>
-              <goal>copy</goal>
+              <goal>unpack</goal>
             </goals>
             <configuration>
+              <outputDirectory>${project.build.directory}/ResourceArtifact</outputDirectory>
               <artifactItems>
                 <artifactItem>
                   <groupId>org.apache.maven.its.dependency</groupId>
-                  <artifactId>a1</artifactId>
-                  <version>1.0.0</version>
+                  <artifactId>ResourceArtifact-relocation</artifactId>
+                  <version>1.0</version>
                 </artifactItem>
               </artifactItems>
             </configuration>

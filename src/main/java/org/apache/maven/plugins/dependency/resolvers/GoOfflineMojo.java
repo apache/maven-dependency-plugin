@@ -55,6 +55,7 @@ import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -127,7 +128,10 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
                         + DependencyUtil.getFormattedFileName(RepositoryUtils.toArtifact(artifact), false));
             }
 
-        } catch (ArtifactFilterException | ArtifactResolutionException | DependencyResolutionException e) {
+        } catch (ArtifactFilterException
+                | ArtifactResolutionException
+                | DependencyResolutionException
+                | ArtifactDescriptorException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }

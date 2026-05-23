@@ -41,6 +41,7 @@ import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -209,7 +210,10 @@ public class ResolvePluginsMojo extends AbstractDependencyMojo {
                     DependencyUtil.write(output, outputFile, appendOutput, encoding);
                 }
             }
-        } catch (IOException | ArtifactResolutionException | DependencyResolutionException e) {
+        } catch (IOException
+                | ArtifactResolutionException
+                | DependencyResolutionException
+                | ArtifactDescriptorException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }

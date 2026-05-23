@@ -33,6 +33,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.ParamArtifact;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 
 /**
@@ -134,7 +135,7 @@ public class PropertiesMojo extends AbstractMojo {
                             .setProperty(
                                     toConflictId(artifact), artifact.getFile().getAbsolutePath());
                 }
-            } catch (ArtifactResolutionException e) {
+            } catch (ArtifactResolutionException | ArtifactDescriptorException e) {
                 throw new MojoExecutionException("Couldn't download artifact: " + e.getMessage(), e);
             }
         }

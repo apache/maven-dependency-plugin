@@ -57,6 +57,7 @@ import org.apache.maven.shared.artifact.filter.collection.ProjectTransitivityFil
 import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -401,7 +402,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
                         RepositoryUtils.toArtifact(project.getArtifact()), project.getRemoteProjectRepositories());
 
                 artifacts.add(RepositoryUtils.toArtifact(resolvedArtifact));
-            } catch (ArtifactResolutionException e) {
+            } catch (ArtifactResolutionException | ArtifactDescriptorException e) {
                 throw new MojoExecutionException(e.getMessage(), e);
             }
         }
@@ -492,7 +493,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
                 org.eclipse.aether.artifact.Artifact resolveArtifact =
                         resolverUtil.resolveArtifact(artifact, getProject().getRemoteProjectRepositories());
                 resolvedArtifacts.add(RepositoryUtils.toArtifact(resolveArtifact));
-            } catch (ArtifactResolutionException ex) {
+            } catch (ArtifactResolutionException | ArtifactDescriptorException ex) {
                 // an error occurred during resolution, log it and continue
                 getLog().debug("error resolving: " + artifact, ex);
                 if (stopOnFailure) {

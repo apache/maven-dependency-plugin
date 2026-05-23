@@ -30,6 +30,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.UnpackUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.plugins.dependency.utils.filters.MarkerFileFilter;
@@ -111,8 +112,9 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
             MavenProject project,
             ArtifactHandlerManager artifactHandlerManager,
             UnpackUtil unpackUtil,
-            RepositorySystem repositorySystem) {
-        super(session, buildContext, project, artifactHandlerManager, repositorySystem);
+            RepositorySystem repositorySystem,
+            ResolverUtil resolverUtil) {
+        super(session, buildContext, project, artifactHandlerManager, repositorySystem, resolverUtil);
         this.unpackUtil = unpackUtil;
     }
 
