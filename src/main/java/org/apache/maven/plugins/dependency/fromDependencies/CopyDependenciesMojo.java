@@ -48,6 +48,7 @@ import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.transfer.artifact.install.ArtifactInstaller;
 import org.apache.maven.shared.transfer.artifact.install.ArtifactInstallerException;
 import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.util.artifact.SubArtifact;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -299,7 +300,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                 org.eclipse.aether.artifact.Artifact resolvedSignature = getResolverUtil()
                         .resolveArtifact(aSignatureArtifact, getProject().getRemoteProjectRepositories());
                 signatureFile = resolvedSignature.getFile();
-            } catch (ArtifactResolutionException e) {
+            } catch (ArtifactResolutionException | ArtifactDescriptorException e) {
                 getLog().warn("Failed to resolve signature file for artifact: " + artifact, e);
             }
         }
@@ -380,7 +381,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
             org.eclipse.aether.artifact.Artifact resolvedPom =
                     getResolverUtil().resolveArtifact(aPomArtifact, getProject().getRemoteProjectRepositories());
             pomArtifact = RepositoryUtils.toArtifact(resolvedPom);
-        } catch (ArtifactResolutionException e) {
+        } catch (ArtifactResolutionException | ArtifactDescriptorException e) {
             getLog().info(e.getMessage());
         }
         return pomArtifact;

@@ -29,7 +29,7 @@
 
   <name>Test</name>
   <description>
-    Test dependency:copy
+    Test dependency:copy with relocation
   </description>
 
   <properties>
@@ -51,8 +51,8 @@
               <artifactItems>
                 <artifactItem>
                   <groupId>org.apache.maven.its.dependency</groupId>
-                  <artifactId>a1</artifactId>
-                  <version>1.0.0</version>
+                  <artifactId>ResourceArtifact-relocation</artifactId>
+                  <version>1.0</version>
                 </artifactItem>
               </artifactItems>
             </configuration>

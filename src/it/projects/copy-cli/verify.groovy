@@ -17,21 +17,4 @@
  * under the License.
  */
 
-import java.io.*;
-
-File libDir = new File( basedir, "target/dependency" );
-
-String[] expectedFiles = {
-    "maven-model-2.0.6.jar",
-};
-
-for ( String expectedFile : expectedFiles )
-{
-    File file = new File( libDir, expectedFile );
-    if ( !file.isFile() )
-    {
-        throw new Exception( "Missing file " + file );
-    }
-}
-
-return true;
+assert new File( basedir, 'target/dependency/a1-1.0.0.jar' ).isFile();

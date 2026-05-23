@@ -35,6 +35,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.ParamArtifact;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 
@@ -170,7 +171,10 @@ public class ListClassesMojo extends AbstractMojo {
                         resolverUtil.resolveArtifact(artifact, resolverUtil.remoteRepositories(remoteRepositories));
                 printClassesFromArtifactResult(a.getFile());
             }
-        } catch (IOException | ArtifactResolutionException | DependencyResolutionException e) {
+        } catch (IOException
+                | ArtifactResolutionException
+                | DependencyResolutionException
+                | ArtifactDescriptorException e) {
             throw new MojoExecutionException("Couldn't download artifact: " + e.getMessage(), e);
         }
     }

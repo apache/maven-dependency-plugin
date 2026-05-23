@@ -35,6 +35,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
@@ -45,9 +46,8 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.LocalRepositoryManager;
-import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
-import org.eclipse.aether.resolution.ArtifactResult;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -122,15 +122,19 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
 
     private final RepositorySystem repositorySystem;
 
+    private final ResolverUtil resolverUtil;
+
     protected AbstractFromConfigurationMojo(
             MavenSession session,
             BuildContext buildContext,
             MavenProject project,
             ArtifactHandlerManager artifactHandlerManager,
-            RepositorySystem repositorySystem) {
+            RepositorySystem repositorySystem,
+            ResolverUtil resolverUtil) {
         super(session, buildContext, project);
         this.artifactHandlerManager = artifactHandlerManager;
         this.repositorySystem = repositorySystem;
+        this.resolverUtil = resolverUtil;
     }
 
     abstract ArtifactItemFilter getMarkedArtifactFilter(ArtifactItem item);
@@ -252,11 +256,11 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
 
             RepositorySystemSession repositorySession = createSystemSessionForLocalRepo();
 
-            ArtifactRequest request = new ArtifactRequest(artifact, getProject().getRemoteProjectRepositories(), null);
-            ArtifactResult artifactResult = repositorySystem.resolveArtifact(repositorySession, request);
-            return RepositoryUtils.toArtifact(artifactResult.getArtifact());
+            org.eclipse.aether.artifact.Artifact resolvedArtifact = resolverUtil.resolveArtifact(
+                    artifact, getProject().getRemoteProjectRepositories(), repositorySession);
+            return RepositoryUtils.toArtifact(resolvedArtifact);
 
-        } catch (ArtifactResolutionException e) {
+        } catch (ArtifactResolutionException | ArtifactDescriptorException e) {
             throw new MojoExecutionException("Unable to find/resolve artifact.", e);
         }
     }
