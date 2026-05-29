@@ -642,19 +642,24 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
         try {
             PomEditor editor = loadPomEditor(pomFile);
 
+            // Find the parent POM that declares <dependencyManagement>, if any.
+            conv.managedPomFile = findManagedDepsPom(project);
+
             // Analyze managed dependency usage: count deps with/without version
             long totalDeps = getDependencyCount(editor, false);
             List<String> depVersions = getDependencyVersions(editor, false);
             long depsWithVersion = depVersions.size();
 
-            if (totalDeps > 0 && depsWithVersion < totalDeps / 2.0) {
-                // Majority of deps are version-less → use managed deps
+            // Only treat version-less dependencies as a "managed" convention when there is a
+            // separate parent POM to host the managed dependency. Otherwise (e.g. a single,
+            // leaf POM whose dependency versions come from a local BOM import), a versioned add
+            // belongs in <dependencies>, not in this POM's <dependencyManagement>.
+            if (conv.managedPomFile != null && totalDeps > 0 && depsWithVersion < totalDeps / 2.0) {
+                // Majority of deps are version-less and a parent manages versions → use managed deps
                 conv.useManaged = true;
-                getLog().debug("Convention detected: majority of dependencies are version-less (useManaged=true)");
+                getLog().debug("Convention detected: majority of dependencies are version-less"
+                        + " and a parent POM manages versions (useManaged=true)");
             }
-
-            // Find the POM that has <dependencyManagement>
-            conv.managedPomFile = findManagedDepsPom(project);
 
             // Analyze property patterns from child POM versions
             List<String> allVersions = new java.util.ArrayList<>(depVersions);
