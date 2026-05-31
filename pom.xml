@@ -501,9 +501,6 @@ under the License.
               </pomIncludes>
               <!-- for mrm -->
               <settingsFile>src/it/mrm/settings.xml</settingsFile>
-              <filterProperties>
-                <compilerPluginVersion>3.11.0</compilerPluginVersion>
-              </filterProperties>
               <addTestClassPath>true</addTestClassPath>
             </configuration>
             <dependencies>
