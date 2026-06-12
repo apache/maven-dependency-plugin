@@ -302,13 +302,13 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
                                 moduleDescriptor.moduleNameSource = "FILENAME";
                             }
                         } catch (IOException e) {
-                            // noop
+                            getLog().debug("Failed to read manifest from " + artifactFile + ": " + e.getMessage());
                         }
                     }
                 }
             }
         } catch (ClassNotFoundException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
-            // do nothing
+            getLog().debug("Failed to extract module descriptor using reflection: " + e.getMessage());
         } catch (NoSuchMethodException e) {
             getLog().warn(e);
         } catch (InvocationTargetException e) {
