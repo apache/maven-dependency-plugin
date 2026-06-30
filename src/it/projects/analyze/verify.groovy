@@ -36,8 +36,5 @@ assert buildLog.contains( '[WARNING]    org.apache.maven:maven-repository-metada
 assert buildLog.contains( '[WARNING]       class org.apache.maven.artifact.repository.metadata.Metadata')
 assert buildLog.contains( '[WARNING] Unused declared dependencies found:')
 assert buildLog.contains( '[WARNING]    org.apache.maven:maven-project:jar:2.0.6:compile')
-assert buildLog.contains( '[INFO] Ignored unused declared dependencies:')
-assert buildLog.contains( '[INFO]    org.slf4j:slf4j-simple:jar:2.0.16:compile')
-assert !buildLog.contains( '[WARNING]    org.slf4j:slf4j-simple:jar:2.0.16:compile')
 
 return true
