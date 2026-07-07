@@ -25,6 +25,7 @@ String log = buildLog.getText( "UTF-8" )
 // warning sections should be present
 assert log.contains( '[WARNING] Used undeclared dependencies found:' )
 assert log.contains( '[WARNING]    org.apache.commons:commons-lang3:jar:3.12.0:compile' )
+assert log.contains( '[WARNING]       class org.apache.commons.lang3.StringUtils' )
 assert log.contains( '[WARNING] Unused declared dependencies found:' )
 assert log.contains( '[WARNING]    org.apache.commons:commons-text:jar:1.10.0:compile' )
 
