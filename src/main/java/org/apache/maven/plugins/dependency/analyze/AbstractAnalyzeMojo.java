@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.analyze;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -560,7 +561,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
     private Set<Artifact> filterDependencies(Set<Artifact> artifacts, String[] excludes) {
         if (excludes == null || excludes.length == 0) {
-            return artifacts;
+            return Collections.emptySet();
         }
         ArtifactFilter filter = new StrictPatternExcludesArtifactFilter(Arrays.asList(excludes));
         Set<Artifact> result = new LinkedHashSet<>();

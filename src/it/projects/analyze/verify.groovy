@@ -34,10 +34,12 @@ assert buildLog.contains( '[INFO]    org.apache.maven:maven-model:jar:2.0.6:comp
 assert buildLog.contains( '[WARNING] Used undeclared dependencies found:')
 assert buildLog.contains( '[WARNING]    org.apache.maven:maven-repository-metadata:jar:2.0.6:compile')
 assert buildLog.contains( '[WARNING]       class org.apache.maven.artifact.repository.metadata.Metadata')
+assert !buildLog.contains( '[INFO] Ignored used undeclared dependencies:')
 assert buildLog.contains( '[WARNING] Unused declared dependencies found:')
 assert buildLog.contains( '[WARNING]    org.apache.maven:maven-project:jar:2.0.6:compile')
 assert buildLog.contains( '[INFO] Ignored unused declared dependencies:')
 assert buildLog.contains( '[INFO]    org.slf4j:slf4j-simple:jar:2.0.16:compile')
+assert !buildLog.contains( '[INFO]    org.apache.maven:maven-project:jar:2.0.6:compile')
 assert !buildLog.contains( '[WARNING]    org.slf4j:slf4j-simple:jar:2.0.16:compile')
 
 return true
