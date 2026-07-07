@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency;
 
 import javax.inject.Inject;
 
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 
@@ -112,10 +113,12 @@ public class PropertiesMojo extends AbstractMojo {
         Set<Artifact> artifacts = project.getArtifacts();
 
         for (Artifact artifact : artifacts) {
-            project.getProperties()
-                    .setProperty(
-                            artifact.getDependencyConflictId(),
-                            artifact.getFile().getAbsolutePath());
+            File file = artifact.getFile();
+            if (file == null) {
+                throw new MojoExecutionException("Could not resolve artifact " + artifact.getDependencyConflictId()
+                        + " to a file; the dependency:properties goal requires a resolved artifact.");
+            }
+            project.getProperties().setProperty(artifact.getDependencyConflictId(), file.getAbsolutePath());
         }
 
         if (extraArtifacts != null) {
@@ -130,10 +133,12 @@ public class PropertiesMojo extends AbstractMojo {
                             resolverUtil.createArtifactFromParams(paramArtifact);
                     artifact = resolverUtil.resolveArtifact(artifact, project.getRemoteProjectRepositories());
 
-                    this.project
-                            .getProperties()
-                            .setProperty(
-                                    toConflictId(artifact), artifact.getFile().getAbsolutePath());
+                    File file = artifact.getFile();
+                    if (file == null) {
+                        throw new MojoExecutionException("Could not resolve extra artifact " + toConflictId(artifact)
+                                + " to a file; the dependency:properties goal requires a resolved artifact.");
+                    }
+                    this.project.getProperties().setProperty(toConflictId(artifact), file.getAbsolutePath());
                 }
             } catch (ArtifactResolutionException | ArtifactDescriptorException e) {
                 throw new MojoExecutionException("Couldn't download artifact: " + e.getMessage(), e);

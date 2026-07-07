@@ -29,12 +29,14 @@ import org.apache.maven.api.plugin.testing.InjectMojo;
 import org.apache.maven.api.plugin.testing.MojoExtension;
 import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.dependency.utils.ParamArtifact;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -101,5 +103,16 @@ class TestPropertiesMojo {
 
         assertTrue(project.getProperties().containsKey(depId2));
         assertTrue(new File(project.getProperties().getProperty(depId1)).exists());
+    }
+
+    @Test
+    @InjectMojo(goal = "properties")
+    void testNullFileThrowsException(PropertiesMojo mojo) {
+        Artifact artifact = Mockito.mock(Artifact.class);
+        when(artifact.getDependencyConflictId()).thenReturn("group:artifact");
+        when(artifact.getFile()).thenReturn(null);
+        when(this.project.getArtifacts()).thenReturn(new HashSet<>(Arrays.asList(artifact)));
+
+        assertThrows(MojoExecutionException.class, mojo::execute);
     }
 }
