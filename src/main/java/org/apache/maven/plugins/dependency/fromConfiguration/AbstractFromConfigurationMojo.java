@@ -46,7 +46,6 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.LocalRepositoryManager;
-import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -256,11 +255,11 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
 
             RepositorySystemSession repositorySession = createSystemSessionForLocalRepo();
 
-            org.eclipse.aether.artifact.Artifact resolvedArtifact = resolverUtil.resolveArtifact(
+            org.eclipse.aether.artifact.Artifact resolvedArtifact = resolverUtil.resolveArtifactWithFallback(
                     artifact, getProject().getRemoteProjectRepositories(), repositorySession);
             return RepositoryUtils.toArtifact(resolvedArtifact);
 
-        } catch (ArtifactResolutionException | ArtifactDescriptorException e) {
+        } catch (ArtifactResolutionException e) {
             throw new MojoExecutionException("Unable to find/resolve artifact.", e);
         }
     }

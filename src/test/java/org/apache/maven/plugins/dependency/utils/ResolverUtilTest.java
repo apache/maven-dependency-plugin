@@ -20,13 +20,22 @@ package org.apache.maven.plugins.dependency.utils;
 
 import javax.inject.Provider;
 
+import java.util.Collections;
 import java.util.stream.Stream;
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
+import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
+import org.eclipse.aether.resolution.ArtifactDescriptorResult;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,6 +49,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.params.provider.Arguments.of;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,6 +68,9 @@ class ResolverUtilTest {
 
     @Mock
     private Provider<MavenSession> sessionProvider;
+
+    @Mock
+    private RepositorySystem repositorySystem;
 
     @InjectMocks
     private ResolverUtil resolverUtil;
@@ -125,5 +140,23 @@ class ResolverUtilTest {
         assertThatCode(() -> resolverUtil.prepareRemoteRepository(null))
                 .isExactlyInstanceOf(NullPointerException.class)
                 .hasMessage("repository must be not null");
+    }
+
+    @Test
+    void resolveArtifactWithFallbackWhenDescriptorCannotBeRead() throws Exception {
+        Artifact artifact = new DefaultArtifact("groupId", "artifactId", null, "jar", "1.0");
+        ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
+        ArtifactDescriptorException descriptorException =
+                new ArtifactDescriptorException(new ArtifactDescriptorResult(descriptorRequest));
+        ArtifactResult artifactResult = new ArtifactResult(new ArtifactRequest()).setArtifact(artifact);
+
+        when(repositorySystem.readArtifactDescriptor(eq(repositorySystemSession), any(ArtifactDescriptorRequest.class)))
+                .thenThrow(descriptorException);
+        when(repositorySystem.resolveArtifact(eq(repositorySystemSession), any(ArtifactRequest.class)))
+                .thenReturn(artifactResult);
+
+        assertThat(resolverUtil.resolveArtifactWithFallback(artifact, Collections.emptyList(), repositorySystemSession))
+                .isSameAs(artifact);
+        verify(repositorySystem).resolveArtifact(eq(repositorySystemSession), any(ArtifactRequest.class));
     }
 }

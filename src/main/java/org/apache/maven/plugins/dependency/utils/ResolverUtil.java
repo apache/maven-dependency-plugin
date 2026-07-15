@@ -133,9 +133,37 @@ public class ResolverUtil {
         ArtifactDescriptorResult artifactDescriptorResult = repositorySystem.readArtifactDescriptor(
                 session, new ArtifactDescriptorRequest(artifact, repositories, null));
 
-        Artifact artifactToResolve = artifactDescriptorResult.getArtifact();
+        return resolveArtifactDirectly(artifactDescriptorResult.getArtifact(), repositories, session);
+    }
 
-        ArtifactRequest request = new ArtifactRequest(artifactToResolve, repositories, null);
+    /**
+     * Resolve a given artifact, falling back to its original coordinates when its descriptor cannot be read.
+     *
+     * @param artifact     an artifact to resolve
+     * @param repositories remote repositories list
+     * @param session      a repository system session
+     * @return resolved artifact
+     * @throws ArtifactResolutionException if the artifact could not be resolved
+     */
+    public Artifact resolveArtifactWithFallback(
+            Artifact artifact, List<RemoteRepository> repositories, RepositorySystemSession session)
+            throws ArtifactResolutionException {
+        try {
+            return resolveArtifact(artifact, repositories, session);
+        } catch (ArtifactDescriptorException descriptorException) {
+            try {
+                return resolveArtifactDirectly(artifact, repositories, session);
+            } catch (ArtifactResolutionException resolutionException) {
+                resolutionException.addSuppressed(descriptorException);
+                throw resolutionException;
+            }
+        }
+    }
+
+    private Artifact resolveArtifactDirectly(
+            Artifact artifact, List<RemoteRepository> repositories, RepositorySystemSession session)
+            throws ArtifactResolutionException {
+        ArtifactRequest request = new ArtifactRequest(artifact, repositories, null);
         ArtifactResult result = repositorySystem.resolveArtifact(session, request);
         return result.getArtifact();
     }
