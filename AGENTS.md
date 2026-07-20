@@ -34,7 +34,7 @@ Points at the Apache Maven family umbrella security model.
 
 ## Coding
 
-Use test first programming. Before fixing a bug or implementing a feature,
+Use test-first programming. Before fixing a bug or implementing a feature,
 write a test that exposes the bug and verify the test fails.
 
-Before submitting a PR run `mvn spotless:apply` to format the files.
+Before submitting a PR, run `mvn spotless:apply` to format the files.
