@@ -65,7 +65,6 @@ import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Helper class for using Resolver API.
@@ -211,7 +210,7 @@ public class ResolverUtil {
             List<Dependency> dependencies,
             List<Dependency> managedDependencies,
             List<RemoteRepository> remoteProjectRepositories,
-            @Nullable DependencyFilter dependencyFilter)
+            DependencyFilter dependencyFilter)
             throws DependencyResolutionException {
         MavenSession session = mavenSessionProvider.get();
 
