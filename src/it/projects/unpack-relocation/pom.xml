@@ -37,6 +37,14 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven.its.dependency</groupId>
+      <artifactId>ResourceArtifact-relocation</artifactId>
+      <version>1.0</version>
+    </dependency>
+  </dependencies>
   
   <build>
 
@@ -56,7 +64,6 @@
                 <artifactItem>
                   <groupId>org.apache.maven.its.dependency</groupId>
                   <artifactId>ResourceArtifact-relocation</artifactId>
-                  <version>1.0</version>
                 </artifactItem>
               </artifactItems>
             </configuration>
