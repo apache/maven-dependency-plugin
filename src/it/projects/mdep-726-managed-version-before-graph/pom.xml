@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ Licensed to the Apache Software Foundation (ASF) under one
   ~ or more contributor license agreements.  See the NOTICE file
@@ -18,52 +17,50 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-  
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
-  <groupId>org.apache.maven.its.dependency</groupId>
-  <artifactId>test</artifactId>
+  <groupId>org.apache.maven.plugins.dependency.its</groupId>
+  <artifactId>mdep-726-managed-version-before-graph</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>Test</name>
-  <description>
-    Test dependency:unpack with relocation
-  </description>
-  
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven.its.dependency</groupId>
+        <artifactId>ResourceArtifact</artifactId>
+        <version>1.0</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.maven.its.dependency</groupId>
-      <artifactId>ResourceArtifact-relocation</artifactId>
-      <version>1.0</version>
+      <groupId>review.missing</groupId>
+      <artifactId>unrelated</artifactId>
+      <version>[1.0,2.0)</version>
     </dependency>
   </dependencies>
-  
-  <build>
 
+  <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>@project.version@</version>
         <executions>
           <execution>
-            <id>unpack</id>
+            <id>copy-managed-artifact</id>
+            <phase>process-sources</phase>
             <goals>
-              <goal>unpack</goal>
+              <goal>copy</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/ResourceArtifact</outputDirectory>
               <artifactItems>
                 <artifactItem>
                   <groupId>org.apache.maven.its.dependency</groupId>
-                  <artifactId>ResourceArtifact-relocation</artifactId>
+                  <artifactId>ResourceArtifact</artifactId>
                 </artifactItem>
               </artifactItems>
             </configuration>

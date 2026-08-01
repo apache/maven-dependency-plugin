@@ -21,7 +21,6 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.RepositoryUtils;
@@ -29,7 +28,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -39,13 +37,9 @@ import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
-import org.eclipse.aether.DefaultRepositoryCache;
-import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.RepositorySystem;
+import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilder;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.repository.LocalRepository;
-import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -100,8 +94,9 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     private boolean overWriteIfNewer;
 
     /**
-     * Collection of ArtifactItems to work on. (ArtifactItem contains groupId, artifactId, version, type, classifier,
-     * outputDirectory, destFileName, overWrite and encoding.) See <a href="./usage.html">Usage</a> for details.
+     * Collection of ArtifactItems to work on. (ArtifactItem contains groupId, artifactId, version, dependencyScope,
+     * type, classifier, outputDirectory, destFileName, overWrite and encoding.) See <a href="./usage.html">Usage</a>
+     * for details.
      *
      * @since 1.0
      */
@@ -119,21 +114,21 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
 
     private final ArtifactHandlerManager artifactHandlerManager;
 
-    private final RepositorySystem repositorySystem;
-
     private final ResolverUtil resolverUtil;
+
+    private final DependencyVersionResolver dependencyVersionResolver;
 
     protected AbstractFromConfigurationMojo(
             MavenSession session,
             BuildContext buildContext,
             MavenProject project,
             ArtifactHandlerManager artifactHandlerManager,
-            RepositorySystem repositorySystem,
-            ResolverUtil resolverUtil) {
+            ResolverUtil resolverUtil,
+            DependencyCollectorBuilder dependencyCollectorBuilder) {
         super(session, buildContext, project);
         this.artifactHandlerManager = artifactHandlerManager;
-        this.repositorySystem = repositorySystem;
         this.resolverUtil = resolverUtil;
+        this.dependencyVersionResolver = new DependencyVersionResolver(session, project, dependencyCollectorBuilder);
     }
 
     abstract ArtifactItemFilter getMarkedArtifactFilter(ArtifactItem item);
@@ -207,22 +202,15 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     }
 
     private RepositorySystemSession createSystemSessionForLocalRepo() {
-        RepositorySystemSession repositorySystemSession = session.getRepositorySession();
+        RepositorySystemSession repositorySystemSession =
+                resolverUtil.repositorySystemSession(localRepositoryDirectory);
         if (localRepositoryDirectory != null) {
-            // "clone" repository session and replace localRepository
-            DefaultRepositorySystemSession newSession =
-                    new DefaultRepositorySystemSession(session.getRepositorySession());
-            // Clear cache, since we're using a new local repository
-            newSession.setCache(new DefaultRepositoryCache());
-            LocalRepositoryManager localRepositoryManager = repositorySystem.newLocalRepositoryManager(
-                    newSession, new LocalRepository(localRepositoryDirectory));
-
-            newSession.setLocalRepositoryManager(localRepositoryManager);
-            repositorySystemSession = newSession;
             getLog().debug("localRepoPath: "
-                    + localRepositoryManager.getRepository().getBasedir());
+                    + repositorySystemSession
+                            .getLocalRepositoryManager()
+                            .getRepository()
+                            .getBasedir());
         }
-
         return repositorySystemSession;
     }
 
@@ -273,43 +261,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * @throws MojoExecutionException
      */
     private void fillMissingArtifactVersion(ArtifactItem artifact) throws MojoExecutionException {
-        MavenProject project = getProject();
-        List<Dependency> deps = project.getDependencies();
-        List<Dependency> depMngt = project.getDependencyManagement() == null
-                ? Collections.emptyList()
-                : project.getDependencyManagement().getDependencies();
-
-        if (!findDependencyVersion(artifact, deps, false)
-                && (project.getDependencyManagement() == null || !findDependencyVersion(artifact, depMngt, false))
-                && !findDependencyVersion(artifact, deps, true)
-                && (project.getDependencyManagement() == null || !findDependencyVersion(artifact, depMngt, true))) {
-            throw new MojoExecutionException("Unable to find artifact version of " + artifact.getGroupId() + ":"
-                    + artifact.getArtifactId() + " in either dependency list or in project's dependency management.");
-        }
-    }
-
-    /**
-     * Tries to find missing version from a list of dependencies. If found, the artifact is updated with the correct
-     * version.
-     *
-     * @param artifact representing configured file
-     * @param dependencies list of dependencies to search
-     * @param looseMatch only look at artifactId and groupId
-     * @return the found dependency
-     */
-    private boolean findDependencyVersion(ArtifactItem artifact, List<Dependency> dependencies, boolean looseMatch) {
-        for (Dependency dependency : dependencies) {
-            if (Objects.equals(dependency.getArtifactId(), artifact.getArtifactId())
-                    && Objects.equals(dependency.getGroupId(), artifact.getGroupId())
-                    && (looseMatch || Objects.equals(dependency.getClassifier(), artifact.getClassifier()))
-                    && (looseMatch || Objects.equals(dependency.getType(), artifact.getType()))) {
-                artifact.setVersion(dependency.getVersion());
-
-                return true;
-            }
-        }
-
-        return false;
+        artifact.setVersion(dependencyVersionResolver.resolveVersion(artifact));
     }
 
     /**
