@@ -34,10 +34,14 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
+import org.eclipse.aether.resolution.DependencyRequest;
+import org.eclipse.aether.resolution.DependencyResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -53,6 +57,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.params.provider.Arguments.of;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -75,6 +80,9 @@ class ResolverUtilTest {
 
     @Mock
     private ArtifactTypeRegistry artifactTypeRegistry;
+
+    @Mock
+    private DependencyFilter dependencyFilter;
 
     @Mock
     private MavenSession mavenSession;
@@ -224,5 +232,52 @@ class ResolverUtilTest {
         assertThatCode(() -> resolverUtil.localRepositorySession(null))
                 .isExactlyInstanceOf(NullPointerException.class)
                 .hasMessage("localRepositoryDirectory");
+    }
+
+    @Test
+    void resolveDependenciesForArtifactWithFilter() throws Exception {
+        Artifact rootArtifact = new DefaultArtifact("org.apache.maven.plugins", "artifact", "jar", "1.0");
+        DependencyResult dependencyResult = new DependencyResult(new DependencyRequest());
+        when(sessionProvider.get()).thenReturn(mavenSession);
+        when(mavenSession.getRepositorySession()).thenReturn(repositorySystemSession);
+        when(repositorySystem.resolveDependencies(eq(repositorySystemSession), any(DependencyRequest.class)))
+                .thenReturn(dependencyResult);
+
+        resolverUtil.resolveDependenciesForArtifact(
+                rootArtifact,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                dependencyFilter);
+
+        verify(repositorySystem)
+                .resolveDependencies(
+                        eq(repositorySystemSession),
+                        argThat(request -> request.getFilter() == dependencyFilter
+                                && request.getCollectRequest().getRootArtifact() == null
+                                && request.getCollectRequest()
+                                        .getRoot()
+                                        .getArtifact()
+                                        .equals(rootArtifact)));
+    }
+
+    @Test
+    void resolveDependenciesForArtifactWithoutFilterDoesNotResolveRoot() throws Exception {
+        Artifact rootArtifact = new DefaultArtifact("org.apache.maven.plugins", "artifact", "jar", "1.0");
+        DependencyResult dependencyResult = new DependencyResult(new DependencyRequest());
+        when(sessionProvider.get()).thenReturn(mavenSession);
+        when(mavenSession.getRepositorySession()).thenReturn(repositorySystemSession);
+        when(repositorySystem.resolveDependencies(eq(repositorySystemSession), any(DependencyRequest.class)))
+                .thenReturn(dependencyResult);
+
+        resolverUtil.resolveDependenciesForArtifact(
+                rootArtifact, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+
+        verify(repositorySystem)
+                .resolveDependencies(
+                        eq(repositorySystemSession),
+                        argThat(request -> request.getFilter() == null
+                                && request.getCollectRequest().getRoot() == null
+                                && request.getCollectRequest().getRootArtifact().equals(rootArtifact)));
     }
 }

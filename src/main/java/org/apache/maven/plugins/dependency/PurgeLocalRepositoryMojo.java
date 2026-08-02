@@ -28,10 +28,11 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
@@ -44,6 +45,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.resolve.AbstractFilter;
 import org.apache.maven.shared.artifact.filter.resolve.AndFilter;
@@ -53,16 +55,14 @@ import org.apache.maven.shared.artifact.filter.resolve.PatternInclusionsFilter;
 import org.apache.maven.shared.artifact.filter.resolve.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
 import org.apache.maven.shared.artifact.filter.resolve.transform.ArtifactIncludeFilterTransformer;
-import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
-import org.apache.maven.shared.transfer.artifact.TransferUtils;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.apache.maven.shared.artifact.filter.resolve.transform.EclipseAetherFilterTransformer;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
+import org.eclipse.aether.resolution.DependencyResolutionException;
 
 /**
  * When run on a project, remove the project dependencies from the local repository, and optionally re-resolve them.
@@ -87,20 +87,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
 
     private final MavenSession session;
 
-    /**
-     * Artifact handler manager.
-     */
-    private final ArtifactHandlerManager artifactHandlerManager;
-
-    /**
-     * The dependency resolver.
-     */
-    private final DependencyResolver dependencyResolver;
-
-    /**
-     * The artifact resolver used to re-resolve dependencies, if that option is enabled.
-     */
-    private final ArtifactResolver artifactResolver;
+    private final ResolverUtil resolverUtil;
 
     /**
      * The Maven projects in the reactor.
@@ -221,17 +208,10 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     private boolean skip;
 
     @Inject
-    public PurgeLocalRepositoryMojo(
-            MavenProject project,
-            MavenSession session,
-            ArtifactHandlerManager artifactHandlerManager,
-            DependencyResolver dependencyResolver,
-            ArtifactResolver artifactResolver) {
+    public PurgeLocalRepositoryMojo(MavenProject project, MavenSession session, ResolverUtil resolverUtil) {
         this.session = session;
         this.project = project;
-        this.artifactHandlerManager = artifactHandlerManager;
-        this.dependencyResolver = dependencyResolver;
-        this.artifactResolver = artifactResolver;
+        this.resolverUtil = resolverUtil;
     }
 
     /**
@@ -521,18 +501,31 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
 
     private Set<Artifact> getFilteredResolvedArtifacts(
             MavenProject theProject, List<Dependency> dependencies, TransformableFilter filter) {
+        ArtifactTypeRegistry artifactTypeRegistry =
+                session.getRepositorySession().getArtifactTypeRegistry();
+        List<org.eclipse.aether.graph.Dependency> resolverDependencies = dependencies.stream()
+                .map(dependency -> RepositoryUtils.toDependency(dependency, artifactTypeRegistry))
+                .collect(Collectors.toList());
+        List<org.eclipse.aether.graph.Dependency> managedDependencies = theProject.getDependencyManagement() == null
+                ? null
+                : theProject.getDependencyManagement().getDependencies().stream()
+                        .map(dependency -> RepositoryUtils.toDependency(dependency, artifactTypeRegistry))
+                        .collect(Collectors.toList());
+        DependencyFilter dependencyFilter = filter.transform(new EclipseAetherFilterTransformer());
+
         try {
-            Iterable<ArtifactResult> results = dependencyResolver.resolveDependencies(
-                    session.getProjectBuildingRequest(), theProject.getModel(), filter);
-
-            Set<Artifact> resolvedArtifacts = new LinkedHashSet<>();
-
-            for (ArtifactResult artResult : results) {
-                resolvedArtifacts.add(artResult.getArtifact());
-            }
-
-            return resolvedArtifacts;
-        } catch (DependencyResolverException e) {
+            return resolverUtil
+                    .resolveDependenciesForArtifact(
+                            RepositoryUtils.toArtifact(theProject.getArtifact()),
+                            resolverDependencies,
+                            managedDependencies,
+                            theProject.getRemoteProjectRepositories(),
+                            dependencyFilter)
+                    .stream()
+                    .map(RepositoryUtils::toArtifact)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+        } catch (DependencyResolutionException e) {
+            getLog().debug("Unable to resolve all dependencies for: " + getProjectKey(theProject), e);
             getLog().info("Unable to resolve all dependencies for: " + getProjectKey(theProject)
                     + ". Falling back to non-transitive mode for initial artifact resolution.");
         }
@@ -541,23 +534,16 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
 
         ArtifactFilter artifactFilter = filter.transform(new ArtifactIncludeFilterTransformer());
 
-        for (Dependency dependency : dependencies) {
-            DefaultArtifactCoordinate coordinate = new DefaultArtifactCoordinate();
-            coordinate.setGroupId(dependency.getGroupId());
-            coordinate.setArtifactId(dependency.getArtifactId());
-            coordinate.setVersion(dependency.getVersion());
-            coordinate.setExtension(artifactHandlerManager
-                    .getArtifactHandler(dependency.getType())
-                    .getExtension());
+        for (org.eclipse.aether.graph.Dependency dependency : resolverDependencies) {
+            org.eclipse.aether.artifact.Artifact coordinate = dependency.getArtifact();
             try {
-                Artifact artifact = artifactResolver
-                        .resolveArtifact(session.getProjectBuildingRequest(), coordinate)
-                        .getArtifact();
+                Artifact artifact = RepositoryUtils.toArtifact(
+                        resolverUtil.resolveArtifact(coordinate, theProject.getRemoteProjectRepositories()));
                 if (artifactFilter.include(artifact)) {
                     resolvedArtifacts.add(artifact);
                 }
-            } catch (ArtifactResolverException e) {
-                getLog().debug("Unable to resolve artifact: " + coordinate);
+            } catch (org.eclipse.aether.resolution.ArtifactResolutionException | ArtifactDescriptorException e) {
+                getLog().debug("Unable to resolve artifact: " + coordinate, e);
             }
         }
         return resolvedArtifacts;
@@ -606,27 +592,14 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
 
     private void reResolveArtifacts(MavenProject theProject, Set<Artifact> artifacts)
             throws ArtifactResolutionException {
-        // Always need to re-resolve the poms in case they were purged along with the artifact
-        // because Maven 2 will not automatically re-resolve them when resolving the artifact
-        for (Artifact artifact : artifacts) {
-            verbose("Resolving artifact: " + artifact.getId());
-
-            try {
-                // CHECKSTYLE_OFF: LineLength
-                artifactResolver.resolveArtifact(
-                        session.getProjectBuildingRequest(), TransferUtils.toArtifactCoordinate(artifact));
-                // CHECKSTYLE_ON: LineLength
-            } catch (ArtifactResolverException e) {
-                verbose(e.getMessage());
-            }
-        }
-
         List<Artifact> missingArtifacts = new ArrayList<>();
 
         for (Artifact artifact : artifacts) {
+            verbose("Resolving artifact: " + artifact.getId());
             try {
-                artifactResolver.resolveArtifact(session.getProjectBuildingRequest(), artifact);
-            } catch (ArtifactResolverException e) {
+                resolverUtil.resolveArtifact(
+                        RepositoryUtils.toArtifact(artifact), theProject.getRemoteProjectRepositories());
+            } catch (org.eclipse.aether.resolution.ArtifactResolutionException | ArtifactDescriptorException e) {
                 verbose(e.getMessage());
                 missingArtifacts.add(artifact);
             }
