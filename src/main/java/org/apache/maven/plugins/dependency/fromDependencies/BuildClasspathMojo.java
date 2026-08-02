@@ -198,7 +198,7 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
 
         Set<Artifact> artifacts = getResolvedDependencies(true);
 
-        if (artifacts == null || artifacts.isEmpty()) {
+        if (artifacts.isEmpty()) {
             getLog().info("No dependencies found.");
         }
 
