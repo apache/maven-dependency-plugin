@@ -25,7 +25,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
 
 /**
@@ -34,7 +33,7 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 1.0
  */
-public class ArtifactItem implements DependableCoordinate {
+public class ArtifactItem {
     /**
      * Group ID of artifact.
      */
@@ -142,7 +141,6 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * @return returns the artifact ID
      */
-    @Override
     public String getArtifactId() {
         return artifactId;
     }
@@ -157,7 +155,6 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * @return returns the group ID
      */
-    @Override
     public String getGroupId() {
         return groupId;
     }
@@ -172,7 +169,6 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * @return returns the type
      */
-    @Override
     public String getType() {
         return type;
     }
@@ -187,7 +183,6 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * @return returns the version
      */
-    @Override
     public String getVersion() {
         return version;
     }
@@ -209,7 +204,6 @@ public class ArtifactItem implements DependableCoordinate {
     /**
      * @return classifier
      */
-    @Override
     public String getClassifier() {
         return classifier;
     }
