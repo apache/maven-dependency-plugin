@@ -170,9 +170,9 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         }
 
         if (isCopyPom() && !useRepositoryLayout) {
-            copyPoms(getOutputDirectory(), artifacts, this.stripVersion);
-            copyPoms(getOutputDirectory(), skippedArtifacts, this.stripVersion, this.stripClassifier);
+            copyPoms(getOutputDirectory(), artifacts, this.stripVersion, this.stripClassifier, true);
             // Artifacts that already exist may not yet have poms
+            copyPoms(getOutputDirectory(), skippedArtifacts, this.stripVersion, this.stripClassifier, false);
         }
     }
 
@@ -341,6 +341,12 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     public void copyPoms(File destDir, Set<Artifact> artifacts, boolean removeVersion, boolean removeClassifier)
             throws MojoExecutionException {
+        copyPoms(destDir, artifacts, removeVersion, removeClassifier, false);
+    }
+
+    private void copyPoms(
+            File destDir, Set<Artifact> artifacts, boolean removeVersion, boolean removeClassifier, boolean overwrite)
+            throws MojoExecutionException {
 
         for (Artifact artifact : artifacts) {
             Artifact pomArtifact = getResolvedPomArtifact(artifact);
@@ -353,7 +359,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                         destDir,
                         DependencyUtil.getFormattedFileName(
                                 pomArtifact, removeVersion, prependGroupId, useBaseVersion, removeClassifier));
-                if (!pomDestFile.exists()) {
+                if (overwrite || !pomDestFile.exists()) {
                     try {
                         copyUtil.copyArtifactFile(pomArtifact, pomDestFile);
                     } catch (IOException e) {
