@@ -25,6 +25,8 @@ import java.util.stream.Stream;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.junit.jupiter.api.Test;
@@ -49,6 +51,9 @@ class ResolverUtilTest {
 
     @Mock
     private RepositorySystemSession repositorySystemSession;
+
+    @Mock
+    private ArtifactTypeRegistry artifactTypeRegistry;
 
     @Mock
     private MavenSession mavenSession;
@@ -104,5 +109,29 @@ class ResolverUtilTest {
         assertThatCode(() -> resolverUtil.prepareRemoteRepository(null))
                 .isExactlyInstanceOf(NullPointerException.class)
                 .hasMessage("repository must be not null");
+    }
+
+    @Test
+    void prepareRepositoryRejectsInvalidSyntax() {
+        assertThatCode(() -> resolverUtil.prepareRemoteRepository("central::default::url::extra"))
+                .isExactlyInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Invalid repository: central::default::url::extra");
+    }
+
+    @Test
+    void createArtifactWithUnknownPackaging() {
+        when(sessionProvider.get()).thenReturn(mavenSession);
+        when(mavenSession.getRepositorySession()).thenReturn(repositorySystemSession);
+        when(repositorySystemSession.getArtifactTypeRegistry()).thenReturn(artifactTypeRegistry);
+
+        ParamArtifact paramArtifact = new ParamArtifact();
+        paramArtifact.setGroupId("org.apache.maven.plugins");
+        paramArtifact.setArtifactId("custom-artifact");
+        paramArtifact.setVersion("1.0");
+        paramArtifact.setPackaging("custom-type");
+
+        Artifact artifact = resolverUtil.createArtifactFromParams(paramArtifact);
+
+        assertThat(artifact.getExtension()).isEqualTo("custom-type");
     }
 }

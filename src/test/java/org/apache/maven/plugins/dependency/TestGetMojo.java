@@ -29,19 +29,19 @@ import org.apache.maven.api.plugin.testing.Basedir;
 import org.apache.maven.api.plugin.testing.InjectMojo;
 import org.apache.maven.api.plugin.testing.MojoParameter;
 import org.apache.maven.api.plugin.testing.MojoTest;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.dependency.utils.ParamArtifact;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
-import org.apache.maven.settings.Proxy;
-import org.apache.maven.settings.Server;
-import org.apache.maven.settings.Settings;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.Proxy;
+import org.eclipse.aether.util.repository.AuthenticationBuilder;
+import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
+import org.eclipse.aether.util.repository.DefaultProxySelector;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
@@ -51,16 +51,18 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.security.Constraint;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
 
 import static org.apache.maven.api.plugin.testing.MojoExtension.getTestPath;
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @MojoTest(realRepositorySession = true)
@@ -78,17 +80,7 @@ class TestGetMojo {
     @TempDir
     private Path isolatedLocalRepository;
 
-    @BeforeEach
-    void setUp() {
-        Settings settings = new Settings();
-        when(session.getSettings()).thenReturn(settings);
-
-        Server server = new Server();
-        server.setId("myserver");
-        server.setUsername("foo");
-        server.setPassword("bar");
-        settings.addServer(server);
-    }
+    private DefaultRepositorySystemSession repositorySession;
 
     /**
      * Test transitive parameter
@@ -99,10 +91,6 @@ class TestGetMojo {
     @InjectMojo(goal = "get")
     @MojoParameter(name = "transitive", value = "false")
     void testTransitive(GetMojo mojo) throws Exception {
-        DefaultProjectBuildingRequest pbr = new DefaultProjectBuildingRequest();
-        pbr.setRepositorySession(session.getRepositorySession());
-        when(session.getProjectBuildingRequest()).thenReturn(pbr);
-
         mojo.setGroupId("org.apache.maven");
         mojo.setArtifactId("maven-model");
         mojo.setVersion("2.0.9");
@@ -120,12 +108,8 @@ class TestGetMojo {
     @MojoParameter(
             name = "remoteRepositories",
             value =
-                    "central::default::https://repo.maven.apache.org/maven2,central::::https://repo.maven.apache.org/maven2,https://repo.maven.apache.org/maven2")
+                    "central::default::https://repo.maven.apache.org/maven2,central::::https://repo.maven.apache.org/maven2,central::https://repo.maven.apache.org/maven2,https://repo.maven.apache.org/maven2")
     void testRemoteRepositories(GetMojo mojo) throws Exception {
-        DefaultProjectBuildingRequest pbr = new DefaultProjectBuildingRequest();
-        pbr.setRepositorySession(session.getRepositorySession());
-        when(session.getProjectBuildingRequest()).thenReturn(pbr);
-
         mojo.setGroupId("org.apache.maven");
         mojo.setArtifactId("maven-model");
         mojo.setVersion("2.0.9");
@@ -158,7 +142,7 @@ class TestGetMojo {
     }
 
     /**
-     * Test that an active proxy from the settings is applied to the repositories given by the
+     * Test that an active proxy from the repository session is applied to the repositories given by the
      * <code>remoteRepositories</code> parameter. The proxy points at a host that cannot resolve, so a successful
      * resolution would mean the proxy was never applied.
      */
@@ -171,8 +155,8 @@ class TestGetMojo {
 
             setVariableValueToObject(mojo, "remoteRepositories", "myserver::default::" + serverUrl(server));
 
-            session.getSettings().addProxy(createProxy(null));
             useIsolatedLocalRepository();
+            repositorySession.setProxySelector(createProxySelector(null));
 
             mojo.setGroupId("test");
             mojo.setArtifactId("test");
@@ -205,8 +189,9 @@ class TestGetMojo {
 
             setVariableValueToObject(mojo, "remoteRepositories", "myserver::default::" + url);
 
-            session.getSettings().addProxy(createProxy(URI.create(url).getHost()));
             useIsolatedLocalRepository();
+            repositorySession.setProxySelector(
+                    createProxySelector(URI.create(url).getHost()));
 
             mojo.setGroupId("test");
             mojo.setArtifactId("test");
@@ -218,13 +203,67 @@ class TestGetMojo {
         }
     }
 
+    @Test
+    void testVersionIsRequired() {
+        GetMojo mojo = new GetMojo(mock(ResolverUtil.class));
+        mojo.setGroupId("org.apache.maven");
+        mojo.setArtifactId("maven-model");
+
+        MojoFailureException exception = assertThrows(MojoFailureException.class, mojo::execute);
+
+        assertEquals(
+                "You must specify an artifact, "
+                        + "e.g. -Dartifact=org.apache.maven.plugins:maven-downloader-plugin:1.0",
+                exception.getMessage());
+    }
+
+    @Test
+    void testArtifactRetainsSeparatePackagingAndClassifier() throws Exception {
+        ResolverUtil resolverUtil = mock(ResolverUtil.class);
+        when(resolverUtil.remoteRepositories(anyList())).thenReturn(Collections.emptyList());
+        GetMojo mojo = new GetMojo(resolverUtil);
+        setVariableValueToObject(mojo, "artifact", "org.apache.maven:maven-model:2.0.9");
+        mojo.setPackaging("test-jar");
+        mojo.setClassifier("tests");
+
+        mojo.execute();
+
+        ArgumentCaptor<ParamArtifact> coordinate = ArgumentCaptor.forClass(ParamArtifact.class);
+        verify(resolverUtil).createArtifactFromParams(coordinate.capture());
+        assertEquals("test-jar", coordinate.getValue().getPackaging());
+        assertEquals("tests", coordinate.getValue().getClassifier());
+    }
+
+    @Test
+    void testArtifactPackagingAndClassifierOverrideSeparateParameters() throws Exception {
+        ResolverUtil resolverUtil = mock(ResolverUtil.class);
+        when(resolverUtil.remoteRepositories(anyList())).thenReturn(Collections.emptyList());
+        GetMojo mojo = new GetMojo(resolverUtil);
+        setVariableValueToObject(mojo, "artifact", "org.apache.maven:maven-model:2.0.9:jar:sources");
+        mojo.setPackaging("test-jar");
+        mojo.setClassifier("tests");
+
+        mojo.execute();
+
+        ArgumentCaptor<ParamArtifact> coordinate = ArgumentCaptor.forClass(ParamArtifact.class);
+        verify(resolverUtil).createArtifactFromParams(coordinate.capture());
+        assertEquals("jar", coordinate.getValue().getPackaging());
+        assertEquals("sources", coordinate.getValue().getClassifier());
+    }
+
     /**
-     * Points the mojo at an empty local repository, so that the tests above depend on the transfer actually
+     * Points the mojo at an empty local repository, so that repository tests depend on the transfer actually
      * happening rather than on what an earlier run left behind in the shared one.
      */
     private void useIsolatedLocalRepository() {
-        DefaultRepositorySystemSession repositorySession =
-                new DefaultRepositorySystemSession(session.getRepositorySession());
+        repositorySession = new DefaultRepositorySystemSession(session.getRepositorySession());
+        repositorySession.setAuthenticationSelector(new DefaultAuthenticationSelector()
+                .add(
+                        "myserver",
+                        new AuthenticationBuilder()
+                                .addUsername("foo")
+                                .addPassword("bar")
+                                .build()));
         repositorySession.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(
                 repositorySession, new LocalRepository(isolatedLocalRepository.toFile())));
         when(session.getRepositorySession()).thenReturn(repositorySession);
@@ -235,8 +274,8 @@ class TestGetMojo {
     }
 
     /**
-     * Whether the failure came from the proxy rather than from, say, a missing artifact or a rejected login — the
-     * host of {@link #createProxy(String)} only ever appears if the proxy really was applied to the repository.
+     * Whether the failure came from the proxy rather than from, say, a missing artifact or a rejected login -- the
+     * host of {@link #createProxySelector(String)} only ever appears if the proxy really was applied to the repository.
      */
     private boolean mentionsProxyHost(Throwable throwable) {
         for (Throwable cause = throwable; cause != null; cause = cause.getCause()) {
@@ -251,14 +290,8 @@ class TestGetMojo {
      * An active HTTP proxy pointing at a name that is guaranteed not to resolve (RFC 2606 reserved TLD), so that
      * applying it is always observable as a failure.
      */
-    private Proxy createProxy(String nonProxyHosts) {
-        Proxy proxy = new Proxy();
-        proxy.setActive(true);
-        proxy.setProtocol("http");
-        proxy.setHost(PROXY_HOST);
-        proxy.setPort(3128);
-        proxy.setNonProxyHosts(nonProxyHosts);
-        return proxy;
+    private DefaultProxySelector createProxySelector(String nonProxyHosts) {
+        return new DefaultProxySelector().add(new Proxy("http", PROXY_HOST, 3128), nonProxyHosts);
     }
 
     private String serverUrl(org.eclipse.jetty.server.Server server) throws Exception {
@@ -267,52 +300,6 @@ class TestGetMojo {
                 ? InetAddress.getLoopbackAddress().getHostName()
                 : serverConnector.getHost();
         return "http://" + host + ":" + serverConnector.getLocalPort() + "/maven";
-    }
-
-    /**
-     * Test parsing of the remote repositories parameter
-     *
-     * @throws Exception in case of errors
-     */
-    @Test
-    @InjectMojo(goal = "get")
-    void testParseRepository(GetMojo mojo) throws Exception {
-        ArtifactRepositoryPolicy policy = null;
-        ArtifactRepository repo =
-                mojo.parseRepository("central::default::https://repo.maven.apache.org/maven2", policy);
-        assertEquals("central", repo.getId());
-        assertEquals(DefaultRepositoryLayout.class, repo.getLayout().getClass());
-        assertEquals("https://repo.maven.apache.org/maven2", repo.getUrl());
-
-        try {
-            repo = mojo.parseRepository("central::legacy::https://repo.maven.apache.org/maven2", policy);
-            fail("Exception expected: legacy repository not supported anymore");
-        } catch (MojoFailureException e) {
-        }
-
-        repo = mojo.parseRepository("central::::https://repo.maven.apache.org/maven2", policy);
-        assertEquals("central", repo.getId());
-        assertEquals(DefaultRepositoryLayout.class, repo.getLayout().getClass());
-        assertEquals("https://repo.maven.apache.org/maven2", repo.getUrl());
-
-        repo = mojo.parseRepository("https://repo.maven.apache.org/maven2", policy);
-        assertEquals("temp", repo.getId());
-        assertEquals(DefaultRepositoryLayout.class, repo.getLayout().getClass());
-        assertEquals("https://repo.maven.apache.org/maven2", repo.getUrl());
-
-        try {
-            mojo.parseRepository("::::https://repo.maven.apache.org/maven2", policy);
-            fail("Exception expected");
-        } catch (MojoFailureException e) {
-            // expected
-        }
-
-        try {
-            mojo.parseRepository("central::https://repo.maven.apache.org/maven2", policy);
-            fail("Exception expected");
-        } catch (MojoFailureException e) {
-            // expected
-        }
     }
 
     private ContextHandler createContextHandler() {

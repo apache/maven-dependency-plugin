@@ -48,6 +48,7 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.ArtifactType;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
 import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.artifact.DefaultArtifactType;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.CollectResult;
 import org.eclipse.aether.collection.DependencyCollectionException;
@@ -363,9 +364,11 @@ public class ResolverUtil {
     }
 
     private ArtifactType getArtifactType(String packaging) {
+        String type = packaging != null ? packaging : "jar";
         ArtifactTypeRegistry artifactTypeRegistry =
                 mavenSessionProvider.get().getRepositorySession().getArtifactTypeRegistry();
-        return artifactTypeRegistry.get(packaging != null ? packaging : "jar");
+        ArtifactType artifactType = artifactTypeRegistry.get(type);
+        return artifactType != null ? artifactType : new DefaultArtifactType(type);
     }
 
     /**
