@@ -56,6 +56,7 @@ import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.CollectResult;
 import org.eclipse.aether.collection.DependencyCollectionException;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.installation.InstallRequest;
 import org.eclipse.aether.installation.InstallationException;
 import org.eclipse.aether.repository.LocalRepository;
@@ -289,12 +290,41 @@ public class ResolverUtil {
             List<Dependency> managedDependencies,
             List<RemoteRepository> remoteProjectRepositories)
             throws DependencyResolutionException {
-        MavenSession session = mavenSessionProvider.get();
-
         CollectRequest collectRequest =
                 new CollectRequest(dependencies, managedDependencies, remoteProjectRepositories);
         collectRequest.setRootArtifact(rootArtifact);
-        DependencyRequest request = new DependencyRequest(collectRequest, null);
+        return resolveDependencies(collectRequest, null);
+    }
+
+    /**
+     * Resolve transitive dependencies for artifact with managed dependencies.
+     *
+     * @param rootArtifact a root artifact to resolve
+     * @param dependencies a list of dependencies for artifact
+     * @param managedDependencies a list of managed dependencies for artifact
+     * @param remoteProjectRepositories remote repositories list
+     * @param dependencyFilter dependency filter, or {@code null}
+     * @return Resolved dependencies
+     * @throws DependencyResolutionException if the dependency tree could not be built or any dependency artifact could
+     *                                       not be resolved
+     */
+    public List<Artifact> resolveDependenciesForArtifact(
+            Artifact rootArtifact,
+            List<Dependency> dependencies,
+            List<Dependency> managedDependencies,
+            List<RemoteRepository> remoteProjectRepositories,
+            DependencyFilter dependencyFilter)
+            throws DependencyResolutionException {
+        CollectRequest collectRequest =
+                new CollectRequest(new Dependency(rootArtifact, null), dependencies, remoteProjectRepositories);
+        collectRequest.setManagedDependencies(managedDependencies);
+        return resolveDependencies(collectRequest, dependencyFilter);
+    }
+
+    private List<Artifact> resolveDependencies(CollectRequest collectRequest, DependencyFilter dependencyFilter)
+            throws DependencyResolutionException {
+        MavenSession session = mavenSessionProvider.get();
+        DependencyRequest request = new DependencyRequest(collectRequest, dependencyFilter);
         DependencyResult result = repositorySystem.resolveDependencies(session.getRepositorySession(), request);
         return result.getArtifactResults().stream()
                 .map(ArtifactResult::getArtifact)
