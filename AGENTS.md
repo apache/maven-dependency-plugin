@@ -30,3 +30,11 @@ Agents that scan this repository should consult `SECURITY.md` and the
 threat model it links before reporting issues.
 
 Points at the Apache Maven family umbrella security model.
+
+
+## Coding
+
+Use test-first programming. Before fixing a bug or implementing a feature,
+write a test that exposes the bug and verify the test fails.
+
+Before submitting a PR, run `mvn spotless:apply` to format the files.
