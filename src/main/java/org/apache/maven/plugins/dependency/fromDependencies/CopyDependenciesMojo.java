@@ -22,7 +22,6 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -43,11 +42,9 @@ import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
-import org.apache.maven.shared.transfer.artifact.install.ArtifactInstaller;
-import org.apache.maven.shared.transfer.artifact.install.ArtifactInstallerException;
-import org.apache.maven.shared.transfer.repository.RepositoryManager;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.installation.InstallationException;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.util.artifact.SubArtifact;
@@ -78,10 +75,6 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
 
     private final CopyUtil copyUtil;
 
-    private final ArtifactInstaller installer;
-
-    private final RepositoryManager repositoryManager;
-
     /**
      * Either append the artifact's baseVersion or uniqueVersion to the filename. Will only be used if
      * {@link #isStripVersion()} is {@code false}.
@@ -108,21 +101,16 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     protected boolean copySignatures;
 
     @Inject
-    @SuppressWarnings("checkstyle:ParameterNumber")
     public CopyDependenciesMojo(
             MavenSession session,
             BuildContext buildContext,
             MavenProject project,
             ResolverUtil resolverUtil,
-            RepositoryManager repositoryManager,
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager,
-            CopyUtil copyUtil,
-            ArtifactInstaller installer) {
+            CopyUtil copyUtil) {
         super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
         this.copyUtil = copyUtil;
-        this.installer = installer;
-        this.repositoryManager = repositoryManager;
     }
 
     /**
@@ -158,10 +146,9 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                         artifact, isStripVersion(), this.prependGroupId, this.useBaseVersion, this.stripClassifier);
             }
         } else {
-            ProjectBuildingRequest buildingRequest =
-                    repositoryManager.setLocalRepositoryBasedir(session.getProjectBuildingRequest(), outputDirectory);
+            RepositorySystemSession repositorySystemSession = getResolverUtil().localRepositorySession(outputDirectory);
 
-            artifacts.forEach(artifact -> installArtifact(artifact, buildingRequest));
+            artifacts.forEach(artifact -> installArtifact(artifact, repositorySystemSession));
         }
 
         Set<Artifact> skippedArtifacts = dss.getSkippedDependencies();
@@ -179,32 +166,32 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     /**
      * Install the artifact and the corresponding pom if copyPoms=true.
      */
-    private void installArtifact(Artifact artifact, ProjectBuildingRequest buildingRequest) {
+    private void installArtifact(Artifact artifact, RepositorySystemSession repositorySystemSession) {
         try {
-            installer.install(buildingRequest, Collections.singletonList(artifact));
-            installBaseSnapshot(artifact, buildingRequest);
+            getResolverUtil().installArtifact(artifact, repositorySystemSession);
+            installBaseSnapshot(artifact, repositorySystemSession);
 
             if (!"pom".equals(artifact.getType()) && isCopyPom()) {
                 Artifact pomArtifact = getResolvedPomArtifact(artifact);
                 if (pomArtifact != null
                         && pomArtifact.getFile() != null
                         && pomArtifact.getFile().exists()) {
-                    installer.install(buildingRequest, Collections.singletonList(pomArtifact));
-                    installBaseSnapshot(pomArtifact, buildingRequest);
+                    getResolverUtil().installArtifact(pomArtifact, repositorySystemSession);
+                    installBaseSnapshot(pomArtifact, repositorySystemSession);
                 }
             }
-        } catch (ArtifactInstallerException e) {
+        } catch (InstallationException e) {
             getLog().warn("unable to install " + artifact, e);
         }
     }
 
-    private void installBaseSnapshot(Artifact artifact, ProjectBuildingRequest buildingRequest)
-            throws ArtifactInstallerException {
+    private void installBaseSnapshot(Artifact artifact, RepositorySystemSession repositorySystemSession)
+            throws InstallationException {
         if (artifact.isSnapshot() && !artifact.getBaseVersion().equals(artifact.getVersion())) {
             String version = artifact.getVersion();
             try {
                 artifact.setVersion(artifact.getBaseVersion());
-                installer.install(buildingRequest, Collections.singletonList(artifact));
+                getResolverUtil().installArtifact(artifact, repositorySystemSession);
             } finally {
                 artifact.setVersion(version);
             }

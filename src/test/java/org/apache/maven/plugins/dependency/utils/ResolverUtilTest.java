@@ -20,20 +20,32 @@ package org.apache.maven.plugins.dependency.utils;
 
 import javax.inject.Provider;
 
+import java.io.File;
+import java.util.Collections;
 import java.util.stream.Stream;
 
+import org.apache.maven.RepositoryUtils;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.artifact.ProjectArtifactMetadata;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -41,16 +53,25 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.params.provider.Arguments.of;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ResolverUtilTest {
 
     @Mock
+    private RepositorySystem repositorySystem;
+
+    @Mock
     private MavenExecutionRequest executionRequest;
 
     @Mock
     private RepositorySystemSession repositorySystemSession;
+
+    @Mock
+    private LocalRepositoryManager localRepositoryManager;
 
     @Mock
     private ArtifactTypeRegistry artifactTypeRegistry;
@@ -63,6 +84,9 @@ class ResolverUtilTest {
 
     @InjectMocks
     private ResolverUtil resolverUtil;
+
+    @TempDir
+    private File tempDir;
 
     public static Stream<Arguments> prepareRepositoryTest() {
 
@@ -133,5 +157,72 @@ class ResolverUtilTest {
         Artifact artifact = resolverUtil.createArtifactFromParams(paramArtifact);
 
         assertThat(artifact.getExtension()).isEqualTo("custom-type");
+    }
+
+    @Test
+    void installArtifact() throws Exception {
+        org.apache.maven.artifact.Artifact artifact = new org.apache.maven.artifact.DefaultArtifact(
+                "org.apache.maven.plugins", "artifact", "1.0", null, "jar", null, new DefaultArtifactHandler("jar"));
+        artifact.setFile(new File(tempDir, "artifact-1.0.jar"));
+        Artifact resolverArtifact = RepositoryUtils.toArtifact(artifact);
+
+        resolverUtil.installArtifact(artifact, repositorySystemSession);
+
+        verify(repositorySystem)
+                .install(
+                        eq(repositorySystemSession),
+                        argThat(request -> request.getArtifacts().equals(Collections.singletonList(resolverArtifact))));
+    }
+
+    @Test
+    void installArtifactWithProjectArtifactMetadata() throws Exception {
+        org.apache.maven.artifact.Artifact artifact = new org.apache.maven.artifact.DefaultArtifact(
+                "org.apache.maven.plugins", "artifact", "1.0", null, "jar", null, new DefaultArtifactHandler("jar"));
+        File jar = new File(tempDir, "artifact-1.0.jar");
+        File pom = new File(tempDir, "artifact-1.0.pom");
+        artifact.setFile(jar);
+        artifact.addMetadata(new ProjectArtifactMetadata(artifact, pom));
+
+        resolverUtil.installArtifact(artifact, repositorySystemSession);
+
+        ArgumentCaptor<org.eclipse.aether.installation.InstallRequest> request =
+                ArgumentCaptor.forClass(org.eclipse.aether.installation.InstallRequest.class);
+        verify(repositorySystem).install(eq(repositorySystemSession), request.capture());
+        assertThat(request.getValue().getArtifacts())
+                .hasSize(2)
+                .anySatisfy(installed -> assertThat(installed.getFile()).isEqualTo(jar))
+                .anySatisfy(installed -> {
+                    assertThat(installed.getExtension()).isEqualTo("pom");
+                    assertThat(installed.getFile()).isEqualTo(pom);
+                });
+    }
+
+    @ParameterizedTest
+    @CsvSource({"simple, simple", "enhanced, default"})
+    void localRepositorySessionPreservesRepositoryType(String currentType, String expectedType) {
+        LocalRepository currentRepository = new LocalRepository(tempDir, currentType);
+        LocalRepositoryManager newLocalRepositoryManager = org.mockito.Mockito.mock(LocalRepositoryManager.class);
+        when(sessionProvider.get()).thenReturn(mavenSession);
+        when(mavenSession.getRepositorySession()).thenReturn(repositorySystemSession);
+        when(repositorySystemSession.getLocalRepositoryManager()).thenReturn(localRepositoryManager);
+        when(localRepositoryManager.getRepository()).thenReturn(currentRepository);
+        when(repositorySystem.newLocalRepositoryManager(
+                        any(DefaultRepositorySystemSession.class), any(LocalRepository.class)))
+                .thenReturn(newLocalRepositoryManager);
+
+        RepositorySystemSession result = resolverUtil.localRepositorySession(new File(tempDir, "alternate"));
+
+        assertThat(result.getLocalRepositoryManager()).isSameAs(newLocalRepositoryManager);
+        verify(repositorySystem)
+                .newLocalRepositoryManager(
+                        any(DefaultRepositorySystemSession.class),
+                        argThat(repository -> repository.getContentType().equals(expectedType)));
+    }
+
+    @Test
+    void localRepositorySessionRequiresDirectory() {
+        assertThatCode(() -> resolverUtil.localRepositorySession(null))
+                .isExactlyInstanceOf(NullPointerException.class)
+                .hasMessage("localRepositoryDirectory");
     }
 }

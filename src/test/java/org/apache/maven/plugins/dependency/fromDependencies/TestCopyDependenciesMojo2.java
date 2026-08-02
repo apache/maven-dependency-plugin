@@ -22,10 +22,12 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import org.apache.maven.api.plugin.testing.InjectMojo;
@@ -44,19 +46,16 @@ import org.apache.maven.artifact.repository.metadata.SnapshotArtifactRepositoryM
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.bridge.MavenRepositorySystem;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 
 @MojoTest(realRepositorySession = true)
 class TestCopyDependenciesMojo2 {
@@ -65,9 +64,6 @@ class TestCopyDependenciesMojo2 {
     private File tempDir;
 
     private DependencyArtifactStubFactory stubFactory;
-
-    @Inject
-    private MavenSession session;
 
     @Inject
     private MavenProject project;
@@ -236,11 +232,6 @@ class TestCopyDependenciesMojo2 {
     @Test
     @InjectMojo(goal = "copy-dependencies")
     void testRepositoryLayout(CopyDependenciesMojo mojo) throws Exception {
-
-        ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest();
-        pbr.setRepositorySession(session.getRepositorySession());
-        when(session.getProjectBuildingRequest()).thenReturn(pbr);
-
         String baseVersion = "2.0-SNAPSHOT";
         String groupId = "testGroupId";
         String artifactId = "expanded-snapshot";
@@ -281,6 +272,33 @@ class TestCopyDependenciesMojo2 {
                 assertArtifactExists(baseArtifact, targetRepository);
             }
         }
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testRepositoryLayoutInstallsProjectArtifactPom(CopyDependenciesMojo mojo) throws Exception {
+        Artifact artifact = stubFactory.createArtifact(
+                "testGroupId",
+                "artifact-with-project-pom",
+                VersionRange.createFromVersion("1.0"),
+                "compile",
+                "jar",
+                null,
+                false);
+        File pom = new File(tempDir, "artifact-with-project-pom-1.0.pom");
+        Files.write(
+                pom.toPath(),
+                Collections.singletonList("<project><modelVersion>4.0.0</modelVersion></project>"),
+                StandardCharsets.UTF_8);
+        artifact.addMetadata(new ProjectArtifactMetadata(artifact, pom));
+        mojo.getProject().setArtifacts(Collections.singleton(artifact));
+
+        mojo.useRepositoryLayout = true;
+        mojo.execute();
+
+        Path artifactDirectory = mojo.outputDirectory.toPath().resolve("testGroupId/artifact-with-project-pom/1.0");
+        assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-with-project-pom-1.0.jar")));
+        assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-with-project-pom-1.0.pom")));
     }
 
     private Artifact createExpandedVersionArtifact(
