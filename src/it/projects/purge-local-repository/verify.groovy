@@ -26,7 +26,19 @@ void checkFileAbsence( String path )
   }
 }
 
+void checkFilePresence( String path )
+{
+  File depJar = new File( localRepositoryPath, path )
+  if ( !depJar.exists() )
+  {
+    throw new Exception( "Dependency jar was purged: " + depJar )
+  }
+}
+
 checkFileAbsence( "org/apache/maven/its/dependency/purged/1.0/purged-1.0.jar" )
+checkFilePresence( "org/apache/maven/its/dependency/not-purged-test/1.0/not-purged-test-1.0.jar" )
+checkFilePresence( "org/apache/maven/its/dependency/not-purged-provided/1.0/not-purged-provided-1.0.jar" )
+checkFilePresence( "org/apache/maven/its/dependency/not-purged-optional/1.0/not-purged-optional-1.0.jar" )
 
 String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" )
 assert buildLog.contains( 'Deleting 1 transitive dependency for project test from ' )
