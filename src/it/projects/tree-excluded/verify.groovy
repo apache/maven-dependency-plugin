@@ -25,4 +25,9 @@ def expected = mavenVersion.startsWith('4.') ? "expected-v4.txt" : "expected.txt
 assertThat(new File(basedir, "target/tree.txt"))
         .hasSameTextualContentAs(new File(basedir, expected))
 
+assertThat(new File(basedir, "target/included-excluded.txt").text).isEmpty()
+
+assertThat(new File(basedir, "target/included-survives.txt"))
+        .hasSameTextualContentAs(new File(basedir, "expected-included-survives.txt"))
+
 return true

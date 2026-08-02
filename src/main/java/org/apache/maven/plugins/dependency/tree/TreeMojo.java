@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,7 +48,6 @@ import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.filter.AncestorOrSelfDependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.filter.AndDependencyNodeFilter;
 import org.apache.maven.shared.dependency.graph.filter.ArtifactDependencyNodeFilter;
 import org.apache.maven.shared.dependency.graph.filter.DependencyNodeFilter;
 import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
@@ -153,6 +151,8 @@ public class TreeMojo extends AbstractMojo {
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
+     * Paths leading to included artifacts are retained. If an artifact is also beneath a subtree matched by
+     * {@link #excludes}, the exclusion takes precedence and the artifact is not included.
      *
      * @see StrictPatternIncludesArtifactFilter
      * @since 2.0-alpha-6
@@ -174,6 +174,8 @@ public class TreeMojo extends AbstractMojo {
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
      * </p>
+     * A matching artifact and its entire dependency subtree are removed from the serialized dependency tree.
+     * Exclusions are applied before {@link #includes} and take precedence.
      *
      * @see StrictPatternExcludesArtifactFilter
      * @since 2.0-alpha-6
@@ -333,16 +335,25 @@ public class TreeMojo extends AbstractMojo {
         // TODO: remove the need for this when the serializer can calculate last nodes from visitor calls only
         visitor = new BuildingDependencyNodeVisitor(visitor);
 
-        DependencyNodeFilter filter = createDependencyNodeFilter();
+        DependencyNodeFilter includesFilter = createIncludesDependencyNodeFilter();
+        DependencyNodeFilter excludesFilter = createExcludesDependencyNodeFilter();
 
-        if (filter != null) {
+        if (includesFilter != null) {
             CollectingDependencyNodeVisitor collectingVisitor = new CollectingDependencyNodeVisitor();
-            DependencyNodeVisitor firstPassVisitor = new FilteringDependencyNodeVisitor(collectingVisitor, filter);
+            DependencyNodeVisitor firstPassVisitor =
+                    new FilteringDependencyNodeVisitor(collectingVisitor, includesFilter);
+            if (excludesFilter != null) {
+                firstPassVisitor = new PruningDependencyNodeVisitor(firstPassVisitor, excludesFilter);
+            }
             theRootNode.accept(firstPassVisitor);
 
             DependencyNodeFilter secondPassFilter =
                     new AncestorOrSelfDependencyNodeFilter(collectingVisitor.getNodes());
             visitor = new FilteringDependencyNodeVisitor(visitor, secondPassFilter);
+        }
+
+        if (excludesFilter != null) {
+            visitor = new PruningDependencyNodeVisitor(visitor, excludesFilter);
         }
 
         theRootNode.accept(visitor);
@@ -397,27 +408,25 @@ public class TreeMojo extends AbstractMojo {
      *
      * @return the dependency node filter, or <code>null</code> if none required
      */
-    private DependencyNodeFilter createDependencyNodeFilter() {
-        List<DependencyNodeFilter> filters = new ArrayList<>();
-
-        // filter includes
+    private DependencyNodeFilter createIncludesDependencyNodeFilter() {
         if (includes != null && !includes.isEmpty()) {
-
             getLog().debug("+ Filtering dependency tree by artifact include patterns: " + includes);
 
             ArtifactFilter artifactFilter = new StrictPatternIncludesArtifactFilter(includes);
-            filters.add(new ArtifactDependencyNodeFilter(artifactFilter));
+            return new ArtifactDependencyNodeFilter(artifactFilter);
         }
 
-        // filter excludes
-        if (excludes != null && !excludes.isEmpty()) {
+        return null;
+    }
 
+    private DependencyNodeFilter createExcludesDependencyNodeFilter() {
+        if (excludes != null && !excludes.isEmpty()) {
             getLog().debug("+ Filtering dependency tree by artifact exclude patterns: " + excludes);
 
             ArtifactFilter artifactFilter = new StrictPatternExcludesArtifactFilter(excludes);
-            filters.add(new ArtifactDependencyNodeFilter(artifactFilter));
+            return new ArtifactDependencyNodeFilter(artifactFilter);
         }
 
-        return filters.isEmpty() ? null : new AndDependencyNodeFilter(filters);
+        return null;
     }
 }

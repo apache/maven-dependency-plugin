@@ -64,6 +64,9 @@ The dependency tree can also be filtered to remove specific dependencies. For ex
 mvn dependency:tree -Dexcludes=org.codehaus.plexus
 ```
 
+A dependency matching an exclude pattern and its entire dependency subtree are removed from the serialized tree.
+This affects only the displayed tree; it does not change the project's dependency resolution.
+
 ## Specifying multiple patterns
 
 Multiple patterns can be specified when filtering the dependency tree by separating the patterns with commas. For example, to exclude Maven and Plexus dependencies from the tree, we can execute the following:
@@ -74,8 +77,12 @@ mvn dependency:tree -Dexcludes=org.apache.maven*,org.codehaus.plexus
 
 ## Including and excluding dependencies from the tree
 
-Both include and exclude patterns and be specified together to filter the dependency tree. For example, to locate all non-snapshot Plexus dependencies in the tree, we can execute the following:
+Both include and exclude patterns can be specified together to filter the dependency tree. For example, to locate all non-snapshot Plexus dependencies in the tree, we can execute the following:
 
 ```shell
 mvn dependency:tree -Dincludes=org.codehaus.plexus -Dexcludes=:::*-SNAPSHOT
 ```
+
+Excludes are applied first and take precedence over includes. Includes then select matching dependencies from the
+remaining tree and retain the paths leading to those dependencies. An include therefore cannot restore a dependency
+beneath an excluded subtree.
