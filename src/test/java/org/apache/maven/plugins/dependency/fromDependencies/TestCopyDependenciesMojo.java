@@ -22,6 +22,8 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -47,6 +49,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 @MojoTest(realRepositorySession = true)
 class TestCopyDependenciesMojo {
@@ -773,6 +778,82 @@ class TestCopyDependenciesMojo {
             File file = new File(mojo.outputDirectory, fileName.substring(0, fileName.length() - 4) + ".pom");
             assertTrue(file.exists(), file + " doesn't exist");
         }
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testCopyPomOverwritesExistingPomWhenArtifactIsCopied(CopyDependenciesMojo mojo) throws Exception {
+        Artifact artifact = stubFactory.createArtifact("org.example", "artifact", "2.0", Artifact.SCOPE_COMPILE);
+        Artifact pomArtifact =
+                stubFactory.createArtifact("org.example", "artifact", "2.0", Artifact.SCOPE_COMPILE, "pom", null);
+        writeFile(artifact.getFile(), "new jar");
+        writeFile(pomArtifact.getFile(), "new pom");
+
+        Set<Artifact> artifacts = new HashSet<>();
+        artifacts.add(artifact);
+        mojo.getProject().setArtifacts(artifacts);
+
+        CopyDependenciesMojo mojoSpy = spy(mojo);
+        doReturn(pomArtifact).when(mojoSpy).getResolvedPomArtifact(any(Artifact.class));
+        mojoSpy.setCopyPom(true);
+        mojoSpy.setStripVersion(true);
+        mojoSpy.overWriteReleases = true;
+        mojoSpy.overWriteIfNewer = false;
+
+        File jarDestination = new File(mojoSpy.outputDirectory, "artifact.jar");
+        File pomDestination = new File(mojoSpy.outputDirectory, "artifact.pom");
+        writeFile(jarDestination, "old jar");
+        writeFile(pomDestination, "old pom");
+
+        mojoSpy.execute();
+
+        assertEquals("new jar", readFile(jarDestination));
+        assertEquals("new pom", readFile(pomDestination));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testCopyPomForSkippedArtifactOnlyWhenMissing(CopyDependenciesMojo mojo) throws Exception {
+        Artifact artifact = stubFactory.createArtifact("org.example", "artifact", "2.0", Artifact.SCOPE_COMPILE);
+        Artifact pomArtifact =
+                stubFactory.createArtifact("org.example", "artifact", "2.0", Artifact.SCOPE_COMPILE, "pom", null);
+        writeFile(artifact.getFile(), "new jar");
+        writeFile(pomArtifact.getFile(), "new pom");
+
+        Set<Artifact> artifacts = new HashSet<>();
+        artifacts.add(artifact);
+        mojo.getProject().setArtifacts(artifacts);
+
+        CopyDependenciesMojo mojoSpy = spy(mojo);
+        doReturn(pomArtifact).when(mojoSpy).getResolvedPomArtifact(any(Artifact.class));
+        mojoSpy.setCopyPom(true);
+        mojoSpy.setStripVersion(true);
+        mojoSpy.overWriteReleases = false;
+        mojoSpy.overWriteIfNewer = false;
+
+        File jarDestination = new File(mojoSpy.outputDirectory, "artifact.jar");
+        File pomDestination = new File(mojoSpy.outputDirectory, "artifact.pom");
+        writeFile(jarDestination, "old jar");
+
+        mojoSpy.execute();
+
+        assertEquals("old jar", readFile(jarDestination));
+        assertEquals("new pom", readFile(pomDestination));
+
+        writeFile(pomDestination, "existing pom");
+        mojoSpy.execute();
+
+        assertEquals("old jar", readFile(jarDestination));
+        assertEquals("existing pom", readFile(pomDestination));
+    }
+
+    private static void writeFile(File file, String contents) throws IOException {
+        Files.createDirectories(file.getParentFile().toPath());
+        Files.write(file.toPath(), contents.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static String readFile(File file) throws IOException {
+        return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
     }
 
     @Test
