@@ -24,17 +24,25 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.maven.its.dependency</groupId>
-  <artifactId>test</artifactId>
+  <artifactId>copy-relocation-without-version</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <name>Test</name>
   <description>
-    Test dependency:copy with relocation
+    Test dependency:copy with relocation and a version resolved from the project dependencies
   </description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven.its.dependency</groupId>
+      <artifactId>ResourceArtifact-relocation</artifactId>
+      <version>1.0</version>
+    </dependency>
+  </dependencies>
 
   <build>
     <plugins>
@@ -52,7 +60,6 @@
                 <artifactItem>
                   <groupId>org.apache.maven.its.dependency</groupId>
                   <artifactId>ResourceArtifact-relocation</artifactId>
-                  <version>1.0</version>
                 </artifactItem>
               </artifactItems>
             </configuration>
