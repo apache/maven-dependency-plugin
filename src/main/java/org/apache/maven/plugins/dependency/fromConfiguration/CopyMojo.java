@@ -37,7 +37,7 @@ import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilder;
+import org.eclipse.aether.RepositorySystem;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -94,9 +94,9 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
             MavenProject project,
             ArtifactHandlerManager artifactHandlerManager,
             CopyUtil copyUtil,
-            ResolverUtil resolverUtil,
-            DependencyCollectorBuilder dependencyCollectorBuilder) {
-        super(session, buildContext, project, artifactHandlerManager, resolverUtil, dependencyCollectorBuilder);
+            RepositorySystem repositorySystem,
+            ResolverUtil resolverUtil) {
+        super(session, buildContext, project, artifactHandlerManager, repositorySystem, resolverUtil);
         this.copyUtil = copyUtil;
     }
 

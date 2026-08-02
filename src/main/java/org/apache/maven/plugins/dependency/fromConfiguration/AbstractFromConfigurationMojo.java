@@ -37,7 +37,8 @@ import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
-import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilder;
+import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyCollectorBuilder;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
@@ -123,12 +124,13 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             BuildContext buildContext,
             MavenProject project,
             ArtifactHandlerManager artifactHandlerManager,
-            ResolverUtil resolverUtil,
-            DependencyCollectorBuilder dependencyCollectorBuilder) {
+            RepositorySystem repositorySystem,
+            ResolverUtil resolverUtil) {
         super(session, buildContext, project);
         this.artifactHandlerManager = artifactHandlerManager;
         this.resolverUtil = resolverUtil;
-        this.dependencyVersionResolver = new DependencyVersionResolver(session, project, dependencyCollectorBuilder);
+        this.dependencyVersionResolver =
+                new DependencyVersionResolver(session, project, new DefaultDependencyCollectorBuilder(repositorySystem));
     }
 
     abstract ArtifactItemFilter getMarkedArtifactFilter(ArtifactItem item);
