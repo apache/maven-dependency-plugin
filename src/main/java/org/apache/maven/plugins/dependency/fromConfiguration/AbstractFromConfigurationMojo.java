@@ -129,8 +129,8 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
         super(session, buildContext, project);
         this.artifactHandlerManager = artifactHandlerManager;
         this.resolverUtil = resolverUtil;
-        this.dependencyVersionResolver =
-                new DependencyVersionResolver(session, project, new DefaultDependencyCollectorBuilder(repositorySystem));
+        this.dependencyVersionResolver = new DependencyVersionResolver(
+                session, project, new DefaultDependencyCollectorBuilder(repositorySystem));
     }
 
     abstract ArtifactItemFilter getMarkedArtifactFilter(ArtifactItem item);
