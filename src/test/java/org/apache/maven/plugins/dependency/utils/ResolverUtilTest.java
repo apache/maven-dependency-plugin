@@ -136,6 +136,8 @@ class ResolverUtilTest {
 
         assertThat(resolverUtil.resolveArtifactWithFallback(artifact, Collections.emptyList(), repositorySystemSession))
                 .isSameAs(artifact);
-        verify(repositorySystem).readArtifactDescriptor(eq(repositorySystemSession), any(ArtifactDescriptorRequest.class));
+        verify(repositorySystem)
+                .readArtifactDescriptor(eq(repositorySystemSession), any(ArtifactDescriptorRequest.class));
         verify(repositorySystem).resolveArtifact(eq(repositorySystemSession), any(ArtifactRequest.class));
+    }
 }
