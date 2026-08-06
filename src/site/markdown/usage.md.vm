@@ -1,54 +1,40 @@
-~~ Licensed to the Apache Software Foundation (ASF) under one
-~~ or more contributor license agreements.  See the NOTICE file
-~~ distributed with this work for additional information
-~~ regarding copyright ownership.  The ASF licenses this file
-~~ to you under the Apache License, Version 2.0 (the
-~~ "License"); you may not use this file except in compliance
-~~ with the License.  You may obtain a copy of the License at
-~~
-~~ http://www.apache.org/licenses/LICENSE-2.0
-~~
-~~ Unless required by applicable law or agreed to in writing,
-~~ software distributed under the License is distributed on an
-~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-~~ KIND, either express or implied.  See the License for the
-~~ specific language governing permissions and limitations
-~~ under the License.
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-  ------
-  Usage
-  ------
-  Allan Ramirez
-  Brian Fox
-  ------
-  2010-05-01
-  ------
+http://www.apache.org/licenses/LICENSE-2.0
 
-Usage
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-  Brief examples of how to use the dependency goals:
+# Usage
 
-%{toc|fromDepth=2}
+Brief examples of how to use the dependency goals:
 
-* <<<dependency:copy>>>
+<!-- MACRO{toc|fromDepth=2} -->
 
-   This goal is meant to be bound to a lifecycle phase and configured in your
-   <<<pom.xml>>>. It will resolve the artifact from the repository and place a copy
-   in the specified location. Multiple artifacts can be defined in a single
-   execution. A default output directory is specified but can be overridden for
-   each ArtifactItem by setting the optional outputDirectory field. An
-   optional new name can be set to rename or the version stripped while copying.
+`dependency:copy`
+-----------------
 
-   The artifact version is optional. If not set, the plugin will attempt to resolve it from the
-   project dependencies and then the dependencyManagement section.
+This goal is meant to be bound to a lifecycle phase and configured in your `pom.xml`. It will resolve the artifact from the repository and place a copy in the specified location. Multiple artifacts can be defined in a single execution. A default output directory is specified but can be overridden for each ArtifactItem by setting the optional outputDirectory field. An optional new name can be set to rename or the version stripped while copying.
 
-   See the {{{#Overwrite_Rules}Overwrite Rules}} section for rules about how overwriting is handled.
+The artifact version is optional. If not set, the plugin will attempt to resolve it from the project dependencies and then the dependencyManagement section.
 
-     []
+See the [Overwrite Rules](#Overwrite_Rules) section for rules about how overwriting is handled.
 
-   Configure the plugin something like this if you intend to bind it to execute along with your build:
+Configure the plugin something like this if you intend to bind it to execute along with your build:
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -86,17 +72,17 @@ Usage
   </build>
   [...]
 </project>
-+---+
+```
 
-  If you intend to configure this goal for execution on the command line using:
+If you intend to configure this goal for execution on the command line using:
 
----
+```
 mvn dependency:copy
----
+```
 
-  you must not put the configuration inside the <executions> tag. Your configuration should look like this:
+you must not put the configuration inside the _executions_ tag. Your configuration should look like this:
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -125,63 +111,41 @@ mvn dependency:copy
   </build>
   [...]
 </project>
-+---+
+```
 
-  <Notes:>
+_Notes:_
 
-    * By default, artifacts are copied into <outputDirectory> using the
-      Maven artifact file name convention (that is, <artifactId-version-classifier.type>).
-      Use the following rules to override the default convention:
+- By default, artifacts are copied into _outputDirectory_ using the Maven artifact file name convention (that is, _artifactId-version-classifier.type_). Use the following rules to override the default convention:
+    - Use _artifactItem.destFileName_ to override the default file name.
+    - Use _stripVersion_ to remove _version_ from default file name. This field is ignored when _artifactId.destFileName_ is set.
+    - Use _artifactItem.outputDirectory_ to override the plugin's _outputDirectory_ configuration per _artifactItem_.
 
-      * Use <artifactItem.destFileName> to override the default file name.
+`dependency:copy-dependencies`
+------------------------------
 
-      * Use <stripVersion> to remove <version> from default file name.
-        This field is ignored when <artifactId.destFileName> is set.
+This goal can be bound to a lifecycle phase and configured in your `pom.xml`. It will resolve the dependencies (including transitive dependencies) from the repository and place a copy in the specified location.
 
-      * Use <artifactItem.outputDirectory> to override the plugin's <outputDirectory> configuration
-        per <artifactItem>.
+The artifacts can be placed in subfolders based on type. For example:
 
-      []
+/outputDirectory
 
-    []
+/outputDirectory/jars
 
-* <<<dependency:copy-dependencies>>>
+/outputDirectory/wars
 
-   This goal can be bound to a lifecycle phase and configured in your <<<pom.xml>>>.
-   It will resolve the dependencies (including transitive dependencies) from
-   the repository and place a copy in the specified location.
+The artifacts can be placed in a subfolder per artifact. For example: /outputDirectory/junit-junit-3.8.1/ This feature also works with the subfolders per type. For example: /outputDirectory/jars/junit-junit-3.8.1/
 
-   The artifacts can be placed in subfolders based on type. For example:
+Artifacts can also be resolved by specifying the classifier and optionally type. Type is only used with the classifier and defaults to java-sources. When the classifier is set, the list of dependencies is used as the base to resolve artifacts with the classifier and type. For example: `mvn dependency:copy-dependencies -Dclassifier=sources` will try to find the sources for all dependencies and copy them.
 
-   /outputDirectory
+Also included is the ability to include or exclude by type (war, jar, etc.), scope (runtime, test, etc.), classifier (jdk14, sources, etc.), groupId, artifactId, or a combination of them.
 
-   /outputDirectory/jars
+**Note:** You may mix includes and excludes of the same category (e.g. scope). Includes are processed before excludes.
 
-   /outputDirectory/wars
+See the [Overwrite Rules](#Overwrite_Rules) section for rules about how overwriting is handled.
 
-   The artifacts can be placed in a subfolder per artifact. For example:
-   /outputDirectory/junit-junit-3.8.1/
-   This feature also works with the subfolders per type. For example:
-   /outputDirectory/jars/junit-junit-3.8.1/
+The goal can also be launched from the command line like: `mvn dependency:copy-dependencies [optional params]`
 
-   Artifacts can also be resolved by specifying the classifier and optionally
-   type. Type is only used with the classifier and defaults to java-sources.
-   When the classifier is set, the list of dependencies is used as the base to
-   resolve artifacts with the classifier and type. For example:
-   <<<mvn dependency:copy-dependencies -Dclassifier=sources>>> will try to find
-   the sources for all dependencies and copy them.
-
-  Also included is the ability to include or exclude by type (war, jar, etc.), scope (runtime, test, etc.), classifier (jdk14, sources, etc.), groupId, artifactId, or a combination of them.
-
-  <<Note:>> You may mix includes and excludes of the same category (e.g. scope). Includes are processed before excludes.
-
-   See the {{{#Overwrite_Rules}Overwrite Rules}} section for rules about how overwriting is handled.
-
-
-   The goal can also be launched from the command line like:
-   <<<mvn dependency:copy-dependencies [optional params]>>>
-
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -207,28 +171,22 @@ mvn dependency:copy
   </build>
   [...]
 </project>
-+---+
+```
 
+`dependency:unpack`
+-------------------
 
-* <<<dependency:unpack>>>
+This goal is meant to be bound to a lifecycle and configured in your `pom.xml`. It will resolve the artifact from the repository and place a copy in the specified location. Multiple artifacts can be defined in a single execution. A default outputDirectory is specified but can be overridden for each ArtifactItem by setting the optional outputDirectory field.
 
-   This goal is meant to be bound to a lifecycle and configured in your <<<pom.xml>>>.
-   It will resolve the artifact from the repository and place a copy in the
-   specified location. Multiple artifacts can be defined in a single execution.
-   A default outputDirectory is specified but can be overridden for each
-   ArtifactItem by setting the optional outputDirectory field.
+A single artifact can be unpacked multiple times if different include/exclude parameters are defined for each artifact item.
 
-   A single artifact can be unpacked multiple times if different include/exclude parameters
-   are defined for each artifact item.
+See the [Overwrite Rules](#Overwrite_Rules) section for rules about how overwriting is handled.
 
-   See the {{{#Overwrite_Rules}Overwrite Rules}} section for rules about how overwriting is handled.
+The artifact version is optional. If not set, the plugin will attempt to resolve it from the project dependencies and then the dependencyManagement section.
 
-   The artifact version is optional. If not set, the plugin will attempt to resolve it from the
-   project dependencies and then the dependencyManagement section.
+Configure the plugin something like this if you intend to bind it to execute along with your build:
 
-   Configure the plugin something like this if you intend to bind it to execute along with your build:
-
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -254,17 +212,17 @@ mvn dependency:copy
   </build>
   [...]
 </project>
-+---+
+```
 
-  If you intend to configure this goal for execution on the command line using:
+If you intend to configure this goal for execution on the command line using:
 
----
+```
 mvn dependency:unpack
----
+```
 
-  you must not put the configuration inside the <executions> tag. Your configuration should look like this:
+you must not put the configuration inside the _executions_ tag. Your configuration should look like this:
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -294,53 +252,40 @@ mvn dependency:unpack
   </build>
   [...]
 </project>
-+---+
+```
 
+`dependency:unpack-dependencies`
+--------------------------------
 
-* <<<dependency:unpack-dependencies>>>
+This goal can be bound to a lifecycle and configured in your `pom.xml`. It will resolve the dependencies (including transitive dependencies) from the repository and unpack them to the specified location.
 
-   This goal can be bound to a lifecycle and configured in your <<<pom.xml>>>.
-   It will resolve the dependencies (including transitive dependencies) from
-   the repository and unpack them to the specified location.
+Unpack-dependencies includes transitive dependencies by default. To include only direct dependencies, set the excludeTransitive parameter to true.
 
-   Unpack-dependencies includes transitive dependencies by default. To include
-   only direct dependencies, set the excludeTransitive parameter to true.
+Dependencies can be included or excluded by a list of types. See [unpack-dependencies](./unpack-dependencies-mojo.html) for details.
 
-   Dependencies can be included or excluded by a list of types. See
-   {{{./unpack-dependencies-mojo.html}unpack-dependencies}} for details.
+The artifacts can be unpacked in subfolders based on type. For example:
 
-   The artifacts can be unpacked in subfolders based on type. For example:
+/outputDirectory
 
-   /outputDirectory
+/outputDirectory/jars
 
-   /outputDirectory/jars
+/outputDirectory/wars
 
-   /outputDirectory/wars
+The artifacts can be placed in a subfolder per artifact. For example: /outputDirectory/junit-junit-3.8.1/ This feature also works with the subfolders per type. For example: /outputDirectory/jars/junit-junit-3.8.1/
 
-   The artifacts can be placed in a subfolder per artifact. For example:
-   /outputDirectory/junit-junit-3.8.1/
-   This feature also works with the subfolders per type. For example:
-   /outputDirectory/jars/junit-junit-3.8.1/
+Artifacts can also be resolved by specifying the classifier and optionally type. Type is only used with the classifier and defaults to java-sources. When the classifier is set, the list of dependencies is used as the base to resolve artifacts with the classifier and type. For example: `mvn dependency:unpack-dependencies -Dclassifier=sources` will try to find the sources for all dependencies and unpack them.
 
-   Artifacts can also be resolved by specifying the classifier and optionally
-   type. Type is only used with the classifier and defaults to java-sources.
-   When the classifier is set, the list of dependencies is used as the base to
-   resolve artifacts with the classifier and type. For example:
-   <<<mvn dependency:unpack-dependencies -Dclassifier=sources>>> will try to find
-   the sources for all dependencies and unpack them.
+Filters can be applied to include or exclude files or filesets as necessary
 
-   Filters can be applied to include or exclude files or filesets as necessary
+Also included is the ability to include or exclude by type (war, jar, etc.), scope (runtime, test, etc.), classifier (jdk14, sources, etc.), groupId, artifactId, or a combination of them.
 
-   Also included is the ability to include or exclude by type (war, jar, etc.), scope (runtime, test, etc.), classifier (jdk14, sources, etc.), groupId, artifactId, or a combination of them.
+**Note:** You can mix includes and excludes of the same category (e.g. scope). Includes are processed before excludes.
 
-   <<Note:>> You can mix includes and excludes of the same category (e.g. scope). Includes are processed before excludes.
+See the [Overwrite Rules](#Overwrite_Rules) section for rules about how overwriting is handled.
 
-   See the {{{#Overwrite_Rules}Overwrite Rules}} section for rules about how overwriting is handled.
+The goal can also be launched from the command line like: `mvn dependency:unpack-dependencies [optional params]`
 
-   The goal can also be launched from the command line like:
-   <<<mvn dependency:unpack-dependencies [optional params]>>>
-
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -366,187 +311,137 @@ mvn dependency:unpack
   </build>
   [...]
 </project>
-+---+
+```
 
-** Overwrite Rules
+#[[### Overwrite Rules]]#
 
-    Artifacts are copied or unpacked using the following rules:
+Artifacts are copied or unpacked using the following rules:
 
-     * If the artifact doesn't exist in the destination, then copy/unpack it.
+- If the artifact doesn't exist in the destination, then copy/unpack it.
 
-     Otherwise:
+    Otherwise:
 
-     * For copy/unpack goal only: if <<<artifactItem / overWrite>>> or <<<overWrite>>> is true, then it will force an overwrite.
+- For copy/unpack goal only: if `artifactItem / overWrite` or `overWrite` is true, then it will force an overwrite.
+- Releases check the `overWriteReleases` value (default = false). If true, then it will force an overwrite.
+- Snapshots check the `overWriteSnapshots` value (default = false). If true, then it will force an overwrite.
+- If none of the above is set to true, then it defaults to the `overWriteIfNewer` value (default = true). This value, if true, causes the plugin to only copy if the source is newer than the destination (or it doesn't exist in the destination). (for unpack, this checks the existence of the marker file, created in the `markersDirectory` path. To avoid unexpected behavior after `mvn clean`, this path should normally be contained within the `/target` hierarchy.)
 
-     * Releases check the <<<overWriteReleases>>> value (default = false). If true, then it will force an overwrite.
+Examples:
 
-     * Snapshots check the <<<overWriteSnapshots>>> value (default = false). If true, then it will force an overwrite.
+- Using the default settings (`overWriteReleases` = false, `overWriteSnapshots` = false, `overWriteIfNewer` = true), then a release or snapshot artifact will only over write the destination if the source is newer than the destination (or marker file if unpacking).
+- If `overWriteReleases` = true, then a release artifact (e.g. `foo-1.0.jar`) will always overwrite.
+- If `overWriteSnapshots` = true, then a snapshot artifact (e.g. `foo-1.0-SNAPSHOT.jar`) will always overwrite.
+- If all of the values are false, then a copy/unpack will only occur if the artifact doesn't exist in the destination (or `markersDirectory` if unpacking).
 
-     * If none of the above is set to true, then it defaults to the <<<overWriteIfNewer>>> value (default = true). This value, if true, causes
-     the plugin to only copy if the source is newer than the destination (or it doesn't exist in the destination). (for unpack, this checks the existence of the marker file, created in the <<<markersDirectory>>> path.
-     To avoid unexpected behavior after <<<mvn clean>>>, this path should normally be contained within the <<</target>>> hierarchy.)
+`dependency:resolve`
+--------------------
 
-   Examples:
+Resolve is intended to be used from the command line like: `mvn dependency:resolve -Dsilent=true`
 
-     * Using the default settings (<<<overWriteReleases>>> = false, <<<overWriteSnapshots>>> = false, <<<overWriteIfNewer>>> = true), then a release or snapshot artifact will
-     only over write the destination if the source is newer than the destination (or marker file if unpacking).
+This goal resolves all test and compile scoped dependencies and then displays the resolved versions. This ensures all dependencies are downloaded to the local repository. This is useful when troubleshooting or during intermittent remote repository failures when repeatedly building multiproject modules is undesirable and the build is failing on dependency resolution. It can also be used to quickly determine how versions are being resolved.
 
-     * If <<<overWriteReleases>>> = true, then a release artifact (e.g. <<<foo-1.0.jar>>>) will always overwrite.
+Artifacts can also be resolved by specifying the classifier and optionally type. Type is only used with the classifier and defaults to java-sources. When the classifier is set, the list of dependencies is used as the base to resolve artifacts with the classifier and type. For example: `mvn dependency:resolve -Dclassifier=test-jar` will try to find the test-jar for all dependencies resolve them to the local repository.
 
-     * If <<<overWriteSnapshots>>> = true, then a snapshot artifact (e.g. <<<foo-1.0-SNAPSHOT.jar>>>) will always overwrite.
+`dependency:resolve-sources`
+----------------------------
 
-     * If all of the values are false, then a copy/unpack will only occur if the artifact doesn't exist in the destination (or <<<markersDirectory>>> if unpacking).
+Resolve-sources is intended to be used from the command line like: `mvn dependency:resolve-sources -Dsilent=true`
 
+This is the same as the resolve goal except it includes the source attachments if they exist. This is useful when you want to download source attachments to your local repository.
 
+You can also define the `markersDirectory` either in the `pom.xml` or settings to be a common location for all projects. This allows the system to resolve sources faster for dependencies that don't have the sources published. The plugin will store a marker file to describe if the sources were resolved or not. By placing them in a common location, multiple attempts to resolve non-existent sources will be avoided.
 
-* <<<dependency:resolve>>>
+`dependency:resolve-plugins`
+----------------------------
 
-  Resolve is intended to be used from the command line like:
-  <<<mvn dependency:resolve -Dsilent=true>>>
+Resolve-plugins is intended to be used from the command line like: `mvn dependency:resolve-plugins -Dsilent=true -DexcludeTransitive=true`
 
-  This goal resolves all test and compile scoped
-  dependencies and then displays the resolved versions. This
-  ensures all dependencies are downloaded to the local repository. This is
-  useful when troubleshooting or during intermittent remote repository
-  failures when repeatedly building multiproject modules is undesirable and
-  the build is failing on dependency resolution. It can also be used to quickly
-  determine how versions are being resolved.
+This is the same as the resolve goal except it resolves plugins and optionally their dependencies.
 
-  Artifacts can also be resolved by specifying the classifier and optionally
-  type. Type is only used with the classifier and defaults to java-sources.
-  When the classifier is set, the list of dependencies is used as the base to
-  resolve artifacts with the classifier and type. For example:
-  <<<mvn dependency:resolve -Dclassifier=test-jar>>> will try to find the
-  test-jar for all dependencies resolve them to the local repository.
+`dependency:go-offline`
+-----------------------
 
-* <<<dependency:resolve-sources>>>
+This goal is exactly the same as calling `mvn dependency:resolve dependency:resolve-plugins`.
 
-  Resolve-sources is intended to be used from the command line like:
-  <<<mvn dependency:resolve-sources -Dsilent=true>>>
+`dependency:purge-local-repository`
+-----------------------------------
 
-  This is the same as the resolve goal except it includes the source
-  attachments if they exist.  This is useful when you want to download source
-  attachments to your local repository.
+This goal is meant to delete all of the dependencies for the current project (or projects, in the case of a multimodule build) from the local repository. Purges can be run with a variety of limiting parameters, including artifact exclusions, limiting to direct dependencies only, and different levels of depth for deletion. By default, deleted artifacts can be re-resolved afterwards; you can disable this by specifying `-DreResolve=false`.
 
-  You can also define the <<<markersDirectory>>> either in the <<<pom.xml>>> or settings
-  to be a common location for all projects. This allows the system to resolve sources faster for dependencies that don't
-  have the sources published. The plugin will store a marker file to describe if the sources were resolved or not. By placing
-  them in a common location, multiple attempts to resolve non-existent sources will be avoided.
+In its simplest form, the goal can be called like this:
 
-* <<<dependency:resolve-plugins>>>
-
-  Resolve-plugins is intended to be used from the command line like:
-  <<<mvn dependency:resolve-plugins -Dsilent=true -DexcludeTransitive=true>>>
-
-  This is the same as the resolve goal except it resolves plugins and
-  optionally their dependencies.
-
-* <<<dependency:go-offline>>>
-
-  This goal is exactly the same as calling
-  <<<mvn dependency:resolve dependency:resolve-plugins>>>.
-
-* <<<dependency:purge-local-repository>>>
-
-  This goal is meant to delete all of the dependencies for the current project
-  (or projects, in the case of a multimodule build) from the local repository.
-  Purges can be run with a variety of limiting parameters, including artifact
-  exclusions, limiting to direct dependencies only, and different levels of
-  depth for deletion. By default, deleted artifacts can be re-resolved
-  afterwards; you can disable this by specifying <<<-DreResolve=false>>>.
-
-  In its simplest form, the goal can be called like this:
-
----
+```
 mvn dependency:purge-local-repository
----
+```
 
-  To add the restriction that the <<<org.apache.maven:maven-plugin-api>>>
-  artifact not be deleted, we can modify the command to this:
+To add the restriction that the `org.apache.maven:maven-plugin-api` artifact not be deleted, we can modify the command to this:
 
----
+```
 mvn dependency:purge-local-repository -Dexclude=org.apache.maven:maven-plugin-api
----
+```
 
-  <<Note:>> The <<<exclude>>> parameter is a comma-delimited list of
-  groupId:artifactId pairs. It has a corresponding List-based parameter -
-  <<<excludes>>> - for convenient use inside the <<<pom.xml>>>.
+**Note:** The `exclude` parameter is a comma-delimited list of groupId:artifactId pairs. It has a corresponding List-based parameter - `excludes` - for convenient use inside the `pom.xml`.
 
-  Another handy aspect of this goal is the ability to wipe out artifacts at
-  varying depths. These depths are:
+Another handy aspect of this goal is the ability to wipe out artifacts at varying depths. These depths are:
 
-  * <<file>> - Delete just the artifact's file.
+- **file** - Delete just the artifact's file.
+- **version** - Delete the version directory containing this artifact. Amounts to `file.getParentFile()`.
+- **artifactId** - Delete the artifactId directory containing this artifact. Amounts to `file.getParentFile().getParentFile()`.
+- **groupId** - Delete the groupId directory structure containing this artifact.
 
-  * <<version>> - Delete the version directory containing this artifact. Amounts to
-    <<<file.getParentFile()>>>.
+    At a minimum, this amounts to `file.getParentFile().getParentFile().getParentFile()`. However, if the groupId contains multiple parts, the goal will prune all groupId-part directories that contain only the files associated with this artifact. Again, note that the exception to this pruning algorithm is the lowest groupId part, which will always be pruned.
 
-  * <<artifactId>> - Delete the artifactId directory containing this artifact.
-    Amounts to <<<file.getParentFile().getParentFile()>>>.
+To prune dependency artifacts back to their associated artifactId directories (in order to verify proper artifact resolution, for example), simply use this command:
 
-  * <<groupId>> - Delete the groupId directory structure containing this artifact.
-
-    At a minimum, this amounts to <<<file.getParentFile().getParentFile().getParentFile()>>>.
-    However, if the groupId contains multiple parts, the goal will prune all groupId-part
-    directories that contain only the files associated with this artifact. Again, note that
-    the exception to this pruning algorithm is the lowest groupId part, which will always
-    be pruned.
-
-  []
-
-  To prune dependency artifacts back to their associated artifactId directories
-  (in order to verify proper artifact resolution, for example), simply use this
-  command:
-
----
+```
 mvn dependency:purge-local-repository -DresolutionFuzziness=artifactId
----
+```
 
-  Finally, it's possible to bind this goal to the build lifecycle. One reason for this
-  might be to clean out all dependencies when the build is initialized, to verify
-  correct resolution.
+Finally, it's possible to bind this goal to the build lifecycle. One reason for this might be to clean out all dependencies when the build is initialized, to verify correct resolution.
 
+`dependency:analyze`
+--------------------
 
-* <<<dependency:analyze>>>
+This goal performs byte code analysis to determine missing or unused dependencies. This goal is meant to be launched from the command line. It will fork the build and execute test-compile so there are class files to analyze. If you want to bind analyze in your `pom.xml`, use the `dependency:analyze-only` instead.
 
-  This goal performs byte code analysis to determine missing or unused dependencies. This goal is meant to be launched from the command line. It will fork the build and execute test-compile so there are class files to analyze.
-  If you want to bind analyze in your <<<pom.xml>>>, use the <<<dependency:analyze-only>>> instead.
+This goal can be executed from the command line:
 
-  This goal can be executed from the command line:
-
----
+```
 mvn dependency:analyze
----
+```
 
-  Sample output:
+Sample output:
 
-+---+
+```unknown
 [INFO] [dependency:analyze]
 [WARNING] Used undeclared dependencies found:
 [WARNING]    classworlds:classworlds:jar:1.1-alpha-2:compile
 [WARNING]    org.apache.maven.shared:maven-invoker:jar:2.0.7-SNAPSHOT:test
-+---+
+```
 
-* <<<dependency:analyze-only>>>
+`dependency:analyze-only`
+-------------------------
 
-  This goal performs bytecode analysis to determine missing or unused dependencies, similar to <<<dependency:analyze>>>.
+This goal performs bytecode analysis to determine missing or unused dependencies, similar to `dependency:analyze`.
 
-  It will not fork the build with test compilation, so it should be used when you want to bind the analyze goal in your <<<pom.xml>>>.
+It will not fork the build with test compilation, so it should be used when you want to bind the analyze goal in your `pom.xml`.
 
-* <<<dependency:analyze-dep-mgt>>>
+`dependency:analyze-dep-mgt`
+----------------------------
 
-  This goal looks at the dependencies after final resolution and looks for mismatches in your dependencyManagement section.
+This goal looks at the dependencies after final resolution and looks for mismatches in your dependencyManagement section.
 
-  This goal is useful for detecting projects that override the dependencyManagement directly. Set ignoreDirect to false to detect these otherwise normal conditions.
+This goal is useful for detecting projects that override the dependencyManagement directly. Set ignoreDirect to false to detect these otherwise normal conditions.
 
-  This goal can be executed from the command line:
+This goal can be executed from the command line:
 
----
+```
 mvn dependency:analyze-dep-mgt
----
+```
 
-  Sample output:
+Sample output:
 
-+---+
+```unknown
 [INFO] Found Resolved Dependency / DependencyManagement mismatches:
 [INFO]  Dependency: commons-lang:commons-lang:jar
 [INFO]          DepMgt  : 1.0
@@ -558,14 +453,14 @@ mvn dependency:analyze-dep-mgt
 [INFO]          DepMgt  : 2.3
 [INFO]          Resolved: 2.4
 [WARNING] Potential problems found in Dependency Management
-+---+
+```
 
+`dependency:analyze-report`
+---------------------------
 
-* <<<dependency:analyze-report>>>
+This goal is used to include a report of the dependencies in the output of the `maven-site-plugin`.
 
-  This goal is used to include a report of the dependencies in the output of the <<<maven-site-plugin>>>.
-
-+-------+
+```xml
  <reporting>
    <plugins>
     ...
@@ -583,73 +478,66 @@ mvn dependency:analyze-dep-mgt
     </plugin>
    </plugins>
  </reporting>
-+-------+
+```
 
+`dependency:tree`
+-----------------
 
-* <<<dependency:tree>>>
+This goal is used to view the dependency hierarchy of the project currently being built. It will output the resolved tree of dependencies that the Maven build process actually uses.
 
-  This goal is used to view the dependency hierarchy of the project currently being built.
-  It will output the resolved tree of dependencies that the Maven build process actually uses.
+This goal can be executed from the command line:
 
-  This goal can be executed from the command line:
-
----
+```
 mvn dependency:tree
----
+```
 
-  Optionally, the <<<output>>> parameter can be specified to divert the output to a file:
+Optionally, the `output` parameter can be specified to divert the output to a file:
 
----
+```
 mvn dependency:tree -DoutputFile=/path/to/file
----
+```
 
-  Also, the <<<outputType>>> parameter can be used to generate different formats of output.  The
-  following formats are currently supported:
+Also, the `outputType` parameter can be used to generate different formats of output. The following formats are currently supported:
 
-   * text
+- text
+- [dot](https://en.wikipedia.org/wiki/DOT_language)
+- [graphml](https://en.wikipedia.org/wiki/GraphML)
+- [tgf](https://en.wikipedia.org/wiki/Trivial_Graph_Format)
 
-   * {{{https://en.wikipedia.org/wiki/DOT_language}dot}}
-
-   * {{{https://en.wikipedia.org/wiki/GraphML}graphml}}
-
-   * {{{https://en.wikipedia.org/wiki/Trivial_Graph_Format}tgf}}
-
-   []
-
----
+```
 mvn dependency:tree -DoutputFile=/path/to/file.graphml -DoutputType=graphml
----
+```
 
+`dependency:build-classpath`
+----------------------------
 
-* <<<dependency:build-classpath>>>
+This goal will output a classpath string of dependencies from the local repository to a file or log and optionally attach and deploy the file. For instance, the file would contain a classpath string like this:
 
-   This goal will output a classpath string of dependencies from the local repository to a file or log and optionally attach and deploy the file. For instance, the file would contain a classpath string like this:
-
----
+```
 /home/foo/.m2/repository/org/java/utils/util/util-1.0.jar:/home/foo/.m2/ ....
----
+```
 
-  The resulting file could then be used like this:
+The resulting file could then be used like this:
 
----
+```
 java -cp `cat resultFile` MyClass
----
+```
 
-  In its simplest form, to output the classpath to the log, the goal can be called like this:
+In its simplest form, to output the classpath to the log, the goal can be called like this:
 
----
+```
 mvn dependency:build-classpath
----
+```
 
-  or to write the classpath to cp.txt:
+or to write the classpath to cp.txt:
 
----
+```
 mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
----
+```
 
-  The goal can also be bound to a lifecycle phase with the following configuration:
+The goal can also be bound to a lifecycle phase with the following configuration:
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -675,85 +563,77 @@ mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
   </build>
   [...]
 </project>
-+---+
+```
 
+`dependency:list-repositories`
+------------------------------
 
-* <<<dependency:list-repositories>>>
+This goal lists all the repositories that this build depends upon. It shows repositories defined in your settings, poms, and declared in transitive dependency poms.
 
-  This goal lists all the repositories that this build depends upon. It shows repositories defined in your settings,
-  poms, and declared in transitive dependency poms.
+`dependency:get`
+----------------
 
+This goal resolves an artifact and (optionally) its dependencies from remote repositories using its Maven coordinates. The Maven Central repository are always consider during resolving.
 
-* <<<dependency:get>>>
-
-  This goal resolves an artifact and (optionally) its dependencies from remote repositories using its Maven coordinates.
-  The Maven Central repository are always consider during resolving.
-
----
+```
 mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources
 mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources -DremoteRepositories=https://myrepo.com/maven2
----
+```
 
+`dependency:analyze-exclusions`
+-------------------------------
 
-* <<<dependency:analyze-exclusions>>>
+This goal checks exclusions on dependencies and checks if the artifact actually brings in the given dependency. For instance, given dependency a:b:1.0 transitively includes x:y:1.0 which you do not want for some reason and exclude it. Later a:b:2.0 has removed the unwanted dependency and you upgrade. This goal will inform you that the exclusion is no longer required.
 
-  This goal checks exclusions on dependencies and checks if the artifact actually brings in the given dependency.
-  For instance, given dependency a:b:1.0 transitively includes x:y:1.0 which you do not want for some reason and exclude it.
-  Later a:b:2.0 has removed the unwanted dependency and you upgrade. This goal will inform you that the exclusion is no
-  longer required.
-
----
+```
 mvn dependency:analyze-exclusions
----
+```
 
-  Sample output:
+Sample output:
 
-+---+
+```unknown
 [WARNING] The following dependencies defines unnecessary excludes
 [WARNING]     org.apache.maven:maven-artifact:
 [WARNING]         - javax.annotation:javax.annotation-api
 [WARNING]         - javax.activation:javax.activation-api
-+---+
+```
 
-* <<<dependency:add>>>
+`dependency:add`
+----------------
 
-  This goal adds a dependency to the project's <<<pom.xml>>> directly from the command line.
-  If the dependency already exists, the goal fails with a descriptive error directing you to
-  remove it first. For detailed examples, see
-  {{{./examples/managing-dependencies.html}Managing Dependencies}}.
+This goal adds a dependency to the project's `pom.xml` directly from the command line. If the dependency already exists, the goal fails with a descriptive error directing you to remove it first. For detailed examples, see [Managing Dependencies](./examples/managing-dependencies.html).
 
----
+```
 mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0
 mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dscope=test
----
+```
 
-  Add to <<<\<dependencyManagement\>>>>:
+Add to `<dependencyManagement>`:
 
----
+```
 mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -Dmanaged
----
+```
 
-  Add a BOM import:
+Add a BOM import:
 
----
+```
 mvn dependency:add -Dgav=org.springframework.boot:spring-boot-dependencies:pom:3.2.0 -Dscope=import -Dmanaged
----
+```
 
-  In multi-module projects, use Maven's <<<-pl>>> flag to target a specific module:
+In multi-module projects, use Maven's `-pl` flag to target a specific module:
 
----
+```
 mvn dependency:add -Dgav=org.apache.commons:commons-lang3:3.17.0 -pl my-service
----
+```
 
-* <<<dependency:remove>>>
+`dependency:remove`
+-------------------
 
-  This goal removes a dependency from the project's <<<pom.xml>>> directly from the command line.
-  For detailed examples, see {{{./examples/managing-dependencies.html}Managing Dependencies}}.
+This goal removes a dependency from the project's `pom.xml` directly from the command line. For detailed examples, see [Managing Dependencies](./examples/managing-dependencies.html).
 
----
+```
 mvn dependency:remove -Dgav=org.apache.commons:commons-lang3
 mvn dependency:remove -Dgav=org.apache.commons:commons-lang3 -Dmanaged
----
+```
 
-  When removing a managed dependency from a parent POM, the goal warns if child modules still
-  reference that dependency without an explicit version.
+When removing a managed dependency from a parent POM, the goal warns if child modules still reference that dependency without an explicit version.

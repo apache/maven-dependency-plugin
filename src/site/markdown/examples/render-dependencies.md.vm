@@ -1,36 +1,27 @@
-~~ Licensed to the Apache Software Foundation (ASF) under one
-~~ or more contributor license agreements.  See the NOTICE file
-~~ distributed with this work for additional information
-~~ regarding copyright ownership.  The ASF licenses this file
-~~ to you under the Apache License, Version 2.0 (the
-~~ "License"); you may not use this file except in compliance
-~~ with the License.  You may obtain a copy of the License at
-~~
-~~ http://www.apache.org/licenses/LICENSE-2.0
-~~
-~~ Unless required by applicable law or agreed to in writing,
-~~ software distributed under the License is distributed on an
-~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-~~ KIND, either express or implied.  See the License for the
-~~ specific language governing permissions and limitations
-~~ under the License.    
- 
-  ------
-  Render a Velocity template
-  ------
-  Allan Ramirez
-  Brian Fox
-  Stephen Connolly
-  ------
-  2025-09-17
-  ------
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-Render a Velocity template
+http://www.apache.org/licenses/LICENSE-2.0
 
-  You can use <<<dependency:render-depedencies>>> mojo to a render a velocity template,
-  with the <<artifacts>> (dependencies) as context:
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-+---+
+# Render a Velocity template
+
+You can use `dependency:render-depedencies` mojo to a render a velocity template, with the **artifacts** (dependencies) as context:
+
+```xml
 <project>
   [...]
   <build>
@@ -69,9 +60,8 @@ deps:
   </build>
   [...]
 </project>
-+---+
+```
 
-    Then after executing <<<mvn process-resources>>>, the template will be rendered.
-    By default it is printed in the console but you can set <<outputFile>> to store it somewhere.
+Then after executing `mvn process-resources`, the template will be rendered. By default it is printed in the console but you can set **outputFile** to store it somewhere.
 
-    The resolution uses exactly the same mechanism than for <<dependency:build-classpath>> mojo.
+The resolution uses exactly the same mechanism than for **dependency:build-classpath** mojo.
