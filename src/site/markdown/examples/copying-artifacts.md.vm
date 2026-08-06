@@ -1,37 +1,27 @@
-~~ Licensed to the Apache Software Foundation (ASF) under one
-~~ or more contributor license agreements.  See the NOTICE file
-~~ distributed with this work for additional information
-~~ regarding copyright ownership.  The ASF licenses this file
-~~ to you under the Apache License, Version 2.0 (the
-~~ "License"); you may not use this file except in compliance
-~~ with the License.  You may obtain a copy of the License at
-~~
-~~ http://www.apache.org/licenses/LICENSE-2.0
-~~
-~~ Unless required by applicable law or agreed to in writing,
-~~ software distributed under the License is distributed on an
-~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-~~ KIND, either express or implied.  See the License for the
-~~ specific language governing permissions and limitations
-~~ under the License.    
- 
-  ------
-  Copying specific artifacts
-  ------
-  Allan Ramirez
-  Brian Fox
-  Stephen Connolly
-  ------
-  2011-07-01
-  ------
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-Copying specific artifacts
+http://www.apache.org/licenses/LICENSE-2.0
 
-  In copying specific artifacts, you need to bind the <<<dependency:copy>>>
-  mojo to a lifecycle, configure the plugin and specify the artifacts you
-  want to copy. See the following example:
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-+---+
+# Copying specific artifacts
+
+In copying specific artifacts, you need to bind the `dependency:copy` mojo to a lifecycle, configure the plugin and specify the artifacts you want to copy. See the following example:
+
+```xml
 <project>
   [...]
   <build>
@@ -57,11 +47,11 @@ Copying specific artifacts
               <version>3.8.1</version>
               <type>jar</type>
               <overWrite>false</overWrite>
-              <outputDirectory>\${project.build.directory}/alternateLocation</outputDirectory>
+              <outputDirectory>${esc.d}{project.build.directory}/alternateLocation</outputDirectory>
               <destFileName>optional-new-name.jar</destFileName>
             </artifactItem>
           </artifactItems>
-          <outputDirectory>\${project.build.directory}/wars</outputDirectory>
+          <outputDirectory>${esc.d}{project.build.directory}/wars</outputDirectory>
           <overWriteReleases>false</overWriteReleases>
           <overWriteSnapshots>true</overWriteSnapshots>
         </configuration>
@@ -70,27 +60,21 @@ Copying specific artifacts
   </build>
   [...]
 </project>
-+---+
+```
 
-    Then after executing <<<mvn package>>>, the artifact (junit) is copied to the
-    given alternate location.
+Then after executing `mvn package`, the artifact (junit) is copied to the given alternate location.
 
-    Artifacts are resolved from the following sources in order:
+Artifacts are resolved from the following sources in order:
 
-      * the current reactor,
+- the current reactor,
+- the local repository,
+- the configured remote repositories.
 
-      * the local repository,
+If the artifact cannot be resolved from the above sources then the build will fail.
 
-      * the configured remote repositories.
+If the artifact is also listed as a dependency, the `version` of the `artifactItem` will default to the version from the `dependencies` or `dependencyManagement`, e.g.
 
-      []
-
-    If the artifact cannot be resolved from the above sources then the build will fail.
-
-    If the artifact is also listed as a dependency, the <<<version>>> of the <<<artifactItem>>> will default to
-    the version from the <<<dependencies>>> or <<<dependencyManagement>>>, e.g.
-
-+---+
+```xml
 <project>
   [...]
   <dependencies>
@@ -121,11 +105,11 @@ Copying specific artifacts
                   <groupId>junit</groupId>
                   <artifactId>junit</artifactId>
                   <overWrite>false</overWrite>
-                  <outputDirectory>\${project.build.directory}/alternateLocation</outputDirectory>
+                  <outputDirectory>${esc.d}{project.build.directory}/alternateLocation</outputDirectory>
                   <destFileName>optional-new-name.jar</destFileName>
                 </artifactItem>
               </artifactItems>
-              <outputDirectory>\${project.build.directory}/wars</outputDirectory>
+              <outputDirectory>${esc.d}{project.build.directory}/wars</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
@@ -136,15 +120,11 @@ Copying specific artifacts
   </build>
   [...]
 </project>
-+---+
+```
 
-    The <<<dependency:copy>>> goal can also be used to copy the just built
-    artifact to a custom location if desired. <<It must be bound
-    to any phase after the package phase>> so that the artifact exists in the
-    repository. The following configuration shows how (binding to the
-    install phase in this case):
+The `dependency:copy` goal can also be used to copy the just built artifact to a custom location if desired. **It must be bound to any phase after the package phase** so that the artifact exists in the repository. The following configuration shows how (binding to the install phase in this case):
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -163,10 +143,10 @@ Copying specific artifacts
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <groupId>\${project.groupId}</groupId>
-                  <artifactId>\${project.artifactId}</artifactId>
-                  <version>\${project.version}</version>
-                  <type>\${project.packaging}</type>
+                  <groupId>${esc.d}{project.groupId}</groupId>
+                  <artifactId>${esc.d}{project.artifactId}</artifactId>
+                  <version>${esc.d}{project.version}</version>
+                  <type>${esc.d}{project.packaging}</type>
                 </artifactItem>
               </artifactItems>
               <outputDirectory>some-other-place</outputDirectory>
@@ -178,19 +158,15 @@ Copying specific artifacts
   </build>
   [...]
 </project>
-+---+
+```
 
-{Using an alternate local repository}
+# <a id="Using_an_alternate_local_repository"></a>Using an alternate local repository
 
-    <<dependency:copy>> always downloads artifacts to default local repository first, and then
-    copy the artifacts to the desired locations.  For large size unique snapshot artifacts, the downloads can quickly
-    fill up default local repository, and therefore local disk, after many executions.  
-    To clean up the downloaded artifacts as part the build, set <localRepositoryDirectory>'s value 
-    to a location in your project's target directory.
+**dependency:copy** always downloads artifacts to default local repository first, and then copy the artifacts to the desired locations. For large size unique snapshot artifacts, the downloads can quickly fill up default local repository, and therefore local disk, after many executions. To clean up the downloaded artifacts as part the build, set _localRepositoryDirectory_'s value to a location in your project's target directory.
 
-    This use case also applies to <<dependency:unpack>> goal.
+This use case also applies to **dependency:unpack** goal.
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -213,7 +189,7 @@ Copying specific artifacts
                 </artifactItem>
                 [...]
               </artifactItems>
-              <localRepositoryDirectory>\${project.build.directory}/localrepo</localRepositoryDirectory>
+              <localRepositoryDirectory>${esc.d}{project.build.directory}/localrepo</localRepositoryDirectory>
             </configuration>
           </execution>
         </executions>
@@ -222,19 +198,19 @@ Copying specific artifacts
   </build>
   [...]
 </project>
-+---+
+```
 
-{Copying from the command line}
+# <a id="Copying_from_the_command_line"></a>Copying from the command line
 
-	If you intend to configure this mojo for execution on the command line using:
+If you intend to configure this mojo for execution on the command line using:
 
-+---+
+```shell
 mvn dependency:copy
-+---+
+```
 
-	you must not put the configuration inside the <executions> tag. Your configuration should look like this:
+you must not put the configuration inside the _executions_ tag. Your configuration should look like this:
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -262,4 +238,4 @@ mvn dependency:copy
   </build>
   [...]
 </project>
-+---+
+```
