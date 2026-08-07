@@ -1,3 +1,10 @@
+---
+title: Failing the build on dependency analysis warnings
+author: 
+  - Mark Hobson
+date: 2007-09-01
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
