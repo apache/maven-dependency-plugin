@@ -33,6 +33,8 @@ import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.ArtifactType;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.LocalRepository;
@@ -79,6 +81,12 @@ class ResolverUtilTest {
 
     @Mock
     private RepositorySystemSession repositorySystemSession;
+
+    @Mock
+    private ArtifactTypeRegistry artifactTypeRegistry;
+
+    @Mock
+    private ArtifactType artifactType;
 
     @Mock
     private LocalRepositoryManager localRepositoryManager;
@@ -156,6 +164,36 @@ class ResolverUtilTest {
         assertThatCode(() -> resolverUtil.createArtifactFromParams(paramArtifact))
                 .isExactlyInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid artifact format: " + artifact);
+    }
+
+    @Test
+    void createArtifactFromShortCoordinatesUsesSeparatePackagingAndClassifier() {
+        prepareArtifactTypeRegistry();
+        ParamArtifact paramArtifact = new ParamArtifact();
+        paramArtifact.setArtifact("groupId:artifactId:1.0");
+        paramArtifact.setPackaging("test-jar");
+        paramArtifact.setClassifier("tests");
+
+        Artifact artifact = resolverUtil.createArtifactFromParams(paramArtifact);
+
+        assertThat(artifact.getExtension()).isEqualTo("jar");
+        assertThat(artifact.getClassifier()).isEqualTo("tests");
+        verify(artifactTypeRegistry).get("test-jar");
+    }
+
+    @Test
+    void createArtifactFromExplicitCoordinatesOverridesSeparatePackagingAndClassifier() {
+        prepareArtifactTypeRegistry();
+        ParamArtifact paramArtifact = new ParamArtifact();
+        paramArtifact.setArtifact("groupId:artifactId:1.0:jar:sources");
+        paramArtifact.setPackaging("test-jar");
+        paramArtifact.setClassifier("tests");
+
+        Artifact artifact = resolverUtil.createArtifactFromParams(paramArtifact);
+
+        assertThat(artifact.getExtension()).isEqualTo("jar");
+        assertThat(artifact.getClassifier()).isEqualTo("sources");
+        verify(artifactTypeRegistry).get("jar");
     }
 
     @Test
@@ -310,5 +348,13 @@ class ResolverUtilTest {
                         argThat(request -> request.getFilter() == null
                                 && request.getCollectRequest().getRoot() == null
                                 && request.getCollectRequest().getRootArtifact().equals(rootArtifact)));
+    }
+
+    private void prepareArtifactTypeRegistry() {
+        when(sessionProvider.get()).thenReturn(mavenSession);
+        when(mavenSession.getRepositorySession()).thenReturn(repositorySystemSession);
+        when(repositorySystemSession.getArtifactTypeRegistry()).thenReturn(artifactTypeRegistry);
+        when(artifactTypeRegistry.get(any())).thenReturn(artifactType);
+        when(artifactType.getExtension()).thenReturn("jar");
     }
 }

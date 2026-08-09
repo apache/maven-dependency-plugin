@@ -483,7 +483,7 @@ public class ResolverUtil {
     public Artifact createArtifactFromParams(ParamArtifact paramArtifact) {
         Objects.requireNonNull(paramArtifact);
         if (paramArtifact.getArtifact() != null) {
-            return createArtifactFromString(paramArtifact.getArtifact());
+            return createArtifactFromString(paramArtifact);
         } else {
             ArtifactType artifactType = getArtifactType(paramArtifact.getPackaging());
             return new DefaultArtifact(
@@ -496,16 +496,17 @@ public class ResolverUtil {
         }
     }
 
-    private Artifact createArtifactFromString(String artifact) {
+    private Artifact createArtifactFromString(ParamArtifact paramArtifact) {
         // groupId:artifactId:version[:packaging[:classifier]].
+        String artifact = paramArtifact.getArtifact();
         String[] items = artifact.split(":");
         if (items.length < 3 || items.length > 5) {
             throw new IllegalArgumentException("Invalid artifact format: " + artifact
                     + ", expected groupId:artifactId:version[:packaging[:classifier]]");
         }
 
-        ArtifactType artifactType = getArtifactType(items.length > 3 ? items[3] : null);
-        String classifier = items.length > 4 ? items[4] : null;
+        ArtifactType artifactType = getArtifactType(items.length > 3 ? items[3] : paramArtifact.getPackaging());
+        String classifier = items.length > 4 ? items[4] : paramArtifact.getClassifier();
 
         return new DefaultArtifact(items[0], items[1], classifier, artifactType.getExtension(), items[2], artifactType);
     }
