@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+---
+title: Frequently Asked Questions
+---
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -19,73 +21,76 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<faqs xmlns="http://maven.apache.org/FML/1.0.1"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
-  id="FAQ" title="Frequently Asked Questions">
- <part id="General">
-   <faq id="plugin name">
-     <question>What is the difference between dependency-maven-plugin and maven-dependency-plugin?</question>
-     <answer>
-       <p>
-         Actually, they are the same, it's just that it was moved and renamed. The dependency-maven-plugin
-         is hosted at Mojo while maven-dependency-plugin is hosted at Apache. The recommended
-         plugin to use is the maven-dependency-plugin.
-       </p>
-     </answer>
-   </faq>
-   <faq id="cli">
-     <question>
-       When executing <code>mvn dependency:unpack</code> or <code>dependency:copy</code> from the command line,
-       I get "One or more required plugin parameters are invalid/missing for 'dependency:unpack'"
-     </question>
-     <answer>
-       <p>
-        In order for this to work, you must configure the ArtifactItems as shown <a href="examples/copying-artifacts.html#Copying From the Command Line">here</a>.
-        Note that when executing a plugin from the command line, you must put the configuration tag outside of the executions.
-       </p><p>
-        If you haven't done this correctly, the error will look like this:
-       </p>
-       <pre>
+<a id="top"></a>
+
+# Frequently Asked Questions
+
+1. [What is the difference between dependency-maven-plugin and maven-dependency-plugin?](#plugin_name)
+2. [When executing `mvn dependency:unpack` or `dependency:copy` from the command line, I get &quot;One or more required plugin parameters are invalid/missing for &apos;dependency:unpack&apos;&quot;](#cli)
+3. [Why am I getting errors that a documented goal or parameter is missing?](#missing)
+4. [Why is Maven resolving &quot;dependency:xxx&quot; to the older org.codehaus.mojo:dependency-maven-plugin?](#question)
+5. [Why am I having trouble unpacking only a specific file?](#includes)
+6. [Why does my dependency analysis report `Unused declared dependencies`?](#unused)
+
+<a id="plugin_name"></a>
+
+### What is the difference between dependency-maven-plugin and maven-dependency-plugin?
+
+Actually, they are the same, it's just that it was moved and renamed. The dependency-maven-plugin is hosted at
+Mojo while maven-dependency-plugin is hosted at Apache. The recommended plugin to use is the
+maven-dependency-plugin.
+
+<a id="cli"></a>
+
+### When executing `mvn dependency:unpack` or `dependency:copy` from the command line, I get &quot;One or more required plugin parameters are invalid/missing for &apos;dependency:unpack&apos;&quot;
+
+In order for this to work, you must configure the ArtifactItems as shown
+[here](examples/copying-artifacts.html#Copying_from_the_command_line). Note that when executing a plugin from
+the command line, you must put the configuration tag outside of the executions.
+
+If you haven't done this correctly, the error will look like this:
+
+```
 [0] inside the definition for plugin: 'maven-dependency-plugin', specify the following:
-       </pre>
-     </answer>
-    </faq>
-    <faq id="missing">
-      <question>Why am I getting errors that a documented goal or parameter is missing?</question>
-      <answer><p>The latest documents are published and may preceed the actual release. Check to make sure the goal/parameter is in the most recent version.
-        <b> -OR- </b>
-        Maven may be resolving the older codehaus version of the dependency plugin. See next question.</p>
-      </answer>
-    </faq>
-    <faq id="question">
-      <question>Why is Maven resolving "dependency:xxx" to the older org.codehaus.mojo:dependency-maven-plugin?</question>
-      <answer><p>
-        Due to a bug in Maven in versions prior to 2.0.7 (<a href="https://issues.apache.org/jira/browse/MNG-2926">MNG-2926</a>), the search order was reversed and caused Mojo plugins to supercede ones with the same prefix at Apache.
-        The metadata at Mojo was cleaned up when the maven-dependency-plugin was released at Apache. If you are still experiencing this error, chances are you have
-        old metadata in your local repository or in a proxy / internal repository. Removing <code>/org/codehaus/mojo/maven-metadata.*</code> from your repo/proxy will cause it to
-        be refreshed. Alternatively, you can specify the groupId explicitely in your pom (if you are using a bound goal), or on the command line, use groupId:artifactId:version:mojo, ie
-        <code>mvn org.apache.maven.plugins:maven-dependency-plugin:2.5:unpack</code>
-      </p>
-      </answer>
-    </faq>
-    <faq id="includes">
-      <question>Why am I having trouble unpacking only a specific file?</question>
-      <answer><p>
-        The excludes will override the includes declaration. That means if you specify excludes=**/* ,includes=**/foo,
-        you will exclude everything. If you only want foo, then just specify the includes. The plexus component used to
-        unpack uses the following code to determine which files to unpack: <code>return isIncluded( name ) AND !isExcluded( name );</code>
-        </p>
-      </answer>
-    </faq>
-    <faq id="unused">
-      <question>Why does my dependency analysis report <code>Unused declared dependencies</code>?</question>
-      <answer><p>
-        By default, dependency analysis is done at bytecode level: anything that doesn't get into bytecode isn't detected.
-        This is the case, for example, of constants, annotations with source retention policy, or javadoc links.</p>
-        <p>If the only use of a dependency consists of such undetected constructs, the dependency is analyzed
-        as unused. Since 2.6, you can force use report with <code>usedDependencies</code> parameter.</p>
-      </answer>
-    </faq>
-  </part>
-</faqs>
+```
+
+<a id="missing"></a>
+
+### Why am I getting errors that a documented goal or parameter is missing?
+
+The latest documents are published and may preceed the actual release. Check to make sure the goal/parameter is
+in the most recent version. **-OR-** Maven may be resolving the older codehaus version of the dependency plugin.
+See next question.
+
+<a id="question"></a>
+
+### Why is Maven resolving &quot;dependency:xxx&quot; to the older org.codehaus.mojo:dependency-maven-plugin?
+
+Due to a bug in Maven in versions prior to 2.0.7
+([MNG-2926](https://issues.apache.org/jira/browse/MNG-2926)), the search order was reversed and caused Mojo
+plugins to supercede ones with the same prefix at Apache. The metadata at Mojo was cleaned up when the
+maven-dependency-plugin was released at Apache. If you are still experiencing this error, chances are you have
+old metadata in your local repository or in a proxy / internal repository. Removing
+`/org/codehaus/mojo/maven-metadata.*` from your repo/proxy will cause it to be refreshed. Alternatively, you can
+specify the groupId explicitely in your pom (if you are using a bound goal), or on the command line, use
+groupId:artifactId:version:mojo, ie `mvn org.apache.maven.plugins:maven-dependency-plugin:2.5:unpack`
+
+<a id="includes"></a>
+
+### Why am I having trouble unpacking only a specific file?
+
+The excludes will override the includes declaration. That means if you specify excludes=\*\*/\* ,includes=\*\*/foo,
+you will exclude everything. If you only want foo, then just specify the includes. The plexus component used to
+unpack uses the following code to determine which files to unpack:
+`return isIncluded( name ) AND !isExcluded( name );`
+
+<a id="unused"></a>
+
+### Why does my dependency analysis report `Unused declared dependencies`?
+
+By default, dependency analysis is done at bytecode level: anything that doesn't get into bytecode isn't
+detected. This is the case, for example, of constants, annotations with source retention policy, or javadoc
+links.
+
+If the only use of a dependency consists of such undetected constructs, the dependency is analyzed as unused.
+Since 2.6, you can force use report with `usedDependencies` parameter.
