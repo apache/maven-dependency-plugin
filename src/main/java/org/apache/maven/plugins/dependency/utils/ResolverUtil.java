@@ -399,7 +399,11 @@ public class ResolverUtil {
 
     private String[] parseRemoteRepository(String repository) {
         String[] items = Objects.requireNonNull(repository, "repository must be not null")
+                .trim()
                 .split("::");
+        for (int i = 0; i < items.length; i++) {
+            items[i] = items[i].trim();
+        }
         if (items.length > 3) {
             throw new IllegalArgumentException("Invalid repository: " + repository);
         }

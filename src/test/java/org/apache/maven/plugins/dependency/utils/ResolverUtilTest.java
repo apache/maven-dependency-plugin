@@ -107,6 +107,11 @@ class ResolverUtilTest {
                         "central::layout2::https://repo.maven.apache.org",
                         "central",
                         "layout2",
+                        "https://repo.maven.apache.org"),
+                of(
+                        " central :: layout2 :: https://repo.maven.apache.org ",
+                        "central",
+                        "layout2",
                         "https://repo.maven.apache.org"));
     }
 

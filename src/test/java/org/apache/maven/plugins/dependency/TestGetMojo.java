@@ -138,6 +138,27 @@ class TestGetMojo {
                         RepositoryPolicy.UPDATE_POLICY_ALWAYS);
     }
 
+    @Test
+    void testRemoteRepositoryEntriesAreTrimmed() throws Exception {
+        ResolverUtil resolverUtil = mock(ResolverUtil.class);
+        when(resolverUtil.remoteRepositories(anyList(), eq(RepositoryPolicy.UPDATE_POLICY_ALWAYS)))
+                .thenReturn(Collections.emptyList());
+        GetMojo mojo = new GetMojo(resolverUtil);
+        setVariableValueToObject(
+                mojo, "remoteRepositories", " first::default::https://repo1.example , second::https://repo2.example ");
+        mojo.setGroupId("org.apache.maven");
+        mojo.setArtifactId("maven-model");
+        mojo.setVersion("2.0.9");
+
+        mojo.execute();
+
+        verify(resolverUtil)
+                .remoteRepositories(
+                        java.util.Arrays.asList(
+                                "first::default::https://repo1.example", "second::https://repo2.example"),
+                        RepositoryPolicy.UPDATE_POLICY_ALWAYS);
+    }
+
     /**
      * Test remote repositories parameter with basic authentication.
      */
