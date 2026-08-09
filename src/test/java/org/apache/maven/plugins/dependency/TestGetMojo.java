@@ -25,6 +25,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.apache.maven.api.plugin.testing.Basedir;
 import org.apache.maven.api.plugin.testing.InjectMojo;
@@ -56,7 +57,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.apache.maven.api.plugin.testing.MojoExtension.getTestPath;
+import static org.apache.maven.api.plugin.testing.MojoExtension.getVariableValueFromObject;
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -168,6 +171,16 @@ class TestGetMojo {
                     + "central::::https://repo.maven.apache.org/maven2,"
                     + "https://repo.maven.apache.org/maven2")
     void testRemoteRepositories(GetMojo mojo) throws Exception {
+        // the parameter is a List<String>, and a comma-separated value must arrive as one element per
+        // repository -- not as a single element still containing the commas
+        List<String> repositories = getVariableValueFromObject(mojo, "remoteRepositories");
+        assertEquals(
+                Arrays.asList(
+                        "central::default::https://repo.maven.apache.org/maven2",
+                        "central::::https://repo.maven.apache.org/maven2",
+                        "https://repo.maven.apache.org/maven2"),
+                repositories);
+
         mojo.setGroupId("org.apache.maven");
         mojo.setArtifactId("maven-model");
         mojo.setVersion("2.0.9");
