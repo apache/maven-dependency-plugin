@@ -51,6 +51,16 @@ public class GetMojo extends AbstractMojo {
      * <code>
      * central::default::https://repo.maven.apache.org/maven2,myrepo::https://repo.acme.com,https://repo.acme2.com
      * </code>
+     * <p>
+     * The comma-separated form works both on the command line and as the text of a single
+     * <code>&lt;remoteRepositories&gt;</code> element. In a POM the repositories may also be listed one per
+     * element:
+     * <pre>
+     * &lt;remoteRepositories&gt;
+     *   &lt;remoteRepository&gt;central::default::https://repo.maven.apache.org/maven2&lt;/remoteRepository&gt;
+     *   &lt;remoteRepository&gt;https://repo.acme.com&lt;/remoteRepository&gt;
+     * &lt;/remoteRepositories&gt;
+     * </pre>
      */
     @Parameter(property = "remoteRepositories")
     private List<String> remoteRepositories;
