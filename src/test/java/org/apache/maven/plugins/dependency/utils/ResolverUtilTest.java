@@ -32,6 +32,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -70,7 +71,16 @@ class ResolverUtilTest {
                         "central::layout2::https://repo.maven.apache.org",
                         "central",
                         "layout2",
-                        "https://repo.maven.apache.org"));
+                        "https://repo.maven.apache.org"),
+                // surrounding whitespace is not part of the id, layout or url: a comma-separated
+                // list written with spaces after the commas must behave like one written without
+                of(
+                        " central :: default :: https://repo.maven.apache.org ",
+                        "central",
+                        "default",
+                        "https://repo.maven.apache.org"),
+                of(" central :: https://repo.maven.apache.org ", "central", "default", "https://repo.maven.apache.org"),
+                of(" https://repo.maven.apache.org ", "temp", "default", "https://repo.maven.apache.org"));
     }
 
     @ParameterizedTest
@@ -97,6 +107,17 @@ class ResolverUtilTest {
         assertThat(releasePolicy).isNotNull();
         assertThat(releasePolicy.getUpdatePolicy()).isEqualTo(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
         assertThat(releasePolicy.getChecksumPolicy()).isEqualTo(RepositoryPolicy.CHECKSUM_POLICY_WARN);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"groupId:artifactId", "groupId:artifactId:version:packaging:classifier:extra"})
+    void createArtifactFromInvalidString(String artifact) {
+        ParamArtifact paramArtifact = new ParamArtifact();
+        paramArtifact.setArtifact(artifact);
+
+        assertThatCode(() -> resolverUtil.createArtifactFromParams(paramArtifact))
+                .isExactlyInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid artifact format: " + artifact);
     }
 
     @Test

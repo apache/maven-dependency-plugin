@@ -290,16 +290,16 @@ public class ResolverUtil {
         String url;
         switch (items.length) {
             case 3:
-                id = items[0];
-                type = items[1];
-                url = items[2];
+                id = items[0].trim();
+                type = items[1].trim();
+                url = items[2].trim();
                 break;
             case 2:
-                id = items[0];
-                url = items[1];
+                id = items[0].trim();
+                url = items[1].trim();
                 break;
             case 1:
-                url = items[0];
+                url = items[0].trim();
                 break;
             default:
                 throw new IllegalArgumentException("Invalid repository: " + repository);
@@ -352,8 +352,9 @@ public class ResolverUtil {
     private Artifact createArtifactFromString(String artifact) {
         // groupId:artifactId:version[:packaging[:classifier]].
         String[] items = artifact.split(":");
-        if (items.length < 3) {
-            throw new IllegalArgumentException("Invalid artifact format: " + artifact);
+        if (items.length < 3 || items.length > 5) {
+            throw new IllegalArgumentException("Invalid artifact format: " + artifact
+                    + ", expected groupId:artifactId:version[:packaging[:classifier]]");
         }
 
         ArtifactType artifactType = getArtifactType(items.length > 3 ? items[3] : null);
