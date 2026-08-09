@@ -21,6 +21,8 @@ package org.apache.maven.plugins.dependency;
 import javax.inject.Inject;
 
 import java.net.InetAddress;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.Collections;
 
 import org.apache.maven.api.plugin.testing.Basedir;
@@ -31,10 +33,15 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
@@ -46,10 +53,13 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.security.Constraint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.apache.maven.api.plugin.testing.MojoExtension.getTestPath;
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
@@ -57,8 +67,16 @@ import static org.mockito.Mockito.when;
 @Basedir("/unit/get-test")
 class TestGetMojo {
 
+    private static final String PROXY_HOST = "proxy.invalid";
+
     @Inject
     private MavenSession session;
+
+    @Inject
+    private RepositorySystem repositorySystem;
+
+    @TempDir
+    private Path isolatedLocalRepository;
 
     @BeforeEach
     void setUp() {
@@ -116,9 +134,7 @@ class TestGetMojo {
     }
 
     /**
-     * Test remote repositories parameter with basic authentication
-     *
-     * @throws Exception in case of errors
+     * Test remote repositories parameter with basic authentication.
      */
     @Test
     @InjectMojo(goal = "get")
@@ -126,18 +142,10 @@ class TestGetMojo {
         org.eclipse.jetty.server.Server server = createServer();
         try {
             server.start();
-            ServerConnector serverConnector = (ServerConnector) server.getConnectors()[0];
-            String url = "http://"
-                    + (serverConnector.getHost() == null
-                            ? InetAddress.getLoopbackAddress().getHostName()
-                            : serverConnector.getHost());
-            url = url + ":" + serverConnector.getLocalPort() + "/maven";
 
-            setVariableValueToObject(mojo, "remoteRepositories", "myserver::default::" + url);
+            setVariableValueToObject(mojo, "remoteRepositories", "myserver::default::" + serverUrl(server));
 
-            DefaultProjectBuildingRequest pbr = new DefaultProjectBuildingRequest();
-            pbr.setRepositorySession(session.getRepositorySession());
-            when(session.getProjectBuildingRequest()).thenReturn(pbr);
+            useIsolatedLocalRepository();
 
             mojo.setGroupId("test");
             mojo.setArtifactId("test");
@@ -147,6 +155,118 @@ class TestGetMojo {
         } finally {
             server.stop();
         }
+    }
+
+    /**
+     * Test that an active proxy from the settings is applied to the repositories given by the
+     * <code>remoteRepositories</code> parameter. The proxy points at a host that cannot resolve, so a successful
+     * resolution would mean the proxy was never applied.
+     */
+    @Test
+    @InjectMojo(goal = "get")
+    void testRemoteRepositoriesProxy(GetMojo mojo) throws Exception {
+        org.eclipse.jetty.server.Server server = createServer();
+        try {
+            server.start();
+
+            setVariableValueToObject(mojo, "remoteRepositories", "myserver::default::" + serverUrl(server));
+
+            session.getSettings().addProxy(createProxy(null));
+            useIsolatedLocalRepository();
+
+            mojo.setGroupId("test");
+            mojo.setArtifactId("test");
+            mojo.setVersion("1.0");
+
+            MojoExecutionException e = assertThrows(MojoExecutionException.class, mojo::execute);
+            assertTrue(
+                    mentionsProxyHost(e),
+                    "Expected the resolution to have been attempted through the unreachable proxy, got: " + e);
+        } finally {
+            server.stop();
+        }
+    }
+
+    /**
+     * Test that <code>nonProxyHosts</code> excludes a repository from the proxy that would otherwise match it: the
+     * same unreachable proxy as above must not be applied, so the resolution has to succeed.
+     * <p>
+     * This one asserts a success, so on its own it cannot tell "nonProxyHosts was honoured" apart from "proxies are
+     * not applied at all". It is only meaningful together with {@link #testRemoteRepositoriesProxy(GetMojo)}, which
+     * fails in that second case -- do not delete one and keep the other.
+     */
+    @Test
+    @InjectMojo(goal = "get")
+    void testRemoteRepositoriesNonProxyHosts(GetMojo mojo) throws Exception {
+        org.eclipse.jetty.server.Server server = createServer();
+        try {
+            server.start();
+            String url = serverUrl(server);
+
+            setVariableValueToObject(mojo, "remoteRepositories", "myserver::default::" + url);
+
+            session.getSettings().addProxy(createProxy(URI.create(url).getHost()));
+            useIsolatedLocalRepository();
+
+            mojo.setGroupId("test");
+            mojo.setArtifactId("test");
+            mojo.setVersion("1.0");
+
+            mojo.execute();
+        } finally {
+            server.stop();
+        }
+    }
+
+    /**
+     * Points the mojo at an empty local repository, so that the tests above depend on the transfer actually
+     * happening rather than on what an earlier run left behind in the shared one.
+     */
+    private void useIsolatedLocalRepository() {
+        DefaultRepositorySystemSession repositorySession =
+                new DefaultRepositorySystemSession(session.getRepositorySession());
+        repositorySession.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(
+                repositorySession, new LocalRepository(isolatedLocalRepository.toFile())));
+        when(session.getRepositorySession()).thenReturn(repositorySession);
+
+        DefaultProjectBuildingRequest pbr = new DefaultProjectBuildingRequest();
+        pbr.setRepositorySession(repositorySession);
+        when(session.getProjectBuildingRequest()).thenReturn(pbr);
+    }
+
+    /**
+     * Whether the failure came from the proxy rather than from, say, a missing artifact or a rejected login — the
+     * host of {@link #createProxy(String)} only ever appears if the proxy really was applied to the repository.
+     */
+    private boolean mentionsProxyHost(Throwable throwable) {
+        for (Throwable cause = throwable; cause != null; cause = cause.getCause()) {
+            if (cause.getMessage() != null && cause.getMessage().contains(PROXY_HOST)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * An active HTTP proxy pointing at a name that is guaranteed not to resolve (RFC 2606 reserved TLD), so that
+     * applying it is always observable as a failure.
+     */
+    private Proxy createProxy(String nonProxyHosts) {
+        Proxy proxy = new Proxy();
+        proxy.setActive(true);
+        proxy.setProtocol("http");
+        proxy.setHost(PROXY_HOST);
+        proxy.setPort(3128);
+        proxy.setNonProxyHosts(nonProxyHosts);
+        return proxy;
+    }
+
+    private String serverUrl(org.eclipse.jetty.server.Server server) throws Exception {
+        ServerConnector serverConnector = (ServerConnector) server.getConnectors()[0];
+        String host = serverConnector.getHost() == null
+                ? InetAddress.getLoopbackAddress().getHostName()
+                : serverConnector.getHost();
+        return "http://" + host + ":" + serverConnector.getLocalPort() + "/maven";
     }
 
     /**
