@@ -31,6 +31,7 @@ import org.apache.maven.plugins.dependency.utils.ParamArtifact;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.DependencyResolutionException;
@@ -101,7 +102,7 @@ public class GetMojo extends AbstractMojo {
         List<RemoteRepository> repositories;
         try {
             artifact = resolverUtil.createArtifactFromParams(paramArtifact);
-            repositories = resolverUtil.remoteRepositories(remoteRepositories);
+            repositories = resolverUtil.remoteRepositories(remoteRepositories, RepositoryPolicy.UPDATE_POLICY_ALWAYS);
         } catch (IllegalArgumentException e) {
             throw new MojoFailureException(e.getMessage(), e);
         }

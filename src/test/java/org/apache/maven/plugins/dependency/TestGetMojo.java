@@ -34,12 +34,14 @@ import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
 import org.eclipse.aether.util.repository.DefaultProxySelector;
@@ -62,6 +64,10 @@ import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValue
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @MojoTest(realRepositorySession = true)
@@ -186,6 +192,25 @@ class TestGetMojo {
         mojo.setVersion("2.0.9");
 
         mojo.execute();
+    }
+
+    @Test
+    void testExplicitRemoteRepositoriesAlwaysRefresh() throws Exception {
+        ResolverUtil resolverUtil = mock(ResolverUtil.class);
+        when(resolverUtil.remoteRepositories(anyList(), eq(RepositoryPolicy.UPDATE_POLICY_ALWAYS)))
+                .thenReturn(Collections.emptyList());
+        GetMojo mojo = new GetMojo(resolverUtil);
+        setRemoteRepositories(mojo, "central::default::https://repo.maven.apache.org/maven2");
+        mojo.setGroupId("org.apache.maven");
+        mojo.setArtifactId("maven-model");
+        mojo.setVersion("2.0.9");
+
+        mojo.execute();
+
+        verify(resolverUtil)
+                .remoteRepositories(
+                        Collections.singletonList("central::default::https://repo.maven.apache.org/maven2"),
+                        RepositoryPolicy.UPDATE_POLICY_ALWAYS);
     }
 
     /**
