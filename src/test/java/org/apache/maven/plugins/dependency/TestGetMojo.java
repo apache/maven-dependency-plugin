@@ -39,6 +39,7 @@ import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.Proxy;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
 import org.eclipse.aether.util.repository.DefaultProxySelector;
@@ -61,6 +62,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -115,6 +117,25 @@ class TestGetMojo {
         mojo.setVersion("2.0.9");
 
         mojo.execute();
+    }
+
+    @Test
+    void testExplicitRemoteRepositoriesAlwaysRefresh() throws Exception {
+        ResolverUtil resolverUtil = mock(ResolverUtil.class);
+        when(resolverUtil.remoteRepositories(anyList(), eq(RepositoryPolicy.UPDATE_POLICY_ALWAYS)))
+                .thenReturn(Collections.emptyList());
+        GetMojo mojo = new GetMojo(resolverUtil);
+        setVariableValueToObject(mojo, "remoteRepositories", "central::default::https://repo.maven.apache.org/maven2");
+        mojo.setGroupId("org.apache.maven");
+        mojo.setArtifactId("maven-model");
+        mojo.setVersion("2.0.9");
+
+        mojo.execute();
+
+        verify(resolverUtil)
+                .remoteRepositories(
+                        Collections.singletonList("central::default::https://repo.maven.apache.org/maven2"),
+                        RepositoryPolicy.UPDATE_POLICY_ALWAYS);
     }
 
     /**
@@ -220,7 +241,8 @@ class TestGetMojo {
     @Test
     void testArtifactRetainsSeparatePackagingAndClassifier() throws Exception {
         ResolverUtil resolverUtil = mock(ResolverUtil.class);
-        when(resolverUtil.remoteRepositories(anyList())).thenReturn(Collections.emptyList());
+        when(resolverUtil.remoteRepositories(anyList(), eq(RepositoryPolicy.UPDATE_POLICY_ALWAYS)))
+                .thenReturn(Collections.emptyList());
         GetMojo mojo = new GetMojo(resolverUtil);
         setVariableValueToObject(mojo, "artifact", "org.apache.maven:maven-model:2.0.9");
         mojo.setPackaging("test-jar");
@@ -237,7 +259,8 @@ class TestGetMojo {
     @Test
     void testArtifactPackagingAndClassifierOverrideSeparateParameters() throws Exception {
         ResolverUtil resolverUtil = mock(ResolverUtil.class);
-        when(resolverUtil.remoteRepositories(anyList())).thenReturn(Collections.emptyList());
+        when(resolverUtil.remoteRepositories(anyList(), eq(RepositoryPolicy.UPDATE_POLICY_ALWAYS)))
+                .thenReturn(Collections.emptyList());
         GetMojo mojo = new GetMojo(resolverUtil);
         setVariableValueToObject(mojo, "artifact", "org.apache.maven:maven-model:2.0.9:jar:sources");
         mojo.setPackaging("test-jar");

@@ -33,6 +33,7 @@ import org.apache.maven.plugins.dependency.utils.ParamArtifact;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.DependencyResolutionException;
@@ -111,9 +112,8 @@ public class GetMojo extends AbstractMojo {
         List<RemoteRepository> resolverRepositories;
         try {
             resolverRepositories = resolverUtil.remoteRepositories(
-                    remoteRepositories == null
-                            ? Collections.emptyList()
-                            : Arrays.asList(remoteRepositories.split(",")));
+                    remoteRepositories == null ? Collections.emptyList() : Arrays.asList(remoteRepositories.split(",")),
+                    RepositoryPolicy.UPDATE_POLICY_ALWAYS);
         } catch (IllegalArgumentException e) {
             throw new MojoFailureException("Invalid remote repository: " + e.getMessage(), e);
         }

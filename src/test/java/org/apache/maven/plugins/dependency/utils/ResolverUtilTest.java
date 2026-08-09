@@ -137,6 +137,19 @@ class ResolverUtilTest {
     }
 
     @Test
+    void prepareRepositoryUsesExplicitUpdatePolicy() {
+        when(sessionProvider.get()).thenReturn(mavenSession);
+        when(mavenSession.getRepositorySession()).thenReturn(repositorySystemSession);
+
+        RemoteRepository remoteRepository = resolverUtil.prepareRemoteRepository(
+                "central::https://repo.maven.apache.org", RepositoryPolicy.UPDATE_POLICY_ALWAYS);
+
+        assertThat(remoteRepository.getPolicy(false).getUpdatePolicy())
+                .isEqualTo(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
+        assertThat(remoteRepository.getPolicy(true).getUpdatePolicy()).isEqualTo(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
+    }
+
+    @Test
     void prepareRepositoryWithNull() {
         assertThatCode(() -> resolverUtil.prepareRemoteRepository(null))
                 .isExactlyInstanceOf(NullPointerException.class)

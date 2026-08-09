@@ -348,6 +348,23 @@ public class ResolverUtil {
      * @return a list of remote repositories
      */
     public List<RemoteRepository> remoteRepositories(List<String> repositories) {
+        if (repositories == null || repositories.isEmpty()) {
+            return remoteRepositories(repositories, null);
+        }
+        MavenSession mavenSession = mavenSessionProvider.get();
+        String updatePolicy =
+                mavenSession.getRequest().isUpdateSnapshots() ? RepositoryPolicy.UPDATE_POLICY_ALWAYS : null;
+        return remoteRepositories(repositories, updatePolicy);
+    }
+
+    /**
+     * Prepare a remote repositories list for given descriptions and update policy.
+     *
+     * @param repositories remote repositories descriptions
+     * @param updatePolicy repository update policy, or {@code null} to use the Resolver default
+     * @return a list of remote repositories
+     */
+    public List<RemoteRepository> remoteRepositories(List<String> repositories, String updatePolicy) {
         MavenSession mavenSession = mavenSessionProvider.get();
         List<RemoteRepository> projectRepositories =
                 mavenSession.getCurrentProject().getRemoteProjectRepositories();
@@ -355,8 +372,9 @@ public class ResolverUtil {
             return projectRepositories;
         }
 
-        List<RemoteRepository> repositoriesList =
-                repositories.stream().map(this::prepareRemoteRepository).collect(Collectors.toList());
+        List<RemoteRepository> repositoriesList = repositories.stream()
+                .map(repository -> prepareRemoteRepository(repository, updatePolicy))
+                .collect(Collectors.toList());
         repositoriesList =
                 repositorySystem.newResolutionRepositories(mavenSession.getRepositorySession(), repositoriesList);
 
@@ -367,8 +385,28 @@ public class ResolverUtil {
 
     // protected for testing purpose
     protected RemoteRepository prepareRemoteRepository(String repository) {
+        String[] items = parseRemoteRepository(repository);
+        MavenSession mavenSession = mavenSessionProvider.get();
+        String updatePolicy =
+                mavenSession.getRequest().isUpdateSnapshots() ? RepositoryPolicy.UPDATE_POLICY_ALWAYS : null;
+        return prepareRemoteRepository(repository, items, updatePolicy);
+    }
+
+    // protected for testing purpose
+    protected RemoteRepository prepareRemoteRepository(String repository, String updatePolicy) {
+        return prepareRemoteRepository(repository, parseRemoteRepository(repository), updatePolicy);
+    }
+
+    private String[] parseRemoteRepository(String repository) {
         String[] items = Objects.requireNonNull(repository, "repository must be not null")
                 .split("::");
+        if (items.length > 3) {
+            throw new IllegalArgumentException("Invalid repository: " + repository);
+        }
+        return items;
+    }
+
+    private RemoteRepository prepareRemoteRepository(String repository, String[] items, String updatePolicy) {
         String id = "temp";
         String type = null;
         String url;
@@ -400,8 +438,6 @@ public class ResolverUtil {
         if (checksumPolicy == null) {
             checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_WARN;
         }
-        String updatePolicy =
-                mavenSession.getRequest().isUpdateSnapshots() ? RepositoryPolicy.UPDATE_POLICY_ALWAYS : null;
         RepositoryPolicy repositoryPolicy = new RepositoryPolicy(true, updatePolicy, checksumPolicy);
 
         RemoteRepository.Builder builder = new RemoteRepository.Builder(id, type, url);
