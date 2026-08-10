@@ -27,3 +27,26 @@ jobs:
     uses: apache/maven-gh-actions-shared/.github/workflows/maven-verify.yml@v5
     with:
       maven4-enabled: true
+
+  # The verify matrix runs current Maven only, so nothing checks the plugin against the
+  # version <prerequisites> claims to support. Compiling main and test sources against that
+  # baseline catches API drift without paying for a full test run.
+  baseline:
+    name: Baseline (Maven 3.6.3 API)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          java-version: '21'
+          distribution: 'zulu'
+          cache: 'maven'
+
+      # Keep in step with <prerequisites><maven> in the POM. `clean` matters: without it a
+      # populated target/ would let the compiler skip, and the job would pass without having
+      # compiled anything against the baseline.
+      - name: Compile against the declared prerequisite
+        run: mvn -B --no-transfer-progress -DmavenVersion=3.6.3 clean test-compile
