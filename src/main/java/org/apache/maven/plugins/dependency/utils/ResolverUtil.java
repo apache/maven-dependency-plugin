@@ -23,6 +23,7 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +43,8 @@ import org.apache.maven.model.PluginManagement;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.Reporting;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.DefaultRepositoryCache;
+import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -52,6 +55,7 @@ import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.CollectResult;
 import org.eclipse.aether.collection.DependencyCollectionException;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
@@ -80,6 +84,25 @@ public class ResolverUtil {
     public ResolverUtil(RepositorySystem repositorySystem, Provider<MavenSession> mavenSessionProvider) {
         this.repositorySystem = repositorySystem;
         this.mavenSessionProvider = mavenSessionProvider;
+    }
+
+    /**
+     * Returns the current repository session, optionally using an alternate local repository.
+     *
+     * @param localRepositoryDirectory alternate local repository directory, or {@code null}
+     * @return repository system session
+     */
+    public RepositorySystemSession repositorySystemSession(File localRepositoryDirectory) {
+        RepositorySystemSession repositorySystemSession =
+                mavenSessionProvider.get().getRepositorySession();
+        if (localRepositoryDirectory != null) {
+            DefaultRepositorySystemSession newSession = new DefaultRepositorySystemSession(repositorySystemSession);
+            newSession.setCache(new DefaultRepositoryCache());
+            newSession.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(
+                    newSession, new LocalRepository(localRepositoryDirectory)));
+            repositorySystemSession = newSession;
+        }
+        return repositorySystemSession;
     }
 
     /**
