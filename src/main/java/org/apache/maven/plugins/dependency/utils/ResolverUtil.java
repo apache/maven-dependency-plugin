@@ -52,6 +52,7 @@ import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.CollectResult;
 import org.eclipse.aether.collection.DependencyCollectionException;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
@@ -220,12 +221,14 @@ public class ResolverUtil {
     }
 
     /**
-     * Resolve transitive dependencies for artifact with managed dependencies.
+     * Resolve transitive dependencies for artifact with managed dependencies, applying the given graph-level filter
+     * to skip nodes (including transitive ones) that should not be resolved.
      *
      * @param rootArtifact a root artifact to resolve
      * @param dependencies a list of dependencies for artifact
      * @param managedDependencies  a list of managed dependencies for artifact
      * @param remoteProjectRepositories remote repositories list
+     * @param dependencyFilter a filter applied to every node in the resolved graph, may be {@code null}
      * @return Resolved dependencies
      * @throws DependencyResolutionException if the dependency tree could not be built or any dependency artifact could
      *                                       not be resolved
@@ -234,14 +237,15 @@ public class ResolverUtil {
             Artifact rootArtifact,
             List<Dependency> dependencies,
             List<Dependency> managedDependencies,
-            List<RemoteRepository> remoteProjectRepositories)
+            List<RemoteRepository> remoteProjectRepositories,
+            DependencyFilter dependencyFilter)
             throws DependencyResolutionException {
         MavenSession session = mavenSessionProvider.get();
 
         CollectRequest collectRequest =
                 new CollectRequest(dependencies, managedDependencies, remoteProjectRepositories);
         collectRequest.setRootArtifact(rootArtifact);
-        DependencyRequest request = new DependencyRequest(collectRequest, null);
+        DependencyRequest request = new DependencyRequest(collectRequest, dependencyFilter);
         DependencyResult result = repositorySystem.resolveDependencies(session.getRepositorySession(), request);
         return result.getArtifactResults().stream()
                 .map(ArtifactResult::getArtifact)
