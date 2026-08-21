@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.analyze;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -558,9 +559,18 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         }
     }
 
+    /**
+     * Removes artifacts matching any of the given exclude patterns from the source set
+     * and returns the removed artifacts. When {@code excludes} is null or empty, no
+     * artifacts are removed and an empty set is returned.
+     *
+     * @param artifacts the source set of artifacts (mutated in place)
+     * @param excludes  exclude patterns, may be null or empty
+     * @return the artifacts that were removed from the source set
+     */
     private Set<Artifact> filterDependencies(Set<Artifact> artifacts, String[] excludes) {
         if (excludes == null || excludes.length == 0) {
-            return artifacts;
+            return Collections.emptySet();
         }
         ArtifactFilter filter = new StrictPatternExcludesArtifactFilter(Arrays.asList(excludes));
         Set<Artifact> result = new LinkedHashSet<>();
