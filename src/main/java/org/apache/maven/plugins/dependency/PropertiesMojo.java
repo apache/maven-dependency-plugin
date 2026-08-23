@@ -45,13 +45,11 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
  * @author Paul Gier
  * @since 2.2
  */
-// CHECKSTYLE_OFF: LineLength
 @Mojo(
         name = "properties",
         requiresDependencyResolution = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.INITIALIZE,
         threadSafe = true)
-// CHECKSTYLE_ON: LineLength
 public class PropertiesMojo extends AbstractMojo {
 
     /**
@@ -115,11 +113,12 @@ public class PropertiesMojo extends AbstractMojo {
         for (Artifact artifact : artifacts) {
             String conflictId = artifact.getDependencyConflictId();
             File file = artifact.getFile();
-            if (file == null) {
-                getLog().warn("Artifact " + conflictId + " has no associated file; no property will be set for it.");
-                continue;
+            if (file != null) {
+              project.getProperties().setProperty(conflictId, file.getAbsolutePath());
             }
-            project.getProperties().setProperty(conflictId, file.getAbsolutePath());
+            else {
+              getLog().warn("Artifact " + conflictId + " has no associated file; no property will be set for it.");
+            }
         }
 
         if (extraArtifacts != null) {
