@@ -32,7 +32,7 @@ enum ClasspathScope {
             return valueOf(value.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
-                    "Unknown dependency scope '" + value + "'. Expected one of: compile, runtime, test.", e);
+                    "Unknown dependency scope '" + value + "'. Expected one of: compile, runtime, test.");
         }
     }
 
