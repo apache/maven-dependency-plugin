@@ -1,0 +1,90 @@
+---
+title: Exclude dependencies from dependency analysis
+author: 
+  - Henning Schmiedehausen
+date: 2015-01-01
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+# Exclude dependencies from dependency analysis
+
+A project's dependencies can be analyzed as part of the build process by binding the `dependency:analyze-only` goal to the lifecycle. By default, the analysis will be performed during the `verify` lifecycle phase. 
+
+It is possible to have necessary dependencies on the classpath that cause either "Declared but unused" or "Undeclared but used" warnings. One common cause of byte code analysis being unable to determine whether a jar is required are annotations with source retention. Another common cause is a class that is loaded by reflection at runtime.
+
+The dependency plugin does not warn about a few common dependencies where its analysis is known to be unreliable, most notably SLF4J.
+
+If you encounter other false positives, you can configure the plugin to ignore particular dependencies that are "declared but unused", "undeclared but used", and "non-test scoped". See the following POM configuration for an example:
+
+```xml
+<project>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <id>analyze</id>
+            <goals>
+              <goal>analyze-only</goal>
+            </goals>
+            <configuration>
+              <failOnWarning>true</failOnWarning>
+
+              <!-- ignore jsr305 for "used but undeclared", "declared but unused", and "non-test scoped" -->
+              <ignoredDependencies>
+                <ignoredDependency>com.google.code.findbugs:jsr305</ignoredDependency>
+              </ignoredDependencies>
+
+              <!-- ignore annotations for "used but undeclared" warnings -->
+              <ignoredUsedUndeclaredDependencies>
+                <ignoredUsedUndeclaredDependency>com.google.code.findbugs:annotations</ignoredUsedUndeclaredDependency>
+              </ignoredUsedUndeclaredDependencies>
+
+              <!-- ignore annotations for "unused but declared" warnings -->
+              <ignoredUnusedDeclaredDependencies>
+                <ignoredUnusedDeclaredDependency>com.google.code.findbugs:annotations</ignoredUnusedDeclaredDependency>
+              </ignoredUnusedDeclaredDependencies>
+
+              <!-- ignore annotations for "non-test scoped" warnings -->
+              <ignoredNonTestScopedDependencies>
+                <ignoredNonTestScopedDependency>com.google.code.findbugs:annotations</ignoredNonTestScopedDependency>
+              </ignoredNonTestScopedDependencies>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  ...
+</project>
+```
+
+Note that the `dependency:analyze-only` goal is used in preference to `dependency:analyze` since it doesn't force a further compilation of the project, but uses the compiled classes produced from the earlier `test-compile` phase in the lifecycle.
+
+The project's dependencies will then be automatically analyzed during the `verify` lifecycle phase, which can be executed explicitly as follows:
+
+```shell
+mvn verify
+```

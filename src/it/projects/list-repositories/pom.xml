@@ -43,6 +43,13 @@
     </repository>
   </repositories>
 
+  <pluginRepositories>
+    <pluginRepository>
+      <id>fake-plugin-repository</id>
+      <url>http://localhost:3456</url>
+    </pluginRepository>
+  </pluginRepositories>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>

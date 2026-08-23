@@ -238,7 +238,7 @@ public class RenderDependenciesMojo extends AbstractDependencyFilterMojo {
             try {
                 Files.createDirectories(parent);
             } catch (final IOException e) {
-                throw new MojoExecutionException(e);
+                throw new MojoExecutionException("Error while creating directory '" + parent + "'", e);
             }
         }
 

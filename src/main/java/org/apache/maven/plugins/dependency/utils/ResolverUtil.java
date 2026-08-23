@@ -23,6 +23,7 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +43,9 @@ import org.apache.maven.model.PluginManagement;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.Reporting;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.artifact.ProjectArtifactMetadata;
+import org.eclipse.aether.DefaultRepositoryCache;
+import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -52,6 +56,10 @@ import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.CollectResult;
 import org.eclipse.aether.collection.DependencyCollectionException;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.installation.InstallRequest;
+import org.eclipse.aether.installation.InstallationException;
+import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
@@ -63,6 +71,7 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.util.artifact.SubArtifact;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 
 /**
@@ -80,6 +89,51 @@ public class ResolverUtil {
     public ResolverUtil(RepositorySystem repositorySystem, Provider<MavenSession> mavenSessionProvider) {
         this.repositorySystem = repositorySystem;
         this.mavenSessionProvider = mavenSessionProvider;
+    }
+
+    /**
+     * Returns a copy of the current repository session using the supplied local repository directory.
+     *
+     * @param localRepositoryDirectory alternate local repository directory
+     * @return repository system session
+     */
+    public RepositorySystemSession localRepositorySession(File localRepositoryDirectory) {
+        Objects.requireNonNull(localRepositoryDirectory, "localRepositoryDirectory");
+        RepositorySystemSession repositorySystemSession =
+                mavenSessionProvider.get().getRepositorySession();
+        String contentType = repositorySystemSession
+                .getLocalRepositoryManager()
+                .getRepository()
+                .getContentType();
+        if ("enhanced".equals(contentType)) {
+            contentType = "default";
+        }
+
+        DefaultRepositorySystemSession newSession = new DefaultRepositorySystemSession(repositorySystemSession);
+        newSession.setCache(new DefaultRepositoryCache());
+        newSession.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(
+                newSession, new LocalRepository(localRepositoryDirectory, contentType)));
+        return newSession;
+    }
+
+    /**
+     * Installs an artifact into the local repository associated with the supplied repository session.
+     *
+     * @param artifact artifact to install
+     * @param repositorySystemSession repository session containing the target local repository
+     * @throws InstallationException if the artifact could not be installed
+     */
+    public void installArtifact(
+            org.apache.maven.artifact.Artifact artifact, RepositorySystemSession repositorySystemSession)
+            throws InstallationException {
+        Artifact resolverArtifact = RepositoryUtils.toArtifact(artifact);
+        InstallRequest installRequest = new InstallRequest().addArtifact(resolverArtifact);
+        artifact.getMetadataList().stream()
+                .filter(ProjectArtifactMetadata.class::isInstance)
+                .map(ProjectArtifactMetadata.class::cast)
+                .map(metadata -> new SubArtifact(resolverArtifact, "", "pom").setFile(metadata.getFile()))
+                .forEach(installRequest::addArtifact);
+        repositorySystem.install(repositorySystemSession, installRequest);
     }
 
     /**
@@ -133,9 +187,37 @@ public class ResolverUtil {
         ArtifactDescriptorResult artifactDescriptorResult = repositorySystem.readArtifactDescriptor(
                 session, new ArtifactDescriptorRequest(artifact, repositories, null));
 
-        Artifact artifactToResolve = artifactDescriptorResult.getArtifact();
+        return resolveArtifactDirectly(artifactDescriptorResult.getArtifact(), repositories, session);
+    }
 
-        ArtifactRequest request = new ArtifactRequest(artifactToResolve, repositories, null);
+    /**
+     * Resolve a given artifact, falling back to its original coordinates when its descriptor cannot be read.
+     *
+     * @param artifact     an artifact to resolve
+     * @param repositories remote repositories list
+     * @param session      a repository system session
+     * @return resolved artifact
+     * @throws ArtifactResolutionException if the artifact could not be resolved
+     */
+    public Artifact resolveArtifactWithFallback(
+            Artifact artifact, List<RemoteRepository> repositories, RepositorySystemSession session)
+            throws ArtifactResolutionException {
+        try {
+            return resolveArtifact(artifact, repositories, session);
+        } catch (ArtifactDescriptorException descriptorException) {
+            try {
+                return resolveArtifactDirectly(artifact, repositories, session);
+            } catch (ArtifactResolutionException resolutionException) {
+                resolutionException.addSuppressed(descriptorException);
+                throw resolutionException;
+            }
+        }
+    }
+
+    private Artifact resolveArtifactDirectly(
+            Artifact artifact, List<RemoteRepository> repositories, RepositorySystemSession session)
+            throws ArtifactResolutionException {
+        ArtifactRequest request = new ArtifactRequest(artifact, repositories, null);
         ArtifactResult result = repositorySystem.resolveArtifact(session, request);
         return result.getArtifact();
     }
@@ -208,12 +290,41 @@ public class ResolverUtil {
             List<Dependency> managedDependencies,
             List<RemoteRepository> remoteProjectRepositories)
             throws DependencyResolutionException {
-        MavenSession session = mavenSessionProvider.get();
-
         CollectRequest collectRequest =
                 new CollectRequest(dependencies, managedDependencies, remoteProjectRepositories);
         collectRequest.setRootArtifact(rootArtifact);
-        DependencyRequest request = new DependencyRequest(collectRequest, null);
+        return resolveDependencies(collectRequest, null);
+    }
+
+    /**
+     * Resolve transitive dependencies for artifact with managed dependencies.
+     *
+     * @param rootArtifact a root artifact to resolve
+     * @param dependencies a list of dependencies for artifact
+     * @param managedDependencies a list of managed dependencies for artifact
+     * @param remoteProjectRepositories remote repositories list
+     * @param dependencyFilter dependency filter, or {@code null}
+     * @return Resolved dependencies
+     * @throws DependencyResolutionException if the dependency tree could not be built or any dependency artifact could
+     *                                       not be resolved
+     */
+    public List<Artifact> resolveDependenciesForArtifact(
+            Artifact rootArtifact,
+            List<Dependency> dependencies,
+            List<Dependency> managedDependencies,
+            List<RemoteRepository> remoteProjectRepositories,
+            DependencyFilter dependencyFilter)
+            throws DependencyResolutionException {
+        CollectRequest collectRequest =
+                new CollectRequest(new Dependency(rootArtifact, null), dependencies, remoteProjectRepositories);
+        collectRequest.setManagedDependencies(managedDependencies);
+        return resolveDependencies(collectRequest, dependencyFilter);
+    }
+
+    private List<Artifact> resolveDependencies(CollectRequest collectRequest, DependencyFilter dependencyFilter)
+            throws DependencyResolutionException {
+        MavenSession session = mavenSessionProvider.get();
+        DependencyRequest request = new DependencyRequest(collectRequest, dependencyFilter);
         DependencyResult result = repositorySystem.resolveDependencies(session.getRepositorySession(), request);
         return result.getArtifactResults().stream()
                 .map(ArtifactResult::getArtifact)
@@ -264,6 +375,23 @@ public class ResolverUtil {
      * @return a list of remote repositories
      */
     public List<RemoteRepository> remoteRepositories(List<String> repositories) {
+        if (repositories == null || repositories.isEmpty()) {
+            return remoteRepositories(repositories, null);
+        }
+        MavenSession mavenSession = mavenSessionProvider.get();
+        String updatePolicy =
+                mavenSession.getRequest().isUpdateSnapshots() ? RepositoryPolicy.UPDATE_POLICY_ALWAYS : null;
+        return remoteRepositories(repositories, updatePolicy);
+    }
+
+    /**
+     * Prepare a remote repositories list for given descriptions and update policy.
+     *
+     * @param repositories remote repositories descriptions
+     * @param updatePolicy repository update policy, or {@code null} to use the Resolver default
+     * @return a list of remote repositories
+     */
+    public List<RemoteRepository> remoteRepositories(List<String> repositories, String updatePolicy) {
         MavenSession mavenSession = mavenSessionProvider.get();
         List<RemoteRepository> projectRepositories =
                 mavenSession.getCurrentProject().getRemoteProjectRepositories();
@@ -271,8 +399,9 @@ public class ResolverUtil {
             return projectRepositories;
         }
 
-        List<RemoteRepository> repositoriesList =
-                repositories.stream().map(this::prepareRemoteRepository).collect(Collectors.toList());
+        List<RemoteRepository> repositoriesList = repositories.stream()
+                .map(repository -> prepareRemoteRepository(repository, updatePolicy))
+                .collect(Collectors.toList());
         repositoriesList =
                 repositorySystem.newResolutionRepositories(mavenSession.getRepositorySession(), repositoriesList);
 
@@ -283,23 +412,43 @@ public class ResolverUtil {
 
     // protected for testing purpose
     protected RemoteRepository prepareRemoteRepository(String repository) {
+        String[] items = parseRemoteRepository(repository);
+        MavenSession mavenSession = mavenSessionProvider.get();
+        String updatePolicy =
+                mavenSession.getRequest().isUpdateSnapshots() ? RepositoryPolicy.UPDATE_POLICY_ALWAYS : null;
+        return prepareRemoteRepository(repository, items, updatePolicy);
+    }
+
+    // protected for testing purpose
+    protected RemoteRepository prepareRemoteRepository(String repository, String updatePolicy) {
+        return prepareRemoteRepository(repository, parseRemoteRepository(repository), updatePolicy);
+    }
+
+    private String[] parseRemoteRepository(String repository) {
         String[] items = Objects.requireNonNull(repository, "repository must be not null")
                 .split("::");
+        if (items.length > 3) {
+            throw new IllegalArgumentException("Invalid repository: " + repository);
+        }
+        return items;
+    }
+
+    private RemoteRepository prepareRemoteRepository(String repository, String[] items, String updatePolicy) {
         String id = "temp";
         String type = null;
         String url;
         switch (items.length) {
             case 3:
-                id = items[0];
-                type = items[1];
-                url = items[2];
+                id = items[0].trim();
+                type = items[1].trim();
+                url = items[2].trim();
                 break;
             case 2:
-                id = items[0];
-                url = items[1];
+                id = items[0].trim();
+                url = items[1].trim();
                 break;
             case 1:
-                url = items[0];
+                url = items[0].trim();
                 break;
             default:
                 throw new IllegalArgumentException("Invalid repository: " + repository);
@@ -316,8 +465,6 @@ public class ResolverUtil {
         if (checksumPolicy == null) {
             checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_WARN;
         }
-        String updatePolicy =
-                mavenSession.getRequest().isUpdateSnapshots() ? RepositoryPolicy.UPDATE_POLICY_ALWAYS : null;
         RepositoryPolicy repositoryPolicy = new RepositoryPolicy(true, updatePolicy, checksumPolicy);
 
         RemoteRepository.Builder builder = new RemoteRepository.Builder(id, type, url);
@@ -336,7 +483,7 @@ public class ResolverUtil {
     public Artifact createArtifactFromParams(ParamArtifact paramArtifact) {
         Objects.requireNonNull(paramArtifact);
         if (paramArtifact.getArtifact() != null) {
-            return createArtifactFromString(paramArtifact.getArtifact());
+            return createArtifactFromString(paramArtifact);
         } else {
             ArtifactType artifactType = getArtifactType(paramArtifact.getPackaging());
             return new DefaultArtifact(
@@ -349,15 +496,17 @@ public class ResolverUtil {
         }
     }
 
-    private Artifact createArtifactFromString(String artifact) {
+    private Artifact createArtifactFromString(ParamArtifact paramArtifact) {
         // groupId:artifactId:version[:packaging[:classifier]].
+        String artifact = paramArtifact.getArtifact();
         String[] items = artifact.split(":");
-        if (items.length < 3) {
-            throw new IllegalArgumentException("Invalid artifact format: " + artifact);
+        if (items.length < 3 || items.length > 5) {
+            throw new IllegalArgumentException("Invalid artifact format: " + artifact
+                    + ", expected groupId:artifactId:version[:packaging[:classifier]]");
         }
 
-        ArtifactType artifactType = getArtifactType(items.length > 3 ? items[3] : null);
-        String classifier = items.length > 4 ? items[4] : null;
+        ArtifactType artifactType = getArtifactType(items.length > 3 ? items[3] : paramArtifact.getPackaging());
+        String classifier = items.length > 4 ? items[4] : paramArtifact.getClassifier();
 
         return new DefaultArtifact(items[0], items[1], classifier, artifactType.getExtension(), items[2], artifactType);
     }

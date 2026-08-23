@@ -48,8 +48,8 @@ import org.eclipse.aether.util.graph.visitor.TreeDependencyVisitor;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
- * Goal that collects all project dependencies and then lists the repositories used by the build and by the transitive
- * dependencies.
+ * Goal that collects all project dependencies and then lists the dependency repositories used by the build and
+ * transitive dependencies, along with the plugin repositories used by the build.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 2.2
@@ -109,21 +109,18 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
                 }
             }));
 
-            if (repositories.isEmpty()) {
+            Set<RemoteRepository> pluginRepositories =
+                    new HashSet<>(Optional.ofNullable(getProject().getRemotePluginRepositories())
+                            .orElseGet(Collections::emptyList));
+
+            if (repositories.isEmpty() && pluginRepositories.isEmpty()) {
                 getLog().info("No remote repository is used by this build." + System.lineSeparator());
                 return;
             }
 
             StringBuilder message = new StringBuilder();
-
-            Map<Boolean, List<RemoteRepository>> repoGroupByMirrors = repositories.stream()
-                    .collect(Collectors.groupingBy(
-                            repo -> repo.getMirroredRepositories().isEmpty()));
-
-            prepareRemoteRepositoriesList(
-                    message, repoGroupByMirrors.getOrDefault(Boolean.TRUE, Collections.emptyList()));
-            prepareRemoteMirrorRepositoriesList(
-                    message, repoGroupByMirrors.getOrDefault(Boolean.FALSE, Collections.emptyList()));
+            prepareRemoteRepositoriesList(message, "Project remote repositories used by this build:", repositories);
+            prepareRemoteRepositoriesList(message, "Plugin repositories used by this build:", pluginRepositories);
 
             getLog().info(message);
 
@@ -163,11 +160,21 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
     }
 
     private void prepareRemoteRepositoriesList(
-            StringBuilder message, Collection<RemoteRepository> remoteProjectRepositories) {
+            StringBuilder message, String heading, Collection<RemoteRepository> repositories) {
+        if (repositories.isEmpty()) {
+            return;
+        }
 
-        message.append("Project remote repositories used by this build:").append(System.lineSeparator());
+        message.append(heading).append(System.lineSeparator());
 
-        remoteProjectRepositories.forEach(
-                repo -> message.append(" * ").append(repo).append(System.lineSeparator()));
+        Map<Boolean, List<RemoteRepository>> repoGroupByMirrors = repositories.stream()
+                .collect(Collectors.groupingBy(
+                        repo -> repo.getMirroredRepositories().isEmpty()));
+
+        repoGroupByMirrors
+                .getOrDefault(Boolean.TRUE, Collections.emptyList())
+                .forEach(repo -> message.append(" * ").append(repo).append(System.lineSeparator()));
+        prepareRemoteMirrorRepositoriesList(
+                message, repoGroupByMirrors.getOrDefault(Boolean.FALSE, Collections.emptyList()));
     }
 }
