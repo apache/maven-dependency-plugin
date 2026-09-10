@@ -48,4 +48,13 @@ class TestArtifactItem {
         // check type default
         assertEquals("jar", item.getType());
     }
+
+    @Test
+    void testDependencyScope() {
+        ArtifactItem item = new ArtifactItem();
+
+        item.setDependencyScope("runtime");
+
+        assertEquals("runtime", item.getDependencyScope());
+    }
 }

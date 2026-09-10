@@ -76,6 +76,12 @@ This is pretty similar to the [Copying Specific Artifacts](./copying-artifacts.h
 
 And after invoking `mvn package`, the artifacts are unpacked. Because checking the existence of an unpacked archive is difficult to do reliably, marker files are used instead. The location of the marker files is controlled by the [markersDirectory](../unpack-dependencies-mojo.html#markersDirectory) parameter.
 
+If an artifact is also a direct project dependency or is listed in `dependencyManagement`, its `version` may be
+omitted. The plugin checks those model entries first, preferring an exact type and classifier match before matching only
+group ID and artifact ID. Otherwise, a version may be inferred from a transitive dependency. For that fallback, the
+plugin compares the versions selected by the compile, runtime, and test dependency graphs. If those graphs select
+different versions, set `dependencyScope` on the `artifactItem` to `compile`, `runtime`, or `test`.
+
 # <a id="Unpacking_from_the_command_line"></a>Unpacking from the command line:
 
 If you intend to configure this mojo for execution on the command line using:

@@ -81,7 +81,12 @@ Artifacts are resolved from the following sources in order:
 
 If the artifact cannot be resolved from the above sources then the build will fail.
 
-If the artifact is also listed as a dependency, the `version` of the `artifactItem` will default to the version from the `dependencies` or `dependencyManagement`, e.g.
+If the artifact is also a direct dependency or is listed in `dependencyManagement`, the `version` of the
+`artifactItem` may be omitted. The plugin checks those model entries first, preferring an exact match on type and
+classifier before matching only group ID and artifact ID. Otherwise, a version may be inferred from a transitive
+dependency. For that fallback, the plugin compares the versions selected by the project's compile, runtime, and test
+dependency graphs. If the graphs select different versions, use `dependencyScope` with `compile`, `runtime`, or `test`
+to choose the intended graph, e.g.
 
 ```xml
 <project>
