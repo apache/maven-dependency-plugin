@@ -72,7 +72,7 @@ class TestUnpackMojo {
     private ArchiverManager archiverManager;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         stubFactory = new DependencyArtifactStubFactory(tempDir, true, false);
         stubFactory.setUnpackableFile(archiverManager);
         stubFactory.setSrcFile(MojoExtension.getTestFile("test.txt"));

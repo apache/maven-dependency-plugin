@@ -34,7 +34,7 @@ class ExclusionCheckerTest {
     private ExclusionChecker checker;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         checker = new ExclusionChecker();
     }
 

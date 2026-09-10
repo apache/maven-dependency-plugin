@@ -271,8 +271,7 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
         return coords;
     }
 
-    private void checkChildModuleDependencies(MavenProject parentProject, String depGroupId, String depArtifactId)
-            throws MojoExecutionException {
+    private void checkChildModuleDependencies(MavenProject parentProject, String depGroupId, String depArtifactId) {
         if (parentProject.getBasedir() == null) {
             getLog().debug("Parent project basedir is null, skipping child module dependency check");
             return;
