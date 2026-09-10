@@ -547,7 +547,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                         .append(":")
                         .append(artifact.getDependencyConflictId())
                         .append(":")
-                        .append(artifact.getClassifier())
+                        .append(artifact.getClassifier() != null ? artifact.getClassifier() : "")
                         .append(":")
                         .append(artifact.getBaseVersion())
                         .append(":")
