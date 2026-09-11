@@ -55,7 +55,6 @@ The Dependency plugin has several goals:
 - [dependency:resolve](./resolve-mojo.html) tells Maven to resolve all dependencies and displays the version. **JAVA 9 NOTE:** _will display the module name when running with Java 9._
 - [dependency:resolve-plugins](./resolve-plugins-mojo.html) tells Maven to resolve plugins and their dependencies.
 - [dependency:resolve-sources](./resolve-sources-mojo.html) tells Maven to resolve all dependencies and their source attachments, and displays the version.
-- [dependency:sources](./sources-mojo.html) has been deprecated for removal in favor of [dependency:resolve-sources](./resolve-sources-mojo.html).
 - [dependency:tree](./tree-mojo.html) displays the dependency tree for this project.
 - [dependency:unpack](./unpack-mojo.html) like copy but unpacks.
 - [dependency:unpack-dependencies](./unpack-dependencies-mojo.html) like copy-dependencies but unpacks.
