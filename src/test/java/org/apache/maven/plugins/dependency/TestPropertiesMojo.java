@@ -35,6 +35,7 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -101,5 +102,18 @@ class TestPropertiesMojo {
 
         assertTrue(project.getProperties().containsKey(depId2));
         assertTrue(new File(project.getProperties().getProperty(depId1)).exists());
+    }
+
+    @Test
+    @InjectMojo(goal = "properties")
+    void testNullFileSkipsProperty(PropertiesMojo mojo) throws Exception {
+        Artifact artifact = Mockito.mock(Artifact.class);
+        when(artifact.getDependencyConflictId()).thenReturn("group:artifact");
+        when(artifact.getFile()).thenReturn(null);
+        when(this.project.getArtifacts()).thenReturn(new HashSet<>(Arrays.asList(artifact)));
+
+        mojo.execute();
+
+        assertFalse(project.getProperties().containsKey("group:artifact"));
     }
 }
