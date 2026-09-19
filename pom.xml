@@ -107,8 +107,7 @@ under the License.
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <!-- check to remove with next version of maven-dependency-analyzer -->
-        <!-- manage version to support JDK 27 -->
+        <!-- maven-core 3.9.16 pulls asm 9.9.1 ahead of the analyzer's 9.10.1; JDK 27 needs 9.10.1 -->
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
         <version>9.10.1</version>
@@ -226,7 +225,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-analyzer</artifactId>
-      <version>1.17.1</version>
+      <version>1.17.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
