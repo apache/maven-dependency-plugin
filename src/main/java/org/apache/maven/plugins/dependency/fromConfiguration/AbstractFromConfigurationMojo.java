@@ -238,10 +238,15 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
 
         try {
             final String extension;
+            String classifier = artifactItem.getClassifier();
 
             ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(artifactItem.getType());
             if (artifactHandler != null) {
                 extension = artifactHandler.getExtension();
+                // Types such as test-jar supply a default classifier; an explicit classifier takes precedence.
+                if (classifier == null) {
+                    classifier = artifactHandler.getClassifier();
+                }
             } else {
                 extension = artifactItem.getType();
             }
@@ -249,7 +254,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             DefaultArtifact artifact = new DefaultArtifact(
                     artifactItem.getGroupId(),
                     artifactItem.getArtifactId(),
-                    artifactItem.getClassifier(),
+                    classifier,
                     extension,
                     artifactItem.getVersion());
 
