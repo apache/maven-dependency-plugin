@@ -130,11 +130,13 @@ public class TreeMojo extends AbstractMojo {
     /**
      * The token set name to use when outputting the dependency tree. Possible values are <code>whitespace</code>,
      * <code>standard</code> or <code>extended</code>, which use whitespace, standard (ie ASCII) or extended character
-     * sets respectively.
+     * sets respectively. When omitted, extended tokens are selected for a detected interactive console whose
+     * output encoding supports the tree characters. Files, batch mode and unknown consoles use standard tokens.
+     * An explicit value always takes precedence over detection.
      *
      * @since 2.0-alpha-6
      */
-    @Parameter(property = "tokens", defaultValue = "standard")
+    @Parameter(property = "tokens")
     private String tokens;
 
     /**
@@ -386,21 +388,12 @@ public class TreeMojo extends AbstractMojo {
      * @return the <code>GraphTokens</code> instance
      */
     private GraphTokens toGraphTokens(String theTokens) {
-        GraphTokens graphTokens;
-
-        if ("whitespace".equals(theTokens)) {
-            getLog().debug("+ Using whitespace tree tokens");
-
-            graphTokens = SerializingDependencyNodeVisitor.WHITESPACE_TOKENS;
-        } else if ("extended".equals(theTokens)) {
-            getLog().debug("+ Using extended tree tokens");
-
-            graphTokens = SerializingDependencyNodeVisitor.EXTENDED_TOKENS;
-        } else {
-            graphTokens = SerializingDependencyNodeVisitor.STANDARD_TOKENS;
-        }
-
-        return graphTokens;
+        return TreeTokens.select(
+                theTokens,
+                outputFile != null,
+                session != null && session.getRequest().isInteractiveMode(),
+                () -> ConsoleSupport.encoding(getLog()::debug),
+                getLog()::debug);
     }
 
     /**

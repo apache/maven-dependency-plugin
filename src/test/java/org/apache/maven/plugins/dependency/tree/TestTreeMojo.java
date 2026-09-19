@@ -52,9 +52,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import static org.apache.maven.api.plugin.testing.MojoExtension.getVariableValueFromObject;
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
@@ -89,6 +91,13 @@ class TestTreeMojo {
     }
 
     // tests ------------------------------------------------------------------
+
+    @Test
+    @InjectMojo(goal = "tree")
+    void unspecifiedTokensCanBeDetected(TreeMojo mojo) throws Exception {
+        // A fixed parameter default would hide whether the user explicitly requested ASCII.
+        assertNull(getVariableValueFromObject(mojo, "tokens"));
+    }
 
     /**
      * Tests the proper discovery and configuration of the mojo.
