@@ -168,6 +168,54 @@ class TestCopyMojo {
         assertFilesExist(list);
     }
 
+    @Test
+    @InjectMojo(goal = "copy")
+    void testCopyTestJarWithImplicitClassifier(CopyMojo mojo) throws Exception {
+        assertCopyArtifactType(mojo, "test-jar", null, "tests");
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testCopyEjbClientWithImplicitClassifier(CopyMojo mojo) throws Exception {
+        assertCopyArtifactType(mojo, "ejb-client", null, "client");
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testCopyJavaSourceWithImplicitClassifier(CopyMojo mojo) throws Exception {
+        assertCopyArtifactType(mojo, "java-source", null, "sources");
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testCopyJavadocWithImplicitClassifier(CopyMojo mojo) throws Exception {
+        assertCopyArtifactType(mojo, "javadoc", null, "javadoc");
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testCopyArtifactTypeWithExplicitClassifier(CopyMojo mojo) throws Exception {
+        assertCopyArtifactType(mojo, "test-jar", "client", "client");
+    }
+
+    private void assertCopyArtifactType(CopyMojo mojo, String type, String classifier, String expectedClassifier)
+            throws Exception {
+        // Keep the main jar available so the regression copies the wrong artifact instead of failing resolution.
+        stubFactory.createArtifact("groupId", "artifact", "1.0", null, "jar", null);
+        stubFactory.createArtifact("groupId", "artifact", "1.0", null, "jar", "tests");
+        stubFactory.createArtifact("groupId", "artifact", "1.0", null, "jar", expectedClassifier);
+        mojo.setLocalRepositoryDirectory(stubFactory.getWorkingDir());
+        mojo.setArtifact("groupId:artifact:1.0:" + type + (classifier == null ? "" : ":" + classifier));
+
+        mojo.execute();
+
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals(expectedClassifier, item.getArtifact().getClassifier());
+        assertEquals("artifact-1.0-" + expectedClassifier + ".jar", item.getDestFileName());
+        assertFileExists(item);
+        assertFalse(new File(mojo.getOutputDirectory(), "artifact-1.0.jar").exists());
+    }
+
     /**
      * TODO move to an integration test ...
      */
