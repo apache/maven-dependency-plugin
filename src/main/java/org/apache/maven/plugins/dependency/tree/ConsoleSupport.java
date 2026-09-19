@@ -32,6 +32,12 @@ import org.slf4j.LoggerFactory;
 /**
  * Read-only access to Maven's optional terminal implementations. No terminal library is linked into the plugin realm:
  * Maven 3.6.3 and its older Jansi must still be able to load the goal.
+ *
+ * <p>Automatic detection is currently unsupported on Maven 4: its public APIs expose the JLine terminal but not
+ * the logger's active output destination. Logging can target a {@code -l}/{@code --log-file} file even when that
+ * terminal supports the tree characters. Until the logging destination can be identified through public APIs,
+ * this class returns {@code null} for Maven 4, making automatic selection fall back to ASCII even for a terminal.
+ * Explicit {@code tokens} settings remain supported and take precedence over detection.
  */
 final class ConsoleSupport {
     private ConsoleSupport() {}
