@@ -137,6 +137,18 @@ public class ResolverUtil {
     }
 
     /**
+     * Returns the current repository session, optionally using an alternate local repository.
+     *
+     * @param localRepositoryDirectory alternate local repository directory, or {@code null}
+     * @return repository system session
+     */
+    public RepositorySystemSession repositorySystemSession(File localRepositoryDirectory) {
+        return localRepositoryDirectory == null
+                ? mavenSessionProvider.get().getRepositorySession()
+                : localRepositorySession(localRepositoryDirectory);
+    }
+
+    /**
      * Collects the transitive dependencies.
      *
      * @param dependency a dependency for collections
