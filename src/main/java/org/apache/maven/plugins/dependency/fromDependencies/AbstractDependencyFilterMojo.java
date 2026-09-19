@@ -21,7 +21,6 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 import javax.inject.Inject;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -349,19 +348,22 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             throw new MojoExecutionException("Failed to collect artifacts", e);
         }
 
+        // A POM can be both a dependency to translate and a parent to copy unchanged.
+        Set<Artifact> parentArtifacts = new LinkedHashSet<>();
         if (includeParents) {
             // add dependencies parents
-            for (Artifact dep : new ArrayList<>(artifacts)) {
-                addParentArtifacts(buildProjectFromArtifact(dep), artifacts);
+            for (Artifact dep : artifacts) {
+                addParentArtifacts(buildProjectFromArtifact(dep), parentArtifacts);
             }
 
             // add current project parent
-            addParentArtifacts(getProject(), artifacts);
+            addParentArtifacts(getProject(), parentArtifacts);
         }
 
         // perform filtering
         try {
             artifacts = filter.filter(artifacts);
+            parentArtifacts = filter.filter(parentArtifacts);
         } catch (ArtifactFilterException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
@@ -370,7 +372,11 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
         DependencyStatusSets status;
         if (classifier != null && !classifier.isEmpty()) {
             status = getClassifierTranslatedDependencies(artifacts, stopOnFailure);
+            DependencyStatusSets parentStatus = filterMarkedDependencies(parentArtifacts);
+            status.getResolvedDependencies().addAll(parentStatus.getResolvedDependencies());
+            status.getSkippedDependencies().addAll(parentStatus.getSkippedDependencies());
         } else {
+            artifacts.addAll(parentArtifacts);
             status = filterMarkedDependencies(artifacts);
         }
 
