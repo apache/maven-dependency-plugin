@@ -21,9 +21,9 @@ import java.io.*;
 
 File libDir = new File( basedir, "target/dependency" );
 
-String[] expectedFiles = {
+String[] expectedFiles = [
     "org.apache.maven.maven-model-2.0.6.jar",
-};
+];
 
 for ( String expectedFile : expectedFiles )
 {

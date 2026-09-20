@@ -19,10 +19,10 @@
 
 import java.io.*;
 
-String[] expectedFiles = {
+String[] expectedFiles = [
     "org/apache/maven/its/dependency/get-artifact-maven-plugin/1.0/get-artifact-maven-plugin-1.0.jar",
     "org/apache/maven/its/dependency/get-artifact-maven-plugin/1.0/get-artifact-maven-plugin-1.0.pom"
-};
+];
 
 for ( String expectedFile : expectedFiles )
 {

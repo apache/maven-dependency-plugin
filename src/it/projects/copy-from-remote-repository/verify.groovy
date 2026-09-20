@@ -19,9 +19,9 @@
  
 import java.io.*;
 
-String[] expectedFiles = {
+String[] expectedFiles = [
     "org/apache/maven/its/dependency/fake-remote-copy/1.0/fake-remote-copy-1.0.jar"
-};
+];
 
 for ( String expectedFile : expectedFiles )
 {

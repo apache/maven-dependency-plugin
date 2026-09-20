@@ -21,9 +21,9 @@ import java.io.*;
 
 import org.codehaus.plexus.util.*;
 
-String[] foldersToDelete = {
+String[] foldersToDelete = [
     "org/apache/maven/its/dependency/fake-remote-copy"
-};
+];
 
 try
 {

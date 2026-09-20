@@ -49,7 +49,7 @@ File baseOutput = new File( basedir, "target/it" );
 
 
 // test-1
-String[] expectedFiles = {
+String[] expectedFiles = [
     "maven-model-2.0.6.jar",
     "maven-model-2.0.6.pom",
     "plexus-utils-1.4.1.jar",
@@ -60,53 +60,53 @@ String[] expectedFiles = {
     "maven-artifact-2.0.6.pom",
     "maven-settings-2.0.6.jar",
     "maven-settings-2.0.6.pom"
-};
+];
 
-String [] unexpectedFiles = {
+String [] unexpectedFiles = [
     "plexus-interpolation-1.11.jar",
     "plexus-interpolation-1.11.pom",
     "plexus-plexus-container-default-1.0-alpha-9-stable-1.jar",
     "plexus-plexus-container-default-1.0-alpha-9-stable-1.pom"
-};
+];
 
 checkExpected( new File( baseOutput, "copy-dep-test-1" ), expectedFiles, unexpectedFiles );
 
 
 // test-2
-String [] expectedFiles2 = {
+String [] expectedFiles2 = [
     "maven-model-2.0.6.jar",
     "plexus-utils-1.4.1.jar"
-};
+];
 
-String [] unexpectedFiles2 = {
+String [] unexpectedFiles2 = [
     "plexus-utils-1.4.1.pom",
     "maven-model-2.0.6.pom",
     "maven-model-2.0.6-sources.jar",
     "maven-model-2.0.6-javadoc.jar"
-};
+];
 
 checkExpected( new File( baseOutput, "copy-dep-test-2" ), expectedFiles2, unexpectedFiles2 );
 
 
 
 // test-3
-String [] expectedFiles3 = {
+String [] expectedFiles3 = [
     "maven-model-2.0.6-sources.jar"
-};
+];
 
-String [] unexpectedFiles3 = {
+String [] unexpectedFiles3 = [
     "plexus-utils-1.4.1.pom",
     "maven-model-2.0.6.pom",
     "maven-model-2.0.6-javadoc.jar",
     "maven-model-2.0.6.jar",
     "plexus-utils-1.4.1.jar"
-};
+];
 
 checkExpected( new File( baseOutput, "copy-dep-test-3" ), expectedFiles3, unexpectedFiles3 );
 
 
 // repositoryLayout
-String [] expectedFiles4 = {
+String [] expectedFiles4 = [
     "org/apache/maven/maven-model/maven-metadata-local.xml",
     "org/apache/maven/maven-model/2.0.6/maven-model-2.0.6.jar",
     "org/apache/maven/maven-model/2.0.6/maven-model-2.0.6.pom",
@@ -119,13 +119,13 @@ String [] expectedFiles4 = {
     "org/apache/maven/maven/2.0.6/maven-2.0.6.pom", // parent of maven-model
     "org/apache/apache/3/apache-3.pom", // parent of parent of maven
     "org/codehaus/plexus/plexus/1.0.11/plexus-1.0.11.pom" // parent of plexus-utils
-};
+];
 
-String [] unexpectedFiles4 = {
+String [] unexpectedFiles4 = [
     "plexus-utils-1.4.1.pom",
     "maven-model-2.0.6.pom",
     "org/apache/maven/maven-parent/5/maven-parent-5.pom", // parent of maven, excluded by artifactId
-};
+];
 
 checkExpected( new File( baseOutput, "repositoryLayout" ), expectedFiles4, unexpectedFiles4 );
 

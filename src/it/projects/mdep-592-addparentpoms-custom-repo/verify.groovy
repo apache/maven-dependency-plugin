@@ -21,14 +21,14 @@ import java.io.*;
 
 File outputDir = new File( basedir, "target/dependencies" );
 
-String[] expectedFiles = {
+String[] expectedFiles = [
     "org/apache/maven/its/mdep592/test-child/1.0/test-child-1.0.jar",
     "org/apache/maven/its/mdep592/test-child/1.0/test-child-1.0.pom",
     // CRITICAL TEST for MDEP-592: Parent POM from custom repository
     // Without the fix, this file would be missing because the custom repository
     // would not be propagated to the ProjectBuildingRequest
     "org/apache/maven/its/mdep592/test-parent/1.0/test-parent-1.0.pom"
-};
+];
 
 for ( String expectedFile : expectedFiles )
 {

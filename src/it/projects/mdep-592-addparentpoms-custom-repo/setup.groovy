@@ -23,10 +23,10 @@ import org.codehaus.plexus.util.*;
 // Clean up test artifacts from local repository to ensure fresh test
 // This forces Maven to download artifacts from the fake-remote-repository
 // rather than using cached versions
-String[] foldersToDelete = {
+String[] foldersToDelete = [
     "org/apache/maven/its/mdep592/test-parent",
     "org/apache/maven/its/mdep592/test-child"
-};
+];
 
 try
 {
