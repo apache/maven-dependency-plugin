@@ -19,10 +19,10 @@
 
 import java.io.*;
 
-String[] expectedFiles = {
+String[] expectedFiles = [
     "org/apache/maven/its/dependency/get-artifact/1.0/get-artifact-1.0.jar",
     "org/apache/maven/its/dependency/get-artifact/1.0/get-artifact-1.0.pom"
-};
+];
 
 for ( String expectedFile : expectedFiles )
 {
@@ -33,10 +33,10 @@ for ( String expectedFile : expectedFiles )
     }
 }
 
-String[] notExpectedFiles = {
+String[] notExpectedFiles = [
     "org/apache/maven/its/dependency/get-artifact-transitive/1.0/get-artifact-transitive-1.0.jar",
     "org/apache/maven/its/dependency/get-artifact-transitive/1.0/get-artifact-transitive-1.0.pom"
-};
+];
 
 for ( String notExpectedFile : notExpectedFiles )
 {
