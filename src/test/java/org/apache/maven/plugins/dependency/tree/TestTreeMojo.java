@@ -24,13 +24,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,12 +56,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import static org.apache.maven.api.plugin.testing.MojoExtension.getVariableValueFromObject;
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -89,6 +97,48 @@ class TestTreeMojo {
     }
 
     // tests ------------------------------------------------------------------
+
+    @Test
+    @InjectMojo(goal = "tree")
+    void usesRequestCapabilitiesForTextTree(TreeMojo mojo) throws Exception {
+        assertNull(getVariableValueFromObject(mojo, "tokens"));
+        session.getRequest().setInteractiveMode(true);
+        Map<String, String> capabilities = new HashMap<>();
+        capabilities.put("destination", "CONSOLE");
+        capabilities.put("encoding", "UTF-8");
+        session.getRequest().getData().put("maven.logging.outputCapabilities", capabilities);
+
+        DefaultDependencyNode root =
+                new DefaultDependencyNode(stubFactory.createArtifact("testGroupId", "project", "1.0"));
+        DefaultDependencyNode child =
+                new DefaultDependencyNode(stubFactory.createArtifact("testGroupId", "child", "1.0"));
+        child.setChildren(Collections.emptyList());
+        root.setChildren(Collections.singletonList(child));
+        StringWriter writer = new StringWriter();
+        root.accept(mojo.getSerializingDependencyNodeVisitor(writer));
+
+        assertTrue(writer.toString().contains("\u2514\u2500"), writer.toString());
+    }
+
+    @Test
+    void nonTextFormatsSkipCapabilityLookup() throws Exception {
+        MavenSession unusedSession = mock(MavenSession.class);
+        TreeMojo mojo = new TreeMojo(null, unusedSession, null, null);
+        String[] formats = {"dot", "graphml", "tgf", "json"};
+        Class<?>[] visitors = {
+            DOTDependencyNodeVisitor.class,
+            GraphmlDependencyNodeVisitor.class,
+            TGFDependencyNodeVisitor.class,
+            JsonDependencyNodeVisitor.class
+        };
+        for (int i = 0; i < formats.length; i++) {
+            setVariableValueToObject(mojo, "outputType", formats[i]);
+            assertEquals(
+                    visitors[i],
+                    mojo.getSerializingDependencyNodeVisitor(new StringWriter()).getClass());
+        }
+        verifyNoInteractions(unusedSession);
+    }
 
     /**
      * Tests the proper discovery and configuration of the mojo.
