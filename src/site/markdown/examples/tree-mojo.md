@@ -47,6 +47,40 @@ mvn dependency:tree -DoutputType=<format> -DoutputFile=<filename>
 
     **Note**: Ensure you are using Maven Dependency Plugin version 3.7.0 or later (latest is 3.8.1 as of June 2025) to access these output formats.
 
+## Text tree style
+
+For text output, `tokens` selects the characters used for the branches:
+
+- `standard`: ASCII, such as `+-` and `\-`.
+- `extended`: box-drawing characters, such as `├─`, `└─` and `│`.
+- `whitespace`: indentation without branch characters.
+
+For example, to force box-drawing characters:
+
+```shell
+mvn dependency:tree -Dtokens=extended
+```
+
+When `tokens` is omitted, the plugin selects extended characters only for an
+interactive console whose reported encoding can represent all the branch
+characters. Compatible legacy encodings, such as CP437 and CP850, work as well
+as UTF-8. The plugin reads Maven's `maven.logging.outputCapabilities` map from
+execution-request data; it does not inspect terminal libraries or infer an
+encoding from the operating system or JVM default.
+
+Automatic selection uses ASCII for `outputFile`, Maven's `-l`/`--log-file`,
+batch mode (`-B`), pipes and shell redirection, and missing or unusable output
+metadata. Maven versions without the capability map, including unmodified
+Maven 3.6.3 and 3.9.16, also use ASCII automatically. The minimum supported
+Maven and Java versions are unchanged. Color settings do not control this
+selection; the plugin follows the reported destination and encoding.
+
+An explicit `tokens` value always takes precedence, including for files and
+batch mode. Unrecognized values retain the historical ASCII fallback.
+The `outputEncoding` parameter controls the plugin's `outputFile` encoding;
+it does not change Maven's console or `-l` log encoding. Other output formats
+are unaffected by `tokens`.
+
 ## Output Formats
 
 # <a id="JSON_.28outputType.3Djson.29"></a>JSON (outputType\=json)
