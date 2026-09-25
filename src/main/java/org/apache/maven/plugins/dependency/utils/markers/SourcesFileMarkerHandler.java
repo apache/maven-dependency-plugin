@@ -80,12 +80,9 @@ public class SourcesFileMarkerHandler extends DefaultFileMarkerHandler {
      *
      * @return <code>true</code> if and only if the file or directory denoted by this abstract pathname exists;
      *         <code>false</code> otherwise
-     * @throws MojoExecutionException if a security manager exists and its <code>{@link
-     *          java.lang.SecurityManager#checkRead(java.lang.String)}</code> method denies read access to the file or
-     *             directory
      */
     @Override
-    public boolean isMarkerSet() throws MojoExecutionException {
+    public boolean isMarkerSet() {
         File marker = getMarkerFile();
 
         File marker2 = getMarkerFile(!this.resolved);
@@ -94,7 +91,7 @@ public class SourcesFileMarkerHandler extends DefaultFileMarkerHandler {
     }
 
     @Override
-    public boolean isMarkerOlder(Artifact theArtifact) throws MojoExecutionException {
+    public boolean isMarkerOlder(Artifact theArtifact) {
         File marker = getMarkerFile();
         if (marker.exists()) {
             return theArtifact.getFile().lastModified() > marker.lastModified();
@@ -142,11 +139,9 @@ public class SourcesFileMarkerHandler extends DefaultFileMarkerHandler {
      *
      * @return <code>true</code> if and only if the file or directory is successfully deleted; <code>false</code>
      *         otherwise
-     * @throws SecurityException if a security manager exists and its <code>{@link
-     *          java.lang.SecurityManager#checkDelete}</code> method denies delete access to the file
      */
     @Override
-    public boolean clearMarker() throws MojoExecutionException {
+    public boolean clearMarker() {
         File marker = getMarkerFile();
         File marker2 = getMarkerFile(!this.resolved);
         boolean markResult = marker.delete();

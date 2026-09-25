@@ -44,7 +44,7 @@ class TestDestFileFilter {
     private DependencyArtifactStubFactory fact;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         this.fact = new DependencyArtifactStubFactory(outputFolder, false);
     }
 
