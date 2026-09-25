@@ -23,7 +23,7 @@ under the License.
   <parent>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-plugins</artifactId>
-    <version>49</version>
+    <version>50</version>
     <relativePath />
   </parent>
 
@@ -387,7 +387,7 @@ under the License.
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
           <configuration>
-            <excludes combine.children="append">
+            <inputExcludes>
               <!--
                 These files contain results for integration tests which can't contain license header
                 otherwise the IT's will fail.
@@ -404,7 +404,7 @@ under the License.
                 Files with test data.
               -->
               <exclude>src/test/resources/unit/list-test/testListClasses*.txt</exclude>
-            </excludes>
+            </inputExcludes>
           </configuration>
         </plugin>
         <plugin>
