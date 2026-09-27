@@ -558,17 +558,15 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         }
     }
 
-    private Set<Artifact> filterDependencies(Set<Artifact> artifacts, String[] excludes) {
+    Set<Artifact> filterDependencies(Set<Artifact> artifacts, String[] excludes) {
         if (excludes == null || excludes.length == 0) {
             return artifacts;
         }
         ArtifactFilter filter = new StrictPatternExcludesArtifactFilter(Arrays.asList(excludes));
         Set<Artifact> result = new LinkedHashSet<>();
 
-        for (Iterator<Artifact> it = artifacts.iterator(); it.hasNext(); ) {
-            Artifact artifact = it.next();
+        for (Artifact artifact : artifacts) {
             if (!filter.include(artifact)) {
-                it.remove();
                 result.add(artifact);
             }
         }
