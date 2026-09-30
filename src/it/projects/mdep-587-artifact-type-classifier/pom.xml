@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one
+  ~ or more contributor license agreements.  See the NOTICE file
+  ~ distributed with this work for additional information
+  ~ regarding copyright ownership.  The ASF licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.apache.maven.its.dependency</groupId>
+  <artifactId>mdep-587-artifact-type-classifier</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <description>Copy and unpack must use the artifact type's default classifier unless explicitly overridden.</description>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>@project.version@</version>
+        <executions>
+          <execution>
+            <id>test-jar</id>
+            <goals>
+              <goal>copy</goal>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.apache.maven.its.dependency</groupId>
+                  <artifactId>ResourceArtifact</artifactId>
+                  <version>1.0</version>
+                  <type>test-jar</type>
+                  <outputDirectory>${project.build.directory}/test-jar</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+              <markersDirectory>${project.build.directory}/markers/test-jar</markersDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>ejb-client</id>
+            <goals>
+              <goal>copy</goal>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.apache.maven.its.dependency</groupId>
+                  <artifactId>ResourceArtifact</artifactId>
+                  <version>1.0</version>
+                  <type>ejb-client</type>
+                  <outputDirectory>${project.build.directory}/ejb-client</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+              <markersDirectory>${project.build.directory}/markers/ejb-client</markersDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>explicit-classifier</id>
+            <goals>
+              <goal>copy</goal>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.apache.maven.its.dependency</groupId>
+                  <artifactId>ResourceArtifact</artifactId>
+                  <version>1.0</version>
+                  <type>test-jar</type>
+                  <classifier>client</classifier>
+                  <outputDirectory>${project.build.directory}/explicit-classifier</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+              <markersDirectory>${project.build.directory}/markers/explicit-classifier</markersDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
