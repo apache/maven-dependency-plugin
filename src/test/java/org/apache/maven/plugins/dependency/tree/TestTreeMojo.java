@@ -46,8 +46,6 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -188,8 +186,8 @@ class TestTreeMojo {
 
         Artifact artifact1 = this.stubFactory.createArtifact("testGroupId", "project1", "1.0");
         Artifact artifact2 = this.stubFactory.createArtifact("testGroupId", "project2", "1.0");
-        DefaultDependencyNode node1 = new DefaultDependencyNode(artifact1);
-        DefaultDependencyNode node2 = new DefaultDependencyNode(artifact2);
+        DependencyNode node1 = new DependencyNode(null, artifact1, artifact1.toString());
+        DependencyNode node2 = new DependencyNode(null, artifact2, artifact2.toString());
 
         node1.setChildren(new ArrayList<>());
         node2.setChildren(new ArrayList<>());

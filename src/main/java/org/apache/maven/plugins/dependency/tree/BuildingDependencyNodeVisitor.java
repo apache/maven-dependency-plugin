@@ -19,13 +19,7 @@
 package org.apache.maven.plugins.dependency.tree;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Stack;
-
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.model.Exclusion;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 
 /**
  * A dependency node visitor that clones visited nodes into a new dependency tree. This can be used in conjunction with
@@ -81,15 +75,8 @@ public class BuildingDependencyNodeVisitor implements DependencyNodeVisitor {
     @Override
     public boolean visit(DependencyNode node) {
         // clone the node
-        WrapperNode newNode = new WrapperNode(
-                parentNodes.isEmpty() ? null : parentNodes.peek(),
-                node.getArtifact(),
-                node.getPremanagedVersion(),
-                node.getPremanagedScope(),
-                node.getVersionConstraint(),
-                node.getOptional(),
-                node.getExclusions(),
-                node.toNodeString());
+        DependencyNode newNode = new DependencyNode(
+                parentNodes.isEmpty() ? null : parentNodes.peek(), node.getArtifact(), node.toNodeString());
         newNode.setChildren(new ArrayList<>());
 
         if (parentNodes.empty()) {
@@ -137,107 +124,5 @@ public class BuildingDependencyNodeVisitor implements DependencyNodeVisitor {
      */
     public DependencyNode getDependencyTree() {
         return rootNode;
-    }
-
-    private static class WrapperNode implements DependencyNode {
-
-        private final Artifact artifact;
-
-        private final DependencyNode parent;
-
-        private final String premanagedVersion;
-
-        private final String premanagedScope;
-
-        private final String versionConstraint;
-
-        private List<DependencyNode> children;
-
-        private final Boolean optional;
-
-        private final List<Exclusion> exclusions;
-
-        private final String nodeString;
-
-        private WrapperNode(
-                DependencyNode parent,
-                Artifact artifact,
-                String premanagedVersion,
-                String premanagedScope,
-                String versionConstraint,
-                Boolean optional,
-                List<Exclusion> exclusions,
-                String nodeString) {
-            this.artifact = artifact;
-            this.parent = parent;
-            this.premanagedVersion = premanagedVersion;
-            this.premanagedScope = premanagedScope;
-            this.versionConstraint = versionConstraint;
-            this.optional = optional;
-            this.exclusions = exclusions;
-            this.nodeString = nodeString;
-        }
-
-        @Override
-        public Artifact getArtifact() {
-            return artifact;
-        }
-
-        @Override
-        public List<DependencyNode> getChildren() {
-            return children;
-        }
-
-        @Override
-        public boolean accept(DependencyNodeVisitor visitor) {
-            if (visitor.visit(this)) {
-                for (DependencyNode child : getChildren()) {
-                    if (!child.accept(visitor)) {
-                        break;
-                    }
-                }
-            }
-
-            return visitor.endVisit(this);
-        }
-
-        @Override
-        public DependencyNode getParent() {
-            return parent;
-        }
-
-        @Override
-        public String getPremanagedVersion() {
-            return premanagedVersion;
-        }
-
-        @Override
-        public String getPremanagedScope() {
-            return premanagedScope;
-        }
-
-        @Override
-        public String getVersionConstraint() {
-            return versionConstraint;
-        }
-
-        @Override
-        public String toNodeString() {
-            return nodeString;
-        }
-
-        @Override
-        public Boolean getOptional() {
-            return optional;
-        }
-
-        @Override
-        public List<Exclusion> getExclusions() {
-            return exclusions;
-        }
-
-        public void setChildren(List<DependencyNode> children) {
-            this.children = children;
-        }
     }
 }
