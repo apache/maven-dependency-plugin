@@ -18,34 +18,28 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.function.Predicate;
 
 /**
- * A dependency node visitor that delegates accepted nodes and prunes rejected nodes and their descendants.
+ * Passes only the accepted nodes to the delegate, while still traversing the children of the rejected ones.
  */
-final class PruningDependencyNodeVisitor implements DependencyNodeVisitor {
+class FilteringDependencyNodeVisitor implements DependencyNodeVisitor {
     private final DependencyNodeVisitor visitor;
 
     private final Predicate<DependencyNode> filter;
 
-    private final Deque<Boolean> acceptedNodes = new ArrayDeque<>();
-
-    PruningDependencyNodeVisitor(DependencyNodeVisitor visitor, Predicate<DependencyNode> filter) {
+    FilteringDependencyNodeVisitor(DependencyNodeVisitor visitor, Predicate<DependencyNode> filter) {
         this.visitor = visitor;
         this.filter = filter;
     }
 
     @Override
     public boolean visit(DependencyNode node) {
-        boolean accepted = filter.test(node);
-        acceptedNodes.push(accepted);
-        return accepted && visitor.visit(node);
+        return !filter.test(node) || visitor.visit(node);
     }
 
     @Override
     public boolean endVisit(DependencyNode node) {
-        return !acceptedNodes.pop() || visitor.endVisit(node);
+        return !filter.test(node) || visitor.endVisit(node);
     }
 }

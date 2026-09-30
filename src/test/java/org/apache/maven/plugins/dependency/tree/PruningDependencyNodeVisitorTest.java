@@ -21,13 +21,9 @@ package org.apache.maven.plugins.dependency.tree;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.filter.DependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
-import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,7 +32,7 @@ import static org.mockito.Mockito.mock;
 class PruningDependencyNodeVisitorTest {
     @Test
     void evaluatesFilterOnlyWhenStartingNodeVisit() {
-        DefaultDependencyNode root = newNode(null);
+        DependencyNode root = newNode(null);
         root.setChildren(Collections.emptyList());
         AtomicInteger filterInvocations = new AtomicInteger();
         AtomicInteger endVisits = new AtomicInteger();
@@ -61,10 +57,10 @@ class PruningDependencyNodeVisitorTest {
 
     @Test
     void prunesRejectedSubtreeAndContinuesWithSiblings() {
-        DefaultDependencyNode root = newNode(null);
-        DefaultDependencyNode rejected = newNode(root);
-        DefaultDependencyNode rejectedChild = newNode(rejected);
-        DefaultDependencyNode sibling = newNode(root);
+        DependencyNode root = newNode(null);
+        DependencyNode rejected = newNode(root);
+        DependencyNode rejectedChild = newNode(rejected);
+        DependencyNode sibling = newNode(root);
 
         root.setChildren(Arrays.asList(rejected, sibling));
         rejected.setChildren(Collections.singletonList(rejectedChild));
@@ -72,14 +68,14 @@ class PruningDependencyNodeVisitorTest {
         sibling.setChildren(Collections.emptyList());
 
         CollectingDependencyNodeVisitor collectingVisitor = new CollectingDependencyNodeVisitor();
-        DependencyNodeFilter filter = node -> node != rejected;
+        Predicate<DependencyNode> filter = node -> node != rejected;
 
         root.accept(new PruningDependencyNodeVisitor(collectingVisitor, filter));
 
         assertEquals(Arrays.asList(root, sibling), collectingVisitor.getNodes());
     }
 
-    private DefaultDependencyNode newNode(DependencyNode parent) {
-        return new DefaultDependencyNode(parent, mock(Artifact.class), null, null, null);
+    private DependencyNode newNode(DependencyNode parent) {
+        return new DependencyNode(parent, mock(Artifact.class), "node");
     }
 }
