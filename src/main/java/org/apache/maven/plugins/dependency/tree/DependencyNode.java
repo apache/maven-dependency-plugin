@@ -18,8 +18,10 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.apache.maven.artifact.Artifact;
 
@@ -85,5 +87,36 @@ public class DependencyNode {
         }
 
         return visitor.endVisit(this);
+    }
+
+    /**
+     * Copies this subtree for display. A node that <code>keep</code> rejects is left out together with its
+     * descendants; when <code>include</code> is given, a node is only kept if it or one of its descendants matches.
+     *
+     * @param newParent the parent of the copy, or <code>null</code> for the root
+     * @param keep the nodes to keep, may be <code>null</code> to keep all
+     * @param include the nodes to show together with their ancestors, may be <code>null</code> to show all
+     * @return the copy, or <code>null</code> if this node is left out
+     */
+    DependencyNode filter(DependencyNode newParent, Predicate<DependencyNode> keep, Predicate<DependencyNode> include) {
+        if (keep != null && !keep.test(this)) {
+            return null;
+        }
+
+        DependencyNode copy = new DependencyNode(newParent, artifact, nodeString);
+        List<DependencyNode> copiedChildren = new ArrayList<>(children.size());
+        for (DependencyNode child : children) {
+            DependencyNode copiedChild = child.filter(copy, keep, include);
+            if (copiedChild != null) {
+                copiedChildren.add(copiedChild);
+            }
+        }
+
+        if (include != null && copiedChildren.isEmpty() && !include.test(this)) {
+            return null;
+        }
+
+        copy.setChildren(copiedChildren);
+        return copy;
     }
 }

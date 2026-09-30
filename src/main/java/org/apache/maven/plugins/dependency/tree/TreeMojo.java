@@ -24,11 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
@@ -305,38 +302,11 @@ public class TreeMojo extends AbstractMojo {
     private String serializeDependencyTree(DependencyNode theRootNode) {
         StringWriter writer = new StringWriter();
 
-        DependencyNodeVisitor visitor = getSerializingDependencyNodeVisitor(writer);
-
-        // TODO: remove the need for this when the serializer can calculate last nodes from visitor calls only
-        visitor = new BuildingDependencyNodeVisitor(visitor);
-
-        Predicate<DependencyNode> includesFilter = createIncludesDependencyNodeFilter();
-        Predicate<DependencyNode> excludesFilter = createExcludesDependencyNodeFilter();
-
-        if (includesFilter != null) {
-            CollectingDependencyNodeVisitor collectingVisitor = new CollectingDependencyNodeVisitor();
-            DependencyNodeVisitor firstPassVisitor =
-                    new FilteringDependencyNodeVisitor(collectingVisitor, includesFilter);
-            if (excludesFilter != null) {
-                firstPassVisitor = new PruningDependencyNodeVisitor(firstPassVisitor, excludesFilter);
-            }
-            theRootNode.accept(firstPassVisitor);
-
-            // keep the included nodes together with their ancestors
-            Set<DependencyNode> ancestorOrSelf = Collections.newSetFromMap(new IdentityHashMap<>());
-            for (DependencyNode included : collectingVisitor.getNodes()) {
-                for (DependencyNode node = included; node != null; node = node.getParent()) {
-                    ancestorOrSelf.add(node);
-                }
-            }
-            visitor = new FilteringDependencyNodeVisitor(visitor, ancestorOrSelf::contains);
+        DependencyNode displayed =
+                theRootNode.filter(null, createExcludesDependencyNodeFilter(), createIncludesDependencyNodeFilter());
+        if (displayed != null) {
+            displayed.accept(getSerializingDependencyNodeVisitor(writer));
         }
-
-        if (excludesFilter != null) {
-            visitor = new PruningDependencyNodeVisitor(visitor, excludesFilter);
-        }
-
-        theRootNode.accept(visitor);
 
         return writer.toString();
     }
