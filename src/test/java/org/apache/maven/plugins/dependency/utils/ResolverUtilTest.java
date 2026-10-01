@@ -28,6 +28,9 @@ import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.Exclusion;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
@@ -36,6 +39,11 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.ArtifactType;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
 import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.artifact.DefaultArtifactType;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.collection.CollectResult;
+import org.eclipse.aether.graph.DefaultDependencyNode;
+import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.LocalRepositoryManager;
@@ -48,6 +56,7 @@ import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.util.artifact.DefaultArtifactTypeRegistry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -348,6 +357,94 @@ class ResolverUtilTest {
                         argThat(request -> request.getFilter() == null
                                 && request.getCollectRequest().getRoot() == null
                                 && request.getCollectRequest().getRootArtifact().equals(rootArtifact)));
+    }
+
+    @Test
+    void collectDependenciesUsesProjectDependencyManagement() throws Exception {
+        org.apache.maven.model.Dependency managedDependency = new org.apache.maven.model.Dependency();
+        managedDependency.setGroupId("groupId");
+        managedDependency.setArtifactId("artifact");
+        managedDependency.setVersion("2.0");
+        managedDependency.setType("test-jar");
+        managedDependency.setScope("provided");
+        managedDependency.setOptional(true);
+        Exclusion exclusion = new Exclusion();
+        exclusion.setGroupId("excluded");
+        exclusion.setArtifactId("transitive");
+        managedDependency.addExclusion(exclusion);
+        DependencyManagement management = new DependencyManagement();
+        management.addDependency(managedDependency);
+        MavenProject project = new MavenProject();
+        project.getModel().setDependencyManagement(management);
+
+        CollectRequest request = collectDependencies(project);
+
+        assertThat(request.getManagedDependencies()).hasSize(1);
+        Dependency dependency = request.getManagedDependencies().get(0);
+        assertThat(dependency.getArtifact().getGroupId()).isEqualTo("groupId");
+        assertThat(dependency.getArtifact().getArtifactId()).isEqualTo("artifact");
+        assertThat(dependency.getArtifact().getVersion()).isEqualTo("2.0");
+        assertThat(dependency.getArtifact().getExtension()).isEqualTo("jar");
+        assertThat(dependency.getArtifact().getClassifier()).isEqualTo("tests");
+        assertThat(dependency.getScope()).isEqualTo("provided");
+        assertThat(dependency.isOptional()).isTrue();
+        assertThat(dependency.getExclusions())
+                .containsExactly(new org.eclipse.aether.graph.Exclusion("excluded", "transitive", "*", "*"));
+    }
+
+    @Test
+    void collectDependenciesDoesNotRestoreRootExclusions() throws Exception {
+        org.apache.maven.model.Dependency managedDependency = new org.apache.maven.model.Dependency();
+        managedDependency.setGroupId("groupId");
+        managedDependency.setArtifactId("artifact");
+        managedDependency.setVersion("1.0");
+        Exclusion exclusion = new Exclusion();
+        exclusion.setGroupId("excluded");
+        exclusion.setArtifactId("transitive");
+        managedDependency.addExclusion(exclusion);
+        DependencyManagement management = new DependencyManagement();
+        management.addDependency(managedDependency);
+        MavenProject project = new MavenProject();
+        project.getModel().setDependencyManagement(management);
+
+        CollectRequest request = collectDependencies(project);
+
+        assertThat(request.getManagedDependencies()).hasSize(1);
+        assertThat(request.getManagedDependencies().get(0).getExclusions()).isEmpty();
+        assertThat(managedDependency.getExclusions()).containsExactly(exclusion);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void collectDependenciesWithoutManagedDependencies(boolean emptyManagement) throws Exception {
+        MavenProject project = new MavenProject();
+        if (emptyManagement) {
+            project.getModel().setDependencyManagement(new DependencyManagement());
+        }
+
+        assertThat(collectDependencies(project).getManagedDependencies()).isEmpty();
+    }
+
+    private CollectRequest collectDependencies(MavenProject project) throws Exception {
+        project.setRemoteArtifactRepositories(Collections.emptyList());
+        Dependency dependency = new Dependency(new DefaultArtifact("groupId:artifact:1.0"), "compile");
+        when(sessionProvider.get()).thenReturn(mavenSession);
+        when(mavenSession.getCurrentProject()).thenReturn(project);
+        when(mavenSession.getRepositorySession()).thenReturn(repositorySystemSession);
+        when(repositorySystemSession.getArtifactTypeRegistry())
+                .thenReturn(new DefaultArtifactTypeRegistry()
+                        .add(new DefaultArtifactType("test-jar", "jar", "tests", "java")));
+        when(repositorySystem.collectDependencies(eq(repositorySystemSession), any(CollectRequest.class)))
+                .thenAnswer(invocation ->
+                        new CollectResult(invocation.getArgument(1)).setRoot(new DefaultDependencyNode(dependency)));
+
+        assertThat(resolverUtil.collectDependencies(dependency)).containsExactly(dependency);
+
+        ArgumentCaptor<CollectRequest> request = ArgumentCaptor.forClass(CollectRequest.class);
+        verify(repositorySystem).collectDependencies(eq(repositorySystemSession), request.capture());
+        assertThat(request.getValue().getDependencies()).containsExactly(dependency);
+        assertThat(request.getValue().getRepositories()).isEqualTo(project.getRemoteProjectRepositories());
+        return request.getValue();
     }
 
     private void prepareArtifactTypeRegistry() {
