@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.ModelBase;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginContainer;
@@ -71,6 +72,7 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.util.artifact.ArtifactIdUtils;
 import org.eclipse.aether.util.artifact.SubArtifact;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 
@@ -137,7 +139,7 @@ public class ResolverUtil {
     }
 
     /**
-     * Collects the transitive dependencies.
+     * Collects the transitive dependencies using the current project's dependency management.
      *
      * @param dependency a dependency for collections
      * @return a resolved dependencies collection
@@ -149,6 +151,19 @@ public class ResolverUtil {
         CollectRequest request =
                 new CollectRequest(null, session.getCurrentProject().getRemoteProjectRepositories());
         request.addDependency(dependency);
+        ArtifactTypeRegistry artifactTypeRegistry =
+                session.getRepositorySession().getArtifactTypeRegistry();
+        request.setManagedDependencies(
+                Optional.ofNullable(session.getCurrentProject().getDependencyManagement())
+                        .map(DependencyManagement::getDependencies)
+                        .orElseGet(Collections::emptyList)
+                        .stream()
+                        .map(d -> RepositoryUtils.toDependency(d, artifactTypeRegistry))
+                        // Preserve the exclusions supplied for the dependency being collected.
+                        .map(d -> ArtifactIdUtils.equalsVersionlessId(d.getArtifact(), dependency.getArtifact())
+                                ? d.setExclusions(dependency.getExclusions())
+                                : d)
+                        .collect(Collectors.toList()));
 
         CollectResult result = repositorySystem.collectDependencies(session.getRepositorySession(), request);
 
