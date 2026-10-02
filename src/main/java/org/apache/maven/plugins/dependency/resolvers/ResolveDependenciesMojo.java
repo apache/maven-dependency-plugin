@@ -107,6 +107,14 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
     @Parameter(property = "includeParents", defaultValue = "false")
     boolean includeParents;
 
+    /**
+     * Include module information
+     *
+     * @since 3.11
+     */
+    @Parameter(property = "includeModuleInfo", defaultValue = "true")
+    boolean includeModuleInfo;
+
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
     public ResolveDependenciesMojo(
@@ -232,7 +240,7 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
             }
 
             // dependencies:collect won't download jars
-            if (artifact.getFile() != null) {
+            if (includeModuleInfo && artifact.getFile() != null) {
                 ModuleDescriptor moduleDescriptor = getModuleDescriptor(artifact.getFile());
                 if (moduleDescriptor != null) {
                     messageBuilder.project(" -- module " + moduleDescriptor.name);
