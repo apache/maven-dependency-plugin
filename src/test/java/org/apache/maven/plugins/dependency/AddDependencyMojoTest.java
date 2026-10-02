@@ -60,7 +60,7 @@ class AddDependencyMojoTest {
     private AddDependencyMojo mojo;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         session = mock(MavenSession.class);
         buildContext = mock(BuildContext.class);
         project = mock(MavenProject.class);
