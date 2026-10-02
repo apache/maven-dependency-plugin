@@ -26,6 +26,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
@@ -36,25 +37,15 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.dependency.tree.SerializingDependencyNodeVisitor.GraphTokens;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.artifact.filter.StrictPatternIncludesArtifactFilter;
-import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilder;
-import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilderException;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.filter.AncestorOrSelfDependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.filter.ArtifactDependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.filter.DependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.FilteringDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor.GraphTokens;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.collection.DependencyCollectionException;
 
 /**
  * Displays the dependency tree for this project. Multiple formats are supported: text (by default), but also
@@ -77,15 +68,7 @@ public class TreeMojo extends AbstractMojo {
 
     private final MavenSession session;
 
-    /**
-     * The dependency collector builder to use.
-     */
-    private final DependencyCollectorBuilder dependencyCollectorBuilder;
-
-    /**
-     * The dependency graph builder to use.
-     */
-    private final DependencyGraphBuilder dependencyGraphBuilder;
+    private final DependencyTreeBuilder dependencyTreeBuilder;
 
     @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
     private String outputEncoding;
@@ -208,12 +191,11 @@ public class TreeMojo extends AbstractMojo {
     public TreeMojo(
             MavenProject project,
             MavenSession session,
-            DependencyCollectorBuilder dependencyCollectorBuilder,
-            DependencyGraphBuilder dependencyGraphBuilder) {
+            RepositorySystem repositorySystem,
+            ProjectDependenciesResolver projectDependenciesResolver) {
         this.project = project;
         this.session = session;
-        this.dependencyCollectorBuilder = dependencyCollectorBuilder;
-        this.dependencyGraphBuilder = dependencyGraphBuilder;
+        this.dependencyTreeBuilder = new DependencyTreeBuilder(repositorySystem, projectDependenciesResolver);
     }
 
     // Mojo methods -----------------------------------------------------------
@@ -229,26 +211,16 @@ public class TreeMojo extends AbstractMojo {
         }
 
         try {
-            String dependencyTreeString;
-
-            // TODO: note that filter does not get applied due to MSHARED-4
             ArtifactFilter artifactFilter = createResolvingArtifactFilter();
 
-            ProjectBuildingRequest buildingRequest =
-                    new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-
-            buildingRequest.setProject(project);
-
             if (verbose) {
-                rootNode = dependencyCollectorBuilder.collectDependencyGraph(buildingRequest, artifactFilter);
-                dependencyTreeString = serializeDependencyTree(rootNode);
+                rootNode = dependencyTreeBuilder.buildVerbose(project, session.getRepositorySession(), artifactFilter);
             } else {
-                // non-verbose mode use dependency graph component, which gives consistent results with Maven version
-                // running
-                rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, artifactFilter);
-
-                dependencyTreeString = serializeDependencyTree(rootNode);
+                // non-verbose mode shows what Maven resolves, consistent with the Maven version running
+                rootNode = dependencyTreeBuilder.build(project, session.getRepositorySession(), artifactFilter);
             }
+
+            String dependencyTreeString = serializeDependencyTree(rootNode);
 
             if (outputFile != null) {
                 String encoding = Objects.toString(outputEncoding, "UTF-8");
@@ -258,7 +230,7 @@ public class TreeMojo extends AbstractMojo {
             } else {
                 DependencyUtil.log(dependencyTreeString, getLog());
             }
-        } catch (DependencyGraphBuilderException | DependencyCollectorBuilderException exception) {
+        } catch (DependencyResolutionException | DependencyCollectionException exception) {
             throw new MojoExecutionException("Cannot build project dependency graph", exception);
         } catch (IOException exception) {
             throw new MojoExecutionException("Cannot serialize project dependency graph", exception);
@@ -330,33 +302,11 @@ public class TreeMojo extends AbstractMojo {
     private String serializeDependencyTree(DependencyNode theRootNode) {
         StringWriter writer = new StringWriter();
 
-        DependencyNodeVisitor visitor = getSerializingDependencyNodeVisitor(writer);
-
-        // TODO: remove the need for this when the serializer can calculate last nodes from visitor calls only
-        visitor = new BuildingDependencyNodeVisitor(visitor);
-
-        DependencyNodeFilter includesFilter = createIncludesDependencyNodeFilter();
-        DependencyNodeFilter excludesFilter = createExcludesDependencyNodeFilter();
-
-        if (includesFilter != null) {
-            CollectingDependencyNodeVisitor collectingVisitor = new CollectingDependencyNodeVisitor();
-            DependencyNodeVisitor firstPassVisitor =
-                    new FilteringDependencyNodeVisitor(collectingVisitor, includesFilter);
-            if (excludesFilter != null) {
-                firstPassVisitor = new PruningDependencyNodeVisitor(firstPassVisitor, excludesFilter);
-            }
-            theRootNode.accept(firstPassVisitor);
-
-            DependencyNodeFilter secondPassFilter =
-                    new AncestorOrSelfDependencyNodeFilter(collectingVisitor.getNodes());
-            visitor = new FilteringDependencyNodeVisitor(visitor, secondPassFilter);
+        DependencyNode displayed =
+                theRootNode.filter(null, createExcludesDependencyNodeFilter(), createIncludesDependencyNodeFilter());
+        if (displayed != null) {
+            displayed.accept(getSerializingDependencyNodeVisitor(writer));
         }
-
-        if (excludesFilter != null) {
-            visitor = new PruningDependencyNodeVisitor(visitor, excludesFilter);
-        }
-
-        theRootNode.accept(visitor);
 
         return writer.toString();
     }
@@ -408,23 +358,23 @@ public class TreeMojo extends AbstractMojo {
      *
      * @return the dependency node filter, or <code>null</code> if none required
      */
-    private DependencyNodeFilter createIncludesDependencyNodeFilter() {
+    private Predicate<DependencyNode> createIncludesDependencyNodeFilter() {
         if (includes != null && !includes.isEmpty()) {
             getLog().debug("+ Filtering dependency tree by artifact include patterns: " + includes);
 
             ArtifactFilter artifactFilter = new StrictPatternIncludesArtifactFilter(includes);
-            return new ArtifactDependencyNodeFilter(artifactFilter);
+            return node -> artifactFilter.include(node.getArtifact());
         }
 
         return null;
     }
 
-    private DependencyNodeFilter createExcludesDependencyNodeFilter() {
+    private Predicate<DependencyNode> createExcludesDependencyNodeFilter() {
         if (excludes != null && !excludes.isEmpty()) {
             getLog().debug("+ Filtering dependency tree by artifact exclude patterns: " + excludes);
 
             ArtifactFilter artifactFilter = new StrictPatternExcludesArtifactFilter(excludes);
-            return new ArtifactDependencyNodeFilter(artifactFilter);
+            return node -> artifactFilter.include(node.getArtifact());
         }
 
         return null;

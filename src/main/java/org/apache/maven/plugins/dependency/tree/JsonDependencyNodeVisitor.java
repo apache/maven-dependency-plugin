@@ -25,8 +25,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 
 /**
  * A dependency node visitor that serializes visited nodes to a writer using the JSON format.
