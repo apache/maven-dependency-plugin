@@ -45,6 +45,7 @@ class VerboseJavaScopeSelector extends ScopeSelector {
         context.getItems().stream()
                 .flatMap(i -> i.getScopes().stream())
                 .distinct()
+                .filter(ORDERED_SCOPES::contains)
                 .max(Comparator.comparingInt((String s) -> ORDERED_SCOPES.indexOf(s))
                         .reversed())
                 .filter(s -> !s.equals(context.getScope()))
