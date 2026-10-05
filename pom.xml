@@ -92,7 +92,7 @@ under the License.
   <properties>
     <javaVersion>8</javaVersion>
     <mavenVersion>3.10.0</mavenVersion>
-    <resolverVersion>1.9.27</resolverVersion>
+    <resolverVersion>2.0.24</resolverVersion>
     <slf4jVersion>1.7.36</slf4jVersion>
     <jettyVersion>9.4.58.v20250814</jettyVersion>
     <mockito.version>4.11.0</mockito.version>
@@ -309,7 +309,7 @@ under the License.
     </dependency>
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-transport-http</artifactId>
+      <artifactId>maven-resolver-transport-apache</artifactId>
       <version>${resolverVersion}</version>
       <scope>test</scope>
     </dependency>
@@ -426,7 +426,7 @@ under the License.
                   <!-- used in tests runtime -->
                   <ignoredUnusedDeclaredDependency>org.apache.maven.resolver:maven-resolver-connector-basic</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.apache.maven.resolver:maven-resolver-transport-file</ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.apache.maven.resolver:maven-resolver-transport-http</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.apache.maven.resolver:maven-resolver-transport-apache</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
