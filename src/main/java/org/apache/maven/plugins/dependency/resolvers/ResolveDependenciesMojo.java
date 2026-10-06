@@ -56,6 +56,13 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 /**
  * Goal that resolves the project dependencies from the repository. When running on Java 9, the
  * module names will be visible as well.
+ * <p>
+ * Maven resolves the dependencies before the goal runs, so in a multi-module project that has not been
+ * built yet, a dependency on another module of the same build fails. Run a phase that packages the modules
+ * in the same build, for example {@code mvn package dependency:resolve}, or use
+ * <a href="collect-mojo.html">dependency:collect</a>, which needs only the POM files. The {@code exclude*}
+ * and {@code include*} parameters filter what the goal displays; they do not stop Maven from resolving
+ * those dependencies.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 2.0
