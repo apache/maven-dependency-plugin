@@ -39,8 +39,8 @@ import org.apache.maven.plugins.dependency.fromDependencies.CopyDependenciesMojo
 import org.apache.maven.plugins.dependency.fromDependencies.UnpackDependenciesMojo;
 import org.apache.maven.plugins.dependency.resolvers.GoOfflineMojo;
 import org.apache.maven.plugins.dependency.resolvers.ListMojo;
-import org.apache.maven.plugins.dependency.resolvers.OldResolveDependencySourcesMojo;
 import org.apache.maven.plugins.dependency.resolvers.ResolveDependenciesMojo;
+import org.apache.maven.plugins.dependency.resolvers.ResolveDependencySourcesMojo;
 import org.apache.maven.plugins.dependency.resolvers.ResolvePluginsMojo;
 import org.apache.maven.plugins.dependency.tree.TreeMojo;
 import org.junit.jupiter.api.Test;
@@ -173,9 +173,9 @@ class TestSkip {
     }
 
     @Test
-    @InjectMojo(goal = "sources")
+    @InjectMojo(goal = "resolve-sources")
     @MojoParameter(name = "skip", value = "true")
-    void testSkipSources(OldResolveDependencySourcesMojo mojo) throws Exception {
+    void testSkipResolveSources(ResolveDependencySourcesMojo mojo) throws Exception {
         doTest(mojo);
     }
 
