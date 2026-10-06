@@ -57,7 +57,7 @@ public class ArtifactItem {
      * dependency management. Supported values are {@code compile}, {@code runtime}, and {@code test}. When omitted,
      * all three dependency graphs are considered and must agree on the selected version.
      *
-     * @since 3.11.1
+     * @since 3.12.0
      */
     @Parameter
     private String dependencyScope;
@@ -206,7 +206,7 @@ public class ArtifactItem {
 
     /**
      * @return classpath scope used to infer a missing version
-     * @since 3.11.1
+     * @since 3.12.0
      */
     public String getDependencyScope() {
         return dependencyScope;
@@ -214,7 +214,7 @@ public class ArtifactItem {
 
     /**
      * @param dependencyScope classpath scope used to infer a missing version
-     * @since 3.11.1
+     * @since 3.12.0
      */
     public void setDependencyScope(String dependencyScope) {
         this.dependencyScope = filterEmptyString(dependencyScope);
