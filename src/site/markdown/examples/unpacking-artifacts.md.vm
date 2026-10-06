@@ -27,7 +27,11 @@ under the License.
 
 # Unpacking specific artifacts
 
-This is pretty similar to the [Copying Specific Artifacts](./copying-artifacts.html) example. The difference is that instead of copying the artifacts, they are unpacked. To unpack the copied artifacts, use the `dependency:unpack` mojo and configure the plugin into something like the sample below:
+This is pretty similar to the [Copying Specific Artifacts](./copying-artifacts.html) example. The difference is that instead of copying the artifacts, they are unpacked.
+
+The archive format is chosen by the artifact type, or by the file extension when no unarchiver is registered for the type. The formats available are those of [Plexus Archiver](https://codehaus-plexus.github.io/plexus-archiver/), such as zip, jar, war, ear, tar, tar.gz, tar.bz2 and tar.xz, plus any unarchiver that a plugin dependency adds.
+
+To unpack the copied artifacts, use the `dependency:unpack` mojo and configure the plugin into something like the sample below:
 
 ```xml
 <project>

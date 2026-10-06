@@ -71,7 +71,8 @@ public class ArtifactItem {
     private File outputDirectory;
 
     /**
-     * Provides ability to change destination file name.
+     * Provides ability to change destination file name. Used by the {@code copy} goal only; the
+     * {@code unpack} goal ignores it, because unpacked entries keep their names from the archive.
      */
     @Parameter
     private String destFileName;
