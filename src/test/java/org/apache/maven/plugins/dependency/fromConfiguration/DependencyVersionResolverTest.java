@@ -19,19 +19,66 @@
 package org.apache.maven.plugins.dependency.fromConfiguration;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.collection.CollectResult;
+import org.eclipse.aether.graph.DefaultDependencyNode;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class DependencyVersionResolverTest {
+    @Test
+    void resolvesTransitiveVariantsWithoutIncludingTheProjectAndCachesTheGraph() throws Exception {
+        MavenSession session = mock(MavenSession.class);
+        when(session.getRepositorySession()).thenReturn(new DefaultRepositorySystemSession());
+        RepositorySystem repositorySystem = mock(RepositorySystem.class);
+        MavenProject project = new MavenProject();
+        project.setArtifact(artifact("group", "artifact", "9.0", "test-jar", "tests"));
+
+        DefaultDependencyNode root = new DefaultDependencyNode(RepositoryUtils.toArtifact(project.getArtifact()));
+        DefaultDependencyNode direct =
+                new DefaultDependencyNode(RepositoryUtils.toArtifact(artifact("group", "direct", "1.0", "jar", null)));
+        direct.setChildren(Arrays.asList(
+                new DefaultDependencyNode(
+                        RepositoryUtils.toArtifact(artifact("group", "artifact", "1.0", "jar", null))),
+                new DefaultDependencyNode(
+                        RepositoryUtils.toArtifact(artifact("group", "artifact", "2.0", "test-jar", "tests")))));
+        root.setChildren(Collections.singletonList(direct));
+        when(repositorySystem.collectDependencies(any(RepositorySystemSession.class), any(CollectRequest.class)))
+                .thenAnswer(invocation -> new CollectResult(invocation.getArgument(1)).setRoot(root));
+
+        ArtifactItem item = new ArtifactItem();
+        item.setGroupId("group");
+        item.setArtifactId("artifact");
+        item.setType("test-jar");
+        item.setClassifier("tests");
+        item.setDependencyScope("runtime");
+        DependencyVersionResolver resolver = new DependencyVersionResolver(session, project, repositorySystem);
+
+        assertEquals("2.0", resolver.resolveVersion(item));
+        assertEquals("2.0", resolver.resolveVersion(item));
+        verify(repositorySystem).collectDependencies(any(RepositorySystemSession.class), any(CollectRequest.class));
+    }
+
     @Test
     void indexesAllVariantsUnderTheirGroupAndArtifactId() {
         Artifact main = artifact("group", "artifact", "1.0", "jar", null);

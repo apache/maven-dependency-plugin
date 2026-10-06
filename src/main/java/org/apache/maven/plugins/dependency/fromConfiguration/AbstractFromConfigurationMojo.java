@@ -37,7 +37,6 @@ import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
-import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyCollectorBuilder;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -129,8 +128,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
         super(session, buildContext, project);
         this.artifactHandlerManager = artifactHandlerManager;
         this.resolverUtil = resolverUtil;
-        this.dependencyVersionResolver = new DependencyVersionResolver(
-                session, project, new DefaultDependencyCollectorBuilder(repositorySystem));
+        this.dependencyVersionResolver = new DependencyVersionResolver(session, project, repositorySystem);
     }
 
     abstract ArtifactItemFilter getMarkedArtifactFilter(ArtifactItem item);
@@ -204,9 +202,9 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     }
 
     private RepositorySystemSession createSystemSessionForLocalRepo() {
-        RepositorySystemSession repositorySystemSession =
-                resolverUtil.repositorySystemSession(localRepositoryDirectory);
+        RepositorySystemSession repositorySystemSession = session.getRepositorySession();
         if (localRepositoryDirectory != null) {
+            repositorySystemSession = resolverUtil.localRepositorySession(localRepositoryDirectory);
             getLog().debug("localRepoPath: "
                     + repositorySystemSession
                             .getLocalRepositoryManager()

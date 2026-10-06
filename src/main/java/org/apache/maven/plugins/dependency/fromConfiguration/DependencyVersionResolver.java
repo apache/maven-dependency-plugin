@@ -30,18 +30,19 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilder;
-import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilderException;
-import org.apache.maven.shared.dependency.graph.DependencyCollectorRequest;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.collection.DependencyCollectionException;
 import org.eclipse.aether.collection.DependencySelector;
+import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.graph.manager.DependencyManagerUtils;
 import org.eclipse.aether.util.graph.selector.AndDependencySelector;
@@ -59,16 +60,15 @@ final class DependencyVersionResolver {
 
     private final MavenProject project;
 
-    private final DependencyCollectorBuilder dependencyCollectorBuilder;
+    private final RepositorySystem repositorySystem;
 
     private final Map<ClasspathScope, Map<GroupArtifactKey, List<Artifact>>> artifactIndexByScope =
             new EnumMap<>(ClasspathScope.class);
 
-    DependencyVersionResolver(
-            MavenSession session, MavenProject project, DependencyCollectorBuilder dependencyCollectorBuilder) {
+    DependencyVersionResolver(MavenSession session, MavenProject project, RepositorySystem repositorySystem) {
         this.session = session;
         this.project = project;
-        this.dependencyCollectorBuilder = dependencyCollectorBuilder;
+        this.repositorySystem = repositorySystem;
     }
 
     String resolveVersion(ArtifactItem artifactItem) throws MojoExecutionException {
@@ -160,33 +160,40 @@ final class DependencyVersionResolver {
             return cached;
         }
 
-        ProjectBuildingRequest buildingRequest;
-        if (session.getProjectBuildingRequest() == null) {
-            buildingRequest = new DefaultProjectBuildingRequest();
-            buildingRequest.setRepositorySession(session.getRepositorySession());
-        } else {
-            buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-        }
-        buildingRequest.setProject(project);
-
-        DependencyCollectorRequest request = new DependencyCollectorRequest(buildingRequest);
-        request.dependencySelector(dependencySelector(scope));
-        request.dependencyGraphTransformer(new ConflictResolver(
+        DefaultRepositorySystemSession repositorySession =
+                new DefaultRepositorySystemSession(session.getRepositorySession());
+        repositorySession.setDependencySelector(dependencySelector(scope));
+        repositorySession.setDependencyGraphTransformer(new ConflictResolver(
                 new NearestVersionSelector(),
                 new JavaScopeSelector(),
                 new SimpleOptionalitySelector(),
                 new JavaScopeDeriver()));
-        request.addConfigProperty(ConflictResolver.CONFIG_PROP_VERBOSE, false);
-        request.addConfigProperty(DependencyManagerUtils.CONFIG_PROP_VERBOSE, false);
+        repositorySession.setConfigProperty(ConflictResolver.CONFIG_PROP_VERBOSE, false);
+        repositorySession.setConfigProperty(DependencyManagerUtils.CONFIG_PROP_VERBOSE, false);
+
+        ArtifactTypeRegistry stereotypes = repositorySession.getArtifactTypeRegistry();
+        CollectRequest request = new CollectRequest();
+        request.setRootArtifact(RepositoryUtils.toArtifact(project.getArtifact()));
+        request.setRepositories(RepositoryUtils.toRepos(project.getRemoteArtifactRepositories()));
+        for (Dependency dependency : project.getDependencies()) {
+            request.addDependency(RepositoryUtils.toDependency(dependency, stereotypes));
+        }
+        if (project.getDependencyManagement() != null) {
+            for (Dependency dependency : project.getDependencyManagement().getDependencies()) {
+                request.addManagedDependency(RepositoryUtils.toDependency(dependency, stereotypes));
+            }
+        }
 
         try {
-            DependencyNode root = dependencyCollectorBuilder.collectDependencyGraph(request);
+            DependencyNode root = repositorySystem
+                    .collectDependencies(repositorySession, request)
+                    .getRoot();
             List<Artifact> collected = new ArrayList<>();
             collectArtifacts(root, collected, true);
             Map<GroupArtifactKey, List<Artifact>> index = indexArtifacts(collected);
             artifactIndexByScope.put(scope, index);
             return index;
-        } catch (DependencyCollectorBuilderException e) {
+        } catch (DependencyCollectionException e) {
             throw new MojoExecutionException("Unable to collect the project's " + scope + " dependency graph.", e);
         }
     }
@@ -201,7 +208,7 @@ final class DependencyVersionResolver {
 
     private void collectArtifacts(DependencyNode node, List<Artifact> artifacts, boolean root) {
         if (!root && node.getArtifact() != null) {
-            artifacts.add(node.getArtifact());
+            artifacts.add(RepositoryUtils.toArtifact(node.getArtifact()));
         }
         for (DependencyNode child : node.getChildren()) {
             collectArtifacts(child, artifacts, false);
