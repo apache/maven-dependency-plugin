@@ -86,6 +86,8 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
 
     /**
      * Add parent poms to the list of copied dependencies (both current project pom parents and dependencies parents).
+     * The {@code classifier} and {@code type} parameters do not change parent POM coordinates.
+     * Inclusion and exclusion filters still apply.
      *
      * @since 2.8
      */
