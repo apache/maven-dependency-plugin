@@ -31,4 +31,5 @@ org.apache.maven.its.dependency:test:jar:1.0-SNAPSHOT
 |  +- org.codehaus.plexus:plexus-interpolation:jar:1.29:compile
 |  +- org.codehaus.plexus:plexus-component-annotations:jar:2.2.0:compile
 |  \- org.slf4j:slf4j-api:jar:1.7.36:compile
-\- org.apache.commons:commons-lang3:jar:3.18.0:compile (optional)
++- org.apache.commons:commons-lang3:jar:3.18.0:compile (optional)
+\- org.apache.maven.its.dependency:tree-optional-consumer:jar:1.0:compile
