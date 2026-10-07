@@ -22,10 +22,10 @@ assert file.exists()
 
 String buildLog = file.getText( "UTF-8" )
 assert buildLog.contains( '[WARNING] Overwriting ' )
-assert buildLog.contains( '[DEBUG] Copying artifact \'org.jdom:jdom:jar:1.1.3\'' )
-assert buildLog.contains( '[DEBUG] Copying artifact \'org.jdom:jdom:pom:1.1.3\'' )
-assert buildLog.contains( '[DEBUG] Copying artifact \'org.jdom:jdom:jar:1.1.3\'' )
-assert buildLog.contains( '[DEBUG] Copying artifact \'org.lucee:jdom:jar:1.1.3\'' )
-assert buildLog.contains( '[WARNING] Multiple files with the name jdom-1.1.3.jar in the dependency tree.' )
+assert buildLog.contains( '[DEBUG] Copying artifact \'org.apache.maven.its.dependency.a:conflict:jar:1.0\'' )
+assert buildLog.contains( '[DEBUG] Copying artifact \'org.apache.maven.its.dependency.a:conflict:pom:1.0\'' )
+assert buildLog.contains( '[DEBUG] Copying artifact \'org.apache.maven.its.dependency.a:conflict:jar:1.0\'' )
+assert buildLog.contains( '[DEBUG] Copying artifact \'org.apache.maven.its.dependency.b:conflict:jar:1.0\'' )
+assert buildLog.contains( '[WARNING] Multiple files with the name conflict-1.0.jar in the dependency tree.' )
 
 return true
