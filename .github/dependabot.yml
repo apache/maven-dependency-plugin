@@ -21,9 +21,6 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-      # Jetty >=10 requires Java 11+
-      - dependency-name: "org.eclipse.jetty:*"
-        versions: [">= 10.0"]
       # Mockito >=5 requires Java 11+
       - dependency-name: "org.mockito:*"
         versions: [">= 5.0.0"]

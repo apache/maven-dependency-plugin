@@ -20,13 +20,22 @@ package org.apache.maven.plugins.dependency;
 
 import javax.inject.Inject;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.sun.net.httpserver.BasicAuthenticator;
+import com.sun.net.httpserver.HttpContext;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
 import org.apache.maven.api.plugin.testing.Basedir;
 import org.apache.maven.api.plugin.testing.InjectMojo;
 import org.apache.maven.api.plugin.testing.MojoParameter;
@@ -45,15 +54,6 @@ import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
 import org.eclipse.aether.util.repository.DefaultProxySelector;
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
-import org.eclipse.jetty.security.HashLoginService;
-import org.eclipse.jetty.security.LoginService;
-import org.eclipse.jetty.security.authentication.BasicAuthenticator;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.security.Constraint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -240,9 +240,8 @@ class TestGetMojo {
     @Test
     @InjectMojo(goal = "get")
     void testRemoteRepositoriesAuthentication(GetMojo mojo) throws Exception {
-        org.eclipse.jetty.server.Server server = createServer();
+        HttpServer server = createServer();
         try {
-            server.start();
 
             setRemoteRepositories(mojo, "myserver::default::" + serverUrl(server));
 
@@ -254,7 +253,7 @@ class TestGetMojo {
 
             mojo.execute();
         } finally {
-            server.stop();
+            server.stop(0);
         }
     }
 
@@ -268,9 +267,8 @@ class TestGetMojo {
     @Test
     @InjectMojo(goal = "get")
     void testRemoteRepositoriesProxy(GetMojo mojo) throws Exception {
-        org.eclipse.jetty.server.Server server = createServer();
+        HttpServer server = createServer();
         try {
-            server.start();
 
             setRemoteRepositories(mojo, "myserver::default::" + serverUrl(server));
 
@@ -286,7 +284,7 @@ class TestGetMojo {
                     mentionsProxyHost(e),
                     "Expected the resolution to have been attempted through the unreachable proxy, got: " + e);
         } finally {
-            server.stop();
+            server.stop(0);
         }
     }
 
@@ -303,9 +301,8 @@ class TestGetMojo {
     @Test
     @InjectMojo(goal = "get")
     void testRemoteRepositoriesNonProxyHosts(GetMojo mojo) throws Exception {
-        org.eclipse.jetty.server.Server server = createServer();
+        HttpServer server = createServer();
         try {
-            server.start();
             String url = serverUrl(server);
 
             setRemoteRepositories(mojo, "myserver::default::" + url);
@@ -319,7 +316,7 @@ class TestGetMojo {
 
             mojo.execute();
         } finally {
-            server.stop();
+            server.stop(0);
         }
     }
 
@@ -354,52 +351,49 @@ class TestGetMojo {
         return proxy;
     }
 
-    private String serverUrl(org.eclipse.jetty.server.Server server) throws Exception {
-        ServerConnector serverConnector = (ServerConnector) server.getConnectors()[0];
-        String host = serverConnector.getHost() == null
-                ? InetAddress.getLoopbackAddress().getHostName()
-                : serverConnector.getHost();
-        return "http://" + host + ":" + serverConnector.getLocalPort() + "/maven";
+    private String serverUrl(HttpServer server) {
+        return "http://" + InetAddress.getLoopbackAddress().getHostName() + ":"
+                + server.getAddress().getPort() + "/maven";
     }
 
-    private ContextHandler createContextHandler() {
-        ResourceHandler resourceHandler = new ResourceHandler();
-        resourceHandler.setResourceBase(getTestPath("repository"));
-        resourceHandler.setDirectoriesListed(true);
-
-        ContextHandler contextHandler = new ContextHandler("/maven");
-        contextHandler.setHandler(resourceHandler);
-        return contextHandler;
-    }
-
-    private org.eclipse.jetty.server.Server createServer() {
-        org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server(0);
-        server.setStopAtShutdown(true);
-
-        LoginService loginService = new HashLoginService("myrealm", getTestPath("realm.properties"));
-        server.addBean(loginService);
-
-        ConstraintSecurityHandler security = new ConstraintSecurityHandler();
-        server.setHandler(security);
-
-        Constraint constraint = new Constraint();
-        constraint.setName("auth");
-        constraint.setAuthenticate(true);
-        constraint.setRoles(new String[] {"userrole"});
-
-        ConstraintMapping mapping = new ConstraintMapping();
-        mapping.setPathSpec("/*");
-        mapping.setConstraint(constraint);
-
-        security.setConstraintMappings(Collections.singletonList(mapping));
-        security.setAuthenticator(new BasicAuthenticator());
-        security.setLoginService(loginService);
-
-        ContextHandler contextHandler = createContextHandler();
-        contextHandler.setServer(server);
-
-        security.setHandler(contextHandler);
-        server.setHandler(security);
+    /**
+     * A started server that serves the test repository under {@code /maven}, behind Basic authentication that
+     * accepts only the credentials of the {@code myserver} entry declared in {@link #setUp()}.
+     */
+    private HttpServer createServer() throws IOException {
+        Path root = Paths.get(getTestPath("repository")).toAbsolutePath().normalize();
+        HttpServer server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+        HttpContext context = server.createContext("/maven", exchange -> serve(exchange, root));
+        context.setAuthenticator(new BasicAuthenticator("myrealm") {
+            @Override
+            public boolean checkCredentials(String username, String password) {
+                return "foo".equals(username) && "bar".equals(password);
+            }
+        });
+        server.start();
         return server;
+    }
+
+    private static void serve(HttpExchange exchange, Path root) throws IOException {
+        try {
+            String relative = exchange.getRequestURI().getPath().substring("/maven".length());
+            Path file = root.resolve(relative.replaceFirst("^/+", "")).normalize();
+            String method = exchange.getRequestMethod();
+            if (!file.startsWith(root) || !Files.isRegularFile(file)) {
+                exchange.sendResponseHeaders(404, -1);
+            } else if ("HEAD".equals(method)) {
+                exchange.getResponseHeaders().set("Content-Length", Long.toString(Files.size(file)));
+                exchange.sendResponseHeaders(200, -1);
+            } else if ("GET".equals(method)) {
+                exchange.sendResponseHeaders(200, Files.size(file));
+                try (OutputStream body = exchange.getResponseBody()) {
+                    Files.copy(file, body);
+                }
+            } else {
+                exchange.sendResponseHeaders(405, -1);
+            }
+        } finally {
+            exchange.close();
+        }
     }
 }
