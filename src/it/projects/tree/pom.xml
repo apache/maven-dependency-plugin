@@ -48,6 +48,12 @@
       <version>3.18.0</version>
       <optional>true</optional>
     </dependency>
+    <!-- mock from src/it/mrm: depends on commons-lang3 with compile scope, which the optional direct one above must beat -->
+    <dependency>
+      <groupId>org.apache.maven.its.dependency</groupId>
+      <artifactId>tree-optional-consumer</artifactId>
+      <version>1.0</version>
+    </dependency>
   </dependencies>
 
 </project>

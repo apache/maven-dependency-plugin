@@ -381,9 +381,6 @@ class TestGetMojo {
             String method = exchange.getRequestMethod();
             if (!file.startsWith(root) || !Files.isRegularFile(file)) {
                 exchange.sendResponseHeaders(404, -1);
-            } else if ("HEAD".equals(method)) {
-                exchange.getResponseHeaders().set("Content-Length", Long.toString(Files.size(file)));
-                exchange.sendResponseHeaders(200, -1);
             } else if ("GET".equals(method)) {
                 exchange.sendResponseHeaders(200, Files.size(file));
                 try (OutputStream body = exchange.getResponseBody()) {
