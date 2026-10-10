@@ -293,7 +293,8 @@ class ResolverUtilTest {
         verify(repositorySystem)
                 .newLocalRepositoryManager(
                         any(DefaultRepositorySystemSession.class),
-                        argThat(repository -> repository.getContentType().equals(expectedType)));
+                        argThat((LocalRepository repository) ->
+                                repository.getContentType().equals(expectedType)));
     }
 
     @Test
