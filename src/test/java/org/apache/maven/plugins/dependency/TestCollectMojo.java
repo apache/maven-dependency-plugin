@@ -43,7 +43,7 @@ class TestCollectMojo {
     private DependencyArtifactStubFactory stubFactory;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         stubFactory = new DependencyArtifactStubFactory(null, false);
     }
 
@@ -101,7 +101,7 @@ class TestCollectMojo {
 
     @Test
     @InjectMojo(goal = "collect")
-    void testSilent(CollectDependenciesMojo mojo) throws Exception {
+    void testSilent(CollectDependenciesMojo mojo) {
         assertFalse(mojo.getLog() instanceof DependencySilentLog);
 
         mojo.setSilent(true);

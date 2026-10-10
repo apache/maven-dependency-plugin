@@ -631,7 +631,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     /**
      * Detects the project's dependency management conventions by analyzing existing dependencies.
      */
-    private Conventions detectConventions(MavenProject project) throws MojoExecutionException {
+    private Conventions detectConventions(MavenProject project) {
         Conventions conv = new Conventions();
 
         File pomFile = project.getFile();
