@@ -39,3 +39,38 @@ notifications:
   commits: commits@maven.apache.org
   issues: issues@maven.apache.org
   pullrequests: issues@maven.apache.org
+
+# https://releases.apache.org/projects/maven-dependency-plugin
+
+project:
+  metadata:
+    key: maven-dependency-plugin
+    committee: maven
+    name: Apache Maven Dependency Plugin
+    description: Provides utility goals to work with dependencies like copying, unpacking,
+      analyzing, resolving and many more.
+    homepage: https://maven.apache.org/plugins/maven-dependency-plugin/
+    download_page: https://maven.apache.org/plugins/maven-dependency-plugin/download.cgi
+    bug_database: https://github.com/apache/maven-dependency-plugin/issues
+    mailing_lists: https://maven.apache.org/plugins/maven-dependency-plugin/mailing-lists.html
+    repositories:
+      - https://github.com/apache/maven-dependency-plugin
+    categories:
+      - build-management
+    programming_languages:
+      - Java
+  policy:
+    announce_release_template_url: https://maven.apache.org/atr/templates/announce_release_template.txt
+    start_vote_template_url: https://maven.apache.org/atr/templates/start_vote_template.txt
+    finish_vote_template_url: https://maven.apache.org/atr/templates/finish_vote_template.txt
+    github_repository_name: maven-dependency-plugin
+    download_path_suffix: plugins
+    vote_recipients:
+      to: dev@maven.apache.org
+    announce_recipients:
+      to: announce@maven.apache.org
+      cc:
+        - dev@maven.apache.org
+        - user@maven.apache.org
+  features:
+    atr_sync: true
