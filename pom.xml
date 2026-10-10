@@ -106,10 +106,10 @@ under the License.
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <!-- maven-core 3.9.16 pulls asm 9.9.1 ahead of the analyzer's 9.10.1; JDK 27 needs 9.10.1 -->
+        <!-- maven-core 3.9.16 pulls asm 9.9.1 ahead of the analyzer's 9.10.1; JDK 27 needs 9.11 -->
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.10.1</version>
+        <version>9.11</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
