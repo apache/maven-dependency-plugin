@@ -51,7 +51,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 // CHECKSTYLE_OFF: LineLength
 @Mojo(
         name = "unpack-dependencies",
-        requiresDependencyResolution = ResolutionScope.TEST,
+        requiresDependencyCollection = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.PROCESS_SOURCES,
         threadSafe = true)
 // CHECKSTYLE_ON: LineLength
@@ -114,6 +114,11 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
             UnpackUtil unpackUtil) {
         super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
         this.unpackUtil = unpackUtil;
+    }
+
+    @Override
+    protected boolean isResolvingAfterFiltering() {
+        return true;
     }
 
     /**

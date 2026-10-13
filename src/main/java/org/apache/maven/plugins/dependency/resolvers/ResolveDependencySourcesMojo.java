@@ -40,7 +40,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 @Mojo(
         name = "resolve-sources",
         defaultPhase = LifecyclePhase.GENERATE_SOURCES,
-        requiresDependencyResolution = ResolutionScope.TEST,
+        requiresDependencyCollection = ResolutionScope.TEST,
         threadSafe = true)
 public class ResolveDependencySourcesMojo extends ResolveDependenciesMojo {
 
@@ -58,6 +58,11 @@ public class ResolveDependencySourcesMojo extends ResolveDependenciesMojo {
         super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
     }
     // CHECKSTYLE_ON: ParameterNumber
+
+    @Override
+    protected boolean isResolvingAfterFiltering() {
+        return true;
+    }
 
     @Parameter(name = "classifier", defaultValue = SOURCES_CLASSIFIER, readonly = true)
     public void setClassifier(String classifier) {
