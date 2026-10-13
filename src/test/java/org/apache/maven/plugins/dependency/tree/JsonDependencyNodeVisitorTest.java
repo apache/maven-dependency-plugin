@@ -25,7 +25,6 @@ import java.util.Collections;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
-import jakarta.json.JsonValue;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -54,7 +53,7 @@ class JsonDependencyNodeVisitorTest {
 
         JsonObject json = toJson(node);
 
-        assertEquals(JsonValue.TRUE, json.get("included"));
+        assertEquals("true", json.getString("included"));
         assertEquals("1.0", json.getString("versionManagedFrom"));
         assertEquals("test", json.getString("scopeManagedFrom"));
         assertEquals("compile", json.getString("scopeNotUpdatedTo"));
@@ -69,7 +68,7 @@ class JsonDependencyNodeVisitorTest {
 
         JsonObject json = toJson(node);
 
-        assertEquals(JsonValue.FALSE, json.get("included"));
+        assertEquals("false", json.getString("included"));
         assertEquals("duplicate", json.getString("omittedReason"));
         assertFalse(json.containsKey("winnerVersion"));
     }
@@ -81,7 +80,7 @@ class JsonDependencyNodeVisitorTest {
 
         JsonObject json = toJson(node);
 
-        assertEquals(JsonValue.FALSE, json.get("included"));
+        assertEquals("false", json.getString("included"));
         assertEquals("conflict", json.getString("omittedReason"));
         assertEquals("2.0", json.getString("winnerVersion"));
     }
