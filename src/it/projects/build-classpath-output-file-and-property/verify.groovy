@@ -25,11 +25,6 @@ import org.codehaus.plexus.util.*;
 String classpath = FileUtils.fileRead( new File( basedir, "target/classpath.txt" ) );
 String expected = "PREFIX/get-artifact-1.0.jar:PREFIX/get-artifact-transitive-1.0.jar";
 
-if ( !classpath.equals( expected ) )
-{
-    System.out.println( "Actual  : " + actual );
-    System.out.println( "Expected: " + expected );
-    throw new Exception( "Unexpected classpath" );
-}
+assert classpath.equals( expected ) : "Unexpected classpath";
 
 return true;

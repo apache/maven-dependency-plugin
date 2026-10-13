@@ -29,9 +29,6 @@ String expected = "[WARNING] Used undeclared dependencies found:\n" +
                   "[WARNING] Unused declared dependencies found:\n" +
                   "[WARNING]    org.apache.maven.shared:maven-shared-utils:jar:3.4.2:compile";
 
-if ( !log.contains(expected) )
-{
-    throw new Exception( "Expected warning missing" );
-}
+assert log.contains(expected) : "Expected warning missing";
 
 return true;

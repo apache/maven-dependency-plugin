@@ -21,17 +21,11 @@ import java.io.*;
 
 File nonPurgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purged/1.0/purged-1.0.jar" );
 
-if ( !nonPurgedJar.exists() )
-{
-    throw new Exception( "JAR was purged: " + nonPurgedJar );
-}
+assert nonPurgedJar.exists() : "JAR was purged: " + nonPurgedJar;
 
 
 File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/snap-purged/1.0-SNAPSHOT/snap-purged-1.0-SNAPSHOT.jar" );
 
-if ( purgedJar.exists() )
-{
-    throw new Exception( "JAR was not purged: " + purgedJar );
-}
+assert !purgedJar.exists() : "JAR was not purged: " + purgedJar;
 
 return true;

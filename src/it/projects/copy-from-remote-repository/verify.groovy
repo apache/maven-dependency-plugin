@@ -26,16 +26,10 @@ String[] expectedFiles = [
 for ( String expectedFile : expectedFiles )
 {
     File file = new File( localRepositoryPath, expectedFile );
-    if ( !file.isFile() )
-    {
-        throw new Exception( "Missing file " + file );
-    }
+    assert file.isFile() : "Missing file " + file;
 }
 
 File copied = new File( basedir, "target/dependency/fake-remote-copy-1.0.jar" );
-if ( !copied.exists() )
-{
-    throw new Exception( "Missing file " + file );
-}
+assert copied.exists() : "Missing file " + copied;
 
 return true;

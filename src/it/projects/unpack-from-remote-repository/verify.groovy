@@ -26,16 +26,10 @@ String[] expectedFiles = [
 for ( String expectedFile : expectedFiles )
 {
     File file = new File( localRepositoryPath, expectedFile );
-    if ( !file.isFile() )
-    {
-        throw new Exception( "Missing file " + file );
-    }
+    assert file.isFile() : "Missing file " + file;
 }
 
 File unpacked = new File( basedir, "target/dependency/META-INF/MANIFEST.MF" );
-if ( !unpacked.exists() )
-{
-    throw new Exception( "Missing file " + file );
-}
+assert unpacked.exists() : "Missing file " + unpacked;
 
 return true;

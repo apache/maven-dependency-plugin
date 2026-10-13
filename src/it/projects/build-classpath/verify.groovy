@@ -41,9 +41,6 @@ System.out.println( "Checking classpath... " );
 System.out.println( "Actual  : " + actual );
 System.out.println( "Expected: " + expected );
 
-if ( !actual.equals( expected ) )
-{
-    throw new Exception( "Unexpected classpath" );
-}
+assert actual.equals( expected ) : "Unexpected classpath";
 
 return true;

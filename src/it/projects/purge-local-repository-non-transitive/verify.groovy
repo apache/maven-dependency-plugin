@@ -21,16 +21,10 @@ import java.io.*;
 
 File depDir = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository/1.0" );
 
-if ( depDir.exists() )
-{
-    throw new Exception( "Directory was not deleted: " + depDir );
-}
+assert !depDir.exists() : "Directory was not deleted: " + depDir;
 
 File transitiveDepDir = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-2/1.0" );
 
-if ( !transitiveDepDir.exists() )
-{
-    throw new Exception( "Transitive dep was purged: " + transitiveDepDir );
-}
+assert transitiveDepDir.exists() : "Transitive dep was purged: " + transitiveDepDir;
 
 return true;
