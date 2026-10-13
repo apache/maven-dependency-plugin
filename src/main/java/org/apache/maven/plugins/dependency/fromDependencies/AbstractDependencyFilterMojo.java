@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 import javax.inject.Inject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -35,6 +36,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Profile;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
@@ -70,6 +72,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  * @see org.apache.maven.plugins.dependency.AbstractDependencyMojo
  */
 public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMojo {
+    private static final Pattern EXPRESSION = Pattern.compile("\\$\\{([^}]+)}");
 
     /**
      * Overwrite release artifacts.
@@ -378,10 +381,11 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             addParentArtifacts(getProject(), parentArtifacts);
         }
         if (includeImportedBoms) {
+            Set<String> visitedBoms = new HashSet<>();
             for (Artifact dep : artifacts) {
-                addImportedBomArtifacts(buildProjectFromArtifact(dep), parentArtifacts, new HashSet<>());
+                addImportedBomArtifacts(buildProjectFromArtifact(dep), parentArtifacts, visitedBoms);
             }
-            addImportedBomArtifacts(getProject(), parentArtifacts, new HashSet<>());
+            addImportedBomArtifacts(getProject(), parentArtifacts, visitedBoms);
         }
 
         // perform filtering
@@ -455,11 +459,17 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     private void addImportedBomArtifacts(MavenProject project, Set<Artifact> artifacts, Set<String> visited)
             throws MojoExecutionException {
         for (MavenProject current = project; current != null; current = current.getParent()) {
-            if (current.getOriginalModel().getDependencyManagement() == null) {
-                continue;
+            List<Dependency> managedDependencies = new ArrayList<>();
+            if (current.getOriginalModel().getDependencyManagement() != null) {
+                managedDependencies.addAll(
+                        current.getOriginalModel().getDependencyManagement().getDependencies());
             }
-            for (Dependency managed :
-                    current.getOriginalModel().getDependencyManagement().getDependencies()) {
+            for (Profile profile : current.getActiveProfiles()) {
+                if (profile.getDependencyManagement() != null) {
+                    managedDependencies.addAll(profile.getDependencyManagement().getDependencies());
+                }
+            }
+            for (Dependency managed : managedDependencies) {
                 if (!Artifact.SCOPE_IMPORT.equals(managed.getScope()) || !"pom".equals(managed.getType())) {
                     continue;
                 }
@@ -491,11 +501,21 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
         }
     }
 
+    /**
+     * Returns the value of an environment variable, a seam for tests.
+     *
+     * @param name name of the environment variable
+     * @return the value, or {@code null} if it is not set
+     */
+    String getEnvironmentVariable(String name) {
+        return System.getenv(name);
+    }
+
     String interpolate(String value, MavenProject project) {
         if (value == null) {
             return "";
         }
-        Matcher matcher = Pattern.compile("\\$\\{([^}]+)}").matcher(value);
+        Matcher matcher = EXPRESSION.matcher(value);
         StringBuffer result = new StringBuffer();
         while (matcher.find()) {
             String key = matcher.group(1);
@@ -513,10 +533,32 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
                 case "pom.version":
                     replacement = project.getVersion();
                     break;
+                case "project.parent.groupId":
+                case "pom.parent.groupId":
+                    replacement =
+                            project.getParent() != null ? project.getParent().getGroupId() : null;
+                    break;
+                case "project.parent.artifactId":
+                case "pom.parent.artifactId":
+                    replacement =
+                            project.getParent() != null ? project.getParent().getArtifactId() : null;
+                    break;
+                case "project.parent.version":
+                case "pom.parent.version":
+                case "parent.version":
+                    replacement =
+                            project.getParent() != null ? project.getParent().getVersion() : null;
+                    break;
                 default:
                     replacement = session.getUserProperties().getProperty(key);
                     if (replacement == null) {
                         replacement = project.getProperties().getProperty(key);
+                    }
+                    if (replacement == null) {
+                        replacement = session.getSystemProperties().getProperty(key);
+                    }
+                    if (replacement == null && key.startsWith("env.")) {
+                        replacement = getEnvironmentVariable(key.substring("env.".length()));
                     }
             }
             matcher.appendReplacement(

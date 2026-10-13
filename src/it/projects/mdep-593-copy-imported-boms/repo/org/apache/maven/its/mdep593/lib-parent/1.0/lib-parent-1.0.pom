@@ -37,7 +37,7 @@
       <dependency>
         <groupId>org.apache.maven.its.mdep593</groupId>
         <artifactId>bom-a</artifactId>
-        <version>${bom.version}</version>
+        <version>${project.parent.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
