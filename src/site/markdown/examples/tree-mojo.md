@@ -64,6 +64,7 @@ mvn dependency:tree -DoutputType=<format> -DoutputFile=<filename>
     - `classifier`: The classifier, if any (e.g., empty string if none).
     - `optional`: Whether the dependency is optional (`true` or `false`).
     - `children`: An array of dependency objects with the same structure, representing transitive dependencies.
+    - With `-Dverbose`, every node also has `included` (`false` for a node Maven leaves out of the resolved tree), and, when they apply, `omittedReason` (`duplicate` or `conflict`), `winnerVersion` (the version kept instead, for `conflict`), `versionManagedFrom`, `scopeManagedFrom` and `scopeNotUpdatedTo`. These fields are not written without `-Dverbose`.
 - **Nested Dependencies**: Each dependency in the `children` array follows the same structure, allowing for recursive representation of the dependency tree.
 
 **Example**:
