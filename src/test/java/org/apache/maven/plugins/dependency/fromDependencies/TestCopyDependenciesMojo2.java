@@ -55,6 +55,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MojoTest(realRepositorySession = true)
@@ -299,6 +300,34 @@ class TestCopyDependenciesMojo2 {
         Path artifactDirectory = mojo.outputDirectory.toPath().resolve("testGroupId/artifact-with-project-pom/1.0");
         assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-with-project-pom-1.0.jar")));
         assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-with-project-pom-1.0.pom")));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testAddImportedBomsIsOffByDefault(CopyDependenciesMojo mojo) {
+        assertFalse(mojo.addImportedBoms);
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    @MojoParameter(name = "addImportedBoms", value = "true")
+    void testAddImportedBomsParameter(CopyDependenciesMojo mojo) {
+        assertTrue(mojo.addImportedBoms);
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testInterpolateImportedBomCoordinates(CopyDependenciesMojo mojo) {
+        MavenProject owner = mojo.getProject();
+        owner.setGroupId("g");
+        owner.setArtifactId("a");
+        owner.setVersion("2.0");
+        owner.getProperties().setProperty("bom.version", "1.5");
+
+        assertEquals("1.5", mojo.interpolate("${bom.version}", owner));
+        assertEquals("g:a:2.0", mojo.interpolate("${project.groupId}:${project.artifactId}:${project.version}", owner));
+        assertEquals("1.5-${unknown}", mojo.interpolate("${bom.version}-${unknown}", owner));
+        assertEquals("", mojo.interpolate(null, owner));
     }
 
     private Artifact createExpandedVersionArtifact(
