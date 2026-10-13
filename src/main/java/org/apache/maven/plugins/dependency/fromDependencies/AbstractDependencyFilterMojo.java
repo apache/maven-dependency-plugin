@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 import javax.inject.Inject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -58,6 +59,7 @@ import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -275,6 +277,19 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected abstract ArtifactsFilter getMarkedArtifactFilter();
 
     /**
+     * Tells whether this goal asks Maven for the dependency graph only ({@code requiresDependencyCollection}) and
+     * resolves the artifacts that are left after filtering itself. This way a dependency that the filters drop, for
+     * example a {@code provided} module of the same reactor that has not been built, is never resolved.
+     * <p>
+     * Goals that ask Maven to resolve the dependencies ({@code requiresDependencyResolution}) keep the default.
+     *
+     * @return {@code true} if the artifacts of {@link MavenProject#getArtifacts()} are not resolved yet
+     */
+    protected boolean isResolvingAfterFiltering() {
+        return false;
+    }
+
+    /**
      * Retrieves dependencies, either direct only or all including transitive.
      *
      * @param stopOnFailure true to fail if resolution does not work or false not to fail
@@ -368,6 +383,11 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
+        // with a classifier the originals only seed the translation and only the translated artifacts are resolved
+        if (isResolvingAfterFiltering() && (classifier == null || classifier.isEmpty())) {
+            resolveFilteredArtifacts(artifacts);
+        }
+
         // transform artifacts if classifier is set
         DependencyStatusSets status;
         if (classifier != null && !classifier.isEmpty()) {
@@ -381,6 +401,76 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
         }
 
         return status;
+    }
+
+    /**
+     * Resolves the artifacts that are still without a file and records the file on the artifact itself, so scope,
+     * trail and the other properties collected by Maven are kept.
+     */
+    private void resolveFilteredArtifacts(Set<Artifact> artifacts) throws MojoExecutionException {
+        List<Artifact> unresolved = new ArrayList<>();
+        for (Artifact artifact : artifacts) {
+            if (artifact.getFile() != null) {
+                continue;
+            }
+            if (Artifact.SCOPE_SYSTEM.equals(artifact.getScope())) {
+                // never a repository artifact: Maven takes the file from the systemPath of the dependency
+                artifact.setFile(getSystemPathFile(artifact));
+            } else {
+                unresolved.add(artifact);
+            }
+        }
+        if (unresolved.isEmpty()) {
+            return;
+        }
+
+        List<ArtifactResult> results;
+        try {
+            results = resolverUtil.resolveArtifacts(
+                    unresolved.stream().map(RepositoryUtils::toArtifact).collect(Collectors.toList()),
+                    getProject().getRemoteProjectRepositories());
+        } catch (ArtifactResolutionException e) {
+            throw new MojoExecutionException(
+                    "Could not resolve dependencies for project " + getProject().getId() + ": " + e.getMessage(), e);
+        }
+
+        for (int i = 0; i < unresolved.size(); i++) {
+            ArtifactResult result = results.get(i);
+            if (result.isResolved()) {
+                Artifact artifact = unresolved.get(i);
+                // same as Maven when it resolves a project: a snapshot gets its timestamped version
+                if (!result.getArtifact().getVersion().equals(artifact.getVersion())) {
+                    artifact.setVersion(result.getArtifact().getVersion());
+                }
+                artifact.setFile(result.getArtifact().getFile());
+                artifact.setResolved(true);
+            }
+        }
+    }
+
+    private File getSystemPathFile(Artifact artifact) throws MojoExecutionException {
+        String key = artifact.getGroupId()
+                + ':'
+                + artifact.getArtifactId()
+                + ':'
+                + artifact.getType()
+                + (artifact.hasClassifier() ? ':' + artifact.getClassifier() : "");
+        List<Dependency> candidates = new ArrayList<>(getProject().getDependencies());
+        if (getProject().getDependencyManagement() != null) {
+            candidates.addAll(getProject().getDependencyManagement().getDependencies());
+        }
+        for (Dependency dependency : candidates) {
+            if (key.equals(dependency.getManagementKey()) && dependency.getSystemPath() != null) {
+                File file = new File(dependency.getSystemPath());
+                if (!file.isFile()) {
+                    throw new MojoExecutionException(
+                            "The systemPath of " + artifact.getId() + " does not exist: " + file);
+                }
+                return file;
+            }
+        }
+        throw new MojoExecutionException(
+                "No systemPath is declared for the system scoped dependency " + artifact.getId());
     }
 
     private MavenProject buildProjectFromArtifact(Artifact artifact) throws MojoExecutionException {
@@ -437,11 +527,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             Collection<org.eclipse.aether.artifact.Artifact> coordinates = translator.translate(artifacts, getLog());
 
             // resolve the translated artifacts
-            resolvedArtifacts = resolve(new LinkedHashSet<>(coordinates), stopOnFailure);
-
-            // calculate the artifacts not resolved.
-            unResolvedArtifacts.addAll(artifacts);
-            unResolvedArtifacts.removeAll(resolvedArtifacts);
+            resolvedArtifacts = resolve(new LinkedHashSet<>(coordinates), stopOnFailure, unResolvedArtifacts);
 
             // skip the translated artifacts that are already up to date in the destination: the destination file
             // name depends on the classifier, so the decision cannot be taken on the original artifacts
@@ -487,10 +573,12 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
      * @param artifacts the set of artifacts
      * @param stopOnFailure <code>true</code> if we should fail with exception if an artifact couldn't be resolved
      *            <code>false</code> otherwise
+     * @param unresolved receives the artifacts that could not be resolved
      * @return the resolved artifacts. {@link Artifact}.
      * @throws MojoExecutionException in case of error
      */
-    private Set<Artifact> resolve(Set<org.eclipse.aether.artifact.Artifact> artifacts, boolean stopOnFailure)
+    private Set<Artifact> resolve(
+            Set<org.eclipse.aether.artifact.Artifact> artifacts, boolean stopOnFailure, Set<Artifact> unresolved)
             throws MojoExecutionException {
 
         Set<Artifact> resolvedArtifacts = new LinkedHashSet<>();
@@ -502,6 +590,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             } catch (ArtifactResolutionException | ArtifactDescriptorException ex) {
                 // an error occurred during resolution, log it and continue
                 getLog().debug("error resolving: " + artifact, ex);
+                unresolved.add(RepositoryUtils.toArtifact(artifact));
                 if (stopOnFailure) {
                     throw new MojoExecutionException("error resolving: " + artifact, ex);
                 }
