@@ -238,6 +238,16 @@ class PurgeLocalRepositoryMojoTest {
     }
 
     @Test
+    void nodeWithoutTypePropertyFallsBackToTheExtension() throws Exception {
+        DependencyFilter filter = purgeFilterFor("include", "org.example:lib:jar");
+        // a plain artifact has no "type" property
+        DefaultDependencyNode untyped =
+                new DefaultDependencyNode(new Dependency(new DefaultArtifact("org.example:lib:jar:1.0"), "compile"));
+
+        assertThat(filter.accept(untyped, Collections.emptyList())).isTrue();
+    }
+
+    @Test
     void excludeMatchesCustomArtifactType() throws Exception {
         DependencyFilter filter = purgeFilterFor("exclude", "org.example:custom-lib:custom");
 
