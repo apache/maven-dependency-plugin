@@ -50,8 +50,9 @@ import org.eclipse.aether.collection.DependencyCollectionException;
  * Displays the dependency tree for this project. Multiple formats are supported: text (by default), but also
  * <a href="https://en.wikipedia.org/wiki/DOT_language">DOT</a>,
  * <a href="https://en.wikipedia.org/wiki/GraphML">GraphML</a>,
- * <a href="https://en.wikipedia.org/wiki/Trivial_Graph_Format">TGF</a> and
- * <a href="https://en.wikipedia.org/wiki/JSON">JSON</a>.
+ * <a href="https://en.wikipedia.org/wiki/Trivial_Graph_Format">TGF</a>,
+ * <a href="https://en.wikipedia.org/wiki/JSON">JSON</a> and
+ * <a href="https://mermaid.js.org/syntax/flowchart.html">Mermaid</a>.
  *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @since 2.0-alpha-5
@@ -83,8 +84,8 @@ public class TreeMojo extends AbstractMojo {
 
     /**
      * If specified, this parameter will cause the dependency tree to be written using the specified format. Currently
-     * supported formats are: <code>text</code> (default), <code>dot</code>, <code>graphml</code>, <code>tgf</code>
-     * and <code>json</code> (since 3.7.0).
+     * supported formats are: <code>text</code> (default), <code>dot</code>, <code>graphml</code>, <code>tgf</code>,
+     * <code>json</code> (since 3.7.0) and <code>mermaid</code> (since 3.12.0).
      * These additional formats can be plotted to image files.
      *
      * @since 2.2
@@ -323,6 +324,8 @@ public class TreeMojo extends AbstractMojo {
             return new DOTDependencyNodeVisitor(writer);
         } else if ("json".equals(outputType)) {
             return new JsonDependencyNodeVisitor(writer);
+        } else if ("mermaid".equals(outputType)) {
+            return new MermaidDependencyNodeVisitor(writer);
         } else {
             return new SerializingDependencyNodeVisitor(writer, toGraphTokens(tokens));
         }
