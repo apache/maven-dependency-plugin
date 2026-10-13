@@ -17,13 +17,13 @@
  * under the License.
  */
 
-for ( item in ['org', 'junit'] )
+for ( item in ['org', 'fixture', 'org/apache/maven/its/dependency/fixture/nested.txt'] )
 {
     def file = new File( basedir, 'target/dependency/' + item )
     assert file.exists() : "Missing " + file.name
 }
 
-for ( item in ['META-INF', 'LICENSE.TXT'] )
+for ( item in ['META-INF', 'LICENSE.txt'] )
 {
     def file = new File( basedir, 'target/dependency/' + item )
     assert !file.exists() : "This file shouldn't be here: " + file.name
