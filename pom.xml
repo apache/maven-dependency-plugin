@@ -90,6 +90,7 @@ under the License.
   </distributionManagement>
 
   <properties>
+    <invoker.parallelThreads>0.75C</invoker.parallelThreads>
     <javaVersion>8</javaVersion>
     <mavenVersion>3.9.16</mavenVersion>
     <resolverVersion>1.9.27</resolverVersion>
@@ -442,18 +443,37 @@ under the License.
                 <goal>process-sources</goal>
               </goals>
               <projectsDirectory>src/it/projects</projectsDirectory>
+              <!-- ITs that delete fixtures from, or assert on, the shared local repository run
+                   serially in the integration-test-shared-repo execution below -->
               <pomExcludes>
                 <pomExclude>purge-local-repository-bad-pom/pom.xml</pomExclude>
+                <pomExclude>get-artifact/pom.xml</pomExclude>
+                <pomExclude>get-artifact-maven-plugin/pom.xml</pomExclude>
+                <pomExclude>get-artifact-no-transitive/pom.xml</pomExclude>
+                <pomExclude>get-gav/pom.xml</pomExclude>
+                <pomExclude>get-remote-repositories/pom.xml</pomExclude>
+                <pomExclude>get-remote-repositories-pom-config/pom.xml</pomExclude>
+                <pomExclude>copy-from-remote-repository/pom.xml</pomExclude>
+                <pomExclude>unpack-from-remote-repository/pom.xml</pomExclude>
+                <pomExclude>mdep-592-addparentpoms-custom-repo/pom.xml</pomExclude>
+                <pomExclude>mdep-803-parent-poms-with-classifier/pom.xml</pomExclude>
+                <pomExclude>build-classpath-output-file-and-property/pom.xml</pomExclude>
+                <pomExclude>copy-dependencies-graphroots/pom.xml</pomExclude>
+                <pomExclude>purge-local-repository*/pom.xml</pomExclude>
               </pomExcludes>
               <pomIncludes>
                 <pomInclude>*/pom.xml</pomInclude>
                 <pomInclude>add-dependency/*/pom.xml</pomInclude>
                 <pomInclude>remove-dependency/*/pom.xml</pomInclude>
-                <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
               <!-- for mrm -->
               <settingsFile>src/it/mrm/settings.xml</settingsFile>
               <addTestClassPath>true</addTestClassPath>
+              <parallelThreads>${invoker.parallelThreads}</parallelThreads>
+              <environmentVariables>
+                <!-- each IT is a short-lived JVM: C2 compilation and parallel GC only add startup time -->
+                <JAVA_TOOL_OPTIONS>-XX:TieredStopAtLevel=1 -XX:+UseSerialGC</JAVA_TOOL_OPTIONS>
+              </environmentVariables>
             </configuration>
             <dependencies>
               <!-- dependencies used only in verification scripts -->
@@ -463,6 +483,39 @@ under the License.
                 <version>1.23.2</version>
               </dependency>
             </dependencies>
+            <executions>
+              <execution>
+                <id>integration-test-shared-repo</id>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+                <configuration>
+                  <parallelThreads>1</parallelThreads>
+                  <reportsDirectory>${project.build.directory}/invoker-reports-shared-repo</reportsDirectory>
+                  <summaryFile>${project.build.directory}/invoker-reports-shared-repo/invoker-summary.txt</summaryFile>
+                  <pomIncludes combine.self="override">
+                    <pomInclude>get-artifact/pom.xml</pomInclude>
+                    <pomInclude>get-artifact-maven-plugin/pom.xml</pomInclude>
+                    <pomInclude>get-artifact-no-transitive/pom.xml</pomInclude>
+                    <pomInclude>get-gav/pom.xml</pomInclude>
+                    <pomInclude>get-remote-repositories/pom.xml</pomInclude>
+                    <pomInclude>get-remote-repositories-pom-config/pom.xml</pomInclude>
+                    <pomInclude>copy-from-remote-repository/pom.xml</pomInclude>
+                    <pomInclude>unpack-from-remote-repository/pom.xml</pomInclude>
+                    <pomInclude>mdep-592-addparentpoms-custom-repo/pom.xml</pomInclude>
+                    <pomInclude>mdep-803-parent-poms-with-classifier/pom.xml</pomInclude>
+                    <pomInclude>build-classpath-output-file-and-property/pom.xml</pomInclude>
+                    <pomInclude>copy-dependencies-graphroots/pom.xml</pomInclude>
+                    <pomInclude>purge-local-repository*/pom.xml</pomInclude>
+                    <pomInclude>purge-local-repository-without-pom</pomInclude>
+                  </pomIncludes>
+                  <pomExcludes combine.self="override">
+                    <pomExclude>purge-local-repository-bad-pom/pom.xml</pomExclude>
+                  </pomExcludes>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
