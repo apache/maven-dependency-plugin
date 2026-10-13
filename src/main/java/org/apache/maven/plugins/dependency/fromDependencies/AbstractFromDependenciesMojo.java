@@ -35,6 +35,26 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  */
 public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFilterMojo {
     /**
+     * If we should exclude optional dependencies, that is artifacts for which
+     * {@link org.apache.maven.artifact.Artifact#isOptional()} is {@code true}.
+     * This has no effect when {@code graphRoots} is set, because the artifacts of a sub tree are converted without the
+     * optional flag of their dependency.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "excludeOptional", defaultValue = "false")
+    protected boolean excludeOptional;
+
+    /**
+     * If we should exclude artifacts that are projects of the current reactor build, matched by groupId,
+     * artifactId and version.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "excludeReactor", defaultValue = "false")
+    protected boolean excludeReactor;
+
+    /**
      * Output location.
      *
      * @since 1.0
@@ -232,5 +252,15 @@ public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFil
      */
     public void setUseRepositoryLayout(boolean useRepositoryLayout) {
         this.useRepositoryLayout = useRepositoryLayout;
+    }
+
+    @Override
+    protected boolean isExcludeOptional() {
+        return excludeOptional;
+    }
+
+    @Override
+    protected boolean isExcludeReactor() {
+        return excludeReactor;
     }
 }

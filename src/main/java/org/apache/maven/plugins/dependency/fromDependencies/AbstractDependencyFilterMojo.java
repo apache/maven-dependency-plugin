@@ -104,24 +104,6 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected boolean excludeTransitive;
 
     /**
-     * If we should exclude optional dependencies, that is artifacts for which
-     * {@link Artifact#isOptional()} is {@code true}.
-     *
-     * @since 3.12.0
-     */
-    @Parameter(property = "excludeOptional", defaultValue = "false")
-    protected boolean excludeOptional;
-
-    /**
-     * If we should exclude artifacts that are projects of the current reactor build, matched by groupId,
-     * artifactId and version.
-     *
-     * @since 3.12.0
-     */
-    @Parameter(property = "excludeReactor", defaultValue = "false")
-    protected boolean excludeReactor;
-
-    /**
      * Comma-separated list of Types to include. Empty String indicates include everything (default).
      *
      * @since 2.0
@@ -288,6 +270,25 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
+     * Whether optional artifacts must be excluded. Goals exposing the {@code excludeOptional} parameter override this.
+     *
+     * @return {@code false} by default
+     */
+    protected boolean isExcludeOptional() {
+        return false;
+    }
+
+    /**
+     * Whether artifacts that are reactor projects must be excluded. Goals exposing the {@code excludeReactor}
+     * parameter override this.
+     *
+     * @return {@code false} by default
+     */
+    protected boolean isExcludeReactor() {
+        return false;
+    }
+
+    /**
      * Return an {@link ArtifactsFilter} indicating which artifacts must be filtered out.
      *
      * @return an {@link ArtifactsFilter} indicating which artifacts must be filtered out
@@ -359,11 +360,11 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
                 DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
                 DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
 
-        if (excludeOptional) {
+        if (isExcludeOptional()) {
             filter.addFilter(new ExcludeOptionalArtifactsFilter());
         }
 
-        if (excludeReactor) {
+        if (isExcludeReactor()) {
             filter.addFilter(new ExcludeReactorProjectsArtifactFilter(session.getProjects(), getLog()));
         }
 
