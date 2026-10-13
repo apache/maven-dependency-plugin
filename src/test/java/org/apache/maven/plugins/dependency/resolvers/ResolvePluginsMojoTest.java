@@ -21,6 +21,7 @@ package org.apache.maven.plugins.dependency.resolvers;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.apache.maven.RepositoryUtils;
@@ -44,8 +45,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -145,6 +149,30 @@ class ResolvePluginsMojoTest {
                 .contains("g:plugin:jar:1.0")
                 .contains("g:dep:jar:1.0")
                 .doesNotContain("-parent");
+    }
+
+    @Test
+    void sharedDependencyIsBuiltOnceAcrossPlugins() throws Exception {
+        Plugin first = new Plugin();
+        first.setGroupId("g");
+        first.setArtifactId("plugin");
+        first.setVersion("1.0");
+        Plugin second = new Plugin();
+        second.setGroupId("g");
+        second.setArtifactId("plugin2");
+        second.setVersion("1.0");
+        Artifact secondArtifact = new DefaultArtifact("g", "plugin2", "jar", "1.0");
+        when(resolverUtil.getProjectPlugins(project)).thenReturn(Arrays.asList(first, second));
+        when(resolverUtil.resolvePlugin(second)).thenReturn(secondArtifact);
+        when(resolverUtil.resolveDependencies(eq(second), any()))
+                .thenReturn(Collections.singletonList(dependencyArtifact));
+
+        String output = execute(true);
+
+        assertThat(output).contains("g:plugin2:jar:1.0");
+        assertThat(output.split("g:dep-parent:pom:1.0", -1)).hasSize(3);
+        verify(projectBuilder, times(1))
+                .build(argThat((org.apache.maven.artifact.Artifact a) -> "dep".equals(a.getArtifactId())), any());
     }
 
     private String execute(boolean includeParents) throws Exception {

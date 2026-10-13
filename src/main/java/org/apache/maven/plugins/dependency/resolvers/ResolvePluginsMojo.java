@@ -22,8 +22,11 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -162,6 +165,9 @@ public class ResolvePluginsMojo extends AbstractDependencyMojo {
 
     private final ProjectBuilder projectBuilder;
 
+    /** Parent chains by artifact, so that plugins sharing a dependency build its project only once. */
+    private final Map<String, List<Artifact>> parentChains = new HashMap<>();
+
     @Inject
     public ResolvePluginsMojo(
             MavenSession session,
@@ -277,6 +283,17 @@ public class ResolvePluginsMojo extends AbstractDependencyMojo {
      */
     private void addParentArtifacts(Artifact artifact, List<ArtifactRepository> repositories, Set<Artifact> parents)
             throws MojoExecutionException, ArtifactResolutionException, ArtifactDescriptorException {
+        String key = artifact.toString();
+        List<Artifact> chain = parentChains.get(key);
+        if (chain == null) {
+            chain = resolveParentChain(artifact, repositories);
+            parentChains.put(key, chain);
+        }
+        parents.addAll(chain);
+    }
+
+    private List<Artifact> resolveParentChain(Artifact artifact, List<ArtifactRepository> repositories)
+            throws MojoExecutionException, ArtifactResolutionException, ArtifactDescriptorException {
         MavenProject current;
         try {
             ProjectBuildingRequest buildingRequest =
@@ -291,15 +308,13 @@ public class ResolvePluginsMojo extends AbstractDependencyMojo {
             throw new MojoExecutionException("Could not build project for " + artifact, e);
         }
 
+        List<Artifact> chain = new ArrayList<>();
         while (current.hasParent()) {
             current = current.getParent();
-            Artifact parent = resolverUtil.resolveArtifact(
-                    RepositoryUtils.toArtifact(current.getArtifact()), current.getRemoteProjectRepositories());
-            if (!parents.add(parent)) {
-                // the rest of the chain is already listed
-                break;
-            }
+            chain.add(resolverUtil.resolveArtifact(
+                    RepositoryUtils.toArtifact(current.getArtifact()), current.getRemoteProjectRepositories()));
         }
+        return chain;
     }
 
     private Predicate<Dependency> getDependencyFilter() {
