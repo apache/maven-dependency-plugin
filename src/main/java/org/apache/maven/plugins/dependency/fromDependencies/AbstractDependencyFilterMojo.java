@@ -36,9 +36,11 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
+import org.apache.maven.plugins.dependency.resolvers.ExcludeReactorProjectsArtifactFilter;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.plugins.dependency.utils.filters.ExcludeOptionalArtifactsFilter;
 import org.apache.maven.plugins.dependency.utils.translators.ArtifactTranslator;
 import org.apache.maven.plugins.dependency.utils.translators.ClassifierTypeTranslator;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
@@ -100,6 +102,24 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
      */
     @Parameter(property = "excludeTransitive", defaultValue = "false")
     protected boolean excludeTransitive;
+
+    /**
+     * If we should exclude optional dependencies, that is artifacts for which
+     * {@link Artifact#isOptional()} is {@code true}.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "excludeOptional", defaultValue = "false")
+    protected boolean excludeOptional;
+
+    /**
+     * If we should exclude artifacts that are projects of the current reactor build, matched by groupId,
+     * artifactId and version.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "excludeReactor", defaultValue = "false")
+    protected boolean excludeReactor;
 
     /**
      * Comma-separated list of Types to include. Empty String indicates include everything (default).
@@ -338,6 +358,14 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
         filter.addFilter(new ArtifactIdFilter(
                 DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
                 DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
+
+        if (excludeOptional) {
+            filter.addFilter(new ExcludeOptionalArtifactsFilter());
+        }
+
+        if (excludeReactor) {
+            filter.addFilter(new ExcludeReactorProjectsArtifactFilter(session.getProjects(), getLog()));
+        }
 
         // start with all artifacts.
         Set<Artifact> artifacts;
