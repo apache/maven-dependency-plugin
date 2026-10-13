@@ -20,6 +20,11 @@ package org.apache.maven.plugins.dependency.resolvers;
 
 import javax.inject.Inject;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -27,6 +32,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.plugins.dependency.utils.translators.ArtifactTranslator;
+import org.apache.maven.plugins.dependency.utils.translators.ClassifierTypeTranslator;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -46,6 +53,12 @@ public class ResolveDependencySourcesMojo extends ResolveDependenciesMojo {
 
     private static final String SOURCES_CLASSIFIER = "sources";
 
+    private static final String TEST_SOURCES_CLASSIFIER = "test-sources";
+
+    private static final String TESTS_CLASSIFIER = "tests";
+
+    private final ArtifactHandlerManager artifactHandlerManager;
+
     @Inject
     // CHECKSTYLE_OFF: ParameterNumber
     public ResolveDependencySourcesMojo(
@@ -56,11 +69,32 @@ public class ResolveDependencySourcesMojo extends ResolveDependenciesMojo {
             ProjectBuilder projectBuilder,
             ArtifactHandlerManager artifactHandlerManager) {
         super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
+        this.artifactHandlerManager = artifactHandlerManager;
     }
     // CHECKSTYLE_ON: ParameterNumber
 
     @Parameter(name = "classifier", defaultValue = SOURCES_CLASSIFIER, readonly = true)
     public void setClassifier(String classifier) {
         this.classifier = classifier;
+    }
+
+    /**
+     * Maps the {@code tests} artifacts (type {@code test-jar}) to their {@code test-sources}, all others to
+     * {@code sources}.
+     */
+    @Override
+    protected ArtifactTranslator createArtifactTranslator() {
+        ArtifactTranslator sources = new ClassifierTypeTranslator(artifactHandlerManager, classifier, type);
+        ArtifactTranslator testSources =
+                new ClassifierTypeTranslator(artifactHandlerManager, TEST_SOURCES_CLASSIFIER, type);
+        return (artifacts, log) -> {
+            Set<org.eclipse.aether.artifact.Artifact> results = new LinkedHashSet<>();
+            for (Artifact artifact : artifacts) {
+                ArtifactTranslator translator =
+                        TESTS_CLASSIFIER.equals(artifact.getClassifier()) ? testSources : sources;
+                results.addAll(translator.translate(Collections.singleton(artifact), log));
+            }
+            return results;
+        };
     }
 }
