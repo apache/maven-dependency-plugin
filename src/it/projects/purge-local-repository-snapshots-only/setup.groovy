@@ -19,7 +19,7 @@
 
 import java.io.*;
 
-File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purged/1.0/purged-1.0.jar" );
+File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purged-snapshots-only/1.0/purged-snapshots-only-1.0.jar" );
 
 purgedJar.getParentFile().mkdirs();
 purgedJar.createNewFile();

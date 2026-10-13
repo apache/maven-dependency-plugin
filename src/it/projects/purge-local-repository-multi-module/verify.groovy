@@ -23,8 +23,8 @@ void checkFileAbsence( String path )
   assert !depJar.exists() : "Dependency jar was not purged: " + depJar
 }
 
-checkFileAbsence("purged-a" )
-checkFileAbsence("purged-b" )
+checkFileAbsence( "org/apache/maven/its/dependency/purged-a/1.0/purged-a-1.0.jar" )
+checkFileAbsence( "org/apache/maven/its/dependency/purged-b/1.0/purged-b-1.0.jar" )
 
 String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" )
 assert buildLog.contains( 'Deleting 1 transitive dependency for project child1 from ' )

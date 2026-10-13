@@ -40,7 +40,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.its.dependency</groupId>
-      <artifactId>purge-local-repository</artifactId>
+      <artifactId>purge-local-repository-bad-dep-dep</artifactId>
       <version>1.0</version>
     </dependency>
     <dependency>

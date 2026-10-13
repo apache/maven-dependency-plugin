@@ -22,8 +22,8 @@ import java.io.*;
 import org.codehaus.plexus.util.*;
 
 String[] foldersToDelete = [
-    "org/apache/maven/its/dependency/get-artifact",
-    "org/apache/maven/its/dependency/get-artifact-transitive"
+    "org/apache/maven/its/dependency/get-remote-repositories-dep",
+    "org/apache/maven/its/dependency/get-remote-repositories-dep-transitive"
 ];
 
 try

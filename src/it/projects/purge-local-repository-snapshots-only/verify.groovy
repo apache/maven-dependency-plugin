@@ -19,7 +19,7 @@
 
 import java.io.*;
 
-File nonPurgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purged/1.0/purged-1.0.jar" );
+File nonPurgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purged-snapshots-only/1.0/purged-snapshots-only-1.0.jar" );
 
 assert nonPurgedJar.exists() : "JAR was purged: " + nonPurgedJar;
 

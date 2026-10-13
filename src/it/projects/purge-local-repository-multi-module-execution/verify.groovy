@@ -26,7 +26,7 @@ void checkFilePurged( String artifactId )
     assert !purgedJar.exists() : "JAR was not purged: " + purgedJar;
 }
 
-checkFilePurged( "purged-a" );
-checkFilePurged( "purged-b" );
+checkFilePurged( "purged-exec-a" );
+checkFilePurged( "purged-exec-b" );
 
 return true;

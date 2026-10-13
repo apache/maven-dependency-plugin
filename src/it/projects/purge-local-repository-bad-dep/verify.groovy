@@ -23,14 +23,14 @@ void checkFilePresence( String path )
     assert depJar.exists() : "Direct dependency jar was not re-resolved: " + depJar
 }
 
-checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository/1.0/purge-local-repository-1.0.jar" )
-checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository/1.0/purge-local-repository-1.0.pom" )
+checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository-bad-dep-dep/1.0/purge-local-repository-bad-dep-dep-1.0.jar" )
+checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository-bad-dep-dep/1.0/purge-local-repository-bad-dep-dep-1.0.pom" )
 checkFilePresence( "org/apache/maven/maven-model/2.0.9/maven-model-2.0.9-sources.jar" )
 
 String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" )
 assert buildLog.contains( 'Unable to resolve artifact: org.apache.maven.its.dependency:i-do-not-exist:jar:1.0' )
-assert buildLog.contains( 'Purging artifact: org.apache.maven.its.dependency:purge-local-repository:jar:1.0' )
-assert buildLog.contains( 'Resolving artifact: org.apache.maven.its.dependency:purge-local-repository:jar:1.0' )
+assert buildLog.contains( 'Purging artifact: org.apache.maven.its.dependency:purge-local-repository-bad-dep-dep:jar:1.0' )
+assert buildLog.contains( 'Resolving artifact: org.apache.maven.its.dependency:purge-local-repository-bad-dep-dep:jar:1.0' )
 assert buildLog.contains( 'Purging artifact: org.apache.maven:maven-model:jar:sources:2.0.9' )
 assert buildLog.contains( 'Resolving artifact: org.apache.maven:maven-model:jar:sources:2.0.9' )
 

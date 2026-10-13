@@ -32,7 +32,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.its.dependency</groupId>
-      <artifactId>purged-b</artifactId>
+      <artifactId>purged-exec-b</artifactId>
       <version>1.0</version>
     </dependency>
     <dependency>

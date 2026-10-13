@@ -20,10 +20,10 @@
 import java.io.*;
 
 String[] expectedFiles = [
-    "org/apache/maven/its/dependency/get-artifact/1.0/get-artifact-1.0.jar",
-    "org/apache/maven/its/dependency/get-artifact/1.0/get-artifact-1.0.pom",
-    "org/apache/maven/its/dependency/get-artifact-transitive/1.0/get-artifact-transitive-1.0.jar",
-    "org/apache/maven/its/dependency/get-artifact-transitive/1.0/get-artifact-transitive-1.0.pom"
+    "org/apache/maven/its/dependency/get-remote-repositories-pom-config-dep/1.0/get-remote-repositories-pom-config-dep-1.0.jar",
+    "org/apache/maven/its/dependency/get-remote-repositories-pom-config-dep/1.0/get-remote-repositories-pom-config-dep-1.0.pom",
+    "org/apache/maven/its/dependency/get-remote-repositories-pom-config-dep-transitive/1.0/get-remote-repositories-pom-config-dep-transitive-1.0.jar",
+    "org/apache/maven/its/dependency/get-remote-repositories-pom-config-dep-transitive/1.0/get-remote-repositories-pom-config-dep-transitive-1.0.pom"
 ];
 
 for ( String expectedFile : expectedFiles )
