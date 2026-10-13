@@ -444,17 +444,17 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             ArtifactTranslator translator = createArtifactTranslator();
             Collection<org.eclipse.aether.artifact.Artifact> coordinates = translator.translate(artifacts, getLog());
 
-            status = filterMarkedDependencies(artifacts);
-
-            // the unskipped artifacts are in the resolved set.
-            artifacts = status.getResolvedDependencies();
-
-            // resolve the rest of the artifacts
+            // resolve the translated artifacts
             resolvedArtifacts = resolve(new LinkedHashSet<>(coordinates), stopOnFailure);
 
             // calculate the artifacts not resolved.
             unResolvedArtifacts.addAll(artifacts);
             unResolvedArtifacts.removeAll(resolvedArtifacts);
+
+            // skip the translated artifacts that are already up to date in the destination: the destination file
+            // name depends on the classifier, so the decision cannot be taken on the original artifacts
+            status = filterMarkedDependencies(resolvedArtifacts);
+            resolvedArtifacts = status.getResolvedDependencies();
         }
 
         // return a bean of all 3 sets.
