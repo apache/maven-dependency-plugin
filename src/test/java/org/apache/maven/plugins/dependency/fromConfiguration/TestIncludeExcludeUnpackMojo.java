@@ -112,6 +112,26 @@ class TestIncludeExcludeUnpackMojo {
     }
 
     /**
+     * Includes set on the mojo must be part of the marker file lookup (MDEP-629): a second run finds the marker.
+     *
+     * @throws Exception in case of errors.
+     */
+    @Test
+    @InjectMojo(goal = "unpack")
+    void testMarkerFoundWhenMojoIncludesSet(UnpackMojo mojo) throws Exception {
+        mojo.setIncludes("**/*1" + UNPACKED_FILE_SUFFIX);
+        mojo.execute();
+        File unpacked = new File(mojo.getOutputDirectory(), UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
+        assertTrue(unpacked.delete());
+        // the first run copied the mojo level includes into the item, a new build starts without them
+        mojo.getArtifactItems().forEach(item -> item.setIncludes(""));
+
+        mojo.execute();
+
+        assertUnpacked(mojo, false, UNPACKED_FILE_PREFIX + 1 + UNPACKED_FILE_SUFFIX);
+    }
+
+    /**
      * This test will verify only the 2 file gets unpacked
      *
      * @throws Exception in case of errors.
