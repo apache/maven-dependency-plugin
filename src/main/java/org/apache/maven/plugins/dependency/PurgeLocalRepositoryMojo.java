@@ -297,7 +297,8 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
                 return false;
             }
 
-            String type = dependency.getType();
+            // a node without a type property falls back to the default type and extension
+            String type = dependency.getType() != null ? dependency.getType() : "jar";
             ArtifactType artifactType =
                     session.getRepositorySession().getArtifactTypeRegistry().get(type);
             String extension = artifactType != null ? artifactType.getExtension() : type;
