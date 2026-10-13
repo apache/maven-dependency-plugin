@@ -105,9 +105,15 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
      * <p>
      * <code>pom</code> writes the resolved artifacts as a <code>&lt;dependencies&gt;</code> fragment, with
      * <code>type</code> unless it is <code>jar</code>, <code>classifier</code> if there is one and
-     * <code>scope</code> unless it is <code>compile</code>, to paste into <code>dependencyManagement</code>.
+     * <code>scope</code> unless it is <code>compile</code>, and <code>optional</code> if it is, to paste into
+     * <code>dependencyManagement</code>. Artifacts without a scope, such as parent POMs added by
+     * <code>includeParents</code>, are left out.
      * </p>
      * Both ignore <code>outputScope</code> and <code>includeModuleInfo</code>.
+     * <p>
+     * The property <code>outputType</code> is shared with <code>dependency:tree</code>, so one
+     * <code>-DoutputType</code> value applies to both goals in the same command line.
+     * </p>
      *
      * @since 3.12.0
      */

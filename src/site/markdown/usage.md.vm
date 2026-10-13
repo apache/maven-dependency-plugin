@@ -357,7 +357,7 @@ The `outputType` parameter (since 3.12.0) of `dependency:resolve`, `dependency:l
 
 - `text` is the default listing.
 - `json` writes an object with the arrays `resolved`, `skipped` and `unresolved`. Each element has the string members `groupId`, `artifactId`, `version`, `type`, `scope`, `classifier` and `optional` of the JSON of `dependency:tree`, and `file` with `-DoutputAbsoluteArtifactFilename`.
-- `pom` writes the resolved artifacts as a `<dependencies>` fragment, with `type` unless it is `jar`, `classifier` if there is one and `scope` unless it is `compile`, for example to start a `dependencyManagement` section.
+- `pom` writes the resolved artifacts as a `<dependencies>` fragment, with `type` unless it is `jar`, `classifier` if there is one, `scope` unless it is `compile` and `optional` if it is, for example to start a `dependencyManagement` section.
 
 ```
 mvn dependency:list -DoutputType=pom -DoutputFile=dependencies.xml
