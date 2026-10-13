@@ -182,17 +182,17 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
      * @throws MojoExecutionException in case of an error
      */
     protected List<ArtifactItem> getProcessedArtifactItems(boolean removeVersion) throws MojoExecutionException {
-        List<ArtifactItem> items =
-                super.getProcessedArtifactItems(new ProcessArtifactItemsRequest(removeVersion, false, false, false));
-        for (ArtifactItem artifactItem : items) {
-            if (artifactItem.getIncludes().isEmpty()) {
-                artifactItem.setIncludes(getIncludes());
-            }
-            if (artifactItem.getExcludes().isEmpty()) {
-                artifactItem.setExcludes(getExcludes());
-            }
+        return super.getProcessedArtifactItems(new ProcessArtifactItemsRequest(removeVersion, false, false, false));
+    }
+
+    @Override
+    void applyMojoConfiguration(ArtifactItem artifactItem) {
+        if (artifactItem.getIncludes().isEmpty()) {
+            artifactItem.setIncludes(getIncludes());
         }
-        return items;
+        if (artifactItem.getExcludes().isEmpty()) {
+            artifactItem.setExcludes(getExcludes());
+        }
     }
 
     /**
