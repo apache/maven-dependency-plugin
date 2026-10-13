@@ -213,17 +213,19 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         if ("pom".equals(artifact.getType())) {
             return;
         }
+        // Check the destination first, resolving the POM may mean a remote request.
+        LocalRepositoryManager localRepositoryManager = repositorySystemSession.getLocalRepositoryManager();
+        File pomDestFile = new File(
+                localRepositoryManager.getRepository().getBasedir(),
+                localRepositoryManager.getPathForLocalArtifact(
+                        new SubArtifact(RepositoryUtils.toArtifact(artifact), null, "pom")));
+        if (pomDestFile.exists()) {
+            return;
+        }
         Artifact pomArtifact = getResolvedPomArtifact(artifact);
         if (pomArtifact == null
                 || pomArtifact.getFile() == null
                 || !pomArtifact.getFile().exists()) {
-            return;
-        }
-        LocalRepositoryManager localRepositoryManager = repositorySystemSession.getLocalRepositoryManager();
-        File pomDestFile = new File(
-                localRepositoryManager.getRepository().getBasedir(),
-                localRepositoryManager.getPathForLocalArtifact(RepositoryUtils.toArtifact(pomArtifact)));
-        if (pomDestFile.exists()) {
             return;
         }
         try {
