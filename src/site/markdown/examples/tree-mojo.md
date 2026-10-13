@@ -158,6 +158,8 @@ digraph "org.apache.maven.extensions:maven-build-cache-extension:jar:1.2.1-SNAPS
 mvn dependency:tree -DoutputType=dot -DoutputFile=dependency-tree.dot
 ```
 
+**Multi-module builds**: With `-DappendOutput=true` and an `outputFile` shared by all modules, the edges of every module are added to the one `digraph` in the file, which is named after the first module that wrote to it. A module that is a dependency of another one appears twice, as the root of its own tree (without a scope) and as a dependency with its scope, and the two are not connected. Delete the file before the build, since the graph of the previous build is extended otherwise.
+
 **Visualization**: Convert the DOT file to an image using Graphviz:
 
 ```unknown

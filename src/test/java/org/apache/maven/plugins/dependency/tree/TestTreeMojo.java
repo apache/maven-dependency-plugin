@@ -164,6 +164,30 @@ class TestTreeMojo {
     }
 
     /**
+     * With appendOutput the DOT output of several executions, as in a reactor, stays one graph.
+     *
+     * @throws Exception in case of an error.
+     */
+    @Test
+    @InjectMojo(goal = "tree")
+    @MojoParameter(name = "outputType", value = "dot")
+    @MojoParameter(name = "appendOutput", value = "true")
+    void testTreeDotAppendOutputKeepsOneGraph(TreeMojo mojo) throws Exception {
+        runTreeMojo(mojo);
+        List<String> contents = runTreeMojo(mojo);
+
+        assertEquals(
+                1,
+                contents.stream().filter(line -> line.startsWith("digraph ")).count(),
+                "number of digraph declarations");
+        assertEquals("}", contents.get(contents.size() - 1).trim());
+        assertEquals(
+                1, contents.stream().filter(line -> line.trim().equals("}")).count());
+        assertEquals(
+                4, contents.stream().filter(line -> line.contains(" -> ")).count(), "the edges of both executions");
+    }
+
+    /**
      * Test the GraphML format serialization
      *
      * @throws Exception in case of an error.
