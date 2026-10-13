@@ -158,15 +158,15 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
     }
 
     /**
-     * The additional JSON values of a verbose node, in output order. The values are already JSON: <code>included</code>
-     * is a boolean, the others are strings.
+     * The additional JSON values of a verbose node, in output order. The values are already JSON strings, like the
+     * existing <code>optional</code>.
      */
     private static Map<String, String> verboseValues(DependencyNode.VerboseInfo info) {
         Map<String, String> values = new LinkedHashMap<>();
         if (info == null) {
             return values;
         }
-        values.put("included", String.valueOf(info.isIncluded()));
+        putString(values, "included", String.valueOf(info.isIncluded()));
         putString(values, "omittedReason", info.getOmittedReason());
         if (DependencyNode.VerboseInfo.OMITTED_FOR_CONFLICT.equals(info.getOmittedReason())) {
             putString(values, "winnerVersion", info.getWinnerVersion());
