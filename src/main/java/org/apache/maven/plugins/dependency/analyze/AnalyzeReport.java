@@ -108,7 +108,11 @@ public class AnalyzeReport extends AbstractMavenReport {
             analysis = analyzer.analyze(project, excludedClasses);
 
             if (usedDependencies != null) {
-                analysis = analysis.forceDeclaredDependenciesUsage(usedDependencies);
+                ForcedUsage forced = new ForcedUsage(analysis, usedDependencies);
+                forced.getUnneeded().forEach(entry -> getLog().warn(ForcedUsage.message(entry)));
+                if (forced.getToForce().length > 0) {
+                    analysis = analysis.forceDeclaredDependenciesUsage(forced.getToForce());
+                }
             }
         } catch (ProjectDependencyAnalyzerException exception) {
             throw new MavenReportException("Cannot analyze dependencies", exception);
