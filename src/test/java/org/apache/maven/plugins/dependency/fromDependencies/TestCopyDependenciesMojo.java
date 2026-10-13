@@ -882,6 +882,43 @@ class TestCopyDependenciesMojo {
         assertEquals("existing pom", readFile(pomDestination));
     }
 
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testCopyPomForSkippedArtifactWithRepositoryLayoutOnlyWhenMissing(CopyDependenciesMojo mojo) throws Exception {
+        Artifact artifact = stubFactory.createArtifact("org.example", "artifact", "2.0", Artifact.SCOPE_COMPILE);
+        Artifact pomArtifact =
+                stubFactory.createArtifact("org.example", "artifact", "2.0", Artifact.SCOPE_COMPILE, "pom", null);
+        writeFile(artifact.getFile(), "new jar");
+        writeFile(pomArtifact.getFile(), "new pom");
+
+        Set<Artifact> artifacts = new HashSet<>();
+        artifacts.add(artifact);
+        mojo.getProject().setArtifacts(artifacts);
+
+        CopyDependenciesMojo mojoSpy = spy(mojo);
+        doReturn(pomArtifact).when(mojoSpy).getResolvedPomArtifact(any(Artifact.class));
+        mojoSpy.setCopyPom(true);
+        mojoSpy.useRepositoryLayout = true;
+        mojoSpy.overWriteReleases = false;
+        mojoSpy.overWriteIfNewer = false;
+
+        File artifactDirectory = new File(mojoSpy.outputDirectory, "org/example/artifact/2.0");
+        File jarDestination = new File(artifactDirectory, "artifact-2.0.jar");
+        File pomDestination = new File(artifactDirectory, "artifact-2.0.pom");
+        writeFile(jarDestination, "old jar");
+
+        mojoSpy.execute();
+
+        assertEquals("old jar", readFile(jarDestination));
+        assertEquals("new pom", readFile(pomDestination));
+
+        writeFile(pomDestination, "existing pom");
+        mojoSpy.execute();
+
+        assertEquals("old jar", readFile(jarDestination));
+        assertEquals("existing pom", readFile(pomDestination));
+    }
+
     private static void writeFile(File file, String contents) throws IOException {
         Files.createDirectories(file.getParentFile().toPath());
         Files.write(file.toPath(), contents.getBytes(StandardCharsets.UTF_8));
