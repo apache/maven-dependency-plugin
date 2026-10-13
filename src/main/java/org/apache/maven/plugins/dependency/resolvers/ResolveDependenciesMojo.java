@@ -117,7 +117,7 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
     /**
      * Include module information
      *
-     * @since 3.11
+     * @since 3.12.0
      */
     @Parameter(property = "includeModuleInfo", defaultValue = "true")
     boolean includeModuleInfo;
