@@ -41,6 +41,7 @@ import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterExceptio
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -112,6 +113,29 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      */
     @Parameter
     private File localRepositoryDirectory;
+
+    /**
+     * Repositories in the format {@code id::[layout::]url} or just URLs, separated by comma. That is,
+     * <code>
+     * central::default::https://repo.maven.apache.org/maven2,myrepo::https://repo.acme.com,https://repo.acme2.com
+     * </code>
+     * <p>
+     * The comma-separated form works both on the command line and as the text of a single
+     * <code>&lt;remoteRepositories&gt;</code> element. In a POM the repositories may also be listed one per
+     * element:
+     * <pre>
+     * &lt;remoteRepositories&gt;
+     *   &lt;remoteRepository&gt;central::default::https://repo.maven.apache.org/maven2&lt;/remoteRepository&gt;
+     *   &lt;remoteRepository&gt;https://repo.acme.com&lt;/remoteRepository&gt;
+     * &lt;/remoteRepositories&gt;
+     * </pre>
+     * <p>
+     * The artifacts are resolved from these repositories in addition to the repositories of the project.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "remoteRepositories")
+    private List<String> remoteRepositories;
 
     private final ArtifactHandlerManager artifactHandlerManager;
 
@@ -261,13 +285,22 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
 
             RepositorySystemSession repositorySession = createSystemSessionForLocalRepo();
 
-            org.eclipse.aether.artifact.Artifact resolvedArtifact = resolverUtil.resolveArtifactWithFallback(
-                    artifact, getProject().getRemoteProjectRepositories(), repositorySession);
+            org.eclipse.aether.artifact.Artifact resolvedArtifact =
+                    resolverUtil.resolveArtifactWithFallback(artifact, getRemoteRepositories(), repositorySession);
             return RepositoryUtils.toArtifact(resolvedArtifact);
 
+        } catch (IllegalArgumentException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
         } catch (ArtifactResolutionException e) {
             throw new MojoExecutionException("Unable to find/resolve artifact.", e);
         }
+    }
+
+    private List<RemoteRepository> getRemoteRepositories() {
+        if (remoteRepositories == null || remoteRepositories.isEmpty()) {
+            return getProject().getRemoteProjectRepositories();
+        }
+        return resolverUtil.remoteRepositories(remoteRepositories);
     }
 
     /**
@@ -350,6 +383,14 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      */
     public void setOverWriteSnapshots(boolean theOverWriteSnapshots) {
         this.overWriteSnapshots = theOverWriteSnapshots;
+    }
+
+    /**
+     * @param remoteRepositories {@link #remoteRepositories}
+     * @since 3.12.0
+     */
+    public void setRemoteRepositories(List<String> remoteRepositories) {
+        this.remoteRepositories = remoteRepositories;
     }
 
     /**
