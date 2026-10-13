@@ -26,6 +26,7 @@ import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.plugins.dependency.tree.DependencyNode.VerboseInfo;
 import org.apache.maven.project.DefaultDependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.DependencyResolutionRequest;
@@ -124,8 +125,10 @@ class DependencyTreeBuilder {
             Artifact artifact,
             ArtifactFilter filter,
             boolean verbose) {
+        VerboseInfo info = verbose ? verboseInfo(node, artifact) : null;
         DependencyNode current = new DependencyNode(
-                parent, artifact, verbose ? verboseNodeString(node, artifact) : nodeString(artifact));
+                parent, artifact, verbose ? verboseNodeString(info, artifact) : nodeString(artifact));
+        current.setVerboseInfo(info);
 
         List<DependencyNode> children = new ArrayList<>(node.getChildren().size());
         for (org.eclipse.aether.graph.DependencyNode child : node.getChildren()) {
@@ -151,18 +154,31 @@ class DependencyTreeBuilder {
         return artifact + (artifact.isOptional() ? " (optional)" : "");
     }
 
-    private static String verboseNodeString(org.eclipse.aether.graph.DependencyNode node, Artifact artifact) {
+    private static VerboseInfo verboseInfo(org.eclipse.aether.graph.DependencyNode node, Artifact artifact) {
         org.eclipse.aether.graph.DependencyNode winner =
                 (org.eclipse.aether.graph.DependencyNode) node.getData().get(ConflictResolver.NODE_DATA_WINNER);
         String winnerVersion = null;
         String ignoredScope = null;
+        String omittedReason = null;
         if (winner != null) {
             winnerVersion = winner.getArtifact().getBaseVersion();
+            omittedReason = winnerVersion.equals(artifact.getVersion())
+                    ? VerboseInfo.OMITTED_FOR_DUPLICATE
+                    : VerboseInfo.OMITTED_FOR_CONFLICT;
         } else {
             ignoredScope = (String) node.getData().get(VerboseJavaScopeSelector.REDUCED_SCOPE);
         }
 
-        boolean included = winnerVersion == null;
+        return new VerboseInfo(
+                omittedReason,
+                winnerVersion,
+                DependencyManagerUtils.getPremanagedVersion(node),
+                DependencyManagerUtils.getPremanagedScope(node),
+                ignoredScope);
+    }
+
+    private static String verboseNodeString(VerboseInfo info, Artifact artifact) {
+        boolean included = info.isIncluded();
 
         StringBuilder buffer = new StringBuilder();
         if (!included) {
@@ -171,22 +187,20 @@ class DependencyTreeBuilder {
         buffer.append(artifact);
 
         List<String> items = new ArrayList<>();
-        String premanagedVersion = DependencyManagerUtils.getPremanagedVersion(node);
-        if (premanagedVersion != null) {
-            items.add("version managed from " + premanagedVersion);
+        if (info.getPremanagedVersion() != null) {
+            items.add("version managed from " + info.getPremanagedVersion());
         }
-        String premanagedScope = DependencyManagerUtils.getPremanagedScope(node);
-        if (premanagedScope != null) {
-            items.add("scope managed from " + premanagedScope);
+        if (info.getPremanagedScope() != null) {
+            items.add("scope managed from " + info.getPremanagedScope());
         }
-        if (ignoredScope != null) {
-            items.add("scope not updated to " + ignoredScope);
+        if (info.getScopeNotUpdatedTo() != null) {
+            items.add("scope not updated to " + info.getScopeNotUpdatedTo());
         }
         if (!included) {
             items.add(
-                    winnerVersion.equals(artifact.getVersion())
+                    VerboseInfo.OMITTED_FOR_DUPLICATE.equals(info.getOmittedReason())
                             ? "omitted for duplicate"
-                            : "omitted for conflict with " + winnerVersion);
+                            : "omitted for conflict with " + info.getWinnerVersion());
         }
 
         if (!items.isEmpty()) {
