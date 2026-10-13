@@ -115,6 +115,12 @@ class ResolveDependencySourcesMojoTest {
                 .next()
                 .getFile()
                 .isFile());
+        // only the classifier artifact that failed is reported, not the originals
+        assertEquals(
+                Arrays.asList("org.example:unbuilt-module:jar:sources:1.0"),
+                mojo.getResults().getUnResolvedDependencies().stream()
+                        .map(Artifact::getId)
+                        .collect(Collectors.toList()));
         verify(resolverUtil, never()).resolveArtifacts(any(), any());
     }
 
