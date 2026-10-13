@@ -175,7 +175,8 @@ public class TreeMojo extends AbstractMojo {
     /**
      * Whether to append outputs into the output file or overwrite it. For <code>outputType=dot</code> the output
      * of each execution, as in a multi-module build, is added to the one graph in the file instead of starting
-     * another one.
+     * another one. The merge is serialized within one Maven JVM only, not across processes. A file left by a
+     * previous build is extended, so delete it first.
      *
      * @since 2.2
      */
