@@ -20,6 +20,9 @@ package org.apache.maven.plugins.dependency.exclusion;
 
 import javax.inject.Inject;
 
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,6 +36,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
+import org.apache.maven.model.InputSource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -93,6 +97,11 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
      */
     private String projectModelId;
 
+    /**
+     * Path of the current project's POM file.
+     */
+    private Path projectPom;
+
     @Override
     public void execute() throws MojoExecutionException {
         if (skip) {
@@ -101,6 +110,9 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
         }
 
         projectModelId = project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion();
+        projectPom = project.getFile() != null
+                ? project.getFile().toPath().toAbsolutePath().normalize()
+                : null;
 
         Map<Coordinates, Collection<Exclusion>> dependenciesWithExclusions = new HashMap<>();
 
@@ -181,8 +193,22 @@ public class AnalyzeExclusionsMojo extends AbstractMojo {
     }
 
     private boolean isExclusionInProject(Exclusion exclusion) {
-        String modelId = exclusion.getLocation("").getSource().getModelId();
-        return projectModelId.equals(modelId);
+        InputSource source = exclusion.getLocation("").getSource();
+        // the model ID keeps the version as written, so with a CI-friendly ${revision} only the file matches
+        return projectModelId.equals(source.getModelId()) || isProjectPom(source.getLocation());
+    }
+
+    private boolean isProjectPom(String location) {
+        if (projectPom == null || location == null) {
+            return false;
+        }
+        try {
+            // Maven 3 reports a file path, Maven 4 a file: URI
+            Path path = location.startsWith("file:") ? Paths.get(URI.create(location)) : Paths.get(location);
+            return projectPom.equals(path.toAbsolutePath().normalize());
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     private void logViolations(String name, Map<Coordinates, List<Coordinates>> violations, Consumer<String> logger) {
