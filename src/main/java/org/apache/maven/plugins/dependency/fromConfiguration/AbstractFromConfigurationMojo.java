@@ -32,6 +32,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
+import org.apache.maven.plugins.dependency.utils.ArtifactCoordinates;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
@@ -359,7 +360,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     }
 
     /**
-     * @param artifact the artifact, in the form {@code groupId:artifactId:version[:packaging[:classifier[:destFileName]]]}
+     * @param artifact the artifact, in one of the forms described by {@link ArtifactCoordinates}
      * @throws MojoFailureException in case of an error
      */
     public void setArtifact(String artifact) throws MojoFailureException {
@@ -367,30 +368,37 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             // Only the six token form keeps empty tokens, so that an empty classifier can precede a destFileName.
             // Otherwise empty tokens collapse, as before: "g:a:v::jar" has the packaging "jar".
             String[] tokens = StringUtils.splitPreserveAllTokens(artifact, ":");
-            boolean withDestFileName = tokens.length == 6;
-            if (!withDestFileName) {
+            if (tokens.length != 6) {
                 tokens = StringUtils.split(artifact, ":");
             }
-            if (tokens.length < 3 || tokens.length > 6) {
-                throw new MojoFailureException("Invalid artifact, "
-                        + "you must specify groupId:artifactId:version[:packaging[:classifier[:destFileName]]] "
-                        + artifact);
+            ArtifactCoordinates coordinates;
+            try {
+                coordinates = ArtifactCoordinates.parse(tokens, artifact, true);
+            } catch (IllegalArgumentException e) {
+                throw new MojoFailureException(e.getMessage(), e);
             }
-            if (withDestFileName
-                    && (tokens[0].isEmpty() || tokens[1].isEmpty() || tokens[2].isEmpty() || tokens[5].isEmpty())) {
-                throw new MojoFailureException("Invalid artifact, "
-                        + "you must specify groupId:artifactId:version[:packaging[:classifier[:destFileName]]] "
-                        + artifact);
+            if (coordinates.getDestFileName() != null
+                    && coordinates.getDestFileName().isEmpty()) {
+                throw new MojoFailureException("Invalid artifact, the destFileName must not be empty " + artifact);
             }
 
             ArtifactItem artifactItem = new ArtifactItem();
-            artifactItem.setGroupId(tokens[0]);
-            artifactItem.setArtifactId(tokens[1]);
-            artifactItem.setVersion(tokens[2]);
-            artifactItem.setType(tokens.length >= 4 && !tokens[3].isEmpty() ? tokens[3] : "jar");
-            artifactItem.setClassifier(tokens.length >= 5 && !tokens[4].isEmpty() ? tokens[4] : null);
-            if (withDestFileName) {
-                artifactItem.setDestFileName(tokens[5]);
+            artifactItem.setGroupId(coordinates.getGroupId());
+            artifactItem.setArtifactId(coordinates.getArtifactId());
+            artifactItem.setVersion(coordinates.getVersion());
+            artifactItem.setType(
+                    coordinates.getPackaging() != null
+                                    && !coordinates.getPackaging().isEmpty()
+                            ? coordinates.getPackaging()
+                            : "jar");
+            artifactItem.setClassifier(
+                    coordinates.getClassifier() != null
+                                    && !coordinates.getClassifier().isEmpty()
+                            ? coordinates.getClassifier()
+                            : null);
+            if (coordinates.getDestFileName() != null
+                    && !coordinates.getDestFileName().isEmpty()) {
+                artifactItem.setDestFileName(coordinates.getDestFileName());
             }
 
             setArtifactItems(Collections.singletonList(artifactItem));

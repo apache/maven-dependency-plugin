@@ -512,18 +512,21 @@ public class ResolverUtil {
     }
 
     private Artifact createArtifactFromString(ParamArtifact paramArtifact) {
-        // groupId:artifactId:version[:packaging[:classifier]].
         String artifact = paramArtifact.getArtifact();
-        String[] items = artifact.split(":");
-        if (items.length < 3 || items.length > 5) {
-            throw new IllegalArgumentException("Invalid artifact format: " + artifact
-                    + ", expected groupId:artifactId:version[:packaging[:classifier]]");
-        }
+        ArtifactCoordinates coordinates = ArtifactCoordinates.parse(artifact.split(":"), artifact);
 
-        ArtifactType artifactType = getArtifactType(items.length > 3 ? items[3] : paramArtifact.getPackaging());
-        String classifier = items.length > 4 ? items[4] : paramArtifact.getClassifier();
+        ArtifactType artifactType = getArtifactType(
+                coordinates.getPackaging() != null ? coordinates.getPackaging() : paramArtifact.getPackaging());
+        String classifier =
+                coordinates.getClassifier() != null ? coordinates.getClassifier() : paramArtifact.getClassifier();
 
-        return new DefaultArtifact(items[0], items[1], classifier, artifactType.getExtension(), items[2], artifactType);
+        return new DefaultArtifact(
+                coordinates.getGroupId(),
+                coordinates.getArtifactId(),
+                classifier,
+                artifactType.getExtension(),
+                coordinates.getVersion(),
+                artifactType);
     }
 
     private ArtifactType getArtifactType(String packaging) {
