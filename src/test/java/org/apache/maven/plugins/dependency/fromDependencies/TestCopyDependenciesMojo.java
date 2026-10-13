@@ -439,6 +439,41 @@ class TestCopyDependenciesMojo {
 
     @Test
     @InjectMojo(goal = "copy-dependencies")
+    void testClassifierDoesNotOverwriteUpToDateFile(CopyDependenciesMojo mojo) throws Exception {
+        mojo.classifier = "jdk14";
+        for (Artifact artifact : mojo.getProject().getArtifacts()) {
+            stubFactory.createArtifact(
+                    artifact.getGroupId(),
+                    artifact.getArtifactId(),
+                    artifact.getVersion(),
+                    artifact.getScope(),
+                    artifact.getType(),
+                    "jdk14");
+        }
+
+        mojo.execute();
+
+        long newer = System.currentTimeMillis() + 3_600_000L;
+        for (Artifact artifact : mojo.getProject().getArtifacts()) {
+            File copied = new File(
+                    mojo.outputDirectory,
+                    artifact.getArtifactId() + "-" + artifact.getVersion() + "-jdk14." + artifact.getType());
+            assertTrue(copied.exists(), copied.getAbsolutePath());
+            assertTrue(copied.setLastModified(newer));
+        }
+
+        mojo.execute();
+
+        for (Artifact artifact : mojo.getProject().getArtifacts()) {
+            File copied = new File(
+                    mojo.outputDirectory,
+                    artifact.getArtifactId() + "-" + artifact.getVersion() + "-jdk14." + artifact.getType());
+            assertEquals(newer / 1000, copied.lastModified() / 1000, copied.getName() + " was overwritten");
+        }
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
     void testSubPerType(CopyDependenciesMojo mojo) throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getTypedArtifacts());
 
