@@ -72,9 +72,13 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.resolution.VersionRangeRequest;
+import org.eclipse.aether.resolution.VersionRangeResolutionException;
+import org.eclipse.aether.resolution.VersionRangeResult;
 import org.eclipse.aether.util.artifact.ArtifactIdUtils;
 import org.eclipse.aether.util.artifact.SubArtifact;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
+import org.eclipse.aether.version.Version;
 
 /**
  * Helper class for using Resolver API.
@@ -203,6 +207,28 @@ public class ResolverUtil {
                 session, new ArtifactDescriptorRequest(artifact, repositories, null));
 
         return resolveArtifactDirectly(artifactDescriptorResult.getArtifact(), repositories, session);
+    }
+
+    /**
+     * Resolve the version range of a given artifact to the highest version in the range.
+     *
+     * @param artifact     an artifact with a version range as its version
+     * @param repositories remote repositories list
+     * @param session      a repository system session
+     * @return the artifact with the highest version of the range as its version
+     * @throws VersionRangeResolutionException if the range could not be resolved or contains no version
+     */
+    public Artifact resolveVersionRange(
+            Artifact artifact, List<RemoteRepository> repositories, RepositorySystemSession session)
+            throws VersionRangeResolutionException {
+        VersionRangeResult result =
+                repositorySystem.resolveVersionRange(session, new VersionRangeRequest(artifact, repositories, null));
+        Version highest = result.getHighestVersion();
+        if (highest == null) {
+            throw new VersionRangeResolutionException(
+                    result, "No version of " + artifact + " matches the range " + artifact.getVersion());
+        }
+        return artifact.setVersion(highest.toString());
     }
 
     /**
