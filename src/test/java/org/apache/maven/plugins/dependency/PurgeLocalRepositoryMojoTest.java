@@ -37,18 +37,22 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.artifact.DefaultArtifactType;
+import org.eclipse.aether.graph.DefaultDependencyNode;
+import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.util.artifact.DefaultArtifactTypeRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
 
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("deprecation")
@@ -198,5 +202,74 @@ class PurgeLocalRepositoryMojoTest {
         assertThat(sibling).doesNotExist();
         assertThat(localRepo.resolve(GROUP_PATH)).doesNotExist();
         assertThat(otherGroup).exists();
+    }
+
+    @Test
+    void includeMatchesCustomArtifactType() throws Exception {
+        DependencyFilter filter = purgeFilterFor("include", "org.example:custom-lib:custom:1.0");
+
+        assertThat(filter.accept(node("custom-lib", "1.0", "custom"), Collections.emptyList()))
+                .as("type")
+                .isTrue();
+        assertThat(filter.accept(node("other-lib", "1.0", "custom"), Collections.emptyList()))
+                .as("other artifactId")
+                .isFalse();
+        assertThat(filter.accept(node("custom-lib", "1.0", "jar"), Collections.emptyList()))
+                .as("other type")
+                .isFalse();
+    }
+
+    @Test
+    void includeStillMatchesFileExtension() throws Exception {
+        DependencyFilter filter = purgeFilterFor("include", "org.example:custom-lib:cext:1.0");
+
+        assertThat(filter.accept(node("custom-lib", "1.0", "custom"), Collections.emptyList()))
+                .isTrue();
+    }
+
+    @Test
+    void includeSupportsWildcardsAroundCustomArtifactType() throws Exception {
+        DependencyFilter filter = purgeFilterFor("include", "org.example:custom-*:custom");
+
+        assertThat(filter.accept(node("custom-lib", "1.0", "custom"), Collections.emptyList()))
+                .isTrue();
+        assertThat(filter.accept(node("other-lib", "1.0", "custom"), Collections.emptyList()))
+                .isFalse();
+    }
+
+    @Test
+    void excludeMatchesCustomArtifactType() throws Exception {
+        DependencyFilter filter = purgeFilterFor("exclude", "org.example:custom-lib:custom");
+
+        assertThat(filter.accept(node("custom-lib", "1.0", "custom"), Collections.emptyList()))
+                .isFalse();
+        assertThat(filter.accept(node("custom-lib", "1.0", "jar"), Collections.emptyList()))
+                .isTrue();
+        assertThat(filter.accept(node("other-lib", "1.0", "custom"), Collections.emptyList()))
+                .isTrue();
+    }
+
+    private DependencyFilter purgeFilterFor(String parameter, String pattern) throws Exception {
+        setVariableValueToObject(mojo, parameter, pattern);
+        resolvesTo();
+
+        mojo.execute();
+
+        ArgumentCaptor<DependencyFilter> filter = ArgumentCaptor.forClass(DependencyFilter.class);
+        verify(resolverUtil)
+                .resolveDependenciesForArtifact(any(Artifact.class), anyList(), any(), anyList(), filter.capture());
+        return filter.getValue();
+    }
+
+    private static DefaultDependencyNode node(String artifactId, String version, String type) {
+        String extension = "custom".equals(type) ? "cext" : type;
+        Artifact artifact = new DefaultArtifact(
+                "org.example",
+                artifactId,
+                "",
+                extension,
+                version,
+                new DefaultArtifactType(type, extension, "", "java"));
+        return new DefaultDependencyNode(new Dependency(artifact, "compile"));
     }
 }

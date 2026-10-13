@@ -60,8 +60,12 @@ import org.apache.maven.shared.artifact.filter.resolve.transform.EclipseAetherFi
 import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.aether.artifact.ArtifactType;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.graph.DefaultDependencyNode;
 import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 
@@ -268,6 +272,56 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     }
 
     /**
+     * Applies an include or exclude pattern filter to an artifact's type as well as to its file extension. The
+     * pattern filters of the Resolver match the third element of {@code groupId:artifactId:extension:version} against
+     * the file extension only, so a pattern naming a type such as {@code test-jar} would never match.
+     */
+    private class TypeOrExtensionFilter extends AbstractFilter {
+        private final DependencyFilter patternFilter;
+
+        private final boolean exclusion;
+
+        /**
+         * @param patternFilter a {@link PatternInclusionsFilter} or {@link PatternExclusionsFilter}
+         * @param exclusion whether the pattern filter is an exclusion, which accepts the artifacts that match none
+         */
+        TypeOrExtensionFilter(TransformableFilter patternFilter, boolean exclusion) {
+            this.patternFilter = patternFilter.transform(new EclipseAetherFilterTransformer());
+            this.exclusion = exclusion;
+        }
+
+        @Override
+        public boolean accept(Node node, List<Node> parents) {
+            Dependency dependency = node.getDependency();
+            if (dependency == null) {
+                return false;
+            }
+
+            String type = dependency.getType();
+            ArtifactType artifactType =
+                    session.getRepositorySession().getArtifactTypeRegistry().get(type);
+            String extension = artifactType != null ? artifactType.getExtension() : type;
+
+            Set<String> candidates = new LinkedHashSet<>(Arrays.asList(type, extension));
+            for (String candidate : candidates) {
+                org.eclipse.aether.artifact.Artifact artifact = new DefaultArtifact(
+                        dependency.getGroupId(),
+                        dependency.getArtifactId(),
+                        dependency.getClassifier(),
+                        candidate,
+                        dependency.getVersion());
+                DependencyNode candidateNode = new DefaultDependencyNode(
+                        new org.eclipse.aether.graph.Dependency(artifact, dependency.getScope()));
+                // an include is satisfied by one match, an exclude only by the absence of any match
+                if (patternFilter.accept(candidateNode, Collections.emptyList()) != exclusion) {
+                    return !exclusion;
+                }
+            }
+            return exclusion;
+        }
+    }
+
+    /**
      * Includes only snapshot artifacts.
      */
     private static class SnapshotsFilter extends AbstractFilter {
@@ -444,14 +498,14 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
             this.includes = parseIncludes(this.include);
         }
         if (this.includes != null) {
-            subFilters.add(new PatternInclusionsFilter(includes));
+            subFilters.add(new TypeOrExtensionFilter(new PatternInclusionsFilter(includes), false));
         }
 
         if (!(this.exclude == null || this.exclude.isEmpty())) {
             this.excludes = parseIncludes(this.exclude);
         }
         if (this.excludes != null) {
-            subFilters.add(new PatternExclusionsFilter(excludes));
+            subFilters.add(new TypeOrExtensionFilter(new PatternExclusionsFilter(excludes), true));
         }
 
         if (!actTransitively) {
