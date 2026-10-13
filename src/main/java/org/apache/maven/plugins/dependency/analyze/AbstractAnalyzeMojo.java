@@ -297,6 +297,11 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
             return;
         }
 
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredDependencies);
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredUsedUndeclaredDependencies);
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredUnusedDeclaredDependencies);
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredNonTestScopedDependencies);
+
         boolean warning = checkDependencies();
 
         if (warning && failOnWarning) {

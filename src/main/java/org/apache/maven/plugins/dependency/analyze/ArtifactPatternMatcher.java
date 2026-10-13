@@ -25,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 
 /**
@@ -76,6 +77,24 @@ final class ArtifactPatternMatcher {
             }
         }
         return false;
+    }
+
+    /**
+     * Logs one warning for every pattern with more than five segments, because such a pattern never matches.
+     *
+     * @param log      the log to warn on
+     * @param patterns patterns, may be null
+     */
+    static void warnAboutUnsupportedPatterns(Log log, String[] patterns) {
+        if (patterns == null) {
+            return;
+        }
+        for (String pattern : patterns) {
+            if (pattern.split(":").length > 5) {
+                log.warn("Ignoring dependency pattern '" + pattern + "' because it has more than five segments and"
+                        + " can never match. The supported form is [groupId]:[artifactId]:[type]:[version]:[scope]");
+            }
+        }
     }
 
     private static boolean matches(Artifact artifact, String pattern) {

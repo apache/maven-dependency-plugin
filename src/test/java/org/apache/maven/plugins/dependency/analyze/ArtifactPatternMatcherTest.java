@@ -24,9 +24,14 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.plugin.logging.Log;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class ArtifactPatternMatcherTest {
 
@@ -90,5 +95,21 @@ class ArtifactPatternMatcherTest {
     void nullAndEmptyPatternsMatchNothing() {
         assertThat(ArtifactPatternMatcher.matchesAny(compileDep, null)).isFalse();
         assertThat(ArtifactPatternMatcher.matchesAny(compileDep, new String[0])).isFalse();
+    }
+
+    @Test
+    void warnsOncePerPatternWithMoreThanFiveSegments() {
+        Log log = mock(Log.class);
+
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(
+                log, new String[] {"org.acme:lib:jar:1.0:runtime:extra", "org.acme:lib:jar:1.0:runtime", "org.acme"});
+
+        ArgumentCaptor<CharSequence> message = ArgumentCaptor.forClass(CharSequence.class);
+        verify(log, times(1)).warn(message.capture());
+        assertThat(message.getValue().toString())
+                .contains("org.acme:lib:jar:1.0:runtime:extra")
+                .contains("[groupId]:[artifactId]:[type]:[version]:[scope]");
+        assertThat(ArtifactPatternMatcher.matchesAny(compileDep, new String[] {"org.acme:lib:jar:1.0:compile:extra"}))
+                .isFalse();
     }
 }

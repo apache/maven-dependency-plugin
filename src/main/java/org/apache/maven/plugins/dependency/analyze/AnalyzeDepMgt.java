@@ -110,6 +110,8 @@ public class AnalyzeDepMgt extends AbstractMojo {
             return;
         }
 
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredDependencies);
+
         boolean result = checkDependencyManagement();
         if (result) {
             if (this.failBuild) {
