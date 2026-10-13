@@ -47,7 +47,8 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
      * If the plugin should be silent.
      *
      * @since 2.0
-     * @deprecated to be removed in 4.0; use -q command line option instead
+     * @deprecated to be removed in 3.13.0. Since 3.8.1 the copy and unpack goals log each artifact at debug
+     *             level, so remove this parameter from the configuration
      */
     @Deprecated
     @Parameter(property = "silent", defaultValue = "false")
@@ -133,7 +134,7 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
 
     /**
      * @return {@link #silent}
-     * @deprecated to be removed in 4.0
+     * @deprecated to be removed in 3.13.0
      */
     @Deprecated
     protected final boolean isSilent() {
@@ -142,7 +143,7 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
 
     /**
      * @param silent {@link #silent}
-     * @deprecated to be removed in 4.0; no API replacement, use -q command line option instead
+     * @deprecated to be removed in 3.13.0; no API replacement
      */
     @Deprecated
     public void setSilent(boolean silent) {

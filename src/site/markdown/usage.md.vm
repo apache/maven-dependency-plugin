@@ -344,7 +344,7 @@ Examples:
 `dependency:resolve`
 --------------------
 
-Resolve is intended to be used from the command line like: `mvn dependency:resolve -Dsilent=true`
+Resolve is intended to be used from the command line like: `mvn dependency:resolve`
 
 This goal resolves all test and compile scoped dependencies and then displays the resolved versions. This ensures all dependencies are downloaded to the local repository. This is useful when troubleshooting or during intermittent remote repository failures when repeatedly building multiproject modules is undesirable and the build is failing on dependency resolution. It can also be used to quickly determine how versions are being resolved.
 
@@ -355,7 +355,7 @@ Artifacts can also be resolved by specifying the classifier and optionally type.
 `dependency:resolve-sources`
 ----------------------------
 
-Resolve-sources is intended to be used from the command line like: `mvn dependency:resolve-sources -Dsilent=true`
+Resolve-sources is intended to be used from the command line like: `mvn dependency:resolve-sources`
 
 This is the same as the resolve goal except it includes the source attachments if they exist. This is useful when you want to download source attachments to your local repository.
 
@@ -364,7 +364,7 @@ You can also define the `markersDirectory` either in the `pom.xml` or settings t
 `dependency:resolve-plugins`
 ----------------------------
 
-Resolve-plugins is intended to be used from the command line like: `mvn dependency:resolve-plugins -Dsilent=true -DexcludeTransitive=true`
+Resolve-plugins is intended to be used from the command line like: `mvn dependency:resolve-plugins -DexcludeTransitive=true`
 
 This is the same as the resolve goal except it resolves plugins and optionally their dependencies.
 
