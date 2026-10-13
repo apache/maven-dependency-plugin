@@ -206,6 +206,34 @@ class ResolverUtilTest {
     }
 
     @Test
+    void createArtifactFromMavenCoordinatesReadsTypeClassifierAndVersion() {
+        prepareArtifactTypeRegistry();
+        ParamArtifact paramArtifact = new ParamArtifact();
+        paramArtifact.setArtifact("groupId:artifactId:test-jar:tests:1.0:test");
+
+        Artifact artifact = resolverUtil.createArtifactFromParams(paramArtifact);
+
+        assertThat(artifact.getGroupId()).isEqualTo("groupId");
+        assertThat(artifact.getArtifactId()).isEqualTo("artifactId");
+        assertThat(artifact.getVersion()).isEqualTo("1.0");
+        assertThat(artifact.getClassifier()).isEqualTo("tests");
+        verify(artifactTypeRegistry).get("test-jar");
+    }
+
+    @Test
+    void createArtifactFromMavenCoordinatesWithoutClassifier() {
+        prepareArtifactTypeRegistry();
+        ParamArtifact paramArtifact = new ParamArtifact();
+        paramArtifact.setArtifact("groupId:artifactId:jar:1.0");
+
+        Artifact artifact = resolverUtil.createArtifactFromParams(paramArtifact);
+
+        assertThat(artifact.getVersion()).isEqualTo("1.0");
+        assertThat(artifact.getClassifier()).isEmpty();
+        verify(artifactTypeRegistry).get("jar");
+    }
+
+    @Test
     void prepareRepositoryUsesExplicitUpdatePolicy() {
         when(sessionProvider.get()).thenReturn(mavenSession);
         when(mavenSession.getRepositorySession()).thenReturn(repositorySystemSession);

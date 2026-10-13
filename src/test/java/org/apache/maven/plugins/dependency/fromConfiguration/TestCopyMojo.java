@@ -117,12 +117,12 @@ class TestCopyMojo {
 
     @Test
     @InjectMojo(goal = "copy")
-    @MojoParameter(name = "artifact", value = "a:b:c:d:e:f.jar")
+    @MojoParameter(name = "artifact", value = "a:b:1.0:d:e:f.jar")
     void testSetArtifactWithDestFileName(CopyMojo mojo) {
         ArtifactItem item = mojo.getArtifactItems().get(0);
         assertEquals("a", item.getGroupId());
         assertEquals("b", item.getArtifactId());
-        assertEquals("c", item.getVersion());
+        assertEquals("1.0", item.getVersion());
         assertEquals("d", item.getType());
         assertEquals("e", item.getClassifier());
         assertEquals("f.jar", item.getDestFileName());
@@ -140,7 +140,7 @@ class TestCopyMojo {
 
     @Test
     @InjectMojo(goal = "copy")
-    @MojoParameter(name = "artifact", value = "a:b:c:jar::name.jar")
+    @MojoParameter(name = "artifact", value = "a:b:1.0:jar::name.jar")
     void testSetArtifactDestFileNameWithoutClassifier(CopyMojo mojo) {
         ArtifactItem item = mojo.getArtifactItems().get(0);
         assertEquals("jar", item.getType());
@@ -150,12 +150,41 @@ class TestCopyMojo {
 
     @Test
     @InjectMojo(goal = "copy")
-    @MojoParameter(name = "artifact", value = "a:b:c:d::f.jar")
+    @MojoParameter(name = "artifact", value = "a:b:1.0:d::f.jar")
     void testSetArtifactWithDestFileNameWithoutClassifier(CopyMojo mojo) {
         ArtifactItem item = mojo.getArtifactItems().get(0);
         assertEquals("d", item.getType());
         assertNull(item.getClassifier());
         assertEquals("f.jar", item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:test-jar:tests:2.0:test")
+    void testSetArtifactInMavenForm(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("a", item.getGroupId());
+        assertEquals("b", item.getArtifactId());
+        assertEquals("2.0", item.getVersion());
+        assertEquals("test-jar", item.getType());
+        assertEquals("tests", item.getClassifier());
+        assertNull(item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:jar:1.0")
+    void testSetArtifactInMavenFormWithoutClassifier(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("1.0", item.getVersion());
+        assertEquals("jar", item.getType());
+        assertNull(item.getClassifier());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testSetArtifactWithSixthPartThatFitsNeitherForm(CopyMojo mojo) {
+        assertThrows(MojoFailureException.class, () -> mojo.setArtifact("a:b:c:d:e:f.jar"));
     }
 
     @Test
