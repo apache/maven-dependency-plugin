@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency.analyze;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -157,6 +158,16 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      */
     @Parameter(property = "mdep.analyze.skip", defaultValue = "false")
     private boolean skip;
+
+    /**
+     * Whether test compilation is skipped, as set by <code>maven.test.skip</code>. When <code>true</code>, test scoped
+     * dependencies are left out of the "declared but unused" list, because no test class is analyzed. Dependencies of
+     * other scopes are still analyzed.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "maven.test.skip", defaultValue = "false", readonly = true)
+    private boolean testSkip;
 
     /**
      * List of dependencies that will be ignored. Any dependency on this list will be excluded from the "declared but
@@ -334,11 +345,16 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
     private boolean checkDependencies() throws MojoExecutionException {
         ProjectDependencyAnalysis analysis;
+        List<String> unneededForcedUsage = Collections.emptyList();
         try {
             analysis = createProjectDependencyAnalyzer().analyze(project, excludedClasses);
 
             if (usedDependencies != null) {
-                analysis = analysis.forceDeclaredDependenciesUsage(usedDependencies);
+                ForcedUsage forced = new ForcedUsage(analysis, usedDependencies);
+                unneededForcedUsage = forced.getUnneeded();
+                if (forced.getToForce().length > 0) {
+                    analysis = analysis.forceDeclaredDependenciesUsage(forced.getToForce());
+                }
             }
         } catch (ProjectDependencyAnalyzerException exception) {
             throw new MojoExecutionException("Cannot analyze dependencies", exception);
@@ -357,6 +373,14 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         Set<Artifact> ignoredUsedUndeclared = new LinkedHashSet<>();
         Set<Artifact> ignoredUnusedDeclared = new LinkedHashSet<>();
         Set<Artifact> ignoredNonTestScope = new LinkedHashSet<>();
+
+        if (testSkip) {
+            int before = unusedDeclared.size();
+            unusedDeclared.removeIf(artifact -> Artifact.SCOPE_TEST.equals(artifact.getScope()));
+            if (unusedDeclared.size() < before) {
+                getLog().info("maven.test.skip is set: test scoped dependencies are not analyzed for being unused");
+            }
+        }
 
         if (ignoreUnusedRuntime) {
             filterArtifactsByScope(unusedDeclared, Artifact.SCOPE_RUNTIME);
@@ -387,6 +411,12 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
         boolean reported = false;
         boolean warning = false;
+
+        for (String entry : unneededForcedUsage) {
+            logDependencyWarning(ForcedUsage.message(entry));
+            reported = true;
+            warning = true;
+        }
 
         if (verbose && !usedDeclared.isEmpty()) {
             getLog().info("Used declared dependencies found:");
