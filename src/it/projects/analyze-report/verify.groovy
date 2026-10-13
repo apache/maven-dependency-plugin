@@ -21,13 +21,7 @@ import java.io.*;
 
 File htmlFile = new File( basedir, "target/reports/dependency-analysis.html" );
 
-if ( !htmlFile.isFile() )
-{
-    throw new Exception( "Dependency analysis file missing " + htmlFile );
-}
-if ( htmlFile.length() == 0 )
-{
-    throw new Exception( "Dependency analysis file empty " + htmlFile );
-}
+assert htmlFile.isFile() : "Dependency analysis file missing " + htmlFile;
+assert htmlFile.length() > 0 : "Dependency analysis file empty " + htmlFile;
 
 return true;

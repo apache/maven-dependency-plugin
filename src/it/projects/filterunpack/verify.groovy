@@ -17,26 +17,14 @@
  * under the License.
  */
 
-expected = ['/META-INF/MANIFEST.MF']
-
-for (item in expected)
+for ( item in ['/META-INF/MANIFEST.MF'] )
 {
-    def file = new File(basedir, 'target/dependency' + item)
-    if (!file.exists())
-    {
-       throw new RuntimeException("Missing "+file.name)
-    }
+    def file = new File( basedir, 'target/dependency' + item )
+    assert file.exists() : "Missing " + file.name
 }
 
-notExpected = ['/stylesheet.css']
-
-for (item in notExpected)
+for ( item in ['/stylesheet.css'] )
 {
-    def file = new File(basedir, 'target/dependency' + item)    
-    if (file.exists())
-    {
-       throw new RuntimeException("This file shouldn't be here: "+file.name)
-    }
+    def file = new File( basedir, 'target/dependency' + item )
+    assert !file.exists() : "This file shouldn't be here: " + file.name
 }
-
-return true

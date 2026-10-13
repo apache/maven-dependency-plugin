@@ -23,10 +23,7 @@ void checkFilePurged( String artifactId )
 {
     File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/" + artifactId + "/1.0/" + artifactId + "-1.0.jar" );
         
-    if ( purgedJar.exists() )
-    {
-        throw new Exception( "JAR was not purged: " + purgedJar );
-    }
+    assert !purgedJar.exists() : "JAR was not purged: " + purgedJar;
 }
 
 checkFilePurged( "purged-a" );

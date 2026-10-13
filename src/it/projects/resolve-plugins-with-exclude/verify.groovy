@@ -17,13 +17,6 @@
  * under the License.
  */
 
-new File(basedir, "target/resolved.txt").eachLine { line -> 
-  if ( line =~ /maven-surefire-plugin/ ){
-    throw new RuntimeException( "Surefire plugin should be excluded!" )
-  }
-  else if ( line =~ /maven-dependency-plugin/ ){
-    throw new RuntimeException( "Dependency plugin should be excluded!" )
-  }
-}
-
-return true
+def resolved = new File( basedir, "target/resolved.txt" ).text
+assert !( resolved =~ /maven-surefire-plugin/ ) : "Surefire plugin should be excluded!"
+assert !( resolved =~ /maven-dependency-plugin/ ) : "Dependency plugin should be excluded!"

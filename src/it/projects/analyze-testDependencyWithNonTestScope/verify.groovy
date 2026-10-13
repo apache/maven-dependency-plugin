@@ -17,47 +17,19 @@
  * under the License.
  */
 
-import java.io.*;
-import org.jsoup.Jsoup;
-import org.jsoup.helper.Validate;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.select.Elements
 
-File htmlFile = new File( basedir, "target/reports/dependency-analysis.html" );
+File htmlFile = new File( basedir, "target/reports/dependency-analysis.html" )
+assert htmlFile.isFile() : "Dependency analysis file missing " + htmlFile
+assert htmlFile.length() > 0 : "Dependency analysis file empty " + htmlFile
 
-if ( !htmlFile.isFile() )
-{
-    throw new Exception( "Dependency analysis file missing " + htmlFile );
-}
-if ( htmlFile.length() == 0 )
-{
-    throw new Exception( "Dependency analysis file empty " + htmlFile );
-}
+Document doc = Jsoup.parse( htmlFile, "UTF-8" )
+Elements entry = doc.select( "#bodyColumn > section > section:nth-child(5) > table > tbody > tr.b" )
+assert entry.size() == 1 : "Table entry under CompileScopedTestDependencies header has " + entry.size() +
+    " rows but exactly 1 was expected " + htmlFile
 
-Document doc = Jsoup.parse( htmlFile, "UTF-8");
-
-Elements entry = doc.select( "#bodyColumn > section > section:nth-child(5) > table > tbody > tr.b" );
-
-if( entry.isEmpty() )
-{
-    throw new Exception ( "Can't find table entry under CompileScopedTestDependencies header " + htmlFile);
-}
-else if ( entry.size() != 1 )
-{
-    throw new Exception ( "Table entry under CompileScopedTestDependencies header has " + entry.size() +
-        "rows but only 1 was expected " + htmlFile );
-}
-
-Element groupIdElement = doc.select(
-"#bodyColumn > section > section:nth-child(5) > table > tbody > tr.b > td:nth-child(1)" ).first();
-
-String groupId = groupIdElement.text();
-
-if ( !groupId.equals( "junit" ) )
-{
-    throw new Exception ( "Table entry under CompileScopedTestDependencies header groupId is not junit. Value is "  +
-    groupId + " in " + htmlFile);
-}
-
-return true;
+String groupId = entry.first().select( "td:nth-child(1)" ).text()
+assert groupId == "junit" : "Table entry under CompileScopedTestDependencies header groupId is not junit. Value is " +
+    groupId + " in " + htmlFile

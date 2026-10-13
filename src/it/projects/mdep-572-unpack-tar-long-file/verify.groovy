@@ -20,9 +20,6 @@
 import java.io.File;
 
 File file = new File( basedir, "child2/target/dependency/this-is-an-empty-text-file-with-a-name-that-is-longer-than-100-characters-to-verify-that-the-name-is-fully-kept-when-unpacking-from-a-tar.txt" );
-if ( !file.isFile() )
-{
-   throw new Exception( "Missing " + file );
-}
+assert file.isFile() : "Missing " + file;
 
 return true;

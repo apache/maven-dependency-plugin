@@ -20,19 +20,13 @@
 void checkFileAbsence( String path )
 {
   File depJar = new File( localRepositoryPath, path )
-  if ( depJar.exists() )
-  {
-    throw new Exception( "Dependency jar was not purged: " + depJar )
-  }
+  assert !depJar.exists() : "Dependency jar was not purged: " + depJar
 }
 
 void checkFilePresence( String path )
 {
   File depJar = new File( localRepositoryPath, path )
-  if ( !depJar.exists() )
-  {
-    throw new Exception( "Dependency jar was purged: " + depJar )
-  }
+  assert depJar.exists() : "Dependency jar was purged: " + depJar
 }
 
 checkFileAbsence( "org/apache/maven/its/dependency/purged/1.0/purged-1.0.jar" )

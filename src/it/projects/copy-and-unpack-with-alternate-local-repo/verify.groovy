@@ -22,21 +22,12 @@ import java.io.*;
 
 File file = new File( basedir, "target/dependency/junit-3.8.1.jar" );
 
-if ( !file.isFile() )
-{
-   throw new Exception( "Missing " + file );
-}
+assert file.isFile() : "Missing " + file;
 
 file = new File( basedir, "target/dependency/junit" );
-if ( !file.isDirectory() )
-{
-   throw new Exception( "Missing " + file );
-}
+assert file.isDirectory() : "Missing " + file;
 
 file = new File( basedir, "target/repo/junit/junit/3.8.1/junit-3.8.1.jar" );
-if ( !file.isFile() )
-{
-   throw new Exception( "Missing " + file );
-}
+assert file.isFile() : "Missing " + file;
 
 return true;

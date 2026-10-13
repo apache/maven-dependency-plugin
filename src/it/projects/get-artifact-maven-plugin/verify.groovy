@@ -27,10 +27,7 @@ String[] expectedFiles = [
 for ( String expectedFile : expectedFiles )
 {
     File file = new File( localRepositoryPath, expectedFile );
-    if ( !file.isFile() )
-    {
-        throw new Exception( "Missing file " + file );
-    }
+    assert file.isFile() : "Missing file " + file;
 }
 
 return true;

@@ -25,23 +25,11 @@ Properties props = new Properties();
 props.load( new FileInputStream( projectProperties ) );
 
 String junitJarPath = props.getProperty( "junit:junit:jar" );
-if ( junitJarPath == null )
-{
-    throw new Exception( "junit:junit:jar is null" );
-}
-if ( ! (new File( junitJarPath )).isFile() )
-{
-    throw new Exception( "junit jar is not a file: " + junitJarPath );
-}
+assert junitJarPath != null : "junit:junit:jar is null";
+assert (new File( junitJarPath )).isFile() : "junit jar is not a file: " + junitJarPath;
 
 String mavenArtifactPath = props.getProperty( "org.apache.maven:maven-artifact:jar" );
-if ( mavenArtifactPath == null )
-{
-    throw new Exception( "org.apache.maven:maven-artifact:jar is null" );
-}
-if ( ! (new File( mavenArtifactPath )).isFile() )
-{
-    throw new Exception( "maven-artifact jar is not a file: " + mavenArtifactPath );
-}
+assert mavenArtifactPath != null : "org.apache.maven:maven-artifact:jar is null";
+assert (new File( mavenArtifactPath )).isFile() : "maven-artifact jar is not a file: " + mavenArtifactPath;
 
 return true;

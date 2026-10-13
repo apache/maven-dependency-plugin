@@ -20,10 +20,7 @@
 void checkFilePresence( String path )
 {
     File depJar = new File( localRepositoryPath, path )
-    if ( !depJar.exists() )
-    {
-        throw new Exception( "Direct dependency jar was not re-resolved: " + depJar )
-    }
+    assert depJar.exists() : "Direct dependency jar was not re-resolved: " + depJar
 }
 
 checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository/1.0/purge-local-repository-1.0.jar" )

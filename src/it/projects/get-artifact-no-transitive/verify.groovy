@@ -27,10 +27,7 @@ String[] expectedFiles = [
 for ( String expectedFile : expectedFiles )
 {
     File file = new File( localRepositoryPath, expectedFile );
-    if ( !file.isFile() )
-    {
-        throw new Exception( "Missing file " + file );
-    }
+    assert file.isFile() : "Missing file " + file;
 }
 
 String[] notExpectedFiles = [
@@ -41,10 +38,7 @@ String[] notExpectedFiles = [
 for ( String notExpectedFile : notExpectedFiles )
 {
     File file = new File( localRepositoryPath, notExpectedFile );
-    if ( file.isFile() )
-    {
-        throw new Exception( "Existing file " + file );
-    }
+    assert !file.isFile() : "Existing file " + file;
 }
 
 return true;

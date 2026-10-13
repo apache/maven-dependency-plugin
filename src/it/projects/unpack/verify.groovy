@@ -21,28 +21,16 @@ import java.io.*;
 
 
 File file = new File( basedir, "target/output spaces directory" );
-if ( !file.isDirectory() )
-{
-   throw new Exception( "Missing " + file );
-}
+assert file.isDirectory() : "Missing " + file;
 
 file = new File( file, "qdox-1.5" );
-if ( !file.isDirectory() )
-{
-   throw new Exception( "Missing " + file );
-}
+assert file.isDirectory() : "Missing " + file;
 
 file = new File( file, "build.xml" );
-if ( !file.isFile() )
-{
-   throw new Exception( "Missing " + file );
-}
+assert file.isFile() : "Missing " + file;
 
 //until MDEP-242 is fixed, the next test will passed
 file = new File( file.getParent(), "src" );
-if ( !file.isDirectory() )
-{
-   throw new Exception( "Missing " + file );
-}
+assert file.isDirectory() : "Missing " + file;
 
 return true;

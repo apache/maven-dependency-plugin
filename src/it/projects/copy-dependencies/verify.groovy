@@ -24,10 +24,7 @@ void checkExpected( File dir, String[] expectedFiles )
     for ( String expectedFile : expectedFiles )
     {
         File file = new File( dir, expectedFile );
-        if ( !file.isFile() )
-        {
-            throw new Exception( "Missing file " + file );
-        }
+        assert file.isFile() : "Missing file " + file;
     }
 }
 
@@ -38,10 +35,7 @@ void checkExpected( File dir, String[] expectedFiles, String[] unexpectedFiles )
     for ( String unexpectedFile : unexpectedFiles )
     {
         File file = new File( dir, unexpectedFile );
-        if ( file.isFile() )
-        {
-            throw new Exception( "Unexpected file " + file  + " found" );
-        }
+        assert !file.isFile() : "Unexpected file " + file  + " found";
     }
 }
 

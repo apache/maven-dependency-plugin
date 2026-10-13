@@ -21,30 +21,18 @@ import java.io.*;
 
 File depJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository/1.0/purge-local-repository-1.0.jar" );
 
-if ( !depJar.exists() )
-{
-    throw new Exception( "Direct dependency jar was not re-resolved: " + depJar );
-}
+assert depJar.exists() : "Direct dependency jar was not re-resolved: " + depJar;
 
 File depPom = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository/1.0/purge-local-repository-1.0.pom" );
 
-if ( !depPom.exists() )
-{
-    throw new Exception( "Direct dependency pom was not re-resolved: " + depPom );
-}
+assert depPom.exists() : "Direct dependency pom was not re-resolved: " + depPom;
 
 File transitiveDepJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-2/1.0/purge-local-repository-2-1.0.jar" );
 
-if ( !transitiveDepJar.exists() )
-{
-    throw new Exception( "Transitive dep jar was not re-resolved: " + transitiveDepJar );
-}
+assert transitiveDepJar.exists() : "Transitive dep jar was not re-resolved: " + transitiveDepJar;
 
 File transitiveDepPom = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-2/1.0/purge-local-repository-2-1.0.pom" );
 
-if ( !transitiveDepPom.exists() )
-{
-    throw new Exception( "Transitive dep pom was not re-resolved: " + transitiveDepPom );
-}
+assert transitiveDepPom.exists() : "Transitive dep pom was not re-resolved: " + transitiveDepPom;
 
 return true;
