@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -570,20 +571,20 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
         for (Artifact artifact : artifacts) {
             verbose("Purging artifact: " + artifact.getId());
 
-            File deleteTarget = findDeleteTarget(artifact);
+            for (File deleteTarget : findDeleteTargets(artifact)) {
+                verbose("Deleting: " + deleteTarget);
 
-            verbose("Deleting: " + deleteTarget);
-
-            if (deleteTarget.isDirectory()) {
-                try {
-                    FileUtils.deleteDirectory(deleteTarget);
-                } catch (IOException e) {
-                    getLog().warn("Unable to purge local repository location: " + deleteTarget, e);
-                }
-            } else {
-                if (!deleteTarget.delete()) {
-                    deleteTarget.deleteOnExit();
-                    getLog().warn("Unable to purge local repository location immediately: " + deleteTarget);
+                if (deleteTarget.isDirectory()) {
+                    try {
+                        FileUtils.deleteDirectory(deleteTarget);
+                    } catch (IOException e) {
+                        getLog().warn("Unable to purge local repository location: " + deleteTarget, e);
+                    }
+                } else {
+                    if (!deleteTarget.delete()) {
+                        deleteTarget.deleteOnExit();
+                        getLog().warn("Unable to purge local repository location immediately: " + deleteTarget);
+                    }
                 }
             }
             artifact.setResolved(false);
@@ -619,7 +620,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
         }
     }
 
-    private File findDeleteTarget(Artifact artifact) {
+    private List<File> findDeleteTargets(Artifact artifact) {
         // Use localRepository.pathOf() in case artifact.getFile() is not set
         File deleteTarget = new File(localRepository.getBasedir(), localRepository.pathOf(artifact));
 
@@ -632,9 +633,35 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
         } else if (VERSION_FUZZINESS.equals(resolutionFuzziness)) {
             // get the version dir.
             deleteTarget = deleteTarget.getParentFile();
+        } else {
+            // it's file fuzziness.
+            return Collections.singletonList(deleteTarget);
         }
-        // else it's file fuzziness.
-        return deleteTarget;
+
+        if (snapshotsOnly && !VERSION_FUZZINESS.equals(resolutionFuzziness)) {
+            // The groupId or artifactId directory also holds release versions, which must be kept.
+            List<File> snapshotDirectories = new ArrayList<>();
+            collectSnapshotVersionDirectories(deleteTarget, snapshotDirectories);
+            return snapshotDirectories;
+        }
+        return Collections.singletonList(deleteTarget);
+    }
+
+    /**
+     * Collects, below the given directory, the version directories of snapshots, without descending into them.
+     */
+    private void collectSnapshotVersionDirectories(File directory, List<File> snapshotDirectories) {
+        File[] children = directory.listFiles(File::isDirectory);
+        if (children == null) {
+            return;
+        }
+        for (File child : children) {
+            if (ArtifactUtils.isSnapshot(child.getName())) {
+                snapshotDirectories.add(child);
+            } else {
+                collectSnapshotVersionDirectories(child, snapshotDirectories);
+            }
+        }
     }
 
     private void verbose(String message) {
