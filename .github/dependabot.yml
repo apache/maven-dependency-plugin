@@ -30,6 +30,19 @@ updates:
       # mrm-maven-plugin 2.x requires Java 17
       - dependency-name: "org.codehaus.mojo:mrm-maven-plugin"
         versions: [">= 2.0.0"]
+      # stay on Maven 3.9.x for the 3.x line
+      - dependency-name: "org.apache.maven:maven-artifact"
+        versions: [">= 3.10.0"]
+      - dependency-name: "org.apache.maven:maven-core"
+        versions: [">= 3.10.0"]
+      - dependency-name: "org.apache.maven:maven-model"
+        versions: [">= 3.10.0"]
+      - dependency-name: "org.apache.maven:maven-plugin-api"
+        versions: [">= 3.10.0"]
+      - dependency-name: "org.apache.maven:maven-repository-metadata"
+        versions: [">= 3.10.0"]
+      - dependency-name: "org.apache.maven:maven-settings"
+        versions: [">= 3.10.0"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
