@@ -513,6 +513,7 @@ Also, the `outputType` parameter can be used to generate different formats of ou
 - [dot](https://en.wikipedia.org/wiki/DOT_language)
 - [graphml](https://en.wikipedia.org/wiki/GraphML)
 - [tgf](https://en.wikipedia.org/wiki/Trivial_Graph_Format)
+- [mermaid](https://mermaid.js.org/syntax/flowchart.html) (since 3.12.0)
 
 ```
 mvn dependency:tree -DoutputFile=/path/to/file.graphml -DoutputType=graphml

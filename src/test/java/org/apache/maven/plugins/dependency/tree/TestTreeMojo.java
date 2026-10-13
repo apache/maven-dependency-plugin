@@ -142,6 +142,28 @@ class TestTreeMojo {
     }
 
     /**
+     * Test the Mermaid format serialization
+     *
+     * @throws Exception in case of an error.
+     */
+    @Test
+    @InjectMojo(goal = "tree")
+    @MojoParameter(name = "outputType", value = "mermaid")
+    void testTreeMermaidSerializing(TreeMojo mojo) throws Exception {
+        List<String> contents = runTreeMojo(mojo);
+
+        assertEquals("graph LR", contents.get(0));
+        assertTrue(findString(contents, "[\"testGroupId:project:jar:1.0:compile\"]"));
+        assertTrue(findString(contents, "[\"testGroupId:snapshot:jar:2.0-SNAPSHOT:compile\"]"));
+        assertTrue(findString(contents, "[\"testGroupId:release:jar:1.0:compile\"]"));
+        assertEquals(
+                2,
+                contents.stream()
+                        .filter(line -> line.contains(" -->|compile| "))
+                        .count());
+    }
+
+    /**
      * Test the GraphML format serialization
      *
      * @throws Exception in case of an error.
