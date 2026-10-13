@@ -179,7 +179,14 @@ public class GetMojo extends AbstractMojo {
     }
 
     /**
-     * A string of the form groupId:artifactId:version[:packaging[:classifier]].
+     * A string of the form <code>groupId:artifactId:version[:packaging[:classifier]]</code>, or, since 3.12.0,
+     * the form that Maven's error messages and <code>dependency:list</code> print,
+     * <code>groupId:artifactId:type[:classifier]:version[:scope]</code>. A string of 4 or 5 parts is the second form
+     * if the part where that form has the version looks like one (starts with a digit, is <code>LATEST</code> or
+     * <code>RELEASE</code>, or is a version range) or if its third part is a well-known type such as
+     * <code>jar</code> or <code>pom</code>. Otherwise it is the first form. A string of 6 parts is the second form
+     * if the last part is a scope and the fifth looks like a version. If the third part looks like a version too,
+     * the string fits both forms and is rejected. The scope is ignored.
      *
      * @param artifact the artifact coordinates
      */
