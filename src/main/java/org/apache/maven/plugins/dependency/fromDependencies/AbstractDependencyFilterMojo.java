@@ -415,6 +415,15 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
+     * Creates the translator that maps the dependencies to the artifacts to resolve when a classifier is set.
+     *
+     * @return the translator
+     */
+    protected ArtifactTranslator createArtifactTranslator() {
+        return new ClassifierTypeTranslator(artifactHandlerManager, this.classifier, this.type);
+    }
+
+    /**
      * Transform artifacts.
      *
      * @param artifacts set of artifacts {@link Artifact}
@@ -432,8 +441,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
         // classifier and type
         // if this did something, we need to resolve the new artifacts
         if (classifier != null && !classifier.isEmpty()) {
-            ArtifactTranslator translator =
-                    new ClassifierTypeTranslator(artifactHandlerManager, this.classifier, this.type);
+            ArtifactTranslator translator = createArtifactTranslator();
             Collection<org.eclipse.aether.artifact.Artifact> coordinates = translator.translate(artifacts, getLog());
 
             status = filterMarkedDependencies(artifacts);
