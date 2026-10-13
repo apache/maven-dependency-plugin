@@ -27,7 +27,7 @@ void createJar( String artifactId )
     purgedJar.createNewFile();
 }
 
-createJar( "purged-a" );
-createJar( "purged-b" );
+createJar( "purged-exec-a" );
+createJar( "purged-exec-b" );
 
 return true;

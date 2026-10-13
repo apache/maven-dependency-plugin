@@ -39,7 +39,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.its.dependency</groupId>
-      <artifactId>purged</artifactId>
+      <artifactId>purged-snapshots-only</artifactId>
       <version>1.0</version>
     </dependency>
     <dependency>

@@ -29,14 +29,14 @@ void checkFileAbsence( String path )
     assert !depJar.exists() : "Dependency jar was not purged: " + depJar
 }
 
-checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository/1.0/purge-local-repository-1.0.jar" )
-checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository/1.0/purge-local-repository-1.0.pom" )
+checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository-include-dep/1.0/purge-local-repository-include-dep-1.0.jar" )
+checkFilePresence( "org/apache/maven/its/dependency/purge-local-repository-include-dep/1.0/purge-local-repository-include-dep-1.0.pom" )
 
-checkFileAbsence( "org/apache/maven/its/dependency/purge-local-repository-2/1.0/purge-local-repository-2-1.0.jar" )
-checkFileAbsence( "org/apache/maven/its/dependency/purge-local-repository-2/1.0/purge-local-repository-2-1.0.pom" )
+checkFileAbsence( "org/apache/maven/its/dependency/purge-local-repository-include-dep-2/1.0/purge-local-repository-include-dep-2-1.0.jar" )
+checkFileAbsence( "org/apache/maven/its/dependency/purge-local-repository-include-dep-2/1.0/purge-local-repository-include-dep-2-1.0.pom" )
 
 String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" )
-assert !buildLog.contains( 'Purging artifact: org.apache.maven.its.dependency:purge-local-repository:jar:1.0' )
-assert buildLog.contains( 'Purging artifact: org.apache.maven.its.dependency:purge-local-repository-2:jar:1.0' )
+assert !buildLog.contains( 'Purging artifact: org.apache.maven.its.dependency:purge-local-repository-include-dep:jar:1.0' )
+assert buildLog.contains( 'Purging artifact: org.apache.maven.its.dependency:purge-local-repository-include-dep-2:jar:1.0' )
 
 return true

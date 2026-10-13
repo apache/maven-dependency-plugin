@@ -46,7 +46,7 @@
               <goal>get</goal>
             </goals>
             <configuration>
-              <artifact>org.apache.maven.its.dependency:get-artifact:1.0</artifact>
+              <artifact>org.apache.maven.its.dependency:get-remote-repositories-pom-config-dep:1.0</artifact>
               <remoteRepositories>repo1::default::https://repo1.invalid/maven2,repo2::https://repo2.invalid/maven2</remoteRepositories>
             </configuration>
           </execution>
