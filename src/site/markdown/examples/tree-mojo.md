@@ -266,6 +266,8 @@ graph LR
 mvn dependency:tree -DoutputType=mermaid -DoutputFile=dependency-tree.mmd
 ```
 
+With `-Dverbose`, an omitted node gets its own node and edge, as in the DOT format.
+
 **Use Case**: Paste the file into a fenced `mermaid` code block of a Markdown document to show the dependency graph.
 
 ## Notes
