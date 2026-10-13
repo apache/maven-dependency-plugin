@@ -608,7 +608,7 @@ A node can also carry notes in parentheses after the artifact, without being omi
 
 - `version managed from <version>` means `dependencyManagement` replaced the version the dependency declared with the one shown. Maven 4 manages the dependencies of transitive dependencies as well, so with Maven 4 more nodes carry this note, some of them with the same version before and after.
 - `scope managed from <scope>` is the same for the scope. `maven-model:2.0.5:test` above was declared with scope `compile` and `dependencyManagement` set it to `test`.
-- `scope not updated to <scope>` means another path to the same artifact asked for a wider scope, here `compile` through `maven-project`, but the node shown keeps the scope it was declared with in the project, `test` for `maven-profile:2.0.4`.
+- `scope not updated to <scope>` means another path to the same artifact asked for a wider scope, here `compile` through `maven-project`, but the node shown keeps its own scope. A direct dependency keeps the scope the project declares, `test` for `maven-profile:2.0.4`, and a `system` scope is never widened.
 
 The notes combine with the omission: `version managed from 2.0.6; scope managed from compile; omitted for conflict with 2.0.7` is a node whose version and scope were managed, which then lost to another version.
 
