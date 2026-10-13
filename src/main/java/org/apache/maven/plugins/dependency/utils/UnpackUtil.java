@@ -165,10 +165,11 @@ public class UnpackUtil {
                 IncludeExcludeFileSelector[] selectors =
                         new IncludeExcludeFileSelector[] {new IncludeExcludeFileSelector()};
 
-                // must precede setExcludes(), which computes the effective exclude patterns
-                selectors[0].setUseDefaultExcludes(useDefaultExcludes);
-
                 if (excludes != null && !excludes.isEmpty()) {
+                    // Only here: setUseDefaultExcludes() recomputes the exclude patterns, so calling it for an
+                    // includes-only selector would start dropping .svn, .git and so on, which were extracted so far.
+                    // It also has to precede setExcludes().
+                    selectors[0].setUseDefaultExcludes(useDefaultExcludes);
                     selectors[0].setExcludes(excludes.split(","));
                 }
 

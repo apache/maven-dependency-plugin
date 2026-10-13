@@ -88,4 +88,13 @@ class TestUnpackDependenciesDefaultExcludes {
         assertFalse(new File(mojo.getOutputDirectory(), "dropped.log").exists());
         assertTrue(new File(mojo.getOutputDirectory(), ".svn/entries").exists());
     }
+
+    @Test
+    @InjectMojo(goal = "unpack-dependencies")
+    void testIncludesOnlyKeepsDefaultExcludedEntries(UnpackDependenciesMojo mojo) throws Exception {
+        mojo.setIncludes("**/*");
+        mojo.execute();
+        assertTrue(new File(mojo.getOutputDirectory(), "kept.txt").exists());
+        assertTrue(new File(mojo.getOutputDirectory(), ".svn/entries").exists());
+    }
 }
