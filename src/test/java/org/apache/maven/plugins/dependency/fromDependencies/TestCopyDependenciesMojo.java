@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,6 +42,7 @@ import org.apache.maven.plugins.dependency.utils.CopyUtil;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -51,7 +53,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 @MojoTest(realRepositorySession = true)
 class TestCopyDependenciesMojo {
@@ -469,6 +473,54 @@ class TestCopyDependenciesMojo {
                     mojo.outputDirectory,
                     artifact.getArtifactId() + "-" + artifact.getVersion() + "-jdk14." + artifact.getType());
             assertEquals(newer / 1000, copied.lastModified() / 1000, copied.getName() + " was overwritten");
+        }
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testExcludeOptional(CopyDependenciesMojo mojo) throws Exception {
+        Set<Artifact> artifacts = stubFactory.getScopedArtifacts();
+        Artifact optional = artifacts.iterator().next();
+        optional.setOptional(true);
+        mojo.getProject().setArtifacts(artifacts);
+
+        // default keeps optional dependencies
+        mojo.execute();
+        assertTrue(new File(mojo.outputDirectory, DependencyUtil.getFormattedFileName(optional, false)).exists());
+        FileUtils.deleteDirectory(mojo.outputDirectory);
+
+        mojo.excludeOptional = true;
+        mojo.execute();
+
+        for (Artifact artifact : artifacts) {
+            File file = new File(mojo.outputDirectory, DependencyUtil.getFormattedFileName(artifact, false));
+            assertEquals(artifact != optional, file.exists(), artifact.getId());
+        }
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testExcludeReactor(CopyDependenciesMojo mojo) throws Exception {
+        Set<Artifact> artifacts = stubFactory.getScopedArtifacts();
+        Artifact reactorArtifact = artifacts.iterator().next();
+        mojo.getProject().setArtifacts(artifacts);
+
+        MavenProject reactorProject = mock(MavenProject.class);
+        when(reactorProject.getArtifact()).thenReturn(reactorArtifact);
+        doReturn(Collections.singletonList(reactorProject)).when(session).getProjects();
+
+        // default keeps artifacts that are reactor projects
+        mojo.execute();
+        assertTrue(
+                new File(mojo.outputDirectory, DependencyUtil.getFormattedFileName(reactorArtifact, false)).exists());
+        FileUtils.deleteDirectory(mojo.outputDirectory);
+
+        mojo.excludeReactor = true;
+        mojo.execute();
+
+        for (Artifact artifact : artifacts) {
+            File file = new File(mojo.outputDirectory, DependencyUtil.getFormattedFileName(artifact, false));
+            assertEquals(artifact != reactorArtifact, file.exists(), artifact.getId());
         }
     }
 

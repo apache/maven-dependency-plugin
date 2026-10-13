@@ -96,6 +96,74 @@ As mentioned, [transitive dependencies](https://maven.apache.org/guides/introduc
 </project>
 ```
 
+Excluding optional dependencies
+-------------------------------
+
+Dependencies declared with `<optional>true</optional>` are copied by default. Set the `excludeOptional` property to **true** to leave them out, for example when they are only needed to compile against and must not be shipped.
+
+```xml
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${esc.d}{project.build.directory}/alternateLocation</outputDirectory>
+              <excludeOptional>true</excludeOptional>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
+```
+
+Excluding reactor projects
+--------------------------
+
+When the project depends on artifacts that are themselves projects of the current reactor build, their jars are copied like any other dependency. Set the `excludeReactor` property to **true** to skip them, for example to build a class path that does not contain classes that are already in the reactor project's `target/classes`. Artifacts are matched to reactor projects by groupId, artifactId and version.
+
+```xml
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${esc.d}{project.build.directory}/alternateLocation</outputDirectory>
+              <excludeReactor>true</excludeReactor>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
+```
+
 Subtrees
 --------
 
