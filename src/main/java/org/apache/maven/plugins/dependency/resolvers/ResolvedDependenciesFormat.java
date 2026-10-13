@@ -113,12 +113,17 @@ final class ResolvedDependenciesFormat {
      * Writes the resolved artifacts as a <code>dependencies</code> element that can be pasted into
      * <code>dependencyManagement</code> or <code>dependencies</code>. <code>type</code> is left out for
      * <code>jar</code>, <code>classifier</code> if there is none, and <code>scope</code> for
-     * <code>compile</code>. The version is the base version, as written in a POM.
+     * <code>compile</code>, and adds <code>optional</code> for optional artifacts. Artifacts without a scope, such
+     * as the parent POMs that <code>includeParents</code> adds, are left out. The version is the base version, as written in a POM.
      */
     static String pom(DependencyStatusSets sets, boolean sort) {
         String nl = System.lineSeparator();
         StringBuilder sb = new StringBuilder("<dependencies>").append(nl);
         for (Artifact artifact : ordered(sets.getResolvedDependencies(), sort)) {
+            if (artifact.getScope() == null) {
+                // not a dependency of the project, such as a parent POM listed by includeParents
+                continue;
+            }
             sb.append("  <dependency>").append(nl);
             element(sb, "groupId", artifact.getGroupId());
             element(sb, "artifactId", artifact.getArtifactId());
@@ -129,8 +134,11 @@ final class ResolvedDependenciesFormat {
             if (artifact.hasClassifier()) {
                 element(sb, "classifier", artifact.getClassifier());
             }
-            if (artifact.getScope() != null && !Artifact.SCOPE_COMPILE.equals(artifact.getScope())) {
+            if (!Artifact.SCOPE_COMPILE.equals(artifact.getScope())) {
                 element(sb, "scope", artifact.getScope());
+            }
+            if (artifact.isOptional()) {
+                element(sb, "optional", "true");
             }
             sb.append("  </dependency>").append(nl);
         }

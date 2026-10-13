@@ -121,6 +121,18 @@ class ResolvedDependenciesFormatTest {
     }
 
     @Test
+    void pomWritesOptionalAndSkipsArtifactsWithoutScope() {
+        Artifact optional = artifact("opt", "1.0", "compile", "jar", null, true);
+        Artifact parent = artifact("parent", "1.0", null, "pom", null, false);
+        DependencyStatusSets sets = new DependencyStatusSets(set(optional, parent), null, null);
+
+        String pom = ResolvedDependenciesFormat.pom(sets, false);
+
+        assertTrue(pom.contains("<version>1.0</version>" + NL + "    <optional>true</optional>"), pom);
+        assertFalse(pom.contains("parent"), pom);
+    }
+
+    @Test
     void pomIsEmptyElementWithoutArtifactsAndSorts() {
         assertEquals(
                 "<dependencies>" + NL + "</dependencies>" + NL,
