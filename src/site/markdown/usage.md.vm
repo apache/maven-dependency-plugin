@@ -125,6 +125,7 @@ _Notes:_
 
 - By default, artifacts are copied into _outputDirectory_ using the Maven artifact file name convention (that is, _artifactId-version-classifier.type_). Use the following rules to override the default convention:
     - Use _artifactItem.destFileName_ to override the default file name.
+    - On the command line, give the file name as the sixth token of _artifact_: `mvn dependency:copy -Dartifact=groupId:artifactId:version:jar::name.jar` (the empty fifth token is the classifier). The form is `groupId:artifactId:version[:packaging[:classifier[:destFileName]]]`.
     - Use _stripVersion_ to remove _version_ from default file name. This field is ignored when _artifactId.destFileName_ is set.
     - Use _artifactItem.outputDirectory_ to override the plugin's _outputDirectory_ configuration per _artifactItem_.
 
