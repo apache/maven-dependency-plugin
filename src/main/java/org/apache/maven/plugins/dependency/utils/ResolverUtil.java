@@ -206,6 +206,24 @@ public class ResolverUtil {
     }
 
     /**
+     * Resolve several artifacts at their exact coordinates, without reading their descriptors. Reactor artifacts are
+     * found through the workspace reader of the current repository session.
+     *
+     * @param artifacts    artifacts to resolve
+     * @param repositories remote repositories list
+     * @return one result per artifact, in the order of {@code artifacts}
+     * @throws ArtifactResolutionException if any artifact could not be resolved; {@link
+     *                                     ArtifactResolutionException#getResults()} then holds one result per artifact
+     */
+    public List<ArtifactResult> resolveArtifacts(Collection<Artifact> artifacts, List<RemoteRepository> repositories)
+            throws ArtifactResolutionException {
+        List<ArtifactRequest> requests = artifacts.stream()
+                .map(artifact -> new ArtifactRequest(artifact, repositories, null))
+                .collect(Collectors.toList());
+        return repositorySystem.resolveArtifacts(mavenSessionProvider.get().getRepositorySession(), requests);
+    }
+
+    /**
      * Resolve a given artifact, falling back to its original coordinates when its descriptor cannot be read.
      *
      * @param artifact     an artifact to resolve

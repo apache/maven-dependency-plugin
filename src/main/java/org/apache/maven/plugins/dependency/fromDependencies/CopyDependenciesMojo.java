@@ -62,7 +62,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  */
 @Mojo(
         name = "copy-dependencies",
-        requiresDependencyResolution = ResolutionScope.TEST,
+        requiresDependencyCollection = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.PROCESS_SOURCES,
         threadSafe = true)
 public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
@@ -126,6 +126,11 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
             CopyUtil copyUtil) {
         super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
         this.copyUtil = copyUtil;
+    }
+
+    @Override
+    protected boolean isResolvingAfterFiltering() {
+        return true;
     }
 
     /**
