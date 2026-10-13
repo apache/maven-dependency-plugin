@@ -98,8 +98,9 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
 
     /**
      * The artifact to unpack from command line. A string of the form
-     * <code>groupId:artifactId:version[:packaging[:classifier]]</code>. Use {@link #artifactItems} within the POM
-     * configuration.
+     * <code>groupId:artifactId:version[:packaging[:classifier]]</code>. The goal shares the parser of
+     * <code>dependency:copy</code>, which also accepts a trailing <code>:destFileName</code>; unpack ignores it. Use
+     * {@link #artifactItems} within the POM configuration.
      */
     @SuppressWarnings("unused") // marker-field, setArtifact(String) does the magic
     @Parameter(property = "artifact")

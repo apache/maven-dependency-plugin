@@ -80,8 +80,11 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     private boolean useBaseVersion = false;
 
     /**
-     * The artifact to copy from command line. A string of the form groupId:artifactId:version[:packaging[:classifier]].
-     * Use {@link #artifactItems} within the POM configuration.
+     * The artifact to copy from command line. A string of the form
+     * <code>groupId:artifactId:version[:packaging[:classifier[:destFileName]]]</code>. The optional
+     * <code>destFileName</code> (since 3.12.0) is the name of the copied file; leave the classifier empty to give a
+     * <code>destFileName</code> without one, as in <code>g:a:1.0:jar::renamed.jar</code>. Use {@link #artifactItems}
+     * within the POM configuration.
      */
     @SuppressWarnings("unused") // marker-field, setArtifact(String) does the magic
     @Parameter(property = "artifact")
