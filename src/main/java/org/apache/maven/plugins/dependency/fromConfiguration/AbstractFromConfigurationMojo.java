@@ -364,13 +364,20 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      */
     public void setArtifact(String artifact) throws MojoFailureException {
         if (artifact != null) {
-            // keep empty tokens, so that an empty classifier can precede a destFileName
+            // Only the six token form keeps empty tokens, so that an empty classifier can precede a destFileName.
+            // Otherwise empty tokens collapse, as before: "g:a:v::jar" has the packaging "jar".
             String[] tokens = StringUtils.splitPreserveAllTokens(artifact, ":");
-            if (tokens.length < 3
-                    || tokens.length > 6
-                    || StringUtils.isEmpty(tokens[0])
-                    || StringUtils.isEmpty(tokens[1])
-                    || StringUtils.isEmpty(tokens[2])) {
+            boolean withDestFileName = tokens.length == 6;
+            if (!withDestFileName) {
+                tokens = StringUtils.split(artifact, ":");
+            }
+            if (tokens.length < 3 || tokens.length > 6) {
+                throw new MojoFailureException("Invalid artifact, "
+                        + "you must specify groupId:artifactId:version[:packaging[:classifier[:destFileName]]] "
+                        + artifact);
+            }
+            if (withDestFileName
+                    && (tokens[0].isEmpty() || tokens[1].isEmpty() || tokens[2].isEmpty() || tokens[5].isEmpty())) {
                 throw new MojoFailureException("Invalid artifact, "
                         + "you must specify groupId:artifactId:version[:packaging[:classifier[:destFileName]]] "
                         + artifact);
@@ -382,7 +389,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             artifactItem.setVersion(tokens[2]);
             artifactItem.setType(tokens.length >= 4 && !tokens[3].isEmpty() ? tokens[3] : "jar");
             artifactItem.setClassifier(tokens.length >= 5 && !tokens[4].isEmpty() ? tokens[4] : null);
-            if (tokens.length == 6 && !tokens[5].isEmpty()) {
+            if (withDestFileName) {
                 artifactItem.setDestFileName(tokens[5]);
             }
 

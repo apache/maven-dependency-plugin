@@ -130,6 +130,26 @@ class TestCopyMojo {
 
     @Test
     @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:c::jar")
+    void testSetArtifactEmptyTokenCollapses(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("jar", item.getType());
+        assertNull(item.getClassifier());
+        assertNull(item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:c:jar::name.jar")
+    void testSetArtifactDestFileNameWithoutClassifier(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("jar", item.getType());
+        assertNull(item.getClassifier());
+        assertEquals("name.jar", item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
     @MojoParameter(name = "artifact", value = "a:b:c:d::f.jar")
     void testSetArtifactWithDestFileNameWithoutClassifier(CopyMojo mojo) {
         ArtifactItem item = mojo.getArtifactItems().get(0);
