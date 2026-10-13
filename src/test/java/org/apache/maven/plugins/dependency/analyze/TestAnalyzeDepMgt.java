@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -213,6 +214,25 @@ class TestAnalyzeDepMgt {
 
         mojo.setFailBuild(true);
         mojo.setIgnoreDirect(true);
+        mojo.execute();
+    }
+
+    @Test
+    void ignoredDependenciesAreSkipped() throws Exception {
+        mojo.setIgnoreDirect(false);
+        mojo.setFailBuild(true);
+        mojo.getProject().getModel().setDependencyManagement(depMgt);
+        String ga = exclusion.getGroupId() + ":" + exclusion.getArtifactId();
+        stubFactory.getReleaseArtifact().setScope(Artifact.SCOPE_COMPILE);
+
+        mojo.setIgnoredDependencies(new String[] {ga});
+        mojo.execute();
+
+        // a scope segment that does not match leaves the artifact checked
+        mojo.setIgnoredDependencies(new String[] {ga + "::*:provided"});
+        assertThrows(MojoExecutionException.class, mojo::execute);
+
+        mojo.setIgnoredDependencies(new String[] {ga + "::*:compile"});
         mojo.execute();
     }
 }
