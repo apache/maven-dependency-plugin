@@ -527,11 +527,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             Collection<org.eclipse.aether.artifact.Artifact> coordinates = translator.translate(artifacts, getLog());
 
             // resolve the translated artifacts
-            resolvedArtifacts = resolve(new LinkedHashSet<>(coordinates), stopOnFailure);
-
-            // calculate the artifacts not resolved.
-            unResolvedArtifacts.addAll(artifacts);
-            unResolvedArtifacts.removeAll(resolvedArtifacts);
+            resolvedArtifacts = resolve(new LinkedHashSet<>(coordinates), stopOnFailure, unResolvedArtifacts);
 
             // skip the translated artifacts that are already up to date in the destination: the destination file
             // name depends on the classifier, so the decision cannot be taken on the original artifacts
@@ -577,10 +573,12 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
      * @param artifacts the set of artifacts
      * @param stopOnFailure <code>true</code> if we should fail with exception if an artifact couldn't be resolved
      *            <code>false</code> otherwise
+     * @param unresolved receives the artifacts that could not be resolved
      * @return the resolved artifacts. {@link Artifact}.
      * @throws MojoExecutionException in case of error
      */
-    private Set<Artifact> resolve(Set<org.eclipse.aether.artifact.Artifact> artifacts, boolean stopOnFailure)
+    private Set<Artifact> resolve(
+            Set<org.eclipse.aether.artifact.Artifact> artifacts, boolean stopOnFailure, Set<Artifact> unresolved)
             throws MojoExecutionException {
 
         Set<Artifact> resolvedArtifacts = new LinkedHashSet<>();
@@ -592,6 +590,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             } catch (ArtifactResolutionException | ArtifactDescriptorException ex) {
                 // an error occurred during resolution, log it and continue
                 getLog().debug("error resolving: " + artifact, ex);
+                unresolved.add(RepositoryUtils.toArtifact(artifact));
                 if (stopOnFailure) {
                     throw new MojoExecutionException("error resolving: " + artifact, ex);
                 }
