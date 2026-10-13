@@ -83,8 +83,12 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
      * The artifact to copy from command line. A string of the form
      * <code>groupId:artifactId:version[:packaging[:classifier[:destFileName]]]</code>. The optional
      * <code>destFileName</code> (since 3.12.0) is the name of the copied file; leave the classifier empty to give a
-     * <code>destFileName</code> without one, as in <code>g:a:1.0:jar::renamed.jar</code>. Use {@link #artifactItems}
-     * within the POM configuration.
+     * <code>destFileName</code> without one, as in <code>g:a:1.0:jar::renamed.jar</code>. Since 3.12.0 the form that
+     * Maven's error messages and <code>dependency:list</code> print,
+     * <code>groupId:artifactId:type[:classifier]:version[:scope]</code>, is accepted as well. The form is told apart
+     * by which parts look like a version, as described for the <code>artifact</code> parameter of
+     * <code>dependency:get</code>; <code>destFileName</code> is only part of the first form. Use
+     * {@link #artifactItems} within the POM configuration.
      */
     @SuppressWarnings("unused") // marker-field, setArtifact(String) does the magic
     @Parameter(property = "artifact")

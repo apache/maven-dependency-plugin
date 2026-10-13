@@ -107,7 +107,10 @@ public class ListClassesMojo extends AbstractMojo {
     }
 
     /**
-     * A string of the form {@code groupId:artifactId:version[:packaging[:classifier]]}.
+     * A string of the form {@code groupId:artifactId:version[:packaging[:classifier]]}, or, since 3.12.0, the form
+     * that Maven's error messages and {@code dependency:list} print,
+     * {@code groupId:artifactId:type[:classifier]:version[:scope]}. The form is told apart by which part looks like
+     * a version, as described for the {@code artifact} parameter of {@code dependency:get}.
      *
      * @since 3.1.3
      */
