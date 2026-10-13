@@ -78,6 +78,15 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
     private String excludes;
 
     /**
+     * Whether to apply the default excludes (for example {@code .svn}, {@code CVS} and {@code .git}) when excludes
+     * are set. Set to {@code false} to unpack such files and directories as well.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.unpack.useDefaultExcludes", defaultValue = "true")
+    private boolean useDefaultExcludes = true;
+
+    /**
      * Ignore to set file permissions when unpacking a dependency.
      *
      * @since 2.7
@@ -148,6 +157,7 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
                     destDir,
                     getIncludes(),
                     getExcludes(),
+                    useDefaultExcludes,
                     getEncoding(),
                     ignorePermissions,
                     getFileMappers(),
@@ -182,6 +192,13 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     public void setExcludes(String excludes) {
         this.excludes = excludes;
+    }
+
+    /**
+     * @param useDefaultExcludes whether the default excludes are applied when excludes are set
+     */
+    public void setUseDefaultExcludes(boolean useDefaultExcludes) {
+        this.useDefaultExcludes = useDefaultExcludes;
     }
 
     /**
