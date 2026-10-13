@@ -38,6 +38,7 @@ The Dependency plugin has several goals:
 - [dependency:analyze-exclusions](./analyze-exclusions-mojo.html) analyzes the exclusions on dependencies and checks if the artifact actually brings in the given dependency.
 - [dependency:analyze-only](./analyze-only-mojo.html) is the same as analyze, but is meant to be bound in a pom. It does not fork the build and execute test-compile.
 - [dependency:analyze-report](./analyze-report-mojo.html) analyzes the dependencies of this project and produces a report that summarises which are: used and declared; used and undeclared; unused and declared.
+- [dependency:analyze-report-only](./analyze-report-only-mojo.html) is the same as analyze-report, but does not fork the build and execute test-compile.
 - [dependency:analyze-duplicate](./analyze-duplicate-mojo.html) analyzes the `<dependencies/>` and `<dependencyManagement/>` tags in the pom.xml and determines the duplicate declared dependencies.
 - [dependency:build-classpath](./build-classpath-mojo.html) tells Maven to output the path of the dependencies from the local repository in a classpath format to be used in java -cp. The classpath file may also be attached and installed/deployed along with the main artifact.
 - [dependency:collect](./collect-mojo.html) collects the project dependencies from the repository. It lists the groupId:artifactId:version information by downloading the pom files without downloading the actual artifacts such as jar files.

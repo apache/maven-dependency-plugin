@@ -491,6 +491,12 @@ This goal is used to include a report of the dependencies in the output of the `
  </reporting>
 ```
 
+Use `analyze-report-only` instead of `analyze-report` to render the same report without forking the `test-compile` phase, for example in a build that has already compiled the project:
+
+```xml
+            <report>analyze-report-only</report>
+```
+
 `dependency:tree`
 -----------------
 
