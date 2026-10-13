@@ -316,6 +316,40 @@ class TestCopyDependenciesMojo2 {
 
     @Test
     @InjectMojo(goal = "copy-dependencies")
+    @MojoParameter(name = "copyChecksums", value = "true")
+    void testRepositoryLayoutCopiesChecksums(CopyDependenciesMojo mojo) throws Exception {
+        Artifact artifact = stubFactory.createArtifact(
+                "testGroupId",
+                "artifact-with-checksums",
+                VersionRange.createFromVersion("1.0"),
+                "compile",
+                "jar",
+                null,
+                false);
+        Files.write(
+                new File(artifact.getFile().getPath() + ".sha1").toPath(),
+                "sha1-value".getBytes(StandardCharsets.UTF_8));
+        Files.write(
+                new File(artifact.getFile().getPath() + ".sha512").toPath(),
+                "sha512-value".getBytes(StandardCharsets.UTF_8));
+        mojo.getProject().setArtifacts(Collections.singleton(artifact));
+
+        mojo.useRepositoryLayout = true;
+        mojo.execute();
+
+        Path artifactDirectory = mojo.outputDirectory.toPath().resolve("testGroupId/artifact-with-checksums/1.0");
+        assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-with-checksums-1.0.jar")));
+        assertEquals(
+                "sha1-value",
+                new String(
+                        Files.readAllBytes(artifactDirectory.resolve("artifact-with-checksums-1.0.jar.sha1")),
+                        StandardCharsets.UTF_8));
+        assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-with-checksums-1.0.jar.sha512")));
+        assertFalse(Files.exists(artifactDirectory.resolve("artifact-with-checksums-1.0.jar.md5")));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
     @MojoParameter(name = "addImportedBoms", value = "true")
     void testAddImportedBomsParameter(CopyDependenciesMojo mojo) {
         assertTrue(mojo.addImportedBoms);
@@ -356,6 +390,30 @@ class TestCopyDependenciesMojo2 {
         assertEquals("4.1", spy.interpolate("${sys.version}", owner));
         assertEquals("5.2", spy.interpolate("${env.BOM_VERSION}", owner));
         assertEquals("${env.UNSET_VARIABLE}", spy.interpolate("${env.UNSET_VARIABLE}", owner));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testRepositoryLayoutSkipsChecksumsByDefault(CopyDependenciesMojo mojo) throws Exception {
+        Artifact artifact = stubFactory.createArtifact(
+                "testGroupId",
+                "artifact-without-checksums",
+                VersionRange.createFromVersion("1.0"),
+                "compile",
+                "jar",
+                null,
+                false);
+        Files.write(
+                new File(artifact.getFile().getPath() + ".sha1").toPath(),
+                "sha1-value".getBytes(StandardCharsets.UTF_8));
+        mojo.getProject().setArtifacts(Collections.singleton(artifact));
+
+        mojo.useRepositoryLayout = true;
+        mojo.execute();
+
+        Path artifactDirectory = mojo.outputDirectory.toPath().resolve("testGroupId/artifact-without-checksums/1.0");
+        assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-without-checksums-1.0.jar")));
+        assertFalse(Files.exists(artifactDirectory.resolve("artifact-without-checksums-1.0.jar.sha1")));
     }
 
     private Artifact createExpandedVersionArtifact(
