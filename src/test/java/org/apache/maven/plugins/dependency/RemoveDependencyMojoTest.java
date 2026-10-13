@@ -58,7 +58,7 @@ class RemoveDependencyMojoTest {
     private RemoveDependencyMojo mojo;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         session = mock(MavenSession.class);
         buildContext = mock(BuildContext.class);
         project = mock(MavenProject.class);
