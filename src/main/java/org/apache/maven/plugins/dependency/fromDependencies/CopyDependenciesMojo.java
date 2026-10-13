@@ -45,6 +45,7 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.installation.InstallationException;
+import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.util.artifact.SubArtifact;
@@ -101,6 +102,16 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     @Parameter(property = "mdep.copySignatures", defaultValue = "false")
     protected boolean copySignatures;
+
+    /**
+     * Also copy the checksum files ({@code .sha1}, {@code .md5}, {@code .sha256} and {@code .sha512}) that sit next
+     * to each artifact and its POM in the local repository. Only used together with {@link #useRepositoryLayout};
+     * checksum files that do not exist in the local repository are skipped.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.copyChecksums", defaultValue = "false")
+    protected boolean copyChecksums;
 
     @Inject
     public CopyDependenciesMojo(
@@ -172,6 +183,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         try {
             getResolverUtil().installArtifact(artifact, repositorySystemSession);
             installBaseSnapshot(artifact, repositorySystemSession);
+            copyChecksumFiles(artifact, repositorySystemSession);
 
             if (!"pom".equals(artifact.getType()) && isCopyPom()) {
                 Artifact pomArtifact = getResolvedPomArtifact(artifact);
@@ -180,10 +192,47 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                         && pomArtifact.getFile().exists()) {
                     getResolverUtil().installArtifact(pomArtifact, repositorySystemSession);
                     installBaseSnapshot(pomArtifact, repositorySystemSession);
+                    copyChecksumFiles(pomArtifact, repositorySystemSession);
                 }
             }
         } catch (InstallationException e) {
             getLog().warn("unable to install " + artifact, e);
+        }
+    }
+
+    /**
+     * Copies the checksum files next to the artifact in the source local repository to the matching locations in the
+     * target repository layout, for both the artifact version and, for a timestamped snapshot, its base version.
+     */
+    private void copyChecksumFiles(Artifact artifact, RepositorySystemSession repositorySystemSession) {
+        if (!copyChecksums || artifact.getFile() == null) {
+            return;
+        }
+        LocalRepositoryManager localRepositoryManager = repositorySystemSession.getLocalRepositoryManager();
+        File baseDir = localRepositoryManager.getRepository().getBasedir();
+        org.eclipse.aether.artifact.Artifact aArtifact = RepositoryUtils.toArtifact(artifact);
+        copyChecksumFiles(
+                artifact.getFile(), new File(baseDir, localRepositoryManager.getPathForLocalArtifact(aArtifact)));
+        if (artifact.isSnapshot() && !artifact.getBaseVersion().equals(artifact.getVersion())) {
+            copyChecksumFiles(
+                    artifact.getFile(),
+                    new File(
+                            baseDir,
+                            localRepositoryManager.getPathForLocalArtifact(
+                                    aArtifact.setVersion(artifact.getBaseVersion()))));
+        }
+    }
+
+    private void copyChecksumFiles(File source, File destination) {
+        for (String extension : CHECKSUM_EXTENSIONS) {
+            File checksum = new File(source.getPath() + extension);
+            if (checksum.isFile()) {
+                try {
+                    copyUtil.copyFile(checksum, new File(destination.getPath() + extension));
+                } catch (IOException e) {
+                    getLog().warn("Failed to copy checksum file: " + checksum, e);
+                }
+            }
         }
     }
 
@@ -218,6 +267,8 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     }
 
     private static final String SIGNATURE_EXTENSION = ".asc";
+
+    private static final String[] CHECKSUM_EXTENSIONS = {".sha1", ".md5", ".sha256", ".sha512"};
 
     /**
      * Copies the Artifact after building the destination file name if overridden. This method also checks if the
