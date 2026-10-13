@@ -20,14 +20,14 @@
 import java.io.*;
 
 
-File file = new File( basedir, "target/dependency/junit-3.8.1.jar" );
+File file = new File( basedir, "target/dependency/unpack-fixture-1.0.jar" );
 
 assert file.isFile() : "Missing " + file;
 
-file = new File( basedir, "target/dependency/junit" );
+file = new File( basedir, "target/dependency/fixture" );
 assert file.isDirectory() : "Missing " + file;
 
-file = new File( basedir, "target/repo/junit/junit/3.8.1/junit-3.8.1.jar" );
+file = new File( basedir, "target/repo/org/apache/maven/its/dependency/unpack-fixture/1.0/unpack-fixture-1.0.jar" );
 assert file.isFile() : "Missing " + file;
 
 return true;

@@ -24,9 +24,9 @@ File projectProperties = new File( basedir, "target/project.properties" );
 Properties props = new Properties();
 props.load( new FileInputStream( projectProperties ) );
 
-String junitJarPath = props.getProperty( "junit:junit:jar" );
-assert junitJarPath != null : "junit:junit:jar is null";
-assert (new File( junitJarPath )).isFile() : "junit jar is not a file: " + junitJarPath;
+String fixtureJarPath = props.getProperty( "org.apache.maven.its.dependency:unpack-fixture:jar" );
+assert fixtureJarPath != null : "org.apache.maven.its.dependency:unpack-fixture:jar is null";
+assert (new File( fixtureJarPath )).isFile() : "unpack-fixture jar is not a file: " + fixtureJarPath;
 
 String mavenArtifactPath = props.getProperty( "org.apache.maven:maven-artifact:jar" );
 assert mavenArtifactPath != null : "org.apache.maven:maven-artifact:jar is null";
