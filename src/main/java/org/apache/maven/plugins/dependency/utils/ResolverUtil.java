@@ -330,9 +330,11 @@ public class ResolverUtil {
             List<RemoteRepository> remoteProjectRepositories,
             DependencyFilter dependencyFilter)
             throws DependencyResolutionException {
+        // The root is set as an artifact rather than as a dependency: a root dependency makes the session's
+        // DependencySelector treat the project's direct dependencies as transitive and drop provided and test ones.
         CollectRequest collectRequest =
-                new CollectRequest(new Dependency(rootArtifact, null), dependencies, remoteProjectRepositories);
-        collectRequest.setManagedDependencies(managedDependencies);
+                new CollectRequest(dependencies, managedDependencies, remoteProjectRepositories);
+        collectRequest.setRootArtifact(rootArtifact);
         return resolveDependencies(collectRequest, dependencyFilter);
     }
 
