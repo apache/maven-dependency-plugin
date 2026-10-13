@@ -135,6 +135,10 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     @Override
     protected void doExecute() throws MojoExecutionException {
+        if (copyChecksums && !useRepositoryLayout) {
+            getLog().warn(
+                            "copyChecksums only applies together with useRepositoryLayout, no checksum files are copied.");
+        }
         DependencyStatusSets dss = getDependencySets(this.failOnMissingClassifierArtifact, addParentPoms);
         Set<Artifact> artifacts = dss.getResolvedDependencies();
 
@@ -201,8 +205,9 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     }
 
     /**
-     * Copies the checksum files next to the artifact in the source local repository to the matching locations in the
-     * target repository layout, for both the artifact version and, for a timestamped snapshot, its base version.
+     * Copies the checksum files next to the artifact in the source local repository to the matching location in the
+     * target repository layout. The local repository manager names a timestamped snapshot by its base version, as
+     * the installed artifact is.
      */
     private void copyChecksumFiles(Artifact artifact, RepositorySystemSession repositorySystemSession) {
         if (!copyChecksums || artifact.getFile() == null) {
@@ -213,14 +218,6 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         org.eclipse.aether.artifact.Artifact aArtifact = RepositoryUtils.toArtifact(artifact);
         copyChecksumFiles(
                 artifact.getFile(), new File(baseDir, localRepositoryManager.getPathForLocalArtifact(aArtifact)));
-        if (artifact.isSnapshot() && !artifact.getBaseVersion().equals(artifact.getVersion())) {
-            copyChecksumFiles(
-                    artifact.getFile(),
-                    new File(
-                            baseDir,
-                            localRepositoryManager.getPathForLocalArtifact(
-                                    aArtifact.setVersion(artifact.getBaseVersion()))));
-        }
     }
 
     private void copyChecksumFiles(File source, File destination) {
