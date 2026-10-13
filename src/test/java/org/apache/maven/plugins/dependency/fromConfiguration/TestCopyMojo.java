@@ -682,6 +682,54 @@ class TestCopyMojo {
         assertEquals("3.1", item.getVersion());
     }
 
+    private void installVersions(String... versions) throws IOException {
+        File artifactDir = new File(tempDir, "localTestRepo/remote/ranged");
+        Files.createDirectories(artifactDir.toPath());
+        StringBuilder metadata = new StringBuilder(
+                "<metadata><groupId>remote</groupId><artifactId>ranged</artifactId><versioning><versions>");
+        for (String version : versions) {
+            File dir = new File(artifactDir, version);
+            Files.createDirectories(dir.toPath());
+            Files.write(new File(dir, "ranged-" + version + ".jar").toPath(), version.getBytes(StandardCharsets.UTF_8));
+            metadata.append("<version>").append(version).append("</version>");
+        }
+        metadata.append("</versions></versioning></metadata>");
+        Files.write(
+                new File(artifactDir, "maven-metadata-local.xml").toPath(),
+                metadata.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    private ArtifactItem rangedItem(String range) {
+        ArtifactItem item = new ArtifactItem();
+        item.setGroupId("remote");
+        item.setArtifactId("ranged");
+        item.setVersion(range);
+        return item;
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testVersionRangeResolvesToHighestVersion(CopyMojo mojo) throws Exception {
+        installVersions("1.0", "1.5", "2.0");
+        mojo.setArtifactItems(Collections.singletonList(rangedItem("[1.0,2.0)")));
+
+        mojo.execute();
+
+        assertTrue(new File(mojo.getOutputDirectory(), "ranged-1.5.jar").isFile());
+        assertFalse(new File(mojo.getOutputDirectory(), "ranged-2.0.jar").exists());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testVersionRangeWithoutMatchingVersion(CopyMojo mojo) throws Exception {
+        installVersions("1.0", "2.0");
+        mojo.setArtifactItems(Collections.singletonList(rangedItem("[3.0,4.0)")));
+
+        MojoExecutionException e = assertThrows(MojoExecutionException.class, mojo::execute);
+
+        assertTrue(e.getMessage().contains("[3.0,4.0)"), e.getMessage());
+    }
+
     @Test
     @InjectMojo(goal = "copy")
     void testCopyFromRemoteRepositories(CopyMojo mojo) throws Exception {

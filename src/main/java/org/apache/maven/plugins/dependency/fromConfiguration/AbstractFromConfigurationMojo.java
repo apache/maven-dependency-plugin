@@ -43,6 +43,7 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.VersionRangeResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -276,7 +277,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
                 extension = artifactItem.getType();
             }
 
-            DefaultArtifact artifact = new DefaultArtifact(
+            org.eclipse.aether.artifact.Artifact artifact = new DefaultArtifact(
                     artifactItem.getGroupId(),
                     artifactItem.getArtifactId(),
                     classifier,
@@ -285,12 +286,22 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
 
             RepositorySystemSession repositorySession = createSystemSessionForLocalRepo();
 
+            List<RemoteRepository> repositories = getRemoteRepositories();
+
+            String version = artifactItem.getVersion().trim();
+            if (version.startsWith("[") || version.startsWith("(")) {
+                artifact = resolverUtil.resolveVersionRange(artifact, repositories, repositorySession);
+                getLog().debug("Version range " + version + " resolved to " + artifact.getVersion());
+            }
+
             org.eclipse.aether.artifact.Artifact resolvedArtifact =
-                    resolverUtil.resolveArtifactWithFallback(artifact, getRemoteRepositories(), repositorySession);
+                    resolverUtil.resolveArtifactWithFallback(artifact, repositories, repositorySession);
             return RepositoryUtils.toArtifact(resolvedArtifact);
 
         } catch (IllegalArgumentException e) {
             throw new MojoExecutionException(e.getMessage(), e);
+        } catch (VersionRangeResolutionException e) {
+            throw new MojoExecutionException("Unable to resolve version range " + artifactItem.getVersion() + ".", e);
         } catch (ArtifactResolutionException e) {
             throw new MojoExecutionException("Unable to find/resolve artifact.", e);
         }
