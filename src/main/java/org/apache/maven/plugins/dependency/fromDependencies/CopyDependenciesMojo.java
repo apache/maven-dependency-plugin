@@ -95,6 +95,17 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     protected boolean addParentPoms;
 
     /**
+     * Add the POMs of the BOMs that the project and its parents import with {@code <scope>import</scope>} in their
+     * {@code dependencyManagement} (and of the parents and imports of those BOMs) to the list of copied dependencies,
+     * so that the copied POMs stay resolvable. Use it together with {@link #addParentPoms}; it is a separate parameter
+     * so that the output of {@code addParentPoms} does not change. Inclusion and exclusion filters still apply.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.addImportedBoms", defaultValue = "false")
+    protected boolean addImportedBoms;
+
+    /**
      * Also copy the signature files (.asc) of each artifact.
      *
      * @since 3.2.0
@@ -124,7 +135,8 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     @Override
     protected void doExecute() throws MojoExecutionException {
-        DependencyStatusSets dss = getDependencySets(this.failOnMissingClassifierArtifact, addParentPoms);
+        DependencyStatusSets dss =
+                getDependencySets(this.failOnMissingClassifierArtifact, addParentPoms, addImportedBoms);
         Set<Artifact> artifacts = dss.getResolvedDependencies();
 
         if (!useRepositoryLayout) {
