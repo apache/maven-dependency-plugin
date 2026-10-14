@@ -45,6 +45,7 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.installation.InstallationException;
+import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.util.artifact.SubArtifact;
@@ -151,6 +152,10 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
             RepositorySystemSession repositorySystemSession = getResolverUtil().localRepositorySession(outputDirectory);
 
             artifacts.forEach(artifact -> installArtifact(artifact, repositorySystemSession));
+            if (isCopyPom()) {
+                // Artifacts that already exist may not yet have poms
+                dss.getSkippedDependencies().forEach(artifact -> installMissingPom(artifact, repositorySystemSession));
+            }
         }
 
         Set<Artifact> skippedArtifacts = dss.getSkippedDependencies();
@@ -184,6 +189,37 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
             }
         } catch (InstallationException e) {
             getLog().warn("unable to install " + artifact, e);
+        }
+    }
+
+    /**
+     * Install the pom of an artifact that was skipped because it already exists in the destination, unless the pom
+     * exists there too.
+     */
+    private void installMissingPom(Artifact artifact, RepositorySystemSession repositorySystemSession) {
+        if ("pom".equals(artifact.getType())) {
+            return;
+        }
+        // Check the destination first, resolving the POM may mean a remote request.
+        LocalRepositoryManager localRepositoryManager = repositorySystemSession.getLocalRepositoryManager();
+        File pomDestFile = new File(
+                localRepositoryManager.getRepository().getBasedir(),
+                localRepositoryManager.getPathForLocalArtifact(
+                        new SubArtifact(RepositoryUtils.toArtifact(artifact), null, "pom")));
+        if (pomDestFile.exists()) {
+            return;
+        }
+        Artifact pomArtifact = getResolvedPomArtifact(artifact);
+        if (pomArtifact == null
+                || pomArtifact.getFile() == null
+                || !pomArtifact.getFile().exists()) {
+            return;
+        }
+        try {
+            getResolverUtil().installArtifact(pomArtifact, repositorySystemSession);
+            installBaseSnapshot(pomArtifact, repositorySystemSession);
+        } catch (InstallationException e) {
+            getLog().warn("unable to install " + pomArtifact, e);
         }
     }
 
