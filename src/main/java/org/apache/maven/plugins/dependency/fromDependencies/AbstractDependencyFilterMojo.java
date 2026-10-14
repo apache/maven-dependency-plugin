@@ -36,9 +36,11 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
+import org.apache.maven.plugins.dependency.resolvers.ExcludeReactorProjectsArtifactFilter;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.plugins.dependency.utils.filters.ExcludeOptionalArtifactsFilter;
 import org.apache.maven.plugins.dependency.utils.translators.ArtifactTranslator;
 import org.apache.maven.plugins.dependency.utils.translators.ClassifierTypeTranslator;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
@@ -268,6 +270,25 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
+     * Whether optional artifacts must be excluded. Goals exposing the {@code excludeOptional} parameter override this.
+     *
+     * @return {@code false} by default
+     */
+    protected boolean isExcludeOptional() {
+        return false;
+    }
+
+    /**
+     * Whether artifacts that are reactor projects must be excluded. Goals exposing the {@code excludeReactor}
+     * parameter override this.
+     *
+     * @return {@code false} by default
+     */
+    protected boolean isExcludeReactor() {
+        return false;
+    }
+
+    /**
      * Return an {@link ArtifactsFilter} indicating which artifacts must be filtered out.
      *
      * @return an {@link ArtifactsFilter} indicating which artifacts must be filtered out
@@ -338,6 +359,14 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
         filter.addFilter(new ArtifactIdFilter(
                 DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
                 DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
+
+        if (isExcludeOptional()) {
+            filter.addFilter(new ExcludeOptionalArtifactsFilter());
+        }
+
+        if (isExcludeReactor()) {
+            filter.addFilter(new ExcludeReactorProjectsArtifactFilter(session.getProjects(), getLog()));
+        }
 
         // start with all artifacts.
         Set<Artifact> artifacts;
