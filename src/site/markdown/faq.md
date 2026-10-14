@@ -84,6 +84,9 @@ you will exclude everything. If you only want foo, then just specify the include
 unpack uses the following code to determine which files to unpack:
 `return isIncluded( name ) AND !isExcluded( name );`
 
+When excludes are set, the default excludes of the file selector (for example `.svn`, `CVS` and `.git`) apply as well.
+Set `useDefaultExcludes` to `false` to unpack those files too.
+
 <a id="unused"></a>
 
 ### Why does my dependency analysis report `Unused declared dependencies`?

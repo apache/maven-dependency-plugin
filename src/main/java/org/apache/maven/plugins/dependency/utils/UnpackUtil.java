@@ -66,11 +66,42 @@ public class UnpackUtil {
     }
 
     /**
+     * Unpacks with the default excludes (such as {@code .svn} and {@code .git}) applied whenever excludes are set.
+     *
      * @param file              file to unpack
      * @param type              file / artifact type
      * @param location          the location
      * @param includes          includes list
      * @param excludes          excludes list
+     * @param encoding          the encoding
+     * @param ignorePermissions ignore permissions
+     * @param fileMappers       {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
+     *                          rewriting shall happen
+     * @param logger            a Mojo logger
+     * @throws MojoExecutionException in case of an error
+     */
+    public void unpack(
+            File file,
+            String type,
+            File location,
+            String includes,
+            String excludes,
+            String encoding,
+            boolean ignorePermissions,
+            FileMapper[] fileMappers,
+            Log logger)
+            throws MojoExecutionException {
+        unpack(file, type, location, includes, excludes, true, encoding, ignorePermissions, fileMappers, logger);
+    }
+
+    /**
+     * @param file              file to unpack
+     * @param type              file / artifact type
+     * @param location          the location
+     * @param includes          includes list
+     * @param excludes          excludes list
+     * @param useDefaultExcludes whether the default excludes (such as {@code .svn} and {@code .git}) are applied
+     *                          when excludes are set
      * @param encoding          the encoding
      * @param ignorePermissions ignore permissions
      * @param fileMappers       {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
@@ -85,6 +116,7 @@ public class UnpackUtil {
             File location,
             String includes,
             String excludes,
+            boolean useDefaultExcludes,
             String encoding,
             boolean ignorePermissions,
             FileMapper[] fileMappers,
@@ -134,6 +166,10 @@ public class UnpackUtil {
                         new IncludeExcludeFileSelector[] {new IncludeExcludeFileSelector()};
 
                 if (excludes != null && !excludes.isEmpty()) {
+                    // Only here: setUseDefaultExcludes() recomputes the exclude patterns, so calling it for an
+                    // includes-only selector would start dropping .svn, .git and so on, which were extracted so far.
+                    // It also has to precede setExcludes().
+                    selectors[0].setUseDefaultExcludes(useDefaultExcludes);
                     selectors[0].setExcludes(excludes.split(","));
                 }
 
