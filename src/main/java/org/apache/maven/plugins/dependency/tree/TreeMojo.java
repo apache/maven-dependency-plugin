@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -171,7 +173,10 @@ public class TreeMojo extends AbstractMojo {
     private DependencyNode rootNode;
 
     /**
-     * Whether to append outputs into the output file or overwrite it.
+     * Whether to append outputs into the output file or overwrite it. For <code>outputType=dot</code> the output
+     * of each execution, as in a multi-module build, is added to the one graph in the file instead of starting
+     * another one. The merge is serialized within one Maven JVM only, not across processes. A file left by a
+     * previous build is extended, so delete it first.
      *
      * @since 2.2
      */
@@ -219,11 +224,16 @@ public class TreeMojo extends AbstractMojo {
                 rootNode = dependencyTreeBuilder.build(project, session.getRepositorySession(), artifactFilter);
             }
 
-            String dependencyTreeString = serializeDependencyTree(rootNode);
+            boolean joinDotGraphs = outputFile != null && appendOutput && "dot".equals(outputType);
+            String dependencyTreeString = serializeDependencyTree(rootNode, !joinDotGraphs);
 
             if (outputFile != null) {
                 String encoding = Objects.toString(outputEncoding, "UTF-8");
-                DependencyUtil.write(dependencyTreeString, outputFile, this.appendOutput, encoding);
+                if (joinDotGraphs) {
+                    addToDotGraph(dependencyTreeString, rootNode.toNodeString(), outputFile, encoding);
+                } else {
+                    DependencyUtil.write(dependencyTreeString, outputFile, this.appendOutput, encoding);
+                }
 
                 getLog().info("Wrote dependency tree to: " + outputFile);
             } else {
@@ -298,16 +308,50 @@ public class TreeMojo extends AbstractMojo {
      * @param theRootNode the dependency tree root node to serialize
      * @return the serialized dependency tree
      */
-    private String serializeDependencyTree(DependencyNode theRootNode) {
+    private String serializeDependencyTree(DependencyNode theRootNode, boolean dotGraphEnvelope) {
         StringWriter writer = new StringWriter();
 
         DependencyNode displayed =
                 theRootNode.filter(null, createExcludesDependencyNodeFilter(), createIncludesDependencyNodeFilter());
         if (displayed != null) {
-            displayed.accept(getSerializingDependencyNodeVisitor(writer));
+            displayed.accept(
+                    dotGraphEnvelope
+                            ? getSerializingDependencyNodeVisitor(writer)
+                            : new DOTDependencyNodeVisitor(writer, false));
         }
 
         return writer.toString();
+    }
+
+    /**
+     * Adds the edges of a tree to the DOT graph in the file, so that the trees of the modules of a reactor build end
+     * up in one graph. A file that does not hold a graph yet gets one, named after the root of this tree.
+     */
+    private static synchronized void addToDotGraph(String edges, String rootLabel, File file, String encoding)
+            throws IOException {
+        Charset charset = Charset.forName(encoding);
+        String existing = file.isFile() ? new String(Files.readAllBytes(file.toPath()), charset) : "";
+        int close = existing.lastIndexOf('}');
+        if (existing.trim().isEmpty()) {
+            DependencyUtil.write(
+                    DOTDependencyNodeVisitor.graphStart(rootLabel) + edges + DOTDependencyNodeVisitor.graphEnd(),
+                    file,
+                    false,
+                    encoding);
+        } else if (existing.contains("digraph")
+                && close >= 0
+                && existing.substring(close + 1).trim().isEmpty()) {
+            String open = existing.substring(0, close).replaceAll("\\s+$", "");
+            DependencyUtil.write(
+                    open + System.lineSeparator() + edges + DOTDependencyNodeVisitor.graphEnd(), file, false, encoding);
+        } else {
+            // not a graph written by this goal, append as before
+            DependencyUtil.write(
+                    DOTDependencyNodeVisitor.graphStart(rootLabel) + edges + DOTDependencyNodeVisitor.graphEnd(),
+                    file,
+                    true,
+                    encoding);
+        }
     }
 
     /**
