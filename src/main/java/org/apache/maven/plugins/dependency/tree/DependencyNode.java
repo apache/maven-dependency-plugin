@@ -37,6 +37,8 @@ public class DependencyNode {
 
     private List<DependencyNode> children = Collections.emptyList();
 
+    private VerboseInfo verboseInfo;
+
     /**
      * @param parent the parent node, or <code>null</code> for the root
      * @param artifact the artifact of this node
@@ -62,6 +64,22 @@ public class DependencyNode {
 
     public void setChildren(List<DependencyNode> children) {
         this.children = children;
+    }
+
+    /**
+     * @return why the node is omitted and what was managed, or <code>null</code> if the tree was not built verbose
+     * @since 3.12.0
+     */
+    public VerboseInfo getVerboseInfo() {
+        return verboseInfo;
+    }
+
+    /**
+     * @param verboseInfo see {@link #getVerboseInfo()}
+     * @since 3.12.0
+     */
+    public void setVerboseInfo(VerboseInfo verboseInfo) {
+        this.verboseInfo = verboseInfo;
     }
 
     /**
@@ -104,6 +122,7 @@ public class DependencyNode {
         }
 
         DependencyNode copy = new DependencyNode(newParent, artifact, nodeString);
+        copy.setVerboseInfo(verboseInfo);
         List<DependencyNode> copiedChildren = new ArrayList<>(children.size());
         for (DependencyNode child : children) {
             DependencyNode copiedChild = child.filter(copy, keep, include);
@@ -118,5 +137,78 @@ public class DependencyNode {
 
         copy.setChildren(copiedChildren);
         return copy;
+    }
+
+    /**
+     * What the verbose tree knows about a node besides its artifact: whether it is omitted and why, and the version and
+     * scope that dependency management or scope selection replaced.
+     *
+     * @since 3.12.0
+     */
+    public static final class VerboseInfo {
+        /**
+         * The node repeats an artifact of the same version that is kept elsewhere in the tree.
+         */
+        public static final String OMITTED_FOR_DUPLICATE = "duplicate";
+
+        /**
+         * The node loses to another version of the artifact.
+         */
+        public static final String OMITTED_FOR_CONFLICT = "conflict";
+
+        private final String omittedReason;
+
+        private final String winnerVersion;
+
+        private final String premanagedVersion;
+
+        private final String premanagedScope;
+
+        private final String scopeNotUpdatedTo;
+
+        /**
+         * @param omittedReason {@link #OMITTED_FOR_DUPLICATE}, {@link #OMITTED_FOR_CONFLICT} or <code>null</code> if
+         *            the node is included
+         * @param winnerVersion the version kept instead of this node, <code>null</code> if the node is included
+         * @param premanagedVersion the version before dependency management, or <code>null</code>
+         * @param premanagedScope the scope before dependency management, or <code>null</code>
+         * @param scopeNotUpdatedTo the scope that scope selection wanted but did not apply, or <code>null</code>
+         */
+        public VerboseInfo(
+                String omittedReason,
+                String winnerVersion,
+                String premanagedVersion,
+                String premanagedScope,
+                String scopeNotUpdatedTo) {
+            this.omittedReason = omittedReason;
+            this.winnerVersion = winnerVersion;
+            this.premanagedVersion = premanagedVersion;
+            this.premanagedScope = premanagedScope;
+            this.scopeNotUpdatedTo = scopeNotUpdatedTo;
+        }
+
+        public boolean isIncluded() {
+            return omittedReason == null;
+        }
+
+        public String getOmittedReason() {
+            return omittedReason;
+        }
+
+        public String getWinnerVersion() {
+            return winnerVersion;
+        }
+
+        public String getPremanagedVersion() {
+            return premanagedVersion;
+        }
+
+        public String getPremanagedScope() {
+            return premanagedScope;
+        }
+
+        public String getScopeNotUpdatedTo() {
+            return scopeNotUpdatedTo;
+        }
     }
 }

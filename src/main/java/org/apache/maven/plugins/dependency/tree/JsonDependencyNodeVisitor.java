@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
@@ -84,7 +87,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
             return;
         }
         visited.add(node);
-        appendNodeValues(sb, indent, node.getArtifact(), !node.getChildren().isEmpty());
+        appendNodeValues(sb, indent, node, !node.getChildren().isEmpty());
         if (!node.getChildren().isEmpty()) {
             writeChildren(indent, node, sb, visited);
         }
@@ -123,20 +126,60 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      *
      * @param sb  the string builder to append to
      * @param indent  the current indent level
-     * @param artifact  the artifact to write
-     * @param hasChildren  true if the artifact has children
+     * @param node  the node whose artifact, and verbose information if present, is written
+     * @param hasChildren  true if the node has children
      */
-    private void appendNodeValues(StringBuilder sb, int indent, Artifact artifact, boolean hasChildren) {
+    private void appendNodeValues(StringBuilder sb, int indent, DependencyNode node, boolean hasChildren) {
+        Artifact artifact = node.getArtifact();
+        Map<String, String> verboseValues = verboseValues(node.getVerboseInfo());
         appendKeyValue(sb, indent, "groupId", artifact.getGroupId());
         appendKeyValue(sb, indent, "artifactId", artifact.getArtifactId());
         appendKeyValue(sb, indent, "version", artifact.getVersion());
         appendKeyValue(sb, indent, "type", artifact.getType());
         appendKeyValue(sb, indent, "scope", artifact.getScope());
         appendKeyValue(sb, indent, "classifier", artifact.getClassifier());
-        if (hasChildren) {
+        if (hasChildren || !verboseValues.isEmpty()) {
             appendKeyValue(sb, indent, "optional", String.valueOf(artifact.isOptional()));
         } else {
             appendKeyWithoutComma(sb, indent, "optional", String.valueOf(artifact.isOptional()));
+        }
+
+        Iterator<Map.Entry<String, String>> entries = verboseValues.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry<String, String> entry = entries.next();
+            sb.append(indent(indent))
+                    .append("\"")
+                    .append(entry.getKey())
+                    .append("\": ")
+                    .append(entry.getValue())
+                    .append(entries.hasNext() || hasChildren ? "," : "")
+                    .append(System.lineSeparator());
+        }
+    }
+
+    /**
+     * The additional JSON values of a verbose node, in output order. The values are already JSON strings, like the
+     * existing <code>optional</code>.
+     */
+    private static Map<String, String> verboseValues(DependencyNode.VerboseInfo info) {
+        Map<String, String> values = new LinkedHashMap<>();
+        if (info == null) {
+            return values;
+        }
+        putString(values, "included", String.valueOf(info.isIncluded()));
+        putString(values, "omittedReason", info.getOmittedReason());
+        if (DependencyNode.VerboseInfo.OMITTED_FOR_CONFLICT.equals(info.getOmittedReason())) {
+            putString(values, "winnerVersion", info.getWinnerVersion());
+        }
+        putString(values, "versionManagedFrom", info.getPremanagedVersion());
+        putString(values, "scopeManagedFrom", info.getPremanagedScope());
+        putString(values, "scopeNotUpdatedTo", info.getScopeNotUpdatedTo());
+        return values;
+    }
+
+    private static void putString(Map<String, String> values, String key, String value) {
+        if (value != null) {
+            values.put(key, "\"" + value + "\"");
         }
     }
     /**
