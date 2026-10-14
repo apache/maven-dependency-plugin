@@ -35,6 +35,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
@@ -45,6 +46,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.AssertionsKt.assertNull;
@@ -111,6 +113,56 @@ class TestCopyMojo {
         assertEquals("c", item.getVersion());
         assertEquals("d", item.getType());
         assertEquals("e", item.getClassifier());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:c:d:e:f.jar")
+    void testSetArtifactWithDestFileName(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("a", item.getGroupId());
+        assertEquals("b", item.getArtifactId());
+        assertEquals("c", item.getVersion());
+        assertEquals("d", item.getType());
+        assertEquals("e", item.getClassifier());
+        assertEquals("f.jar", item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:c::jar")
+    void testSetArtifactEmptyTokenCollapses(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("jar", item.getType());
+        assertNull(item.getClassifier());
+        assertNull(item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:c:jar::name.jar")
+    void testSetArtifactDestFileNameWithoutClassifier(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("jar", item.getType());
+        assertNull(item.getClassifier());
+        assertEquals("name.jar", item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:c:d::f.jar")
+    void testSetArtifactWithDestFileNameWithoutClassifier(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("d", item.getType());
+        assertNull(item.getClassifier());
+        assertEquals("f.jar", item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testSetArtifactWithTooManyTokens(CopyMojo mojo) {
+        MojoFailureException e = assertThrows(MojoFailureException.class, () -> mojo.setArtifact("a:b:c:d:e:f.jar:g"));
+        assertTrue(e.getMessage().contains("groupId:artifactId:version[:packaging[:classifier[:destFileName]]]"));
     }
 
     @Test

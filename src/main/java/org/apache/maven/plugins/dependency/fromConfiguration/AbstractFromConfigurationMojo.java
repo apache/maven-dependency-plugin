@@ -347,36 +347,39 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     }
 
     /**
-     * @param artifact the artifact
+     * @param artifact the artifact, in the form {@code groupId:artifactId:version[:packaging[:classifier[:destFileName]]]}
      * @throws MojoFailureException in case of an error
      */
     public void setArtifact(String artifact) throws MojoFailureException {
         if (artifact != null) {
-            String packaging = "jar";
-            String classifier;
-            String[] tokens = StringUtils.split(artifact, ":");
-            if (tokens.length < 3 || tokens.length > 5) {
+            // Only the six token form keeps empty tokens, so that an empty classifier can precede a destFileName.
+            // Otherwise empty tokens collapse, as before: "g:a:v::jar" has the packaging "jar".
+            String[] tokens = StringUtils.splitPreserveAllTokens(artifact, ":");
+            boolean withDestFileName = tokens.length == 6;
+            if (!withDestFileName) {
+                tokens = StringUtils.split(artifact, ":");
+            }
+            if (tokens.length < 3 || tokens.length > 6) {
                 throw new MojoFailureException("Invalid artifact, "
-                        + "you must specify groupId:artifactId:version[:packaging[:classifier]] " + artifact);
+                        + "you must specify groupId:artifactId:version[:packaging[:classifier[:destFileName]]] "
+                        + artifact);
             }
-            String groupId = tokens[0];
-            String artifactId = tokens[1];
-            String version = tokens[2];
-            if (tokens.length >= 4) {
-                packaging = tokens[3];
-            }
-            if (tokens.length == 5) {
-                classifier = tokens[4];
-            } else {
-                classifier = null;
+            if (withDestFileName
+                    && (tokens[0].isEmpty() || tokens[1].isEmpty() || tokens[2].isEmpty() || tokens[5].isEmpty())) {
+                throw new MojoFailureException("Invalid artifact, "
+                        + "you must specify groupId:artifactId:version[:packaging[:classifier[:destFileName]]] "
+                        + artifact);
             }
 
             ArtifactItem artifactItem = new ArtifactItem();
-            artifactItem.setGroupId(groupId);
-            artifactItem.setArtifactId(artifactId);
-            artifactItem.setVersion(version);
-            artifactItem.setType(packaging);
-            artifactItem.setClassifier(classifier);
+            artifactItem.setGroupId(tokens[0]);
+            artifactItem.setArtifactId(tokens[1]);
+            artifactItem.setVersion(tokens[2]);
+            artifactItem.setType(tokens.length >= 4 && !tokens[3].isEmpty() ? tokens[3] : "jar");
+            artifactItem.setClassifier(tokens.length >= 5 && !tokens[4].isEmpty() ? tokens[4] : null);
+            if (withDestFileName) {
+                artifactItem.setDestFileName(tokens[5]);
+            }
 
             setArtifactItems(Collections.singletonList(artifactItem));
         }
