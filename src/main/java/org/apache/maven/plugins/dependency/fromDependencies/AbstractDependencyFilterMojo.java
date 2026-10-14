@@ -21,11 +21,14 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 import javax.inject.Inject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
@@ -33,6 +36,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Profile;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
@@ -68,6 +72,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  * @see org.apache.maven.plugins.dependency.AbstractDependencyMojo
  */
 public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMojo {
+    private static final Pattern EXPRESSION = Pattern.compile("\\$\\{([^}]+)}");
 
     /**
      * Overwrite release artifacts.
@@ -308,6 +313,22 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
      */
     protected DependencyStatusSets getDependencySets(boolean stopOnFailure, boolean includeParents)
             throws MojoExecutionException {
+        return getDependencySets(stopOnFailure, includeParents, false);
+    }
+
+    /**
+     * Method creates filters and filters the projects dependencies. This method also transforms the dependencies if
+     * classifier is set. The dependencies are filtered in least specific to most specific order.
+     *
+     * @param stopOnFailure true to fail if artifacts can't be resolved false otherwise
+     * @param includeParents <code>true</code> if parents should be included or not <code>false</code>
+     * @param includeImportedBoms <code>true</code> if the import-scoped BOMs of the project and of the parents should
+     *            be included or not <code>false</code>
+     * @return DependencyStatusSets - Bean of TreeSets that contains information on the projects dependencies
+     * @throws MojoExecutionException in case of errors
+     */
+    protected DependencyStatusSets getDependencySets(
+            boolean stopOnFailure, boolean includeParents, boolean includeImportedBoms) throws MojoExecutionException {
 
         // add filters in well known order, least specific to most specific
         FilterArtifacts filter = new FilterArtifacts();
@@ -358,6 +379,13 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
             // add current project parent
             addParentArtifacts(getProject(), parentArtifacts);
+        }
+        if (includeImportedBoms) {
+            Set<String> visitedBoms = new HashSet<>();
+            for (Artifact dep : artifacts) {
+                addImportedBomArtifacts(buildProjectFromArtifact(dep), parentArtifacts, visitedBoms);
+            }
+            addImportedBomArtifacts(getProject(), parentArtifacts, visitedBoms);
         }
 
         // perform filtering
@@ -412,6 +440,123 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
                 throw new MojoExecutionException(e.getMessage(), e);
             }
         }
+    }
+
+    /**
+     * Adds the POMs of the BOMs that the project and its parents import in their dependencyManagement, together with
+     * the parents and imports of those BOMs. The effective model no longer lists the import-scoped entries, so they are
+     * read from the original models.
+     */
+    private void addImportedBomArtifacts(MavenProject project, Set<Artifact> artifacts, Set<String> visited)
+            throws MojoExecutionException {
+        for (MavenProject current = project; current != null; current = current.getParent()) {
+            List<Dependency> managedDependencies = new ArrayList<>();
+            if (current.getOriginalModel().getDependencyManagement() != null) {
+                managedDependencies.addAll(
+                        current.getOriginalModel().getDependencyManagement().getDependencies());
+            }
+            for (Profile profile : current.getActiveProfiles()) {
+                if (profile.getDependencyManagement() != null) {
+                    managedDependencies.addAll(profile.getDependencyManagement().getDependencies());
+                }
+            }
+            for (Dependency managed : managedDependencies) {
+                if (!Artifact.SCOPE_IMPORT.equals(managed.getScope()) || !"pom".equals(managed.getType())) {
+                    continue;
+                }
+                String groupId = interpolate(managed.getGroupId(), project);
+                String artifactId = interpolate(managed.getArtifactId(), project);
+                String version = interpolate(managed.getVersion(), project);
+                if (groupId.contains("${") || artifactId.contains("${") || version.contains("${")) {
+                    getLog().warn("Skipping imported BOM " + managed.getManagementKey() + ":" + managed.getVersion()
+                            + " of " + current.getId() + ", its coordinates cannot be interpolated.");
+                    continue;
+                }
+                if (!visited.add(groupId + ':' + artifactId + ':' + version)) {
+                    continue;
+                }
+                try {
+                    org.eclipse.aether.artifact.Artifact resolvedBom = resolverUtil.resolveArtifact(
+                            new org.eclipse.aether.artifact.DefaultArtifact(groupId, artifactId, "pom", version),
+                            project.getRemoteProjectRepositories());
+                    Artifact bomArtifact = RepositoryUtils.toArtifact(resolvedBom);
+                    artifacts.add(bomArtifact);
+
+                    MavenProject bomProject = buildProjectFromArtifact(bomArtifact);
+                    addParentArtifacts(bomProject, artifacts);
+                    addImportedBomArtifacts(bomProject, artifacts, visited);
+                } catch (ArtifactResolutionException | ArtifactDescriptorException e) {
+                    throw new MojoExecutionException(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the value of an environment variable, a seam for tests.
+     *
+     * @param name name of the environment variable
+     * @return the value, or {@code null} if it is not set
+     */
+    String getEnvironmentVariable(String name) {
+        return System.getenv(name);
+    }
+
+    String interpolate(String value, MavenProject project) {
+        if (value == null) {
+            return "";
+        }
+        Matcher matcher = EXPRESSION.matcher(value);
+        StringBuffer result = new StringBuffer();
+        while (matcher.find()) {
+            String key = matcher.group(1);
+            String replacement;
+            switch (key) {
+                case "project.groupId":
+                case "pom.groupId":
+                    replacement = project.getGroupId();
+                    break;
+                case "project.artifactId":
+                case "pom.artifactId":
+                    replacement = project.getArtifactId();
+                    break;
+                case "project.version":
+                case "pom.version":
+                    replacement = project.getVersion();
+                    break;
+                case "project.parent.groupId":
+                case "pom.parent.groupId":
+                    replacement =
+                            project.getParent() != null ? project.getParent().getGroupId() : null;
+                    break;
+                case "project.parent.artifactId":
+                case "pom.parent.artifactId":
+                    replacement =
+                            project.getParent() != null ? project.getParent().getArtifactId() : null;
+                    break;
+                case "project.parent.version":
+                case "pom.parent.version":
+                case "parent.version":
+                    replacement =
+                            project.getParent() != null ? project.getParent().getVersion() : null;
+                    break;
+                default:
+                    replacement = session.getUserProperties().getProperty(key);
+                    if (replacement == null) {
+                        replacement = project.getProperties().getProperty(key);
+                    }
+                    if (replacement == null) {
+                        replacement = session.getSystemProperties().getProperty(key);
+                    }
+                    if (replacement == null && key.startsWith("env.")) {
+                        replacement = getEnvironmentVariable(key.substring("env.".length()));
+                    }
+            }
+            matcher.appendReplacement(
+                    result, Matcher.quoteReplacement(replacement != null ? replacement : matcher.group()));
+        }
+        matcher.appendTail(result);
+        return result.toString();
     }
 
     /**
