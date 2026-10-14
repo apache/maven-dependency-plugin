@@ -187,6 +187,8 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
                         artifactItem.getArtifact(), removeVersion, prependGroupId, useBaseVersion, removeClassifier));
             }
 
+            applyMojoConfiguration(artifactItem);
+
             try {
                 artifactItem.setNeedsProcessing(checkIfProcessingNeeded(artifactItem));
             } catch (ArtifactFilterException e) {
@@ -194,6 +196,16 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             }
         }
         return artifactItems;
+    }
+
+    /**
+     * Copies mojo level settings that are not configured on the item into the item. Runs before the marker lookup, so
+     * the marker file name is computed from the same settings that are used when the marker is written.
+     *
+     * @param artifactItem the item to complete
+     */
+    void applyMojoConfiguration(ArtifactItem artifactItem) {
+        // nothing to apply by default
     }
 
     private boolean checkIfProcessingNeeded(ArtifactItem item) throws ArtifactFilterException {
