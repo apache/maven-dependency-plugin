@@ -313,7 +313,7 @@ class ResolverUtilTest {
     }
 
     @Test
-    void resolveDependenciesForArtifactWithFilter() throws Exception {
+    void resolveDependenciesForArtifactWithFilterKeepsDirectDependenciesOfAllScopes() throws Exception {
         Artifact rootArtifact = new DefaultArtifact("org.apache.maven.plugins", "artifact", "jar", "1.0");
         DependencyResult dependencyResult = new DependencyResult(new DependencyRequest());
         when(sessionProvider.get()).thenReturn(mavenSession);
@@ -332,11 +332,8 @@ class ResolverUtilTest {
                 .resolveDependencies(
                         eq(repositorySystemSession),
                         argThat(request -> request.getFilter() == dependencyFilter
-                                && request.getCollectRequest().getRootArtifact() == null
-                                && request.getCollectRequest()
-                                        .getRoot()
-                                        .getArtifact()
-                                        .equals(rootArtifact)));
+                                && request.getCollectRequest().getRoot() == null
+                                && request.getCollectRequest().getRootArtifact().equals(rootArtifact)));
     }
 
     @Test

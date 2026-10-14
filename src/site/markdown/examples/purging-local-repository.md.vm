@@ -85,6 +85,12 @@ Specific dependencies from the current project dependency tree can be included o
 </project>
 ```
 
+Each include or exclude entry is a pattern of the form `groupId[:artifactId[:type[:version]]]`. Trailing elements can be left out, and `*` matches any sequence of characters in an element. The `type` element matches either the dependency's type, such as `test-jar` or `ejb-client`, or the file extension of its artifact, such as `jar`. For example, `org.example:lib:test-jar` selects the test jar of `org.example:lib` without selecting its main jar.
+
+```shell
+mvn dependency:purge-local-repository -Dinclude=org.example:lib:test-jar
+```
+
 The includes/excludes configuration can also be passed from the CLI using the "include" or "exclude" parameter.
 
 ```shell
@@ -109,7 +115,7 @@ mvn dependency:purge-local-repository -DmanualInclude=org.apache:apache
 Other purge configuration
 -------------------------
 
-To purge all the dependencies of a given groupId, use the `resolutionFuzziness` configuration parameter.
+To purge all the dependencies of a given groupId, use the `resolutionFuzziness` configuration parameter. Combined with `snapshotsOnly`, the `artifactId` and `groupId` values delete only the snapshot versions below the artifactId or groupId directory and keep its release versions.
 
 If neither `includes` nor `excludes` are specified, all the dependencies of the current project are purged.
 
