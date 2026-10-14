@@ -127,6 +127,7 @@ _Notes:_
     - Use _artifactItem.destFileName_ to override the default file name.
     - Use _stripVersion_ to remove _version_ from default file name. This field is ignored when _artifactId.destFileName_ is set.
     - Use _artifactItem.outputDirectory_ to override the plugin's _outputDirectory_ configuration per _artifactItem_.
+- Use _remoteRepositories_ to resolve the artifacts from additional repositories, for example `-DremoteRepositories=myrepo::https://repo.acme.com/maven2`. The repositories of the project are still used.
 
 `dependency:copy-dependencies`
 ------------------------------
@@ -261,6 +262,10 @@ you must not put the configuration inside the _executions_ tag. Your configurati
   [...]
 </project>
 ```
+
+_Notes:_
+
+- Use _remoteRepositories_ to resolve the artifacts from additional repositories, for example `-DremoteRepositories=myrepo::https://repo.acme.com/maven2`. The repositories of the project are still used.
 
 `dependency:unpack-dependencies`
 --------------------------------
