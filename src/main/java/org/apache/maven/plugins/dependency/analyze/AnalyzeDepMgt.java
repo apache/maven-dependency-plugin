@@ -74,6 +74,25 @@ public class AnalyzeDepMgt extends AbstractMojo {
     @Parameter(property = "mdep.analyze.skip", defaultValue = "false")
     private boolean skip;
 
+    /**
+     * List of dependencies that are skipped by the mismatch and exclusion checks. The filter syntax is:
+     *
+     * <pre>
+     * [groupId]:[artifactId]:[type]:[version]:[scope]
+     * </pre>
+     *
+     * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
+     * segment is treated as an implicit wildcard.
+     * <p>
+     * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
+     * <code>org.apache.</code>, and <code>:::*:test</code> will match all test scoped artifacts.
+     * </p>
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.analyze.ignoredDependencies")
+    private String[] ignoredDependencies = new String[0];
+
     @Inject
     public AnalyzeDepMgt(MavenProject project) {
         this.project = project;
@@ -90,6 +109,8 @@ public class AnalyzeDepMgt extends AbstractMojo {
             getLog().info("Skipping plugin execution");
             return;
         }
+
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredDependencies);
 
         boolean result = checkDependencyManagement();
         if (result) {
@@ -141,6 +162,8 @@ public class AnalyzeDepMgt extends AbstractMojo {
                 Set<Artifact> directDependencies = project.getDependencyArtifacts();
                 allDependencyArtifacts.removeAll(directDependencies);
             }
+
+            ArtifactPatternMatcher.removeMatching(allDependencyArtifacts, ignoredDependencies);
 
             // log exclusion errors
             List<Artifact> exclusionErrors = getExclusionErrors(exclusions, allDependencyArtifacts);
@@ -283,6 +306,13 @@ public class AnalyzeDepMgt extends AbstractMojo {
      */
     protected final MavenProject getProject() {
         return this.project;
+    }
+
+    /**
+     * @param theIgnoredDependencies the patterns of dependencies to skip
+     */
+    public void setIgnoredDependencies(String[] theIgnoredDependencies) {
+        this.ignoredDependencies = theIgnoredDependencies;
     }
 
     /**

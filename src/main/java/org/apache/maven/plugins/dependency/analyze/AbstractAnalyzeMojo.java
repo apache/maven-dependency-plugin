@@ -20,8 +20,6 @@ package org.apache.maven.plugins.dependency.analyze;
 
 import java.io.File;
 import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -31,13 +29,11 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerException;
@@ -167,11 +163,11 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * unused", the "used but undeclared", and the "non-test scoped" list. The filter syntax is:
      *
      * <pre>
-     * [groupId]:[artifactId]:[type]:[version]
+     * [groupId]:[artifactId]:[type]:[version]:[scope]
      * </pre>
      *
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
-     * segment is treated as an implicit wildcard. *
+     * segment is treated as an implicit wildcard. The <code>scope</code> segment is available since 3.12.0.
      * <p>
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
@@ -179,18 +175,18 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 2.10
      */
-    @Parameter
+    @Parameter(property = "mdep.analyze.ignoredDependencies")
     private String[] ignoredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are used but undeclared. The filter syntax is:
      *
      * <pre>
-     * [groupId]:[artifactId]:[type]:[version]
+     * [groupId]:[artifactId]:[type]:[version]:[scope]
      * </pre>
      *
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
-     * segment is treated as an implicit wildcard. *
+     * segment is treated as an implicit wildcard. The <code>scope</code> segment is available since 3.12.0.
      * <p>
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
@@ -198,18 +194,18 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 2.10
      */
-    @Parameter
+    @Parameter(property = "mdep.analyze.ignoredUsedUndeclaredDependencies")
     private String[] ignoredUsedUndeclaredDependencies = new String[0];
 
     /**
      * List of dependencies that are ignored if they are declared but unused. The filter syntax is:
      *
      * <pre>
-     * [groupId]:[artifactId]:[type]:[version]
+     * [groupId]:[artifactId]:[type]:[version]:[scope]
      * </pre>
      *
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
-     * segment is treated as an implicit wildcard. *
+     * segment is treated as an implicit wildcard. The <code>scope</code> segment is available since 3.12.0.
      * <p>
      * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
@@ -220,7 +216,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 2.10
      */
-    @Parameter
+    @Parameter(property = "mdep.analyze.ignoredUnusedDeclaredDependencies")
     private String[] ignoredUnusedDeclaredDependencies = new String[0];
 
     private String[] unconditionallyIgnoredDeclaredDependencies = {"org.slf4j:slf4j-simple::"};
@@ -230,11 +226,11 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * The filter syntax is:
      *
      * <pre>
-     * [groupId]:[artifactId]:[type]:[version]
+     * [groupId]:[artifactId]:[type]:[version]:[scope]
      * </pre>
      *
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
-     * segment is treated as an implicit wildcard. *
+     * segment is treated as an implicit wildcard. The <code>scope</code> segment is available since 3.12.0.
      * <p>
      * For example, <code>org.apache.*</code> matched all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
@@ -242,7 +238,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 3.3.0
      */
-    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    @Parameter(property = "mdep.analyze.ignoredNonTestScopedDependencies", defaultValue = "org.slf4j:slf4j-simple::")
     private String[] ignoredNonTestScopedDependencies;
 
     /**
@@ -300,6 +296,11 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
             getLog().info("Skipping project with no build directory");
             return;
         }
+
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredDependencies);
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredUsedUndeclaredDependencies);
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredUnusedDeclaredDependencies);
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredNonTestScopedDependencies);
 
         boolean warning = checkDependencies();
 
@@ -374,6 +375,14 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         } else {
             ignoredNonTestScope.addAll(filterDependencies(nonTestScope, ignoredDependencies));
             ignoredNonTestScope.addAll(filterDependencies(nonTestScope, ignoredNonTestScopedDependencies));
+            // an ignored used undeclared dependency is deliberately not declared, so its scope cannot be changed
+            for (Iterator<Artifact> it = nonTestScope.iterator(); it.hasNext(); ) {
+                Artifact artifact = it.next();
+                if (ignoredUsedUndeclared.contains(artifact)) {
+                    it.remove();
+                    ignoredNonTestScope.add(artifact);
+                }
+            }
         }
 
         boolean reported = false;
@@ -559,30 +568,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         }
     }
 
-    /**
-     * Removes artifacts matching any of the given exclude patterns from the source set
-     * and returns the removed artifacts. When {@code excludes} is null or empty, no
-     * artifacts are removed and an empty set is returned.
-     *
-     * @param artifacts the source set of artifacts (mutated in place)
-     * @param excludes  exclude patterns, may be null or empty
-     * @return the artifacts that were removed from the source set
-     */
     private Set<Artifact> filterDependencies(Set<Artifact> artifacts, String[] excludes) {
-        if (excludes == null || excludes.length == 0) {
-            return Collections.emptySet();
-        }
-        ArtifactFilter filter = new StrictPatternExcludesArtifactFilter(Arrays.asList(excludes));
-        Set<Artifact> result = new LinkedHashSet<>();
-
-        for (Iterator<Artifact> it = artifacts.iterator(); it.hasNext(); ) {
-            Artifact artifact = it.next();
-            if (!filter.include(artifact)) {
-                it.remove();
-                result.add(artifact);
-            }
-        }
-
-        return result;
+        return ArtifactPatternMatcher.removeMatching(artifacts, excludes);
     }
 }
