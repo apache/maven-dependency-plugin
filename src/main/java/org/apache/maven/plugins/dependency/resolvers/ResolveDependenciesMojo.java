@@ -94,6 +94,33 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
     private boolean outputAbsoluteArtifactFilename;
 
     /**
+     * The format of the output: <code>text</code> (default), <code>json</code> or <code>pom</code>.
+     * <p>
+     * <code>json</code> writes an object with the arrays <code>resolved</code>, <code>skipped</code> and
+     * <code>unresolved</code>, whose elements have the string members <code>groupId</code>,
+     * <code>artifactId</code>, <code>version</code>, <code>type</code>, <code>scope</code>, <code>classifier</code>
+     * and <code>optional</code>, like the JSON of <code>dependency:tree</code>, and <code>file</code> with
+     * <code>outputAbsoluteArtifactFilename</code>.
+     * </p>
+     * <p>
+     * <code>pom</code> writes the resolved artifacts as a <code>&lt;dependencies&gt;</code> fragment, with
+     * <code>type</code> unless it is <code>jar</code>, <code>classifier</code> if there is one and
+     * <code>scope</code> unless it is <code>compile</code>, and <code>optional</code> if it is, to paste into
+     * <code>dependencyManagement</code>. Artifacts without a scope, such as parent POMs added by
+     * <code>includeParents</code>, are left out.
+     * </p>
+     * Both ignore <code>outputScope</code> and <code>includeModuleInfo</code>.
+     * <p>
+     * The property <code>outputType</code> is shared with <code>dependency:tree</code>, so one
+     * <code>-DoutputType</code> value applies to both goals in the same command line.
+     * </p>
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "outputType", defaultValue = "text")
+    String outputType;
+
+    /**
      * Only used to store results for integration test validation.
      */
     DependencyStatusSets results;
@@ -142,10 +169,15 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
      */
     @Override
     protected void doExecute() throws MojoExecutionException {
+        if (!ResolvedDependenciesFormat.isSupported(outputType)) {
+            throw new MojoExecutionException(
+                    "Unsupported outputType '" + outputType + "', use one of text, json or pom");
+        }
+
         // get sets of dependencies
         results = this.getDependencySets(false, includeParents);
 
-        String output = getOutput(outputAbsoluteArtifactFilename, outputScope, sort);
+        String output = formatOutput();
         try {
             if (outputFile == null) {
                 DependencyUtil.log(output, getLog());
@@ -156,6 +188,18 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * @return the results in the format of {@link #outputType}
+     */
+    String formatOutput() {
+        if (ResolvedDependenciesFormat.JSON.equals(outputType)) {
+            return ResolvedDependenciesFormat.json(results, outputAbsoluteArtifactFilename, sort);
+        } else if (ResolvedDependenciesFormat.POM.equals(outputType)) {
+            return ResolvedDependenciesFormat.pom(results, sort);
+        }
+        return getOutput(outputAbsoluteArtifactFilename, outputScope, sort);
     }
 
     /**
