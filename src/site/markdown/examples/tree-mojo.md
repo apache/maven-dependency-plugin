@@ -26,7 +26,7 @@ under the License.
 
 # Dependency Tree Output Formats
 
-The `dependency:tree` goal of the Maven Dependency Plugin generates a representation of a project's dependency tree. The `outputType` parameter allows you to specify the output format, which can be written to a file using the `outputFile` parameter or printed to the console. Supported formats are `json`, `dot`, `graphml`, and `tgf`. This section describes each format, its structure, and example usage.
+The `dependency:tree` goal of the Maven Dependency Plugin generates a representation of a project's dependency tree. The `outputType` parameter allows you to specify the output format, which can be written to a file using the `outputFile` parameter or printed to the console. Supported formats are `json`, `dot`, `graphml`, `tgf`, and `mermaid` (since 3.12.0). This section describes each format, its structure, and example usage.
 
 ## Usage
 
@@ -36,7 +36,7 @@ To **generate** the dependency tree in a specific format, use the following comm
 mvn dependency:tree -DoutputType=<format> -DoutputFile=<filename>
 ```
 
-- `format`: One of `json`, `dot`, `graphml`, or `tgf`. If omitted, the default is a text-based tree printed to the console.
+- `format`: One of `json`, `dot`, `graphml`, `tgf`, or `mermaid`. If omitted, the default is a text-based tree printed to the console.
 - `filename`: The file to write the output to (e.g., `dependency-tree.json`). If omitted, the output is printed to the console.
 
     Example:
@@ -239,10 +239,42 @@ mvn dependency:tree -DoutputType=tgf -DoutputFile=dependency-tree.tgf
 
 **Use Case**: Lightweight format for simple graph processing or conversion to other graph formats.
 
+# <a id="Mermaid_.28outputType.3Dmermaid.29"></a>Mermaid (outputType\=mermaid)
+
+**Description**: A [Mermaid](https://mermaid.js.org/syntax/flowchart.html) flowchart, which GitHub, GitLab and many Markdown renderers draw directly. Available since 3.12.0.
+
+**Structure**:
+
+- **Graph Declaration**: `graph LR`, a left-to-right flowchart.
+- **Nodes**: One line per artifact, `n<number>["<groupId>:<artifactId>:<type>:<version>:<scope>"]`. Artifacts with the same label are the same node.
+- **Edges**: `parent -->|scope| dependency`.
+
+**Example**:
+
+```text
+graph LR
+	n0["org.example:app:jar:1.0"]
+	n1["org.example:lib:jar:1.0:compile"]
+	n0 -->|compile| n1
+	n2["org.example:util:jar:2.0:compile"]
+	n1 -->|compile| n2
+```
+
+**Usage Example**:
+
+```shell
+mvn dependency:tree -DoutputType=mermaid -DoutputFile=dependency-tree.mmd
+```
+
+With `-Dverbose`, an omitted node gets its own node and edge, as in the DOT format.
+
+**Use Case**: Paste the file into a fenced `mermaid` code block of a Markdown document to show the dependency graph.
+
 ## Notes
 
 - **Visualization Tools**:
     - **JSON**: Parse with any JSON-compatible tool (e.g., Python's `json` module, JavaScript's `JSON.parse`).
     - **DOT**: Use Graphviz (`dot` command) to generate PNG, SVG, or other visual formats.
     - **GraphML**: Use yEd, Gephi, or other GraphML-compatible tools for visualization.
+    - **Mermaid**: Paste into a `mermaid` code block, or render with the Mermaid CLI or the Mermaid live editor.
     - **TGF**: Use tools supporting TGF or convert to DOT/GraphML for visualization.

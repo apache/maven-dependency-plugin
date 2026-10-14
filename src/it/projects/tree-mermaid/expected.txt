@@ -1,0 +1,8 @@
+graph LR
+	n0["org.apache.maven.plugins.dependency.its:tree-mermaid:jar:1.0-SNAPSHOT"]
+	n1["org.apache.maven.its.dependency:scope-root:jar:1.0:compile"]
+	n0 -->|compile| n1
+	n2["org.apache.maven.its.dependency:scope-test-root:jar:1.0:test"]
+	n0 -->|test| n2
+	n3["org.apache.maven.its.dependency:scope-leaf:jar:1.0:compile"]
+	n1 -->|compile| n3
