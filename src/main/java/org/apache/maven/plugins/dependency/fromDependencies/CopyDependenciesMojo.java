@@ -115,16 +115,6 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     @Parameter(property = "mdep.copySignatures", defaultValue = "false")
     protected boolean copySignatures;
 
-    /**
-     * Also copy the checksum files ({@code .sha1}, {@code .md5}, {@code .sha256} and {@code .sha512}) that sit next
-     * to each artifact and its POM in the local repository. Only used together with {@link #useRepositoryLayout};
-     * checksum files that do not exist in the local repository are skipped.
-     *
-     * @since 3.12.0
-     */
-    @Parameter(property = "mdep.copyChecksums", defaultValue = "false")
-    protected boolean copyChecksums;
-
     @Inject
     public CopyDependenciesMojo(
             MavenSession session,
@@ -152,10 +142,6 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     @Override
     protected void doExecute() throws MojoExecutionException {
-        if (copyChecksums && !useRepositoryLayout) {
-            getLog().warn(
-                            "copyChecksums only applies together with useRepositoryLayout, no checksum files are copied.");
-        }
         DependencyStatusSets dss =
                 getDependencySets(this.failOnMissingClassifierArtifact, addParentPoms, addImportedBoms);
         Set<Artifact> artifacts = dss.getResolvedDependencies();
@@ -263,7 +249,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      * the installed artifact is.
      */
     private void copyChecksumFiles(Artifact artifact, RepositorySystemSession repositorySystemSession) {
-        if (!copyChecksums || artifact.getFile() == null) {
+        if (artifact.getFile() == null) {
             return;
         }
         LocalRepositoryManager localRepositoryManager = repositorySystemSession.getLocalRepositoryManager();

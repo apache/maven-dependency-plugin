@@ -23,7 +23,7 @@ under the License.
   <artifactId>mdep-654</artifactId>
   <version>1.0</version>
   <description>
-    MDEP-654: copy-dependencies with useRepositoryLayout and copyChecksums also copies the checksum files
+    MDEP-654: copy-dependencies with useRepositoryLayout also copies the checksum files
     that sit next to each artifact and POM in the local repository.
   </description>
   <dependencies>
@@ -40,7 +40,6 @@ under the License.
         <artifactId>maven-dependency-plugin</artifactId>
         <version>@project.version@</version>
         <configuration>
-          <useRepositoryLayout>true</useRepositoryLayout>
           <copyPom>true</copyPom>
         </configuration>
         <executions>
@@ -51,6 +50,7 @@ under the License.
             </goals>
             <configuration>
               <outputDirectory>${project.build.directory}/without-checksums</outputDirectory>
+              <useRepositoryLayout>false</useRepositoryLayout>
             </configuration>
           </execution>
           <execution>
@@ -60,7 +60,7 @@ under the License.
             </goals>
             <configuration>
               <outputDirectory>${project.build.directory}/with-checksums</outputDirectory>
-              <copyChecksums>true</copyChecksums>
+              <useRepositoryLayout>true</useRepositoryLayout>
             </configuration>
           </execution>
         </executions>
