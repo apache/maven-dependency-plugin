@@ -316,7 +316,6 @@ class TestCopyDependenciesMojo2 {
 
     @Test
     @InjectMojo(goal = "copy-dependencies")
-    @MojoParameter(name = "copyChecksums", value = "true")
     void testRepositoryLayoutCopiesChecksums(CopyDependenciesMojo mojo) throws Exception {
         Artifact artifact = stubFactory.createArtifact(
                 "testGroupId",
@@ -394,7 +393,7 @@ class TestCopyDependenciesMojo2 {
 
     @Test
     @InjectMojo(goal = "copy-dependencies")
-    void testRepositoryLayoutSkipsChecksumsByDefault(CopyDependenciesMojo mojo) throws Exception {
+    void testFlatLayoutDoesNotCopyChecksums(CopyDependenciesMojo mojo) throws Exception {
         Artifact artifact = stubFactory.createArtifact(
                 "testGroupId",
                 "artifact-without-checksums",
@@ -408,12 +407,12 @@ class TestCopyDependenciesMojo2 {
                 "sha1-value".getBytes(StandardCharsets.UTF_8));
         mojo.getProject().setArtifacts(Collections.singleton(artifact));
 
-        mojo.useRepositoryLayout = true;
+        mojo.useRepositoryLayout = false;
         mojo.execute();
 
-        Path artifactDirectory = mojo.outputDirectory.toPath().resolve("testGroupId/artifact-without-checksums/1.0");
-        assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-without-checksums-1.0.jar")));
-        assertFalse(Files.exists(artifactDirectory.resolve("artifact-without-checksums-1.0.jar.sha1")));
+        Path outputDirectory = mojo.outputDirectory.toPath();
+        assertTrue(Files.isRegularFile(outputDirectory.resolve("artifact-without-checksums-1.0.jar")));
+        assertFalse(Files.exists(outputDirectory.resolve("artifact-without-checksums-1.0.jar.sha1")));
     }
 
     private Artifact createExpandedVersionArtifact(

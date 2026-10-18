@@ -17,13 +17,13 @@
  * under the License.
  */
 
-// MDEP-654: checksum files from the local repository are copied only when copyChecksums is set.
+// MDEP-654: with useRepositoryLayout, the checksum files from the local repository are copied too.
 def relative = 'org/apache/maven/its/dependency/mdep654-dep/1.0'
 def localRepo = new File(localRepositoryPath, relative)
 assert new File(localRepo, 'mdep654-dep-1.0.jar.sha1').isFile() : "No jar checksum in the local repository ${localRepo}"
 
 def withDir = new File(basedir, "target/with-checksums/${relative}")
-def withoutDir = new File(basedir, "target/without-checksums/${relative}")
+def withoutDir = new File(basedir, "target/without-checksums")
 ['mdep654-dep-1.0.jar', 'mdep654-dep-1.0.pom'].each { name ->
     assert new File(withDir, name).isFile()
     assert new File(withoutDir, name).isFile()
