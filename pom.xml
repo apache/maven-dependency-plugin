@@ -96,7 +96,7 @@ under the License.
     <resolverVersion>1.9.27</resolverVersion>
     <slf4jVersion>1.7.36</slf4jVersion>
     <mockito.version>4.11.0</mockito.version>
-    <plexus-archiver.version>4.14.0</plexus-archiver.version>
+    <plexus-archiver.version>4.15.0</plexus-archiver.version>
     <pluginTestingVersion>3.5.1</pluginTestingVersion>
 
     <!-- strict check by dependency:analyze-only -->
