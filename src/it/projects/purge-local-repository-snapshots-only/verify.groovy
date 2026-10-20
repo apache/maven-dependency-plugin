@@ -19,12 +19,12 @@
 
 import java.io.*;
 
-File nonPurgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purged-snapshots-only/1.0/purged-snapshots-only-1.0.jar" );
+File nonPurgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge/snapshots/purged-snapshots-only/1.0/purged-snapshots-only-1.0.jar" );
 
 assert nonPurgedJar.exists() : "JAR was purged: " + nonPurgedJar;
 
 
-File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/snap-purged/1.0-SNAPSHOT/snap-purged-1.0-SNAPSHOT.jar" );
+File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge/snapshots/snap-purged/1.0-SNAPSHOT/snap-purged-1.0-SNAPSHOT.jar" );
 
 assert !purgedJar.exists() : "JAR was not purged: " + purgedJar;
 

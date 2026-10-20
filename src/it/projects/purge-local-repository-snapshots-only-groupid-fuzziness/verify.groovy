@@ -17,7 +17,7 @@
  * under the License.
  */
 
-String groupPath = "org/apache/maven/its/dependency/"
+String groupPath = "org/apache/maven/its/dependency/purge/groupid/"
 
 void checkAbsence( String path )
 {
