@@ -60,6 +60,8 @@ import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
 import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
@@ -194,12 +196,15 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
 
         List<org.eclipse.aether.graph.Dependency> managedDependencies = managedDependencies(artifactTypeRegistry);
 
-        return getResolverUtil()
-                .resolveDependenciesForArtifact(
-                        RepositoryUtils.toArtifact(getProject().getArtifact()),
-                        dependableCoordinates,
-                        managedDependencies,
-                        getProject().getRemoteProjectRepositories());
+        DependencyFilter graphReactorFilter = null;
+        if (this.excludeReactor) {
+            graphReactorFilter = new ExcludeReactorProjectsGraphDependencyFilter(session.getProjects());
+        }
+
+        CollectRequest collectRequest = new CollectRequest(
+                dependableCoordinates, managedDependencies, getProject().getRemoteProjectRepositories());
+        collectRequest.setRootArtifact(RepositoryUtils.toArtifact(getProject().getArtifact()));
+        return getResolverUtil().resolveDependencies(collectRequest, graphReactorFilter);
     }
 
     /**
