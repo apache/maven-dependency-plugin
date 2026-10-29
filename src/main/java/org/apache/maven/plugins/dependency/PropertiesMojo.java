@@ -134,10 +134,9 @@ public class PropertiesMojo extends AbstractMojo {
                     String conflictId = toConflictId(artifact);
                     File file = artifact.getFile();
                     if (file != null) {
-                      this.project.getProperties().setProperty(conflictId, file.getAbsolutePath());
-                    }
-                    else {
-                      getLog().warn("Extra artifact " + conflictId
+                        this.project.getProperties().setProperty(conflictId, file.getAbsolutePath());
+                    } else {
+                        getLog().warn("Extra artifact " + conflictId
                                 + " has no associated file; no property will be set for it.");
                     }
                 }
