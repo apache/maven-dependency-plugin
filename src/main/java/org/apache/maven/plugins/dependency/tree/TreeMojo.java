@@ -139,7 +139,8 @@ public class TreeMojo extends AbstractMojo {
      * Paths leading to included artifacts are retained. If an artifact is also beneath a subtree matched by
      * {@link #excludes}, the exclusion takes precedence and the artifact is not included.
      *
-     * @see StrictPatternIncludesArtifactFilter
+     * The patterns are matched by {@code StrictPatternIncludesArtifactFilter}.
+     *
      * @since 2.0-alpha-6
      */
     @Parameter(property = "includes")
@@ -162,7 +163,8 @@ public class TreeMojo extends AbstractMojo {
      * A matching artifact and its entire dependency subtree are removed from the serialized dependency tree.
      * Exclusions are applied before {@link #includes} and take precedence.
      *
-     * @see StrictPatternExcludesArtifactFilter
+     * The patterns are matched by {@code StrictPatternExcludesArtifactFilter}.
+     *
      * @since 2.0-alpha-6
      */
     @Parameter(property = "excludes")

@@ -85,7 +85,7 @@ public class AddDependencyMojo extends AbstractDependencyMojo {
     /**
      * Dependency scope. Validated against Maven's known scope values:
      * {@code compile}, {@code provided}, {@code runtime}, {@code test}, {@code system}, {@code import}.
-     * Invalid values are rejected with a {@link org.apache.maven.plugin.MojoFailureException}.
+     * Invalid values are rejected with a {@code MojoFailureException}.
      *
      * @since 3.11.0
      */

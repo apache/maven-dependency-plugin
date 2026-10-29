@@ -98,7 +98,7 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     private boolean ignorePermissions;
 
     /**
-     * {@link FileMapper} to be used for rewriting each target path, or {@code null} if no rewriting shall happen.
+     * {@code FileMapper} to be used for rewriting each target path, or {@code null} if no rewriting shall happen.
      *
      * @since 3.1.2
      */

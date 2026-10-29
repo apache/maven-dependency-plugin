@@ -103,7 +103,7 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
     private String encoding;
 
     /**
-     * {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting shall happen.
+     * {@code FileMapper}s to be used for rewriting each target path, or {@code null} if no rewriting shall happen.
      *
      * @since 3.1.2
      */
