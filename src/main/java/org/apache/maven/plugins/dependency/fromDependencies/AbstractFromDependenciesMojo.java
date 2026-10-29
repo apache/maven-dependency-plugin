@@ -36,7 +36,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 public abstract class AbstractFromDependenciesMojo extends AbstractDependencyFilterMojo {
     /**
      * If we should exclude optional dependencies, that is artifacts for which
-     * {@link org.apache.maven.artifact.Artifact#isOptional()} is {@code true}.
+     * {@code Artifact.isOptional()} is {@code true}.
      * This has no effect when {@code graphRoots} is set, because the artifacts of a sub tree are converted without the
      * optional flag of their dependency.
      *
