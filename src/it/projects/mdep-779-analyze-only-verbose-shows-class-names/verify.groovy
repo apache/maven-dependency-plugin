@@ -23,10 +23,10 @@ String log = FileUtils.fileRead( new File( basedir, "build.log" ) );
 
 log = StringUtils.unifyLineSeparators(log, "\n");
 
-String expected = "[WARNING] Used undeclared dependencies found:\n" +
+String expected = "[WARNING] Used undeclared dependencies found in org.apache.maven.shared.dependency-analyzer.tests:usedUndeclaredReference:\n" +
                   "[WARNING]    commons-io:commons-io:jar:2.11.0:compile\n" +
                   "[WARNING]       class org.apache.commons.io.IOUtils\n" +
-                  "[WARNING] Unused declared dependencies found:\n" +
+                  "[WARNING] Unused declared dependencies found in org.apache.maven.shared.dependency-analyzer.tests:usedUndeclaredReference:\n" +
                   "[WARNING]    org.apache.maven.shared:maven-shared-utils:jar:3.4.2:compile";
 
 assert log.contains(expected) : "Expected warning missing";

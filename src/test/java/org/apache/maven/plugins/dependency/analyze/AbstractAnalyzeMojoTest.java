@@ -94,6 +94,8 @@ class AbstractAnalyzeMojoTest {
         when(container.lookup(ProjectDependencyAnalyzer.class, "default")).thenReturn(analyzer);
 
         MavenProject project = new MavenProject();
+        project.setGroupId("org.example");
+        project.setArtifactId("module-a");
         project.setPackaging("jar");
         mojo = new AnalyzeOnlyMojo(container, project);
         log = mock(Log.class);
@@ -118,9 +120,23 @@ class AbstractAnalyzeMojoTest {
         mojo.execute();
 
         assertThat(warnings())
-                .contains("Non-test scoped test only dependencies found:")
+                .contains("Non-test scoped test only dependencies found in org.example:module-a:")
                 .anyMatch(line ->
                         line.contains("joda-time:joda-time:jar:1.0:compile") && !line.startsWith("Used undeclared"));
+    }
+
+    @Test
+    void warningHeadersNameTheModule() throws Exception {
+        Artifact junit = artifact("junit", "junit", Artifact.SCOPE_COMPILE);
+        analysisIs(new ProjectDependencyAnalysis(
+                Collections.emptySet(), setOf(jodaTime), setOf(junit), Collections.emptySet()));
+
+        mojo.execute();
+
+        assertThat(warnings())
+                .contains(
+                        "Used undeclared dependencies found in org.example:module-a:",
+                        "Unused declared dependencies found in org.example:module-a:");
     }
 
     @Test
@@ -129,7 +145,7 @@ class AbstractAnalyzeMojoTest {
 
         mojo.execute();
 
-        assertThat(warnings()).doesNotContain("Non-test scoped test only dependencies found:");
+        assertThat(warnings()).doesNotContain("Non-test scoped test only dependencies found in org.example:module-a:");
     }
 
     private void analysisIs(ProjectDependencyAnalysis analysis) throws Exception {
@@ -146,7 +162,8 @@ class AbstractAnalyzeMojoTest {
 
         mojo.execute();
 
-        assertThat(warnings()).contains("Unused declared dependencies found:", "   " + provided);
+        assertThat(warnings())
+                .contains("Unused declared dependencies found in org.example:module-a:", "   " + provided);
         assertThat(warnings()).doesNotContain("   " + junit);
         ArgumentCaptor<CharSequence> info = ArgumentCaptor.forClass(CharSequence.class);
         verify(log, atLeast(1)).info(info.capture());

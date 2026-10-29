@@ -98,6 +98,8 @@ class AnalyzeMojoIgnoreTest {
     @BeforeEach
     void setUp() {
         lenient().when(project.getPackaging()).thenReturn("jar");
+        lenient().when(project.getGroupId()).thenReturn("org.example");
+        lenient().when(project.getArtifactId()).thenReturn("module-a");
     }
 
     @Test
@@ -220,7 +222,7 @@ class AnalyzeMojoIgnoreTest {
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoExecutionException.class)
                 .hasMessage("Dependency problems found");
-        verify(log).error("Unused declared dependencies found:");
+        verify(log).error("Unused declared dependencies found in org.example:module-a:");
         verify(log).error("   " + MAVEN_PROJECT_RUNTIME);
     }
 

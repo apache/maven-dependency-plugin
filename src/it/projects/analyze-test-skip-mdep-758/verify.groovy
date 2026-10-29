@@ -19,7 +19,7 @@
 
 String log = new File( basedir, "build.log" ).getText( "UTF-8" );
 
-int unused = log.indexOf( "Unused declared dependencies found:" );
+int unused = log.indexOf( "Unused declared dependencies found in org.apache.maven.its.dependency:test:" );
 assert unused >= 0 : "expected an unused declared dependencies warning in build.log";
 String report = log.substring( unused );
 assert report.contains( "org.apache.maven.its.dependency:scope-root:jar:1.0:provided" ) :

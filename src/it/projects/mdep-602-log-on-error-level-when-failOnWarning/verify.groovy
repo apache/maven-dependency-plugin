@@ -21,7 +21,7 @@ File file = new File( basedir, "build.log" )
 assert file.exists()
 
 String buildLog = file.getText( "UTF-8" )
-assert buildLog.contains( '[ERROR] Unused declared dependencies found:')
+assert buildLog.contains( '[ERROR] Unused declared dependencies found in org.apache.maven.plugins.dependency:mdep-602-log-on-error-level-when-failOnWarning:')
 assert buildLog.contains( '[ERROR]    org.apache.maven:maven-project:jar:2.0.6:compile' )
 
 return true
