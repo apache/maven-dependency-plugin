@@ -222,7 +222,7 @@ class AnalyzeMojoIgnoreTest {
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoExecutionException.class)
                 .hasMessage("Dependency problems found");
-        verify(log).error("Unused declared dependencies found in org.example:module-a:");
+        verify(log).error("Unused declared dependencies found: (in org.example:module-a)");
         verify(log).error("   " + MAVEN_PROJECT_RUNTIME);
     }
 

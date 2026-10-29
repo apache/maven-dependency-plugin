@@ -120,7 +120,7 @@ class AbstractAnalyzeMojoTest {
         mojo.execute();
 
         assertThat(warnings())
-                .contains("Non-test scoped test only dependencies found in org.example:module-a:")
+                .contains("Non-test scoped test only dependencies found: (in org.example:module-a)")
                 .anyMatch(line ->
                         line.contains("joda-time:joda-time:jar:1.0:compile") && !line.startsWith("Used undeclared"));
     }
@@ -135,8 +135,8 @@ class AbstractAnalyzeMojoTest {
 
         assertThat(warnings())
                 .contains(
-                        "Used undeclared dependencies found in org.example:module-a:",
-                        "Unused declared dependencies found in org.example:module-a:");
+                        "Used undeclared dependencies found: (in org.example:module-a)",
+                        "Unused declared dependencies found: (in org.example:module-a)");
     }
 
     @Test
@@ -145,7 +145,8 @@ class AbstractAnalyzeMojoTest {
 
         mojo.execute();
 
-        assertThat(warnings()).doesNotContain("Non-test scoped test only dependencies found in org.example:module-a:");
+        assertThat(warnings())
+                .doesNotContain("Non-test scoped test only dependencies found: (in org.example:module-a)");
     }
 
     private void analysisIs(ProjectDependencyAnalysis analysis) throws Exception {
@@ -163,7 +164,7 @@ class AbstractAnalyzeMojoTest {
         mojo.execute();
 
         assertThat(warnings())
-                .contains("Unused declared dependencies found in org.example:module-a:", "   " + provided);
+                .contains("Unused declared dependencies found: (in org.example:module-a)", "   " + provided);
         assertThat(warnings()).doesNotContain("   " + junit);
         ArgumentCaptor<CharSequence> info = ArgumentCaptor.forClass(CharSequence.class);
         verify(log, atLeast(1)).info(info.capture());
