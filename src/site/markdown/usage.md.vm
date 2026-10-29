@@ -440,7 +440,7 @@ Sample output:
 
 ```unknown
 [INFO] [dependency:analyze]
-[WARNING] Used undeclared dependencies found:
+[WARNING] Used undeclared dependencies found: (in org.example:my-app)
 [WARNING]    classworlds:classworlds:jar:1.1-alpha-2:compile
 [WARNING]    org.apache.maven.shared:maven-invoker:jar:2.0.7-SNAPSHOT:test
 ```

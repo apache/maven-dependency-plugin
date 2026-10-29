@@ -426,7 +426,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         }
 
         if (!usedUndeclaredWithClasses.isEmpty()) {
-            logDependencyWarning("Used undeclared dependencies found:");
+            logDependencyWarning("Used undeclared dependencies found:" + inProject());
 
             if (verbose) {
                 logArtifacts(usedUndeclaredWithClasses);
@@ -438,7 +438,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         }
 
         if (!unusedDeclared.isEmpty()) {
-            logDependencyWarning("Unused declared dependencies found:");
+            logDependencyWarning("Unused declared dependencies found:" + inProject());
 
             logArtifacts(unusedDeclared, true);
             reported = true;
@@ -446,7 +446,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         }
 
         if (!nonTestScope.isEmpty()) {
-            logDependencyWarning("Non-test scoped test only dependencies found:");
+            logDependencyWarning("Non-test scoped test only dependencies found:" + inProject());
 
             logArtifacts(nonTestScope, true);
             reported = true;
@@ -524,6 +524,10 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                 }
             }
         }
+    }
+
+    private String inProject() {
+        return " (in " + project.getGroupId() + ":" + project.getArtifactId() + ")";
     }
 
     private void logDependencyWarning(CharSequence content) {
