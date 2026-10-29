@@ -85,6 +85,23 @@ Each ignore pattern has the form `[groupId]:[artifactId]:[type]:[version]:[scope
 
 The four lists can also be set on the command line, as comma-separated patterns, through the `mdep.analyze.ignoredDependencies`, `mdep.analyze.ignoredUsedUndeclaredDependencies`, `mdep.analyze.ignoredUnusedDeclaredDependencies` and `mdep.analyze.ignoredNonTestScopedDependencies` properties. The `dependency:analyze-dep-mgt` goal accepts the same patterns in its own `ignoredDependencies` parameter and skips the matching artifacts.
 
+## Dependencies that bytecode analysis cannot see
+
+The analysis reads class references from the compiled classes only. A dependency that the code reaches in another way is reported as "declared but unused", even though removing it breaks the build or the application at runtime. Typical cases are:
+
+* `ServiceLoader` (SPI) providers, such as a JDBC driver, a logging backend or a transport implementation, that are found through `META-INF/services`.
+* Sisu and Plexus components, which are found through `META-INF/sisu` or `META-INF/plexus/components.xml`.
+* Test engines and test infrastructure, such as `junit-jupiter-engine` or a Surefire provider, that the test runner loads by name.
+* Runtime-only libraries, such as a driver that is selected by a configuration value.
+
+Keep these dependencies declared, and tell the analysis about them in one of the following ways:
+
+* `usedDependencies` forces a dependency to count as used: `<usedDependencies><usedDependency>org.postgresql:postgresql</usedDependency></usedDependencies>`.
+* `ignoredUnusedDeclaredDependencies` hides the "declared but unused" warning for the matching dependencies. The pattern can select by scope, for example `org.acme:::*:runtime`.
+* `ignoreUnusedRuntime` ignores all runtime-scoped dependencies for the "declared but unused" check, and `ignoreNonCompile` ignores all runtime, provided, test and system-scoped dependencies.
+
+The reverse case is a test that uses a class from a provided or runtime dependency that reaches the project only transitively. The analysis reports it as "used undeclared", and the dependency belongs in the project's POM in `test` scope. The `ignoredNonTestScopedDependencies` list is for the different case where a `compile`-scoped dependency is used by tests only and is deliberately kept in that scope.
+
 Note that the `dependency:analyze-only` goal is used in preference to `dependency:analyze` since it doesn't force a further compilation of the project, but uses the compiled classes produced from the earlier `test-compile` phase in the lifecycle.
 
 The project's dependencies will then be automatically analyzed during the `verify` lifecycle phase, which can be executed explicitly as follows:
