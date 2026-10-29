@@ -46,8 +46,6 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -144,6 +142,52 @@ class TestTreeMojo {
     }
 
     /**
+     * Test the Mermaid format serialization
+     *
+     * @throws Exception in case of an error.
+     */
+    @Test
+    @InjectMojo(goal = "tree")
+    @MojoParameter(name = "outputType", value = "mermaid")
+    void testTreeMermaidSerializing(TreeMojo mojo) throws Exception {
+        List<String> contents = runTreeMojo(mojo);
+
+        assertEquals("graph LR", contents.get(0));
+        assertTrue(findString(contents, "[\"testGroupId:project:jar:1.0:compile\"]"));
+        assertTrue(findString(contents, "[\"testGroupId:snapshot:jar:2.0-SNAPSHOT:compile\"]"));
+        assertTrue(findString(contents, "[\"testGroupId:release:jar:1.0:compile\"]"));
+        assertEquals(
+                2,
+                contents.stream()
+                        .filter(line -> line.contains(" -->|compile| "))
+                        .count());
+    }
+
+    /**
+     * With appendOutput the DOT output of several executions, as in a reactor, stays one graph.
+     *
+     * @throws Exception in case of an error.
+     */
+    @Test
+    @InjectMojo(goal = "tree")
+    @MojoParameter(name = "outputType", value = "dot")
+    @MojoParameter(name = "appendOutput", value = "true")
+    void testTreeDotAppendOutputKeepsOneGraph(TreeMojo mojo) throws Exception {
+        runTreeMojo(mojo);
+        List<String> contents = runTreeMojo(mojo);
+
+        assertEquals(
+                1,
+                contents.stream().filter(line -> line.startsWith("digraph ")).count(),
+                "number of digraph declarations");
+        assertEquals("}", contents.get(contents.size() - 1).trim());
+        assertEquals(
+                1, contents.stream().filter(line -> line.trim().equals("}")).count());
+        assertEquals(
+                4, contents.stream().filter(line -> line.contains(" -> ")).count(), "the edges of both executions");
+    }
+
+    /**
      * Test the GraphML format serialization
      *
      * @throws Exception in case of an error.
@@ -188,8 +232,8 @@ class TestTreeMojo {
 
         Artifact artifact1 = this.stubFactory.createArtifact("testGroupId", "project1", "1.0");
         Artifact artifact2 = this.stubFactory.createArtifact("testGroupId", "project2", "1.0");
-        DefaultDependencyNode node1 = new DefaultDependencyNode(artifact1);
-        DefaultDependencyNode node2 = new DefaultDependencyNode(artifact2);
+        DependencyNode node1 = new DependencyNode(null, artifact1, artifact1.toString());
+        DependencyNode node2 = new DependencyNode(null, artifact2, artifact2.toString());
 
         node1.setChildren(new ArrayList<>());
         node2.setChildren(new ArrayList<>());

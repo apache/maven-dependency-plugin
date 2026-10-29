@@ -125,8 +125,10 @@ _Notes:_
 
 - By default, artifacts are copied into _outputDirectory_ using the Maven artifact file name convention (that is, _artifactId-version-classifier.type_). Use the following rules to override the default convention:
     - Use _artifactItem.destFileName_ to override the default file name.
+    - On the command line, give the file name as the sixth token of _artifact_: `mvn dependency:copy -Dartifact=groupId:artifactId:version:jar::name.jar` (the empty fifth token is the classifier). The form is `groupId:artifactId:version[:packaging[:classifier[:destFileName]]]`.
     - Use _stripVersion_ to remove _version_ from default file name. This field is ignored when _artifactId.destFileName_ is set.
     - Use _artifactItem.outputDirectory_ to override the plugin's _outputDirectory_ configuration per _artifactItem_.
+- Use _remoteRepositories_ to resolve the artifacts from additional repositories, for example `-DremoteRepositories=myrepo::https://repo.acme.com/maven2`. The repositories of the project are still used.
 
 `dependency:copy-dependencies`
 ------------------------------
@@ -262,6 +264,10 @@ you must not put the configuration inside the _executions_ tag. Your configurati
 </project>
 ```
 
+_Notes:_
+
+- Use _remoteRepositories_ to resolve the artifacts from additional repositories, for example `-DremoteRepositories=myrepo::https://repo.acme.com/maven2`. The repositories of the project are still used.
+
 `dependency:unpack-dependencies`
 --------------------------------
 
@@ -344,16 +350,28 @@ Examples:
 `dependency:resolve`
 --------------------
 
-Resolve is intended to be used from the command line like: `mvn dependency:resolve -Dsilent=true`
+Resolve is intended to be used from the command line like: `mvn dependency:resolve`
 
 This goal resolves all test and compile scoped dependencies and then displays the resolved versions. This ensures all dependencies are downloaded to the local repository. This is useful when troubleshooting or during intermittent remote repository failures when repeatedly building multiproject modules is undesirable and the build is failing on dependency resolution. It can also be used to quickly determine how versions are being resolved.
 
+Maven resolves the dependencies before the goal runs, so every dependency must be available as a file. In a multi-module project that has not been built yet, a module that depends on another module of the same build fails. Either run a phase that packages the modules in the same build, such as `mvn package dependency:resolve`, or use `dependency:collect`, which needs only the POM files. The `exclude*` and `include*` parameters filter what the goal displays; they do not stop Maven from resolving those dependencies.
+
 Artifacts can also be resolved by specifying the classifier and optionally type. Type is only used with the classifier and defaults to java-sources. When the classifier is set, the list of dependencies is used as the base to resolve artifacts with the classifier and type. For example: `mvn dependency:resolve -Dclassifier=test-jar` will try to find the test-jar for all dependencies resolve them to the local repository.
+
+The `outputType` parameter (since 3.12.0) of `dependency:resolve`, `dependency:list` and `dependency:collect` selects a machine-readable output, which `outputFile` writes to a file:
+
+- `text` is the default listing.
+- `json` writes an object with the arrays `resolved`, `skipped` and `unresolved`. Each element has the string members `groupId`, `artifactId`, `version`, `type`, `scope`, `classifier` and `optional` of the JSON of `dependency:tree`, and `file` with `-DoutputAbsoluteArtifactFilename`.
+- `pom` writes the resolved artifacts as a `<dependencies>` fragment, with `type` unless it is `jar`, `classifier` if there is one, `scope` unless it is `compile` and `optional` if it is, for example to start a `dependencyManagement` section.
+
+```
+mvn dependency:list -DoutputType=pom -DoutputFile=dependencies.xml
+```
 
 `dependency:resolve-sources`
 ----------------------------
 
-Resolve-sources is intended to be used from the command line like: `mvn dependency:resolve-sources -Dsilent=true`
+Resolve-sources is intended to be used from the command line like: `mvn dependency:resolve-sources`
 
 This is the same as the resolve goal except it includes the source attachments if they exist. This is useful when you want to download source attachments to your local repository.
 
@@ -362,7 +380,7 @@ You can also define the `markersDirectory` either in the `pom.xml` or settings t
 `dependency:resolve-plugins`
 ----------------------------
 
-Resolve-plugins is intended to be used from the command line like: `mvn dependency:resolve-plugins -Dsilent=true -DexcludeTransitive=true`
+Resolve-plugins is intended to be used from the command line like: `mvn dependency:resolve-plugins -DexcludeTransitive=true`
 
 This is the same as the resolve goal except it resolves plugins and optionally their dependencies.
 
@@ -488,6 +506,12 @@ This goal is used to include a report of the dependencies in the output of the `
  </reporting>
 ```
 
+Use `analyze-report-only` instead of `analyze-report` to render the same report without forking the `test-compile` phase, for example in a build that has already compiled the project:
+
+```xml
+            <report>analyze-report-only</report>
+```
+
 `dependency:tree`
 -----------------
 
@@ -511,10 +535,107 @@ Also, the `outputType` parameter can be used to generate different formats of ou
 - [dot](https://en.wikipedia.org/wiki/DOT_language)
 - [graphml](https://en.wikipedia.org/wiki/GraphML)
 - [tgf](https://en.wikipedia.org/wiki/Trivial_Graph_Format)
+- [mermaid](https://mermaid.js.org/syntax/flowchart.html) (since 3.12.0)
 
 ```
 mvn dependency:tree -DoutputFile=/path/to/file.graphml -DoutputType=graphml
 ```
+
+The `verbose` parameter explains the tree. By default the tree shows what Maven resolves: each artifact once, at the version and scope Maven selected. With `-Dverbose` the goal collects the dependencies again and also shows the nodes that Maven left out, and why:
+
+```
+mvn dependency:tree -Dverbose
+```
+
+For this project, whose `dependencyManagement` section sets `maven-model` to version `2.0.5` with scope `test`:
+
+```xml
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>2.0.5</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+
+<dependencies>
+  <dependency>
+    <groupId>org.apache.maven</groupId>
+    <artifactId>maven-project</artifactId>
+    <version>2.0.6</version>
+    <exclusions>
+      <exclusion>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-artifact</artifactId>
+      </exclusion>
+    </exclusions>
+  </dependency>
+  <dependency>
+    <groupId>org.apache.maven</groupId>
+    <artifactId>maven-profile</artifactId>
+    <version>2.0.4</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.apache.maven</groupId>
+    <artifactId>maven-model</artifactId>
+    <version>2.0.7</version>
+    <scope>runtime</scope>
+  </dependency>
+</dependencies>
+```
+
+the output is:
+
+```
+org.example:app:jar:1.0-SNAPSHOT
++- org.apache.maven:maven-project:jar:2.0.6:compile
+|  +- org.apache.maven:maven-settings:jar:2.0.6:compile
+|  |  +- (org.apache.maven:maven-model:jar:2.0.5:test - version managed from 2.0.6; scope managed from compile; omitted for conflict with 2.0.7)
+|  |  +- (org.codehaus.plexus:plexus-utils:jar:1.4.1:compile - omitted for duplicate)
+|  |  \- (org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1:compile - omitted for duplicate)
+|  +- (org.apache.maven:maven-profile:jar:2.0.6:compile - omitted for conflict with 2.0.4)
+|  +- (org.apache.maven:maven-model:jar:2.0.5:test - version managed from 2.0.6; scope managed from compile; omitted for conflict with 2.0.7)
+|  +- org.apache.maven:maven-artifact-manager:jar:2.0.6:compile
+|  |  +- org.apache.maven:maven-repository-metadata:jar:2.0.6:compile
+|  |  |  \- (org.codehaus.plexus:plexus-utils:jar:1.4.1:compile - omitted for duplicate)
+|  |  +- (org.codehaus.plexus:plexus-utils:jar:1.4.1:compile - omitted for duplicate)
+|  |  +- (org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1:compile - omitted for duplicate)
+|  |  \- org.apache.maven.wagon:wagon-provider-api:jar:1.0-beta-2:compile
+|  |     \- (org.codehaus.plexus:plexus-utils:jar:1.0.4:compile - omitted for conflict with 1.4.1)
+|  +- org.apache.maven:maven-plugin-registry:jar:2.0.6:compile
+|  |  +- (org.codehaus.plexus:plexus-utils:jar:1.4.1:compile - omitted for duplicate)
+|  |  \- (org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1:compile - omitted for duplicate)
+|  +- org.codehaus.plexus:plexus-utils:jar:1.4.1:compile
+|  \- org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1:compile
+|     +- junit:junit:jar:3.8.1:compile
+|     +- (org.codehaus.plexus:plexus-utils:jar:1.0.4:compile - omitted for conflict with 1.4.1)
+|     \- classworlds:classworlds:jar:1.1-alpha-2:compile
++- org.apache.maven:maven-profile:jar:2.0.4:test (scope not updated to compile)
+|  +- (org.apache.maven:maven-model:jar:2.0.5:test - version managed from 2.0.4; scope managed from compile; omitted for conflict with 2.0.7)
+|  +- (org.codehaus.plexus:plexus-utils:jar:1.1:test - omitted for conflict with 1.4.1)
+|  \- (org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9:test - omitted for conflict with 1.0-alpha-9-stable-1)
+\- org.apache.maven:maven-model:jar:2.0.7:runtime
+   \- (org.codehaus.plexus:plexus-utils:jar:1.4.1:runtime - omitted for duplicate)
+```
+
+A node in parentheses is omitted: Maven does not use it. The text after the dash says why:
+
+- `omitted for duplicate` means the same artifact and version appears elsewhere in the tree, closer to the root, and that node is the one in use. For example, `plexus-utils:1.4.1` below `maven-settings` is a repeat of the one directly below `maven-project`.
+- `omitted for conflict with <version>` means another version of the artifact is in use. Maven keeps the version of the node closest to the root, and the first one if they are equally close, so the node for `maven-model:2.0.7` below the root wins over the `2.0.5` that the other paths ask for. An artifact that often loses to another version is a candidate for a `dependencyManagement` entry or an exclusion.
+
+A node can also carry notes in parentheses after the artifact, without being omitted. A note does not change what the artifact is, it explains how it got there:
+
+- `version managed from <version>` means `dependencyManagement` replaced the version the dependency declared with the one shown. Maven 4 manages the dependencies of transitive dependencies as well, so with Maven 4 more nodes carry this note, some of them with the same version before and after.
+- `scope managed from <scope>` is the same for the scope. `maven-model:2.0.5:test` above was declared with scope `compile` and `dependencyManagement` set it to `test`.
+- `scope not updated to <scope>` means another path to the same artifact asked for a wider scope, here `compile` through `maven-project`, but the node shown keeps its own scope. A direct dependency keeps the scope the project declares, `test` for `maven-profile:2.0.4`, and a `system` scope is never widened.
+
+The notes combine with the omission: `version managed from 2.0.6; scope managed from compile; omitted for conflict with 2.0.7` is a node whose version and scope were managed, which then lost to another version.
+
+With `-DoutputType=json` and `-Dverbose`, each node also has `included`, `omittedReason`, `winnerVersion`, `versionManagedFrom`, `scopeManagedFrom` and `scopeNotUpdatedTo` members, where they apply; see [Dependency tree output formats](./examples/tree-mojo.html). The `includes` and `excludes` parameters filter the verbose tree as well.
 
 `dependency:build-classpath`
 ----------------------------

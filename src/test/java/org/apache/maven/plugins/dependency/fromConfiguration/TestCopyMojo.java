@@ -22,8 +22,11 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.maven.api.plugin.testing.InjectMojo;
@@ -35,6 +38,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
@@ -45,6 +49,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.AssertionsKt.assertNull;
@@ -115,6 +120,85 @@ class TestCopyMojo {
 
     @Test
     @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:1.0:d:e:f.jar")
+    void testSetArtifactWithDestFileName(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("a", item.getGroupId());
+        assertEquals("b", item.getArtifactId());
+        assertEquals("1.0", item.getVersion());
+        assertEquals("d", item.getType());
+        assertEquals("e", item.getClassifier());
+        assertEquals("f.jar", item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:c::jar")
+    void testSetArtifactEmptyTokenCollapses(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("jar", item.getType());
+        assertNull(item.getClassifier());
+        assertNull(item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:1.0:jar::name.jar")
+    void testSetArtifactDestFileNameWithoutClassifier(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("jar", item.getType());
+        assertNull(item.getClassifier());
+        assertEquals("name.jar", item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:1.0:d::f.jar")
+    void testSetArtifactWithDestFileNameWithoutClassifier(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("d", item.getType());
+        assertNull(item.getClassifier());
+        assertEquals("f.jar", item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:test-jar:tests:2.0:test")
+    void testSetArtifactInMavenForm(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("a", item.getGroupId());
+        assertEquals("b", item.getArtifactId());
+        assertEquals("2.0", item.getVersion());
+        assertEquals("test-jar", item.getType());
+        assertEquals("tests", item.getClassifier());
+        assertNull(item.getDestFileName());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "artifact", value = "a:b:jar:1.0")
+    void testSetArtifactInMavenFormWithoutClassifier(CopyMojo mojo) {
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals("1.0", item.getVersion());
+        assertEquals("jar", item.getType());
+        assertNull(item.getClassifier());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testSetArtifactWithSixthPartThatFitsNeitherForm(CopyMojo mojo) {
+        assertThrows(MojoFailureException.class, () -> mojo.setArtifact("a:b:c:d:e:f.jar"));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testSetArtifactWithTooManyTokens(CopyMojo mojo) {
+        MojoFailureException e = assertThrows(MojoFailureException.class, () -> mojo.setArtifact("a:b:c:d:e:f.jar:g"));
+        assertTrue(e.getMessage().contains("groupId:artifactId:version[:packaging[:classifier[:destFileName]]]"));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
     void testGetArtifactItems(CopyMojo mojo) throws Exception {
 
         ArtifactItem item = new ArtifactItem();
@@ -166,6 +250,54 @@ class TestCopyMojo {
         mojo.execute();
 
         assertFilesExist(list);
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testCopyTestJarWithImplicitClassifier(CopyMojo mojo) throws Exception {
+        assertCopyArtifactType(mojo, "test-jar", null, "tests");
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testCopyEjbClientWithImplicitClassifier(CopyMojo mojo) throws Exception {
+        assertCopyArtifactType(mojo, "ejb-client", null, "client");
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testCopyJavaSourceWithImplicitClassifier(CopyMojo mojo) throws Exception {
+        assertCopyArtifactType(mojo, "java-source", null, "sources");
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testCopyJavadocWithImplicitClassifier(CopyMojo mojo) throws Exception {
+        assertCopyArtifactType(mojo, "javadoc", null, "javadoc");
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testCopyArtifactTypeWithExplicitClassifier(CopyMojo mojo) throws Exception {
+        assertCopyArtifactType(mojo, "test-jar", "client", "client");
+    }
+
+    private void assertCopyArtifactType(CopyMojo mojo, String type, String classifier, String expectedClassifier)
+            throws Exception {
+        // Keep the main jar available so the regression copies the wrong artifact instead of failing resolution.
+        stubFactory.createArtifact("groupId", "artifact", "1.0", null, "jar", null);
+        stubFactory.createArtifact("groupId", "artifact", "1.0", null, "jar", "tests");
+        stubFactory.createArtifact("groupId", "artifact", "1.0", null, "jar", expectedClassifier);
+        mojo.setLocalRepositoryDirectory(stubFactory.getWorkingDir());
+        mojo.setArtifact("groupId:artifact:1.0:" + type + (classifier == null ? "" : ":" + classifier));
+
+        mojo.execute();
+
+        ArtifactItem item = mojo.getArtifactItems().get(0);
+        assertEquals(expectedClassifier, item.getArtifact().getClassifier());
+        assertEquals("artifact-1.0-" + expectedClassifier + ".jar", item.getDestFileName());
+        assertFileExists(item);
+        assertFalse(new File(mojo.getOutputDirectory(), "artifact-1.0.jar").exists());
     }
 
     /**
@@ -548,6 +680,74 @@ class TestCopyMojo {
 
         this.assertFileExists(item);
         assertEquals("3.1", item.getVersion());
+    }
+
+    private void installVersions(String... versions) throws IOException {
+        File artifactDir = new File(tempDir, "localTestRepo/remote/ranged");
+        Files.createDirectories(artifactDir.toPath());
+        StringBuilder metadata = new StringBuilder(
+                "<metadata><groupId>remote</groupId><artifactId>ranged</artifactId><versioning><versions>");
+        for (String version : versions) {
+            File dir = new File(artifactDir, version);
+            Files.createDirectories(dir.toPath());
+            Files.write(new File(dir, "ranged-" + version + ".jar").toPath(), version.getBytes(StandardCharsets.UTF_8));
+            metadata.append("<version>").append(version).append("</version>");
+        }
+        metadata.append("</versions></versioning></metadata>");
+        Files.write(
+                new File(artifactDir, "maven-metadata-local.xml").toPath(),
+                metadata.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    private ArtifactItem rangedItem(String range) {
+        ArtifactItem item = new ArtifactItem();
+        item.setGroupId("remote");
+        item.setArtifactId("ranged");
+        item.setVersion(range);
+        return item;
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testVersionRangeResolvesToHighestVersion(CopyMojo mojo) throws Exception {
+        installVersions("1.0", "1.5", "2.0");
+        mojo.setArtifactItems(Collections.singletonList(rangedItem("[1.0,2.0)")));
+
+        mojo.execute();
+
+        assertTrue(new File(mojo.getOutputDirectory(), "ranged-1.5.jar").isFile());
+        assertFalse(new File(mojo.getOutputDirectory(), "ranged-2.0.jar").exists());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testVersionRangeWithoutMatchingVersion(CopyMojo mojo) throws Exception {
+        installVersions("1.0", "2.0");
+        mojo.setArtifactItems(Collections.singletonList(rangedItem("[3.0,4.0)")));
+
+        MojoExecutionException e = assertThrows(MojoExecutionException.class, mojo::execute);
+
+        assertTrue(e.getMessage().contains("[3.0,4.0)"), e.getMessage());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    void testCopyFromRemoteRepositories(CopyMojo mojo) throws Exception {
+        File repo = new File(tempDir, "remote-repo");
+        File dir = new File(repo, "remote/only/1.0");
+        Files.createDirectories(dir.toPath());
+        Files.write(new File(dir, "only-1.0.jar").toPath(), "content".getBytes(StandardCharsets.UTF_8));
+
+        ArtifactItem item = new ArtifactItem();
+        item.setGroupId("remote");
+        item.setArtifactId("only");
+        item.setVersion("1.0");
+        mojo.setArtifactItems(Collections.singletonList(item));
+        mojo.setRemoteRepositories(Collections.singletonList("remote-repo::default::" + repo.toURI()));
+
+        mojo.execute();
+
+        assertTrue(new File(mojo.getOutputDirectory(), "only-1.0.jar").isFile());
     }
 
     @Test

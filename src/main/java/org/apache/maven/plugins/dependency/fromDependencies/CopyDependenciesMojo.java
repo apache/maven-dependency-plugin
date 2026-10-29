@@ -45,6 +45,7 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.installation.InstallationException;
+import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.util.artifact.SubArtifact;
@@ -61,7 +62,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  */
 @Mojo(
         name = "copy-dependencies",
-        requiresDependencyResolution = ResolutionScope.TEST,
+        requiresDependencyCollection = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.PROCESS_SOURCES,
         threadSafe = true)
 public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
@@ -86,11 +87,25 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
 
     /**
      * Add parent poms to the list of copied dependencies (both current project pom parents and dependencies parents).
+     * The {@code classifier} and {@code type} parameters do not change parent POM coordinates.
+     * Inclusion and exclusion filters still apply.
      *
      * @since 2.8
      */
     @Parameter(property = "mdep.addParentPoms", defaultValue = "false")
     protected boolean addParentPoms;
+
+    /**
+     * Add the POMs of the BOMs that the project and its parents import with {@code <scope>import</scope>} in their
+     * {@code dependencyManagement} (and of the parents and imports of those BOMs) to the list of copied dependencies,
+     * so that the copied POMs stay resolvable. Use it together with {@link #addParentPoms}; it is a separate parameter
+     * so that the output of {@code addParentPoms} does not change. Inclusion and exclusion filters still apply. An import whose coordinates cannot be interpolated is skipped with a
+     * warning.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.addImportedBoms", defaultValue = "false")
+    protected boolean addImportedBoms;
 
     /**
      * Also copy the signature files (.asc) of each artifact.
@@ -99,6 +114,16 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     @Parameter(property = "mdep.copySignatures", defaultValue = "false")
     protected boolean copySignatures;
+
+    /**
+     * Also copy the checksum files ({@code .sha1}, {@code .md5}, {@code .sha256} and {@code .sha512}) that sit next
+     * to each artifact and its POM in the local repository. Only used together with {@link #useRepositoryLayout};
+     * checksum files that do not exist in the local repository are skipped.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.copyChecksums", defaultValue = "false")
+    protected boolean copyChecksums;
 
     @Inject
     public CopyDependenciesMojo(
@@ -113,6 +138,11 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         this.copyUtil = copyUtil;
     }
 
+    @Override
+    protected boolean isResolvingAfterFiltering() {
+        return true;
+    }
+
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through calling copyArtifact.
      *
@@ -122,7 +152,12 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     @Override
     protected void doExecute() throws MojoExecutionException {
-        DependencyStatusSets dss = getDependencySets(this.failOnMissingClassifierArtifact, addParentPoms);
+        if (copyChecksums && !useRepositoryLayout) {
+            getLog().warn(
+                            "copyChecksums only applies together with useRepositoryLayout, no checksum files are copied.");
+        }
+        DependencyStatusSets dss =
+                getDependencySets(this.failOnMissingClassifierArtifact, addParentPoms, addImportedBoms);
         Set<Artifact> artifacts = dss.getResolvedDependencies();
 
         if (!useRepositoryLayout) {
@@ -149,6 +184,10 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
             RepositorySystemSession repositorySystemSession = getResolverUtil().localRepositorySession(outputDirectory);
 
             artifacts.forEach(artifact -> installArtifact(artifact, repositorySystemSession));
+            if (isCopyPom()) {
+                // Artifacts that already exist may not yet have poms
+                dss.getSkippedDependencies().forEach(artifact -> installMissingPom(artifact, repositorySystemSession));
+            }
         }
 
         Set<Artifact> skippedArtifacts = dss.getSkippedDependencies();
@@ -170,6 +209,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         try {
             getResolverUtil().installArtifact(artifact, repositorySystemSession);
             installBaseSnapshot(artifact, repositorySystemSession);
+            copyChecksumFiles(artifact, repositorySystemSession);
 
             if (!"pom".equals(artifact.getType()) && isCopyPom()) {
                 Artifact pomArtifact = getResolvedPomArtifact(artifact);
@@ -178,10 +218,71 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
                         && pomArtifact.getFile().exists()) {
                     getResolverUtil().installArtifact(pomArtifact, repositorySystemSession);
                     installBaseSnapshot(pomArtifact, repositorySystemSession);
+                    copyChecksumFiles(pomArtifact, repositorySystemSession);
                 }
             }
         } catch (InstallationException e) {
             getLog().warn("unable to install " + artifact, e);
+        }
+    }
+
+    /**
+     * Install the pom of an artifact that was skipped because it already exists in the destination, unless the pom
+     * exists there too.
+     */
+    private void installMissingPom(Artifact artifact, RepositorySystemSession repositorySystemSession) {
+        if ("pom".equals(artifact.getType())) {
+            return;
+        }
+        // Check the destination first, resolving the POM may mean a remote request.
+        LocalRepositoryManager localRepositoryManager = repositorySystemSession.getLocalRepositoryManager();
+        File pomDestFile = new File(
+                localRepositoryManager.getRepository().getBasedir(),
+                localRepositoryManager.getPathForLocalArtifact(
+                        new SubArtifact(RepositoryUtils.toArtifact(artifact), null, "pom")));
+        if (pomDestFile.exists()) {
+            return;
+        }
+        Artifact pomArtifact = getResolvedPomArtifact(artifact);
+        if (pomArtifact == null
+                || pomArtifact.getFile() == null
+                || !pomArtifact.getFile().exists()) {
+            return;
+        }
+        try {
+            getResolverUtil().installArtifact(pomArtifact, repositorySystemSession);
+            installBaseSnapshot(pomArtifact, repositorySystemSession);
+        } catch (InstallationException e) {
+            getLog().warn("unable to install " + pomArtifact, e);
+        }
+    }
+
+    /**
+     * Copies the checksum files next to the artifact in the source local repository to the matching location in the
+     * target repository layout. The local repository manager names a timestamped snapshot by its base version, as
+     * the installed artifact is.
+     */
+    private void copyChecksumFiles(Artifact artifact, RepositorySystemSession repositorySystemSession) {
+        if (!copyChecksums || artifact.getFile() == null) {
+            return;
+        }
+        LocalRepositoryManager localRepositoryManager = repositorySystemSession.getLocalRepositoryManager();
+        File baseDir = localRepositoryManager.getRepository().getBasedir();
+        org.eclipse.aether.artifact.Artifact aArtifact = RepositoryUtils.toArtifact(artifact);
+        copyChecksumFiles(
+                artifact.getFile(), new File(baseDir, localRepositoryManager.getPathForLocalArtifact(aArtifact)));
+    }
+
+    private void copyChecksumFiles(File source, File destination) {
+        for (String extension : CHECKSUM_EXTENSIONS) {
+            File checksum = new File(source.getPath() + extension);
+            if (checksum.isFile()) {
+                try {
+                    copyUtil.copyFile(checksum, new File(destination.getPath() + extension));
+                } catch (IOException e) {
+                    getLog().warn("Failed to copy checksum file: " + checksum, e);
+                }
+            }
         }
     }
 
@@ -216,6 +317,8 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     }
 
     private static final String SIGNATURE_EXTENSION = ".asc";
+
+    private static final String[] CHECKSUM_EXTENSIONS = {".sha1", ".md5", ".sha256", ".sha512"};
 
     /**
      * Copies the Artifact after building the destination file name if overridden. This method also checks if the

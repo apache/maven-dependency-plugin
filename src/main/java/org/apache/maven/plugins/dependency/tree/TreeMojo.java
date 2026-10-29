@@ -24,44 +24,37 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.dependency.tree.SerializingDependencyNodeVisitor.GraphTokens;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.artifact.filter.StrictPatternIncludesArtifactFilter;
-import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilder;
-import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilderException;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.filter.AncestorOrSelfDependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.filter.ArtifactDependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.filter.DependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.FilteringDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor.GraphTokens;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.collection.DependencyCollectionException;
 
 /**
  * Displays the dependency tree for this project. Multiple formats are supported: text (by default), but also
  * <a href="https://en.wikipedia.org/wiki/DOT_language">DOT</a>,
  * <a href="https://en.wikipedia.org/wiki/GraphML">GraphML</a>,
- * <a href="https://en.wikipedia.org/wiki/Trivial_Graph_Format">TGF</a> and
- * <a href="https://en.wikipedia.org/wiki/JSON">JSON</a>.
+ * <a href="https://en.wikipedia.org/wiki/Trivial_Graph_Format">TGF</a>,
+ * <a href="https://en.wikipedia.org/wiki/JSON">JSON</a> and
+ * <a href="https://mermaid.js.org/syntax/flowchart.html">Mermaid</a>.
  *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @since 2.0-alpha-5
@@ -77,15 +70,7 @@ public class TreeMojo extends AbstractMojo {
 
     private final MavenSession session;
 
-    /**
-     * The dependency collector builder to use.
-     */
-    private final DependencyCollectorBuilder dependencyCollectorBuilder;
-
-    /**
-     * The dependency graph builder to use.
-     */
-    private final DependencyGraphBuilder dependencyGraphBuilder;
+    private final DependencyTreeBuilder dependencyTreeBuilder;
 
     @Parameter(property = "outputEncoding", defaultValue = "${project.reporting.outputEncoding}")
     private String outputEncoding;
@@ -101,8 +86,8 @@ public class TreeMojo extends AbstractMojo {
 
     /**
      * If specified, this parameter will cause the dependency tree to be written using the specified format. Currently
-     * supported formats are: <code>text</code> (default), <code>dot</code>, <code>graphml</code>, <code>tgf</code>
-     * and <code>json</code> (since 3.7.0).
+     * supported formats are: <code>text</code> (default), <code>dot</code>, <code>graphml</code>, <code>tgf</code>,
+     * <code>json</code> (since 3.7.0) and <code>mermaid</code> (since 3.12.0).
      * These additional formats can be plotted to image files.
      *
      * @since 2.2
@@ -189,7 +174,10 @@ public class TreeMojo extends AbstractMojo {
     private DependencyNode rootNode;
 
     /**
-     * Whether to append outputs into the output file or overwrite it.
+     * Whether to append outputs into the output file or overwrite it. For <code>outputType=dot</code> the output
+     * of each execution, as in a multi-module build, is added to the one graph in the file instead of starting
+     * another one. The merge is serialized within one Maven JVM only, not across processes. A file left by a
+     * previous build is extended, so delete it first.
      *
      * @since 2.2
      */
@@ -208,12 +196,11 @@ public class TreeMojo extends AbstractMojo {
     public TreeMojo(
             MavenProject project,
             MavenSession session,
-            DependencyCollectorBuilder dependencyCollectorBuilder,
-            DependencyGraphBuilder dependencyGraphBuilder) {
+            RepositorySystem repositorySystem,
+            ProjectDependenciesResolver projectDependenciesResolver) {
         this.project = project;
         this.session = session;
-        this.dependencyCollectorBuilder = dependencyCollectorBuilder;
-        this.dependencyGraphBuilder = dependencyGraphBuilder;
+        this.dependencyTreeBuilder = new DependencyTreeBuilder(repositorySystem, projectDependenciesResolver);
     }
 
     // Mojo methods -----------------------------------------------------------
@@ -222,43 +209,38 @@ public class TreeMojo extends AbstractMojo {
      * @see org.apache.maven.plugin.Mojo#execute()
      */
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         if (isSkip()) {
             getLog().info("Skipping plugin execution");
             return;
         }
 
         try {
-            String dependencyTreeString;
-
-            // TODO: note that filter does not get applied due to MSHARED-4
             ArtifactFilter artifactFilter = createResolvingArtifactFilter();
 
-            ProjectBuildingRequest buildingRequest =
-                    new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-
-            buildingRequest.setProject(project);
-
             if (verbose) {
-                rootNode = dependencyCollectorBuilder.collectDependencyGraph(buildingRequest, artifactFilter);
-                dependencyTreeString = serializeDependencyTree(rootNode);
+                rootNode = dependencyTreeBuilder.buildVerbose(project, session.getRepositorySession(), artifactFilter);
             } else {
-                // non-verbose mode use dependency graph component, which gives consistent results with Maven version
-                // running
-                rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, artifactFilter);
-
-                dependencyTreeString = serializeDependencyTree(rootNode);
+                // non-verbose mode shows what Maven resolves, consistent with the Maven version running
+                rootNode = dependencyTreeBuilder.build(project, session.getRepositorySession(), artifactFilter);
             }
+
+            boolean joinDotGraphs = outputFile != null && appendOutput && "dot".equals(outputType);
+            String dependencyTreeString = serializeDependencyTree(rootNode, !joinDotGraphs);
 
             if (outputFile != null) {
                 String encoding = Objects.toString(outputEncoding, "UTF-8");
-                DependencyUtil.write(dependencyTreeString, outputFile, this.appendOutput, encoding);
+                if (joinDotGraphs) {
+                    addToDotGraph(dependencyTreeString, rootNode.toNodeString(), outputFile, encoding);
+                } else {
+                    DependencyUtil.write(dependencyTreeString, outputFile, this.appendOutput, encoding);
+                }
 
                 getLog().info("Wrote dependency tree to: " + outputFile);
             } else {
                 DependencyUtil.log(dependencyTreeString, getLog());
             }
-        } catch (DependencyGraphBuilderException | DependencyCollectorBuilderException exception) {
+        } catch (DependencyResolutionException | DependencyCollectionException exception) {
             throw new MojoExecutionException("Cannot build project dependency graph", exception);
         } catch (IOException exception) {
             throw new MojoExecutionException("Cannot serialize project dependency graph", exception);
@@ -327,38 +309,50 @@ public class TreeMojo extends AbstractMojo {
      * @param theRootNode the dependency tree root node to serialize
      * @return the serialized dependency tree
      */
-    private String serializeDependencyTree(DependencyNode theRootNode) {
+    private String serializeDependencyTree(DependencyNode theRootNode, boolean dotGraphEnvelope) {
         StringWriter writer = new StringWriter();
 
-        DependencyNodeVisitor visitor = getSerializingDependencyNodeVisitor(writer);
-
-        // TODO: remove the need for this when the serializer can calculate last nodes from visitor calls only
-        visitor = new BuildingDependencyNodeVisitor(visitor);
-
-        DependencyNodeFilter includesFilter = createIncludesDependencyNodeFilter();
-        DependencyNodeFilter excludesFilter = createExcludesDependencyNodeFilter();
-
-        if (includesFilter != null) {
-            CollectingDependencyNodeVisitor collectingVisitor = new CollectingDependencyNodeVisitor();
-            DependencyNodeVisitor firstPassVisitor =
-                    new FilteringDependencyNodeVisitor(collectingVisitor, includesFilter);
-            if (excludesFilter != null) {
-                firstPassVisitor = new PruningDependencyNodeVisitor(firstPassVisitor, excludesFilter);
-            }
-            theRootNode.accept(firstPassVisitor);
-
-            DependencyNodeFilter secondPassFilter =
-                    new AncestorOrSelfDependencyNodeFilter(collectingVisitor.getNodes());
-            visitor = new FilteringDependencyNodeVisitor(visitor, secondPassFilter);
+        DependencyNode displayed =
+                theRootNode.filter(null, createExcludesDependencyNodeFilter(), createIncludesDependencyNodeFilter());
+        if (displayed != null) {
+            displayed.accept(
+                    dotGraphEnvelope
+                            ? getSerializingDependencyNodeVisitor(writer)
+                            : new DOTDependencyNodeVisitor(writer, false));
         }
-
-        if (excludesFilter != null) {
-            visitor = new PruningDependencyNodeVisitor(visitor, excludesFilter);
-        }
-
-        theRootNode.accept(visitor);
 
         return writer.toString();
+    }
+
+    /**
+     * Adds the edges of a tree to the DOT graph in the file, so that the trees of the modules of a reactor build end
+     * up in one graph. A file that does not hold a graph yet gets one, named after the root of this tree.
+     */
+    private static synchronized void addToDotGraph(String edges, String rootLabel, File file, String encoding)
+            throws IOException {
+        Charset charset = Charset.forName(encoding);
+        String existing = file.isFile() ? new String(Files.readAllBytes(file.toPath()), charset) : "";
+        int close = existing.lastIndexOf('}');
+        if (existing.trim().isEmpty()) {
+            DependencyUtil.write(
+                    DOTDependencyNodeVisitor.graphStart(rootLabel) + edges + DOTDependencyNodeVisitor.graphEnd(),
+                    file,
+                    false,
+                    encoding);
+        } else if (existing.contains("digraph")
+                && close >= 0
+                && existing.substring(close + 1).trim().isEmpty()) {
+            String open = existing.substring(0, close).replaceAll("\\s+$", "");
+            DependencyUtil.write(
+                    open + System.lineSeparator() + edges + DOTDependencyNodeVisitor.graphEnd(), file, false, encoding);
+        } else {
+            // not a graph written by this goal, append as before
+            DependencyUtil.write(
+                    DOTDependencyNodeVisitor.graphStart(rootLabel) + edges + DOTDependencyNodeVisitor.graphEnd(),
+                    file,
+                    true,
+                    encoding);
+        }
     }
 
     /**
@@ -374,6 +368,8 @@ public class TreeMojo extends AbstractMojo {
             return new DOTDependencyNodeVisitor(writer);
         } else if ("json".equals(outputType)) {
             return new JsonDependencyNodeVisitor(writer);
+        } else if ("mermaid".equals(outputType)) {
+            return new MermaidDependencyNodeVisitor(writer);
         } else {
             return new SerializingDependencyNodeVisitor(writer, toGraphTokens(tokens));
         }
@@ -408,23 +404,23 @@ public class TreeMojo extends AbstractMojo {
      *
      * @return the dependency node filter, or <code>null</code> if none required
      */
-    private DependencyNodeFilter createIncludesDependencyNodeFilter() {
+    private Predicate<DependencyNode> createIncludesDependencyNodeFilter() {
         if (includes != null && !includes.isEmpty()) {
             getLog().debug("+ Filtering dependency tree by artifact include patterns: " + includes);
 
             ArtifactFilter artifactFilter = new StrictPatternIncludesArtifactFilter(includes);
-            return new ArtifactDependencyNodeFilter(artifactFilter);
+            return node -> artifactFilter.include(node.getArtifact());
         }
 
         return null;
     }
 
-    private DependencyNodeFilter createExcludesDependencyNodeFilter() {
+    private Predicate<DependencyNode> createExcludesDependencyNodeFilter() {
         if (excludes != null && !excludes.isEmpty()) {
             getLog().debug("+ Filtering dependency tree by artifact exclude patterns: " + excludes);
 
             ArtifactFilter artifactFilter = new StrictPatternExcludesArtifactFilter(excludes);
-            return new ArtifactDependencyNodeFilter(artifactFilter);
+            return node -> artifactFilter.include(node.getArtifact());
         }
 
         return null;

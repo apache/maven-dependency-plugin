@@ -51,7 +51,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 // CHECKSTYLE_OFF: LineLength
 @Mojo(
         name = "unpack-dependencies",
-        requiresDependencyResolution = ResolutionScope.TEST,
+        requiresDependencyCollection = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.PROCESS_SOURCES,
         threadSafe = true)
 // CHECKSTYLE_ON: LineLength
@@ -76,6 +76,15 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     @Parameter(property = "mdep.unpack.excludes")
     private String excludes;
+
+    /**
+     * Whether to apply the default excludes (for example {@code .svn}, {@code CVS} and {@code .git}) when excludes
+     * are set. Set to {@code false} to unpack such files and directories as well.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.unpack.useDefaultExcludes", defaultValue = "true")
+    private boolean useDefaultExcludes = true;
 
     /**
      * Ignore to set file permissions when unpacking a dependency.
@@ -116,6 +125,11 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
         this.unpackUtil = unpackUtil;
     }
 
+    @Override
+    protected boolean isResolvingAfterFiltering() {
+        return true;
+    }
+
     /**
      * Main entry into mojo. This method gets the dependencies and iterates through each one passing it to
      * DependencyUtil.unpackFile().
@@ -143,6 +157,7 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
                     destDir,
                     getIncludes(),
                     getExcludes(),
+                    useDefaultExcludes,
                     getEncoding(),
                     ignorePermissions,
                     getFileMappers(),
@@ -177,6 +192,13 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     public void setExcludes(String excludes) {
         this.excludes = excludes;
+    }
+
+    /**
+     * @param useDefaultExcludes whether the default excludes are applied when excludes are set
+     */
+    public void setUseDefaultExcludes(boolean useDefaultExcludes) {
+        this.useDefaultExcludes = useDefaultExcludes;
     }
 
     /**

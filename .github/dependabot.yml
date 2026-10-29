@@ -21,15 +21,28 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-      # Jetty >=10 requires Java 11+
-      - dependency-name: "org.eclipse.jetty:*"
-        versions: [">= 10.0"]
       # Mockito >=5 requires Java 11+
       - dependency-name: "org.mockito:*"
         versions: [">= 5.0.0"]
       # Maven 3 so use SLF4J 1.7.x
       - dependency-name: "org.slf4j:*"
         versions: [">= 2.0.0"]
+      # mrm-maven-plugin 2.x requires Java 17
+      - dependency-name: "org.codehaus.mojo:mrm-maven-plugin"
+        versions: [">= 2.0.0"]
+      # stay on Maven 3.9.x for the 3.x line
+      - dependency-name: "org.apache.maven:maven-artifact"
+        versions: [">= 3.10.0"]
+      - dependency-name: "org.apache.maven:maven-core"
+        versions: [">= 3.10.0"]
+      - dependency-name: "org.apache.maven:maven-model"
+        versions: [">= 3.10.0"]
+      - dependency-name: "org.apache.maven:maven-plugin-api"
+        versions: [">= 3.10.0"]
+      - dependency-name: "org.apache.maven:maven-repository-metadata"
+        versions: [">= 3.10.0"]
+      - dependency-name: "org.apache.maven:maven-settings"
+        versions: [">= 3.10.0"]
 
   - package-ecosystem: "github-actions"
     directory: "/"

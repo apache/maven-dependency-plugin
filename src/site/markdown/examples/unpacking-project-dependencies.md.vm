@@ -27,7 +27,11 @@ under the License.
 
 # Unpacking project dependencies
 
-This is pretty similar to the [Copying direct dependencies](./copying-project-dependencies.html) example. The difference is that the direct dependencies are unpacked, including the transitive dependencies. To unpack the artifacts, use the `dependency:unpack-dependencies` mojo and configure the dependency plugin to something like the sample below:
+This is pretty similar to the [Copying direct dependencies](./copying-project-dependencies.html) example. The difference is that the direct dependencies are unpacked, including the transitive dependencies.
+
+The archive format is chosen by the artifact type, or by the file extension when no unarchiver is registered for the type. The formats available are those of [Plexus Archiver](https://codehaus-plexus.github.io/plexus-archiver/), such as zip, jar, war, ear, tar, tar.gz, tar.bz2 and tar.xz, plus any unarchiver that a plugin dependency adds.
+
+To unpack the artifacts, use the `dependency:unpack-dependencies` mojo and configure the dependency plugin to something like the sample below:
 
 ```xml
 <project>

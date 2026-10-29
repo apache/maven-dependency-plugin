@@ -23,9 +23,6 @@ import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.List;
 
-import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
-
 /**
  * A dependency node visitor that serializes visited nodes to <a href="https://en.wikipedia.org/wiki/DOT_language">DOT
  * format</a>
@@ -35,13 +32,45 @@ import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
  */
 public class DOTDependencyNodeVisitor extends AbstractSerializingVisitor implements DependencyNodeVisitor {
 
+    private final boolean graphEnvelope;
+
     /**
      * Constructor.
      *
      * @param writer the writer to write to
      */
     public DOTDependencyNodeVisitor(Writer writer) {
+        this(writer, true);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param writer the writer to write to
+     * @param graphEnvelope whether to write the <code>digraph</code> declaration and its closing brace around the
+     *            edges; without it only the edges are written, to be added to a graph that is already open
+     * @since 3.12.0
+     */
+    public DOTDependencyNodeVisitor(Writer writer, boolean graphEnvelope) {
         super(writer);
+        this.graphEnvelope = graphEnvelope;
+    }
+
+    /**
+     * @param label the label of the root node
+     * @return the line that opens the graph of the root node
+     * @since 3.12.0
+     */
+    static String graphStart(String label) {
+        return "digraph \"" + label + "\" { " + System.lineSeparator();
+    }
+
+    /**
+     * @return the line that closes the graph
+     * @since 3.12.0
+     */
+    static String graphEnd() {
+        return " } " + System.lineSeparator();
     }
 
     /**
@@ -50,8 +79,8 @@ public class DOTDependencyNodeVisitor extends AbstractSerializingVisitor impleme
     @Override
     public boolean visit(DependencyNode node) {
         try {
-            if (node.getParent() == null || node.getParent() == node) {
-                writer.write("digraph \"" + node.toNodeString() + "\" { " + System.lineSeparator());
+            if (graphEnvelope && (node.getParent() == null || node.getParent() == node)) {
+                writer.write(graphStart(node.toNodeString()));
                 writer.flush();
             }
 
@@ -77,8 +106,8 @@ public class DOTDependencyNodeVisitor extends AbstractSerializingVisitor impleme
     @Override
     public boolean endVisit(DependencyNode node) {
         try {
-            if (node.getParent() == null || node.getParent() == node) {
-                writer.write(" } " + System.lineSeparator());
+            if (graphEnvelope && (node.getParent() == null || node.getParent() == node)) {
+                writer.write(graphEnd());
                 writer.flush();
             }
         } catch (IOException e) {

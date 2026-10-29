@@ -21,5 +21,5 @@ under the License.
   "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
   "https://checkstyle.org/dtds/suppressions_1_2.dtd">
  <suppressions>
-  <suppress checks="ParameterNumberCheck" files="DependencyUtil.java|DestFileFilter.java|UnpackUtil.java|BuildingDependencyNodeVisitor.java" />
+  <suppress checks="ParameterNumberCheck" files="DependencyUtil.java|DestFileFilter.java|UnpackUtil.java" />
 </suppressions>

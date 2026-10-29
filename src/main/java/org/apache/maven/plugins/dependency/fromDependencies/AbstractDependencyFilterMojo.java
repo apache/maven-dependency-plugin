@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
@@ -34,12 +36,15 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Profile;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
+import org.apache.maven.plugins.dependency.resolvers.ExcludeReactorProjectsArtifactFilter;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.plugins.dependency.utils.filters.ExcludeOptionalArtifactsFilter;
 import org.apache.maven.plugins.dependency.utils.translators.ArtifactTranslator;
 import org.apache.maven.plugins.dependency.utils.translators.ClassifierTypeTranslator;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
@@ -59,6 +64,7 @@ import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -69,6 +75,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  * @see org.apache.maven.plugins.dependency.AbstractDependencyMojo
  */
 public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMojo {
+    private static final Pattern EXPRESSION = Pattern.compile("\\$\\{([^}]+)}");
 
     /**
      * Overwrite release artifacts.
@@ -269,11 +276,43 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
+     * Whether optional artifacts must be excluded. Goals exposing the {@code excludeOptional} parameter override this.
+     *
+     * @return {@code false} by default
+     */
+    protected boolean isExcludeOptional() {
+        return false;
+    }
+
+    /**
+     * Whether artifacts that are reactor projects must be excluded. Goals exposing the {@code excludeReactor}
+     * parameter override this.
+     *
+     * @return {@code false} by default
+     */
+    protected boolean isExcludeReactor() {
+        return false;
+    }
+
+    /**
      * Return an {@link ArtifactsFilter} indicating which artifacts must be filtered out.
      *
      * @return an {@link ArtifactsFilter} indicating which artifacts must be filtered out
      */
     protected abstract ArtifactsFilter getMarkedArtifactFilter();
+
+    /**
+     * Tells whether this goal asks Maven for the dependency graph only ({@code requiresDependencyCollection}) and
+     * resolves the artifacts that are left after filtering itself. This way a dependency that the filters drop, for
+     * example a {@code provided} module of the same reactor that has not been built, is never resolved.
+     * <p>
+     * Goals that ask Maven to resolve the dependencies ({@code requiresDependencyResolution}) keep the default.
+     *
+     * @return {@code true} if the artifacts of {@link MavenProject#getArtifacts()} are not resolved yet
+     */
+    protected boolean isResolvingAfterFiltering() {
+        return false;
+    }
 
     /**
      * Retrieves dependencies, either direct only or all including transitive.
@@ -309,6 +348,22 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
      */
     protected DependencyStatusSets getDependencySets(boolean stopOnFailure, boolean includeParents)
             throws MojoExecutionException {
+        return getDependencySets(stopOnFailure, includeParents, false);
+    }
+
+    /**
+     * Method creates filters and filters the projects dependencies. This method also transforms the dependencies if
+     * classifier is set. The dependencies are filtered in least specific to most specific order.
+     *
+     * @param stopOnFailure true to fail if artifacts can't be resolved false otherwise
+     * @param includeParents <code>true</code> if parents should be included or not <code>false</code>
+     * @param includeImportedBoms <code>true</code> if the import-scoped BOMs of the project and of the parents should
+     *            be included or not <code>false</code>
+     * @return DependencyStatusSets - Bean of TreeSets that contains information on the projects dependencies
+     * @throws MojoExecutionException in case of errors
+     */
+    protected DependencyStatusSets getDependencySets(
+            boolean stopOnFailure, boolean includeParents, boolean includeImportedBoms) throws MojoExecutionException {
 
         // add filters in well known order, least specific to most specific
         FilterArtifacts filter = new FilterArtifacts();
@@ -340,6 +395,14 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
                 DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
                 DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
 
+        if (isExcludeOptional()) {
+            filter.addFilter(new ExcludeOptionalArtifactsFilter());
+        }
+
+        if (isExcludeReactor()) {
+            filter.addFilter(new ExcludeReactorProjectsArtifactFilter(session.getProjects(), getLog()));
+        }
+
         // start with all artifacts.
         Set<Artifact> artifacts;
 
@@ -349,32 +412,121 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             throw new MojoExecutionException("Failed to collect artifacts", e);
         }
 
+        // A POM can be both a dependency to translate and a parent to copy unchanged.
+        Set<Artifact> parentArtifacts = new LinkedHashSet<>();
         if (includeParents) {
             // add dependencies parents
-            for (Artifact dep : new ArrayList<>(artifacts)) {
-                addParentArtifacts(buildProjectFromArtifact(dep), artifacts);
+            for (Artifact dep : artifacts) {
+                addParentArtifacts(buildProjectFromArtifact(dep), parentArtifacts);
             }
 
             // add current project parent
-            addParentArtifacts(getProject(), artifacts);
+            addParentArtifacts(getProject(), parentArtifacts);
+        }
+        if (includeImportedBoms) {
+            Set<String> visitedBoms = new HashSet<>();
+            for (Artifact dep : artifacts) {
+                addImportedBomArtifacts(buildProjectFromArtifact(dep), parentArtifacts, visitedBoms);
+            }
+            addImportedBomArtifacts(getProject(), parentArtifacts, visitedBoms);
         }
 
         // perform filtering
         try {
             artifacts = filter.filter(artifacts);
+            parentArtifacts = filter.filter(parentArtifacts);
         } catch (ArtifactFilterException e) {
             throw new MojoExecutionException(e.getMessage(), e);
+        }
+
+        // with a classifier the originals only seed the translation and only the translated artifacts are resolved
+        if (isResolvingAfterFiltering() && (classifier == null || classifier.isEmpty())) {
+            resolveFilteredArtifacts(artifacts);
         }
 
         // transform artifacts if classifier is set
         DependencyStatusSets status;
         if (classifier != null && !classifier.isEmpty()) {
             status = getClassifierTranslatedDependencies(artifacts, stopOnFailure);
+            DependencyStatusSets parentStatus = filterMarkedDependencies(parentArtifacts);
+            status.getResolvedDependencies().addAll(parentStatus.getResolvedDependencies());
+            status.getSkippedDependencies().addAll(parentStatus.getSkippedDependencies());
         } else {
+            artifacts.addAll(parentArtifacts);
             status = filterMarkedDependencies(artifacts);
         }
 
         return status;
+    }
+
+    /**
+     * Resolves the artifacts that are still without a file and records the file on the artifact itself, so scope,
+     * trail and the other properties collected by Maven are kept.
+     */
+    private void resolveFilteredArtifacts(Set<Artifact> artifacts) throws MojoExecutionException {
+        List<Artifact> unresolved = new ArrayList<>();
+        for (Artifact artifact : artifacts) {
+            if (artifact.getFile() != null) {
+                continue;
+            }
+            if (Artifact.SCOPE_SYSTEM.equals(artifact.getScope())) {
+                // never a repository artifact: Maven takes the file from the systemPath of the dependency
+                artifact.setFile(getSystemPathFile(artifact));
+            } else {
+                unresolved.add(artifact);
+            }
+        }
+        if (unresolved.isEmpty()) {
+            return;
+        }
+
+        List<ArtifactResult> results;
+        try {
+            results = resolverUtil.resolveArtifacts(
+                    unresolved.stream().map(RepositoryUtils::toArtifact).collect(Collectors.toList()),
+                    getProject().getRemoteProjectRepositories());
+        } catch (ArtifactResolutionException e) {
+            throw new MojoExecutionException(
+                    "Could not resolve dependencies for project " + getProject().getId() + ": " + e.getMessage(), e);
+        }
+
+        for (int i = 0; i < unresolved.size(); i++) {
+            ArtifactResult result = results.get(i);
+            if (result.isResolved()) {
+                Artifact artifact = unresolved.get(i);
+                // same as Maven when it resolves a project: a snapshot gets its timestamped version
+                if (!result.getArtifact().getVersion().equals(artifact.getVersion())) {
+                    artifact.setVersion(result.getArtifact().getVersion());
+                }
+                artifact.setFile(result.getArtifact().getFile());
+                artifact.setResolved(true);
+            }
+        }
+    }
+
+    private File getSystemPathFile(Artifact artifact) throws MojoExecutionException {
+        String key = artifact.getGroupId()
+                + ':'
+                + artifact.getArtifactId()
+                + ':'
+                + artifact.getType()
+                + (artifact.hasClassifier() ? ':' + artifact.getClassifier() : "");
+        List<Dependency> candidates = new ArrayList<>(getProject().getDependencies());
+        if (getProject().getDependencyManagement() != null) {
+            candidates.addAll(getProject().getDependencyManagement().getDependencies());
+        }
+        for (Dependency dependency : candidates) {
+            if (key.equals(dependency.getManagementKey()) && dependency.getSystemPath() != null) {
+                File file = new File(dependency.getSystemPath());
+                if (!file.isFile()) {
+                    throw new MojoExecutionException(
+                            "The systemPath of " + artifact.getId() + " does not exist: " + file);
+                }
+                return file;
+            }
+        }
+        throw new MojoExecutionException(
+                "No systemPath is declared for the system scoped dependency " + artifact.getId());
     }
 
     private MavenProject buildProjectFromArtifact(Artifact artifact) throws MojoExecutionException {
@@ -409,6 +561,132 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     }
 
     /**
+     * Creates the translator that maps the dependencies to the artifacts to resolve when a classifier is set.
+     *
+     * @return the translator
+     */
+    protected ArtifactTranslator createArtifactTranslator() {
+        return new ClassifierTypeTranslator(artifactHandlerManager, this.classifier, this.type);
+    }
+
+    /**
+     * Adds the POMs of the BOMs that the project and its parents import in their dependencyManagement, together with
+     * the parents and imports of those BOMs. The effective model no longer lists the import-scoped entries, so they are
+     * read from the original models.
+     */
+    private void addImportedBomArtifacts(MavenProject project, Set<Artifact> artifacts, Set<String> visited)
+            throws MojoExecutionException {
+        for (MavenProject current = project; current != null; current = current.getParent()) {
+            List<Dependency> managedDependencies = new ArrayList<>();
+            if (current.getOriginalModel().getDependencyManagement() != null) {
+                managedDependencies.addAll(
+                        current.getOriginalModel().getDependencyManagement().getDependencies());
+            }
+            for (Profile profile : current.getActiveProfiles()) {
+                if (profile.getDependencyManagement() != null) {
+                    managedDependencies.addAll(profile.getDependencyManagement().getDependencies());
+                }
+            }
+            for (Dependency managed : managedDependencies) {
+                if (!Artifact.SCOPE_IMPORT.equals(managed.getScope()) || !"pom".equals(managed.getType())) {
+                    continue;
+                }
+                String groupId = interpolate(managed.getGroupId(), project);
+                String artifactId = interpolate(managed.getArtifactId(), project);
+                String version = interpolate(managed.getVersion(), project);
+                if (groupId.contains("${") || artifactId.contains("${") || version.contains("${")) {
+                    getLog().warn("Skipping imported BOM " + managed.getManagementKey() + ":" + managed.getVersion()
+                            + " of " + current.getId() + ", its coordinates cannot be interpolated.");
+                    continue;
+                }
+                if (!visited.add(groupId + ':' + artifactId + ':' + version)) {
+                    continue;
+                }
+                try {
+                    org.eclipse.aether.artifact.Artifact resolvedBom = resolverUtil.resolveArtifact(
+                            new org.eclipse.aether.artifact.DefaultArtifact(groupId, artifactId, "pom", version),
+                            project.getRemoteProjectRepositories());
+                    Artifact bomArtifact = RepositoryUtils.toArtifact(resolvedBom);
+                    artifacts.add(bomArtifact);
+
+                    MavenProject bomProject = buildProjectFromArtifact(bomArtifact);
+                    addParentArtifacts(bomProject, artifacts);
+                    addImportedBomArtifacts(bomProject, artifacts, visited);
+                } catch (ArtifactResolutionException | ArtifactDescriptorException e) {
+                    throw new MojoExecutionException(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the value of an environment variable, a seam for tests.
+     *
+     * @param name name of the environment variable
+     * @return the value, or {@code null} if it is not set
+     */
+    String getEnvironmentVariable(String name) {
+        return System.getenv(name);
+    }
+
+    String interpolate(String value, MavenProject project) {
+        if (value == null) {
+            return "";
+        }
+        Matcher matcher = EXPRESSION.matcher(value);
+        StringBuffer result = new StringBuffer();
+        while (matcher.find()) {
+            String key = matcher.group(1);
+            String replacement;
+            switch (key) {
+                case "project.groupId":
+                case "pom.groupId":
+                    replacement = project.getGroupId();
+                    break;
+                case "project.artifactId":
+                case "pom.artifactId":
+                    replacement = project.getArtifactId();
+                    break;
+                case "project.version":
+                case "pom.version":
+                    replacement = project.getVersion();
+                    break;
+                case "project.parent.groupId":
+                case "pom.parent.groupId":
+                    replacement =
+                            project.getParent() != null ? project.getParent().getGroupId() : null;
+                    break;
+                case "project.parent.artifactId":
+                case "pom.parent.artifactId":
+                    replacement =
+                            project.getParent() != null ? project.getParent().getArtifactId() : null;
+                    break;
+                case "project.parent.version":
+                case "pom.parent.version":
+                case "parent.version":
+                    replacement =
+                            project.getParent() != null ? project.getParent().getVersion() : null;
+                    break;
+                default:
+                    replacement = session.getUserProperties().getProperty(key);
+                    if (replacement == null) {
+                        replacement = project.getProperties().getProperty(key);
+                    }
+                    if (replacement == null) {
+                        replacement = session.getSystemProperties().getProperty(key);
+                    }
+                    if (replacement == null && key.startsWith("env.")) {
+                        replacement = getEnvironmentVariable(key.substring("env.".length()));
+                    }
+            }
+            matcher.appendReplacement(
+                    result, Matcher.quoteReplacement(replacement != null ? replacement : matcher.group()));
+        }
+        matcher.appendTail(result);
+        return result.toString();
+    }
+
+    /**
      * Transform artifacts.
      *
      * @param artifacts set of artifacts {@link Artifact}
@@ -426,21 +704,16 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
         // classifier and type
         // if this did something, we need to resolve the new artifacts
         if (classifier != null && !classifier.isEmpty()) {
-            ArtifactTranslator translator =
-                    new ClassifierTypeTranslator(artifactHandlerManager, this.classifier, this.type);
+            ArtifactTranslator translator = createArtifactTranslator();
             Collection<org.eclipse.aether.artifact.Artifact> coordinates = translator.translate(artifacts, getLog());
 
-            status = filterMarkedDependencies(artifacts);
+            // resolve the translated artifacts
+            resolvedArtifacts = resolve(new LinkedHashSet<>(coordinates), stopOnFailure, unResolvedArtifacts);
 
-            // the unskipped artifacts are in the resolved set.
-            artifacts = status.getResolvedDependencies();
-
-            // resolve the rest of the artifacts
-            resolvedArtifacts = resolve(new LinkedHashSet<>(coordinates), stopOnFailure);
-
-            // calculate the artifacts not resolved.
-            unResolvedArtifacts.addAll(artifacts);
-            unResolvedArtifacts.removeAll(resolvedArtifacts);
+            // skip the translated artifacts that are already up to date in the destination: the destination file
+            // name depends on the classifier, so the decision cannot be taken on the original artifacts
+            status = filterMarkedDependencies(resolvedArtifacts);
+            resolvedArtifacts = status.getResolvedDependencies();
         }
 
         // return a bean of all 3 sets.
@@ -481,10 +754,12 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
      * @param artifacts the set of artifacts
      * @param stopOnFailure <code>true</code> if we should fail with exception if an artifact couldn't be resolved
      *            <code>false</code> otherwise
+     * @param unresolved receives the artifacts that could not be resolved
      * @return the resolved artifacts. {@link Artifact}.
      * @throws MojoExecutionException in case of error
      */
-    private Set<Artifact> resolve(Set<org.eclipse.aether.artifact.Artifact> artifacts, boolean stopOnFailure)
+    private Set<Artifact> resolve(
+            Set<org.eclipse.aether.artifact.Artifact> artifacts, boolean stopOnFailure, Set<Artifact> unresolved)
             throws MojoExecutionException {
 
         Set<Artifact> resolvedArtifacts = new LinkedHashSet<>();
@@ -496,6 +771,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
             } catch (ArtifactResolutionException | ArtifactDescriptorException ex) {
                 // an error occurred during resolution, log it and continue
                 getLog().debug("error resolving: " + artifact, ex);
+                unresolved.add(RepositoryUtils.toArtifact(artifact));
                 if (stopOnFailure) {
                     throw new MojoExecutionException("error resolving: " + artifact, ex);
                 }

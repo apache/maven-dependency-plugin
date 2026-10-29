@@ -81,6 +81,10 @@ If you encounter other false positives, you can configure the plugin to ignore p
 </project>
 ```
 
+Each ignore pattern has the form `[groupId]:[artifactId]:[type]:[version]:[scope]`. Every segment is optional and supports full and partial `*` wildcards, and the `scope` segment is available since 3.12.0. For example, `org.acme:::*:runtime` ignores only the runtime scoped dependencies of group `org.acme`. An artifact that matches `ignoredUsedUndeclaredDependencies` is also left out of the "non-test scoped" warnings, because it is deliberately not declared.
+
+The four lists can also be set on the command line, as comma-separated patterns, through the `mdep.analyze.ignoredDependencies`, `mdep.analyze.ignoredUsedUndeclaredDependencies`, `mdep.analyze.ignoredUnusedDeclaredDependencies` and `mdep.analyze.ignoredNonTestScopedDependencies` properties. The `dependency:analyze-dep-mgt` goal accepts the same patterns in its own `ignoredDependencies` parameter and skips the matching artifacts.
+
 Note that the `dependency:analyze-only` goal is used in preference to `dependency:analyze` since it doesn't force a further compilation of the project, but uses the compiled classes produced from the earlier `test-compile` phase in the lifecycle.
 
 The project's dependencies will then be automatically analyzed during the `verify` lifecycle phase, which can be executed explicitly as follows:

@@ -53,9 +53,9 @@
               <localRepositoryDirectory>${project.build.directory}/repo</localRepositoryDirectory>
               <artifactItems>
                 <artifactItem>
-                  <groupId>junit</groupId>
-                  <artifactId>junit</artifactId>
-                  <version>3.8.1</version>
+                  <groupId>org.apache.maven.its.dependency</groupId>
+                  <artifactId>unpack-fixture</artifactId>
+                  <version>1.0</version>
                 </artifactItem>
               </artifactItems>
             </configuration>
@@ -69,9 +69,9 @@
               <localRepositoryDirectory>${project.build.directory}/repo</localRepositoryDirectory>
               <artifactItems>
                 <artifactItem>
-                  <groupId>junit</groupId>
-                  <artifactId>junit</artifactId>
-                  <version>3.8.1</version>
+                  <groupId>org.apache.maven.its.dependency</groupId>
+                  <artifactId>unpack-fixture</artifactId>
+                  <version>1.0</version>
                 </artifactItem>
               </artifactItems>
             </configuration>

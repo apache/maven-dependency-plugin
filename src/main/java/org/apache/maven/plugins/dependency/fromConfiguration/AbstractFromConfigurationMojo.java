@@ -21,7 +21,6 @@ package org.apache.maven.plugins.dependency.fromConfiguration;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.RepositoryUtils;
@@ -29,24 +28,22 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.AbstractDependencyMojo;
+import org.apache.maven.plugins.dependency.utils.ArtifactCoordinates;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
-import org.eclipse.aether.DefaultRepositoryCache;
-import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.repository.LocalRepository;
-import org.eclipse.aether.repository.LocalRepositoryManager;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.VersionRangeResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -100,8 +97,9 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     private boolean overWriteIfNewer;
 
     /**
-     * Collection of ArtifactItems to work on. (ArtifactItem contains groupId, artifactId, version, type, classifier,
-     * outputDirectory, destFileName, overWrite and encoding.) See <a href="./usage.html">Usage</a> for details.
+     * Collection of ArtifactItems to work on. (ArtifactItem contains groupId, artifactId, version, dependencyScope,
+     * type, classifier, outputDirectory, destFileName, overWrite and encoding.) See <a href="./usage.html">Usage</a>
+     * for details.
      *
      * @since 1.0
      */
@@ -117,11 +115,34 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     @Parameter
     private File localRepositoryDirectory;
 
+    /**
+     * Repositories in the format {@code id::[layout::]url} or just URLs, separated by comma. That is,
+     * <code>
+     * central::default::https://repo.maven.apache.org/maven2,myrepo::https://repo.acme.com,https://repo.acme2.com
+     * </code>
+     * <p>
+     * The comma-separated form works both on the command line and as the text of a single
+     * <code>&lt;remoteRepositories&gt;</code> element. In a POM the repositories may also be listed one per
+     * element:
+     * <pre>
+     * &lt;remoteRepositories&gt;
+     *   &lt;remoteRepository&gt;central::default::https://repo.maven.apache.org/maven2&lt;/remoteRepository&gt;
+     *   &lt;remoteRepository&gt;https://repo.acme.com&lt;/remoteRepository&gt;
+     * &lt;/remoteRepositories&gt;
+     * </pre>
+     * <p>
+     * The artifacts are resolved from these repositories in addition to the repositories of the project.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "remoteRepositories")
+    private List<String> remoteRepositories;
+
     private final ArtifactHandlerManager artifactHandlerManager;
 
-    private final RepositorySystem repositorySystem;
-
     private final ResolverUtil resolverUtil;
+
+    private final DependencyVersionResolver dependencyVersionResolver;
 
     protected AbstractFromConfigurationMojo(
             MavenSession session,
@@ -132,8 +153,8 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             ResolverUtil resolverUtil) {
         super(session, buildContext, project);
         this.artifactHandlerManager = artifactHandlerManager;
-        this.repositorySystem = repositorySystem;
         this.resolverUtil = resolverUtil;
+        this.dependencyVersionResolver = new DependencyVersionResolver(session, project, repositorySystem);
     }
 
     abstract ArtifactItemFilter getMarkedArtifactFilter(ArtifactItem item);
@@ -192,6 +213,8 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
                         artifactItem.getArtifact(), removeVersion, prependGroupId, useBaseVersion, removeClassifier));
             }
 
+            applyMojoConfiguration(artifactItem);
+
             try {
                 artifactItem.setNeedsProcessing(checkIfProcessingNeeded(artifactItem));
             } catch (ArtifactFilterException e) {
@@ -199,6 +222,16 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             }
         }
         return artifactItems;
+    }
+
+    /**
+     * Copies mojo level settings that are not configured on the item into the item. Runs before the marker lookup, so
+     * the marker file name is computed from the same settings that are used when the marker is written.
+     *
+     * @param artifactItem the item to complete
+     */
+    void applyMojoConfiguration(ArtifactItem artifactItem) {
+        // nothing to apply by default
     }
 
     private boolean checkIfProcessingNeeded(ArtifactItem item) throws ArtifactFilterException {
@@ -209,20 +242,13 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     private RepositorySystemSession createSystemSessionForLocalRepo() {
         RepositorySystemSession repositorySystemSession = session.getRepositorySession();
         if (localRepositoryDirectory != null) {
-            // "clone" repository session and replace localRepository
-            DefaultRepositorySystemSession newSession =
-                    new DefaultRepositorySystemSession(session.getRepositorySession());
-            // Clear cache, since we're using a new local repository
-            newSession.setCache(new DefaultRepositoryCache());
-            LocalRepositoryManager localRepositoryManager = repositorySystem.newLocalRepositoryManager(
-                    newSession, new LocalRepository(localRepositoryDirectory));
-
-            newSession.setLocalRepositoryManager(localRepositoryManager);
-            repositorySystemSession = newSession;
+            repositorySystemSession = resolverUtil.localRepositorySession(localRepositoryDirectory);
             getLog().debug("localRepoPath: "
-                    + localRepositoryManager.getRepository().getBasedir());
+                    + repositorySystemSession
+                            .getLocalRepositoryManager()
+                            .getRepository()
+                            .getBasedir());
         }
-
         return repositorySystemSession;
     }
 
@@ -238,30 +264,54 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
 
         try {
             final String extension;
+            String classifier = artifactItem.getClassifier();
 
             ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler(artifactItem.getType());
             if (artifactHandler != null) {
                 extension = artifactHandler.getExtension();
+                // Types such as test-jar supply a default classifier; an explicit classifier takes precedence.
+                if (classifier == null) {
+                    classifier = artifactHandler.getClassifier();
+                }
             } else {
                 extension = artifactItem.getType();
             }
 
-            DefaultArtifact artifact = new DefaultArtifact(
+            org.eclipse.aether.artifact.Artifact artifact = new DefaultArtifact(
                     artifactItem.getGroupId(),
                     artifactItem.getArtifactId(),
-                    artifactItem.getClassifier(),
+                    classifier,
                     extension,
                     artifactItem.getVersion());
 
             RepositorySystemSession repositorySession = createSystemSessionForLocalRepo();
 
-            org.eclipse.aether.artifact.Artifact resolvedArtifact = resolverUtil.resolveArtifactWithFallback(
-                    artifact, getProject().getRemoteProjectRepositories(), repositorySession);
+            List<RemoteRepository> repositories = getRemoteRepositories();
+
+            String version = artifactItem.getVersion().trim();
+            if (version.startsWith("[") || version.startsWith("(")) {
+                artifact = resolverUtil.resolveVersionRange(artifact, repositories, repositorySession);
+                getLog().debug("Version range " + version + " resolved to " + artifact.getVersion());
+            }
+
+            org.eclipse.aether.artifact.Artifact resolvedArtifact =
+                    resolverUtil.resolveArtifactWithFallback(artifact, repositories, repositorySession);
             return RepositoryUtils.toArtifact(resolvedArtifact);
 
+        } catch (IllegalArgumentException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+        } catch (VersionRangeResolutionException e) {
+            throw new MojoExecutionException("Unable to resolve version range " + artifactItem.getVersion() + ".", e);
         } catch (ArtifactResolutionException e) {
             throw new MojoExecutionException("Unable to find/resolve artifact.", e);
         }
+    }
+
+    private List<RemoteRepository> getRemoteRepositories() {
+        if (remoteRepositories == null || remoteRepositories.isEmpty()) {
+            return getProject().getRemoteProjectRepositories();
+        }
+        return resolverUtil.remoteRepositories(remoteRepositories);
     }
 
     /**
@@ -273,43 +323,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * @throws MojoExecutionException
      */
     private void fillMissingArtifactVersion(ArtifactItem artifact) throws MojoExecutionException {
-        MavenProject project = getProject();
-        List<Dependency> deps = project.getDependencies();
-        List<Dependency> depMngt = project.getDependencyManagement() == null
-                ? Collections.emptyList()
-                : project.getDependencyManagement().getDependencies();
-
-        if (!findDependencyVersion(artifact, deps, false)
-                && (project.getDependencyManagement() == null || !findDependencyVersion(artifact, depMngt, false))
-                && !findDependencyVersion(artifact, deps, true)
-                && (project.getDependencyManagement() == null || !findDependencyVersion(artifact, depMngt, true))) {
-            throw new MojoExecutionException("Unable to find artifact version of " + artifact.getGroupId() + ":"
-                    + artifact.getArtifactId() + " in either dependency list or in project's dependency management.");
-        }
-    }
-
-    /**
-     * Tries to find missing version from a list of dependencies. If found, the artifact is updated with the correct
-     * version.
-     *
-     * @param artifact representing configured file
-     * @param dependencies list of dependencies to search
-     * @param looseMatch only look at artifactId and groupId
-     * @return the found dependency
-     */
-    private boolean findDependencyVersion(ArtifactItem artifact, List<Dependency> dependencies, boolean looseMatch) {
-        for (Dependency dependency : dependencies) {
-            if (Objects.equals(dependency.getArtifactId(), artifact.getArtifactId())
-                    && Objects.equals(dependency.getGroupId(), artifact.getGroupId())
-                    && (looseMatch || Objects.equals(dependency.getClassifier(), artifact.getClassifier()))
-                    && (looseMatch || Objects.equals(dependency.getType(), artifact.getType()))) {
-                artifact.setVersion(dependency.getVersion());
-
-                return true;
-            }
-        }
-
-        return false;
+        artifact.setVersion(dependencyVersionResolver.resolveVersion(artifact));
     }
 
     /**
@@ -383,6 +397,14 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     }
 
     /**
+     * @param remoteRepositories {@link #remoteRepositories}
+     * @since 3.12.0
+     */
+    public void setRemoteRepositories(List<String> remoteRepositories) {
+        this.remoteRepositories = remoteRepositories;
+    }
+
+    /**
      * @param localRepositoryDirectory {@link #localRepositoryDirectory}
      */
     public void setLocalRepositoryDirectory(File localRepositoryDirectory) {
@@ -390,36 +412,46 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     }
 
     /**
-     * @param artifact the artifact
+     * @param artifact the artifact, in one of the forms described by {@link ArtifactCoordinates}
      * @throws MojoFailureException in case of an error
      */
     public void setArtifact(String artifact) throws MojoFailureException {
         if (artifact != null) {
-            String packaging = "jar";
-            String classifier;
-            String[] tokens = StringUtils.split(artifact, ":");
-            if (tokens.length < 3 || tokens.length > 5) {
-                throw new MojoFailureException("Invalid artifact, "
-                        + "you must specify groupId:artifactId:version[:packaging[:classifier]] " + artifact);
+            // Only the six token form keeps empty tokens, so that an empty classifier can precede a destFileName.
+            // Otherwise empty tokens collapse, as before: "g:a:v::jar" has the packaging "jar".
+            String[] tokens = StringUtils.splitPreserveAllTokens(artifact, ":");
+            if (tokens.length != 6) {
+                tokens = StringUtils.split(artifact, ":");
             }
-            String groupId = tokens[0];
-            String artifactId = tokens[1];
-            String version = tokens[2];
-            if (tokens.length >= 4) {
-                packaging = tokens[3];
+            ArtifactCoordinates coordinates;
+            try {
+                coordinates = ArtifactCoordinates.parse(tokens, artifact, true);
+            } catch (IllegalArgumentException e) {
+                throw new MojoFailureException(e.getMessage(), e);
             }
-            if (tokens.length == 5) {
-                classifier = tokens[4];
-            } else {
-                classifier = null;
+            if (coordinates.getDestFileName() != null
+                    && coordinates.getDestFileName().isEmpty()) {
+                throw new MojoFailureException("Invalid artifact, the destFileName must not be empty " + artifact);
             }
 
             ArtifactItem artifactItem = new ArtifactItem();
-            artifactItem.setGroupId(groupId);
-            artifactItem.setArtifactId(artifactId);
-            artifactItem.setVersion(version);
-            artifactItem.setType(packaging);
-            artifactItem.setClassifier(classifier);
+            artifactItem.setGroupId(coordinates.getGroupId());
+            artifactItem.setArtifactId(coordinates.getArtifactId());
+            artifactItem.setVersion(coordinates.getVersion());
+            artifactItem.setType(
+                    coordinates.getPackaging() != null
+                                    && !coordinates.getPackaging().isEmpty()
+                            ? coordinates.getPackaging()
+                            : "jar");
+            artifactItem.setClassifier(
+                    coordinates.getClassifier() != null
+                                    && !coordinates.getClassifier().isEmpty()
+                            ? coordinates.getClassifier()
+                            : null);
+            if (coordinates.getDestFileName() != null
+                    && !coordinates.getDestFileName().isEmpty()) {
+                artifactItem.setDestFileName(coordinates.getDestFileName());
+            }
 
             setArtifactItems(Collections.singletonList(artifactItem));
         }

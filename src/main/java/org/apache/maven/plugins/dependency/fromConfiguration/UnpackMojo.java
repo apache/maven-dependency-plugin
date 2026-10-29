@@ -81,6 +81,15 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     private String excludes;
 
     /**
+     * Whether to apply the default excludes (for example {@code .svn}, {@code CVS} and {@code .git}) when excludes
+     * are set. Set to {@code false} to unpack such files and directories as well.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.unpack.useDefaultExcludes", defaultValue = "true")
+    private boolean useDefaultExcludes = true;
+
+    /**
      * Ignore to set file permissions when unpacking a dependency.
      *
      * @since 2.7
@@ -98,7 +107,11 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
 
     /**
      * The artifact to unpack from command line. A string of the form
-     * <code>groupId:artifactId:version[:packaging[:classifier]]</code>. Use {@link #artifactItems} within the POM
+     * <code>groupId:artifactId:version[:packaging[:classifier]]</code>, or, since 3.12.0, the form that Maven's error
+     * messages and <code>dependency:list</code> print, <code>groupId:artifactId:type[:classifier]:version[:scope]</code>.
+     * The form is told apart by which parts look like a version, as described for the <code>artifact</code>
+     * parameter of <code>dependency:get</code>. The goal shares the parser of <code>dependency:copy</code>, which also
+     * accepts a trailing <code>:destFileName</code>; unpack ignores it. Use {@link #artifactItems} within the POM
      * configuration.
      */
     @SuppressWarnings("unused") // marker-field, setArtifact(String) does the magic
@@ -161,6 +174,7 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
                 artifactItem.getOutputDirectory(),
                 artifactItem.getIncludes(),
                 artifactItem.getExcludes(),
+                useDefaultExcludes,
                 artifactItem.getEncoding(),
                 ignorePermissions,
                 artifactItem.getFileMappers(),
@@ -182,17 +196,17 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
      * @throws MojoExecutionException in case of an error
      */
     protected List<ArtifactItem> getProcessedArtifactItems(boolean removeVersion) throws MojoExecutionException {
-        List<ArtifactItem> items =
-                super.getProcessedArtifactItems(new ProcessArtifactItemsRequest(removeVersion, false, false, false));
-        for (ArtifactItem artifactItem : items) {
-            if (artifactItem.getIncludes().isEmpty()) {
-                artifactItem.setIncludes(getIncludes());
-            }
-            if (artifactItem.getExcludes().isEmpty()) {
-                artifactItem.setExcludes(getExcludes());
-            }
+        return super.getProcessedArtifactItems(new ProcessArtifactItemsRequest(removeVersion, false, false, false));
+    }
+
+    @Override
+    void applyMojoConfiguration(ArtifactItem artifactItem) {
+        if (artifactItem.getIncludes().isEmpty()) {
+            artifactItem.setIncludes(getIncludes());
         }
-        return items;
+        if (artifactItem.getExcludes().isEmpty()) {
+            artifactItem.setExcludes(getExcludes());
+        }
     }
 
     /**
@@ -221,6 +235,13 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
      */
     public void setExcludes(String excludes) {
         this.excludes = excludes;
+    }
+
+    /**
+     * @param useDefaultExcludes whether the default excludes are applied when excludes are set
+     */
+    public void setUseDefaultExcludes(boolean useDefaultExcludes) {
+        this.useDefaultExcludes = useDefaultExcludes;
     }
 
     /**

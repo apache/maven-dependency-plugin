@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,6 +42,7 @@ import org.apache.maven.plugins.dependency.utils.CopyUtil;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.markers.DefaultFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -51,7 +53,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 @MojoTest(realRepositorySession = true)
 class TestCopyDependenciesMojo {
@@ -434,6 +438,89 @@ class TestCopyDependenciesMojo {
             String fileName = DependencyUtil.getFormattedFileName(artifact, false);
             File file = new File(mojo.outputDirectory, fileName);
             assertEquals(artifact.getClassifier().equals("one"), file.exists());
+        }
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testClassifierDoesNotOverwriteUpToDateFile(CopyDependenciesMojo mojo) throws Exception {
+        mojo.classifier = "jdk14";
+        for (Artifact artifact : mojo.getProject().getArtifacts()) {
+            stubFactory.createArtifact(
+                    artifact.getGroupId(),
+                    artifact.getArtifactId(),
+                    artifact.getVersion(),
+                    artifact.getScope(),
+                    artifact.getType(),
+                    "jdk14");
+        }
+
+        mojo.execute();
+
+        long newer = System.currentTimeMillis() + 3_600_000L;
+        for (Artifact artifact : mojo.getProject().getArtifacts()) {
+            File copied = new File(
+                    mojo.outputDirectory,
+                    artifact.getArtifactId() + "-" + artifact.getVersion() + "-jdk14." + artifact.getType());
+            assertTrue(copied.exists(), copied.getAbsolutePath());
+            assertTrue(copied.setLastModified(newer));
+        }
+
+        mojo.execute();
+
+        for (Artifact artifact : mojo.getProject().getArtifacts()) {
+            File copied = new File(
+                    mojo.outputDirectory,
+                    artifact.getArtifactId() + "-" + artifact.getVersion() + "-jdk14." + artifact.getType());
+            assertEquals(newer / 1000, copied.lastModified() / 1000, copied.getName() + " was overwritten");
+        }
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testExcludeOptional(CopyDependenciesMojo mojo) throws Exception {
+        Set<Artifact> artifacts = stubFactory.getScopedArtifacts();
+        Artifact optional = artifacts.iterator().next();
+        optional.setOptional(true);
+        mojo.getProject().setArtifacts(artifacts);
+
+        // default keeps optional dependencies
+        mojo.execute();
+        assertTrue(new File(mojo.outputDirectory, DependencyUtil.getFormattedFileName(optional, false)).exists());
+        FileUtils.deleteDirectory(mojo.outputDirectory);
+
+        mojo.excludeOptional = true;
+        mojo.execute();
+
+        for (Artifact artifact : artifacts) {
+            File file = new File(mojo.outputDirectory, DependencyUtil.getFormattedFileName(artifact, false));
+            assertEquals(artifact != optional, file.exists(), artifact.getId());
+        }
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testExcludeReactor(CopyDependenciesMojo mojo) throws Exception {
+        Set<Artifact> artifacts = stubFactory.getScopedArtifacts();
+        Artifact reactorArtifact = artifacts.iterator().next();
+        mojo.getProject().setArtifacts(artifacts);
+
+        MavenProject reactorProject = mock(MavenProject.class);
+        when(reactorProject.getArtifact()).thenReturn(reactorArtifact);
+        doReturn(Collections.singletonList(reactorProject)).when(session).getProjects();
+
+        // default keeps artifacts that are reactor projects
+        mojo.execute();
+        assertTrue(
+                new File(mojo.outputDirectory, DependencyUtil.getFormattedFileName(reactorArtifact, false)).exists());
+        FileUtils.deleteDirectory(mojo.outputDirectory);
+
+        mojo.excludeReactor = true;
+        mojo.execute();
+
+        for (Artifact artifact : artifacts) {
+            File file = new File(mojo.outputDirectory, DependencyUtil.getFormattedFileName(artifact, false));
+            assertEquals(artifact != reactorArtifact, file.exists(), artifact.getId());
         }
     }
 
@@ -833,6 +920,43 @@ class TestCopyDependenciesMojo {
 
         File jarDestination = new File(mojoSpy.outputDirectory, "artifact.jar");
         File pomDestination = new File(mojoSpy.outputDirectory, "artifact.pom");
+        writeFile(jarDestination, "old jar");
+
+        mojoSpy.execute();
+
+        assertEquals("old jar", readFile(jarDestination));
+        assertEquals("new pom", readFile(pomDestination));
+
+        writeFile(pomDestination, "existing pom");
+        mojoSpy.execute();
+
+        assertEquals("old jar", readFile(jarDestination));
+        assertEquals("existing pom", readFile(pomDestination));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testCopyPomForSkippedArtifactWithRepositoryLayoutOnlyWhenMissing(CopyDependenciesMojo mojo) throws Exception {
+        Artifact artifact = stubFactory.createArtifact("org.example", "artifact", "2.0", Artifact.SCOPE_COMPILE);
+        Artifact pomArtifact =
+                stubFactory.createArtifact("org.example", "artifact", "2.0", Artifact.SCOPE_COMPILE, "pom", null);
+        writeFile(artifact.getFile(), "new jar");
+        writeFile(pomArtifact.getFile(), "new pom");
+
+        Set<Artifact> artifacts = new HashSet<>();
+        artifacts.add(artifact);
+        mojo.getProject().setArtifacts(artifacts);
+
+        CopyDependenciesMojo mojoSpy = spy(mojo);
+        doReturn(pomArtifact).when(mojoSpy).getResolvedPomArtifact(any(Artifact.class));
+        mojoSpy.setCopyPom(true);
+        mojoSpy.useRepositoryLayout = true;
+        mojoSpy.overWriteReleases = false;
+        mojoSpy.overWriteIfNewer = false;
+
+        File artifactDirectory = new File(mojoSpy.outputDirectory, "org/example/artifact/2.0");
+        File jarDestination = new File(artifactDirectory, "artifact-2.0.jar");
+        File pomDestination = new File(artifactDirectory, "artifact-2.0.pom");
         writeFile(jarDestination, "old jar");
 
         mojoSpy.execute();

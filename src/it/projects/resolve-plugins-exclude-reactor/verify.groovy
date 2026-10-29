@@ -17,10 +17,5 @@
  * under the License.
  */
 
-new File(basedir, "target/resolved.txt").eachLine { line -> 
-  if ( line =~ /child-a/ ){
-    throw new RuntimeException( "Reactor plugin 'child-a' should be excluded!" )
-  }
-}
-
-return true
+def resolved = new File( basedir, "target/resolved.txt" ).text
+assert !( resolved =~ /child-a/ ) : "Reactor plugin 'child-a' should be excluded!"

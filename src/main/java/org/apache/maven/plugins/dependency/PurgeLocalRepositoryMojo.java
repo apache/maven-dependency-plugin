@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -59,8 +60,12 @@ import org.apache.maven.shared.artifact.filter.resolve.transform.EclipseAetherFi
 import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.aether.artifact.ArtifactType;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.graph.DefaultDependencyNode;
 import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 
@@ -267,6 +272,57 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
     }
 
     /**
+     * Applies an include or exclude pattern filter to an artifact's type as well as to its file extension. The
+     * pattern filters of the Resolver match the third element of {@code groupId:artifactId:extension:version} against
+     * the file extension only, so a pattern naming a type such as {@code test-jar} would never match.
+     */
+    private class TypeOrExtensionFilter extends AbstractFilter {
+        private final DependencyFilter patternFilter;
+
+        private final boolean exclusion;
+
+        /**
+         * @param patternFilter a {@link PatternInclusionsFilter} or {@link PatternExclusionsFilter}
+         * @param exclusion whether the pattern filter is an exclusion, which accepts the artifacts that match none
+         */
+        TypeOrExtensionFilter(TransformableFilter patternFilter, boolean exclusion) {
+            this.patternFilter = patternFilter.transform(new EclipseAetherFilterTransformer());
+            this.exclusion = exclusion;
+        }
+
+        @Override
+        public boolean accept(Node node, List<Node> parents) {
+            Dependency dependency = node.getDependency();
+            if (dependency == null) {
+                return false;
+            }
+
+            // a node without a type property falls back to the default type and extension
+            String type = dependency.getType() != null ? dependency.getType() : "jar";
+            ArtifactType artifactType =
+                    session.getRepositorySession().getArtifactTypeRegistry().get(type);
+            String extension = artifactType != null ? artifactType.getExtension() : type;
+
+            Set<String> candidates = new LinkedHashSet<>(Arrays.asList(type, extension));
+            for (String candidate : candidates) {
+                org.eclipse.aether.artifact.Artifact artifact = new DefaultArtifact(
+                        dependency.getGroupId(),
+                        dependency.getArtifactId(),
+                        dependency.getClassifier(),
+                        candidate,
+                        dependency.getVersion());
+                DependencyNode candidateNode = new DefaultDependencyNode(
+                        new org.eclipse.aether.graph.Dependency(artifact, dependency.getScope()));
+                // an include is satisfied by one match, an exclude only by the absence of any match
+                if (patternFilter.accept(candidateNode, Collections.emptyList()) != exclusion) {
+                    return !exclusion;
+                }
+            }
+            return exclusion;
+        }
+    }
+
+    /**
      * Includes only snapshot artifacts.
      */
     private static class SnapshotsFilter extends AbstractFilter {
@@ -443,14 +499,14 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
             this.includes = parseIncludes(this.include);
         }
         if (this.includes != null) {
-            subFilters.add(new PatternInclusionsFilter(includes));
+            subFilters.add(new TypeOrExtensionFilter(new PatternInclusionsFilter(includes), false));
         }
 
         if (!(this.exclude == null || this.exclude.isEmpty())) {
             this.excludes = parseIncludes(this.exclude);
         }
         if (this.excludes != null) {
-            subFilters.add(new PatternExclusionsFilter(excludes));
+            subFilters.add(new TypeOrExtensionFilter(new PatternExclusionsFilter(excludes), true));
         }
 
         if (!actTransitively) {
@@ -570,20 +626,20 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
         for (Artifact artifact : artifacts) {
             verbose("Purging artifact: " + artifact.getId());
 
-            File deleteTarget = findDeleteTarget(artifact);
+            for (File deleteTarget : findDeleteTargets(artifact)) {
+                verbose("Deleting: " + deleteTarget);
 
-            verbose("Deleting: " + deleteTarget);
-
-            if (deleteTarget.isDirectory()) {
-                try {
-                    FileUtils.deleteDirectory(deleteTarget);
-                } catch (IOException e) {
-                    getLog().warn("Unable to purge local repository location: " + deleteTarget, e);
-                }
-            } else {
-                if (!deleteTarget.delete()) {
-                    deleteTarget.deleteOnExit();
-                    getLog().warn("Unable to purge local repository location immediately: " + deleteTarget);
+                if (deleteTarget.isDirectory()) {
+                    try {
+                        FileUtils.deleteDirectory(deleteTarget);
+                    } catch (IOException e) {
+                        getLog().warn("Unable to purge local repository location: " + deleteTarget, e);
+                    }
+                } else {
+                    if (!deleteTarget.delete()) {
+                        deleteTarget.deleteOnExit();
+                        getLog().warn("Unable to purge local repository location immediately: " + deleteTarget);
+                    }
                 }
             }
             artifact.setResolved(false);
@@ -619,7 +675,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
         }
     }
 
-    private File findDeleteTarget(Artifact artifact) {
+    private List<File> findDeleteTargets(Artifact artifact) {
         // Use localRepository.pathOf() in case artifact.getFile() is not set
         File deleteTarget = new File(localRepository.getBasedir(), localRepository.pathOf(artifact));
 
@@ -632,9 +688,35 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
         } else if (VERSION_FUZZINESS.equals(resolutionFuzziness)) {
             // get the version dir.
             deleteTarget = deleteTarget.getParentFile();
+        } else {
+            // it's file fuzziness.
+            return Collections.singletonList(deleteTarget);
         }
-        // else it's file fuzziness.
-        return deleteTarget;
+
+        if (snapshotsOnly && !VERSION_FUZZINESS.equals(resolutionFuzziness)) {
+            // The groupId or artifactId directory also holds release versions, which must be kept.
+            List<File> snapshotDirectories = new ArrayList<>();
+            collectSnapshotVersionDirectories(deleteTarget, snapshotDirectories);
+            return snapshotDirectories;
+        }
+        return Collections.singletonList(deleteTarget);
+    }
+
+    /**
+     * Collects, below the given directory, the version directories of snapshots, without descending into them.
+     */
+    private void collectSnapshotVersionDirectories(File directory, List<File> snapshotDirectories) {
+        File[] children = directory.listFiles(File::isDirectory);
+        if (children == null) {
+            return;
+        }
+        for (File child : children) {
+            if (ArtifactUtils.isSnapshot(child.getName())) {
+                snapshotDirectories.add(child);
+            } else {
+                collectSnapshotVersionDirectories(child, snapshotDirectories);
+            }
+        }
     }
 
     private void verbose(String message) {

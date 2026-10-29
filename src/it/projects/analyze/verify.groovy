@@ -19,10 +19,7 @@
 
 File classFile = new File( basedir, "target/classes/Main.class" )
 assert classFile.exists()
-if ( !classFile.isFile() )
-{
-    throw new Exception( "Build was not forked, class missing " + classFile )
-}
+assert classFile.isFile() : "Build was not forked, class missing " + classFile
 
 File file = new File( basedir, "build.log" )
 assert file.exists()

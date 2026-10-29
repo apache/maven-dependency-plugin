@@ -22,12 +22,15 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.maven.api.plugin.testing.Basedir;
 import org.apache.maven.api.plugin.testing.InjectMojo;
@@ -72,7 +75,7 @@ class TestUnpackMojo {
     private ArchiverManager archiverManager;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         stubFactory = new DependencyArtifactStubFactory(tempDir, true, false);
         stubFactory.setUnpackableFile(archiverManager);
         stubFactory.setSrcFile(MojoExtension.getTestFile("test.txt"));
@@ -384,6 +387,30 @@ class TestUnpackMojo {
 
         assertMarkerFile(mojo, true, item);
         assertEquals("3.1", item.getVersion());
+    }
+
+    @Test
+    @InjectMojo(goal = "unpack")
+    void testUnpackFromRemoteRepositories(UnpackMojo mojo) throws Exception {
+        File repo = new File(tempDir, "remote-repo");
+        File dir = new File(repo, "remote/only/1.0");
+        Files.createDirectories(dir.toPath());
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(new File(dir, "only-1.0.jar").toPath()))) {
+            zip.putNextEntry(new ZipEntry("hello.txt"));
+            zip.write("hello".getBytes(StandardCharsets.UTF_8));
+            zip.closeEntry();
+        }
+
+        ArtifactItem item = new ArtifactItem();
+        item.setGroupId("remote");
+        item.setArtifactId("only");
+        item.setVersion("1.0");
+        mojo.setArtifactItems(Collections.singletonList(item));
+        mojo.setRemoteRepositories(Collections.singletonList("remote-repo::default::" + repo.toURI()));
+
+        mojo.execute();
+
+        assertTrue(new File(mojo.getOutputDirectory(), "hello.txt").isFile());
     }
 
     @Test

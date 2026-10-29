@@ -36,14 +36,14 @@
   <dependencies>
   <!-- need two deps that have same version and artifact ID but different group ID -->
     <dependency>
-      <groupId>org.jdom</groupId>
-      <artifactId>jdom</artifactId>
-      <version>1.1.3</version>
+      <groupId>org.apache.maven.its.dependency.a</groupId>
+      <artifactId>conflict</artifactId>
+      <version>1.0</version>
     </dependency>
     <dependency>
-      <groupId>org.lucee</groupId>
-      <artifactId>jdom</artifactId>
-      <version>1.1.3</version>
+      <groupId>org.apache.maven.its.dependency.b</groupId>
+      <artifactId>conflict</artifactId>
+      <version>1.0</version>
     </dependency>
   </dependencies>
 

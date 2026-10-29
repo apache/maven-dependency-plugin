@@ -46,6 +46,7 @@ import org.apache.maven.artifact.repository.metadata.SnapshotArtifactRepositoryM
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.bridge.MavenRepositorySystem;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.MavenProject;
@@ -55,7 +56,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 @MojoTest(realRepositorySession = true)
 class TestCopyDependenciesMojo2 {
@@ -67,6 +71,9 @@ class TestCopyDependenciesMojo2 {
 
     @Inject
     private MavenProject project;
+
+    @Inject
+    private MavenSession session;
 
     @Inject
     private MavenRepositorySystem repositorySystem;
@@ -299,6 +306,114 @@ class TestCopyDependenciesMojo2 {
         Path artifactDirectory = mojo.outputDirectory.toPath().resolve("testGroupId/artifact-with-project-pom/1.0");
         assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-with-project-pom-1.0.jar")));
         assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-with-project-pom-1.0.pom")));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testAddImportedBomsIsOffByDefault(CopyDependenciesMojo mojo) {
+        assertFalse(mojo.addImportedBoms);
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    @MojoParameter(name = "copyChecksums", value = "true")
+    void testRepositoryLayoutCopiesChecksums(CopyDependenciesMojo mojo) throws Exception {
+        Artifact artifact = stubFactory.createArtifact(
+                "testGroupId",
+                "artifact-with-checksums",
+                VersionRange.createFromVersion("1.0"),
+                "compile",
+                "jar",
+                null,
+                false);
+        Files.write(
+                new File(artifact.getFile().getPath() + ".sha1").toPath(),
+                "sha1-value".getBytes(StandardCharsets.UTF_8));
+        Files.write(
+                new File(artifact.getFile().getPath() + ".sha512").toPath(),
+                "sha512-value".getBytes(StandardCharsets.UTF_8));
+        mojo.getProject().setArtifacts(Collections.singleton(artifact));
+
+        mojo.useRepositoryLayout = true;
+        mojo.execute();
+
+        Path artifactDirectory = mojo.outputDirectory.toPath().resolve("testGroupId/artifact-with-checksums/1.0");
+        assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-with-checksums-1.0.jar")));
+        assertEquals(
+                "sha1-value",
+                new String(
+                        Files.readAllBytes(artifactDirectory.resolve("artifact-with-checksums-1.0.jar.sha1")),
+                        StandardCharsets.UTF_8));
+        assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-with-checksums-1.0.jar.sha512")));
+        assertFalse(Files.exists(artifactDirectory.resolve("artifact-with-checksums-1.0.jar.md5")));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    @MojoParameter(name = "addImportedBoms", value = "true")
+    void testAddImportedBomsParameter(CopyDependenciesMojo mojo) {
+        assertTrue(mojo.addImportedBoms);
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testInterpolateImportedBomCoordinates(CopyDependenciesMojo mojo) {
+        MavenProject owner = mojo.getProject();
+        owner.setGroupId("g");
+        owner.setArtifactId("a");
+        owner.setVersion("2.0");
+        owner.getProperties().setProperty("bom.version", "1.5");
+
+        assertEquals("1.5", mojo.interpolate("${bom.version}", owner));
+        assertEquals("g:a:2.0", mojo.interpolate("${project.groupId}:${project.artifactId}:${project.version}", owner));
+        assertEquals("1.5-${unknown}", mojo.interpolate("${bom.version}-${unknown}", owner));
+        assertEquals("", mojo.interpolate(null, owner));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testInterpolateImportedBomCoordinatesFromParentAndEnvironment(CopyDependenciesMojo mojo) {
+        MavenProject owner = mojo.getProject();
+        MavenProject parent = new MavenProject();
+        parent.setGroupId("pg");
+        parent.setArtifactId("pa");
+        parent.setVersion("3.0");
+        owner.setParent(parent);
+        session.getSystemProperties().setProperty("sys.version", "4.1");
+
+        CopyDependenciesMojo spy = spy(mojo);
+        doReturn("5.2").when(spy).getEnvironmentVariable("BOM_VERSION");
+
+        assertEquals("3.0", spy.interpolate("${project.parent.version}", owner));
+        assertEquals("3.0", spy.interpolate("${parent.version}", owner));
+        assertEquals("pg:pa", spy.interpolate("${project.parent.groupId}:${project.parent.artifactId}", owner));
+        assertEquals("4.1", spy.interpolate("${sys.version}", owner));
+        assertEquals("5.2", spy.interpolate("${env.BOM_VERSION}", owner));
+        assertEquals("${env.UNSET_VARIABLE}", spy.interpolate("${env.UNSET_VARIABLE}", owner));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testRepositoryLayoutSkipsChecksumsByDefault(CopyDependenciesMojo mojo) throws Exception {
+        Artifact artifact = stubFactory.createArtifact(
+                "testGroupId",
+                "artifact-without-checksums",
+                VersionRange.createFromVersion("1.0"),
+                "compile",
+                "jar",
+                null,
+                false);
+        Files.write(
+                new File(artifact.getFile().getPath() + ".sha1").toPath(),
+                "sha1-value".getBytes(StandardCharsets.UTF_8));
+        mojo.getProject().setArtifacts(Collections.singleton(artifact));
+
+        mojo.useRepositoryLayout = true;
+        mojo.execute();
+
+        Path artifactDirectory = mojo.outputDirectory.toPath().resolve("testGroupId/artifact-without-checksums/1.0");
+        assertTrue(Files.isRegularFile(artifactDirectory.resolve("artifact-without-checksums-1.0.jar")));
+        assertFalse(Files.exists(artifactDirectory.resolve("artifact-without-checksums-1.0.jar.sha1")));
     }
 
     private Artifact createExpandedVersionArtifact(

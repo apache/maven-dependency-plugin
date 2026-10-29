@@ -17,26 +17,14 @@
  * under the License.
  */
 
-expected = ['org','junit']
-
-for (item in expected)
+for ( item in ['org', 'fixture', 'org/apache/maven/its/dependency/fixture/nested.txt'] )
 {
-    def file = new File(basedir, 'target/dependency/mapped/' + item)
-    if (!file.exists())
-    {
-       throw new RuntimeException("Missing "+file.name)
-    }
+    def file = new File( basedir, 'target/dependency/mapped/' + item )
+    assert file.exists() : "Missing " + file.name
 }
 
-notExpected = ['META-INF','LICENSE.TXT']
-
-for (item in notExpected)
+for ( item in ['META-INF', 'LICENSE.txt'] )
 {
-    def file = new File(basedir, 'target/dependency/' + item)
-    if (file.exists())
-    {
-       throw new RuntimeException("This file shouldn't be here: "+file.name)
-    }
+    def file = new File( basedir, 'target/dependency/mapped/' + item )
+    assert !file.exists() : "This file shouldn't be here: " + file.name
 }
-
-return true

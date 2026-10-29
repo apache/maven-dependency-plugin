@@ -57,7 +57,7 @@ under the License.
 		<dependency> <!-- excluded by excludeClassifier -->
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
-			<version>1.5.6</version>
+			<version>1.5.34</version>
 			<classifier>skipThisClassifierToo</classifier>
 		</dependency>
 		<dependency><!-- should not be excluded -->

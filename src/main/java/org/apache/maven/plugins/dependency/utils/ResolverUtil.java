@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.ModelBase;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginContainer;
@@ -71,8 +72,13 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.resolution.VersionRangeRequest;
+import org.eclipse.aether.resolution.VersionRangeResolutionException;
+import org.eclipse.aether.resolution.VersionRangeResult;
+import org.eclipse.aether.util.artifact.ArtifactIdUtils;
 import org.eclipse.aether.util.artifact.SubArtifact;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
+import org.eclipse.aether.version.Version;
 
 /**
  * Helper class for using Resolver API.
@@ -137,7 +143,7 @@ public class ResolverUtil {
     }
 
     /**
-     * Collects the transitive dependencies.
+     * Collects the transitive dependencies using the current project's dependency management.
      *
      * @param dependency a dependency for collections
      * @return a resolved dependencies collection
@@ -149,6 +155,19 @@ public class ResolverUtil {
         CollectRequest request =
                 new CollectRequest(null, session.getCurrentProject().getRemoteProjectRepositories());
         request.addDependency(dependency);
+        ArtifactTypeRegistry artifactTypeRegistry =
+                session.getRepositorySession().getArtifactTypeRegistry();
+        request.setManagedDependencies(
+                Optional.ofNullable(session.getCurrentProject().getDependencyManagement())
+                        .map(DependencyManagement::getDependencies)
+                        .orElseGet(Collections::emptyList)
+                        .stream()
+                        .map(d -> RepositoryUtils.toDependency(d, artifactTypeRegistry))
+                        // Preserve the exclusions supplied for the dependency being collected.
+                        .map(d -> ArtifactIdUtils.equalsVersionlessId(d.getArtifact(), dependency.getArtifact())
+                                ? d.setExclusions(dependency.getExclusions())
+                                : d)
+                        .collect(Collectors.toList()));
 
         CollectResult result = repositorySystem.collectDependencies(session.getRepositorySession(), request);
 
@@ -188,6 +207,46 @@ public class ResolverUtil {
                 session, new ArtifactDescriptorRequest(artifact, repositories, null));
 
         return resolveArtifactDirectly(artifactDescriptorResult.getArtifact(), repositories, session);
+    }
+
+    /**
+     * Resolve several artifacts at their exact coordinates, without reading their descriptors. Reactor artifacts are
+     * found through the workspace reader of the current repository session.
+     *
+     * @param artifacts    artifacts to resolve
+     * @param repositories remote repositories list
+     * @return one result per artifact, in the order of {@code artifacts}
+     * @throws ArtifactResolutionException if any artifact could not be resolved; {@link
+     *                                     ArtifactResolutionException#getResults()} then holds one result per artifact
+     */
+    public List<ArtifactResult> resolveArtifacts(Collection<Artifact> artifacts, List<RemoteRepository> repositories)
+            throws ArtifactResolutionException {
+        List<ArtifactRequest> requests = artifacts.stream()
+                .map(artifact -> new ArtifactRequest(artifact, repositories, null))
+                .collect(Collectors.toList());
+        return repositorySystem.resolveArtifacts(mavenSessionProvider.get().getRepositorySession(), requests);
+    }
+
+    /**
+     * Resolve the version range of a given artifact to the highest version in the range.
+     *
+     * @param artifact     an artifact with a version range as its version
+     * @param repositories remote repositories list
+     * @param session      a repository system session
+     * @return the artifact with the highest version of the range as its version
+     * @throws VersionRangeResolutionException if the range could not be resolved or contains no version
+     */
+    public Artifact resolveVersionRange(
+            Artifact artifact, List<RemoteRepository> repositories, RepositorySystemSession session)
+            throws VersionRangeResolutionException {
+        VersionRangeResult result =
+                repositorySystem.resolveVersionRange(session, new VersionRangeRequest(artifact, repositories, null));
+        Version highest = result.getHighestVersion();
+        if (highest == null) {
+            throw new VersionRangeResolutionException(
+                    result, "No version of " + artifact + " matches the range " + artifact.getVersion());
+        }
+        return artifact.setVersion(highest.toString());
     }
 
     /**
@@ -315,9 +374,11 @@ public class ResolverUtil {
             List<RemoteRepository> remoteProjectRepositories,
             DependencyFilter dependencyFilter)
             throws DependencyResolutionException {
+        // The root is set as an artifact rather than as a dependency: a root dependency makes the session's
+        // DependencySelector treat the project's direct dependencies as transitive and drop provided and test ones.
         CollectRequest collectRequest =
-                new CollectRequest(new Dependency(rootArtifact, null), dependencies, remoteProjectRepositories);
-        collectRequest.setManagedDependencies(managedDependencies);
+                new CollectRequest(dependencies, managedDependencies, remoteProjectRepositories);
+        collectRequest.setRootArtifact(rootArtifact);
         return resolveDependencies(collectRequest, dependencyFilter);
     }
 
@@ -497,18 +558,21 @@ public class ResolverUtil {
     }
 
     private Artifact createArtifactFromString(ParamArtifact paramArtifact) {
-        // groupId:artifactId:version[:packaging[:classifier]].
         String artifact = paramArtifact.getArtifact();
-        String[] items = artifact.split(":");
-        if (items.length < 3 || items.length > 5) {
-            throw new IllegalArgumentException("Invalid artifact format: " + artifact
-                    + ", expected groupId:artifactId:version[:packaging[:classifier]]");
-        }
+        ArtifactCoordinates coordinates = ArtifactCoordinates.parse(artifact.split(":"), artifact);
 
-        ArtifactType artifactType = getArtifactType(items.length > 3 ? items[3] : paramArtifact.getPackaging());
-        String classifier = items.length > 4 ? items[4] : paramArtifact.getClassifier();
+        ArtifactType artifactType = getArtifactType(
+                coordinates.getPackaging() != null ? coordinates.getPackaging() : paramArtifact.getPackaging());
+        String classifier =
+                coordinates.getClassifier() != null ? coordinates.getClassifier() : paramArtifact.getClassifier();
 
-        return new DefaultArtifact(items[0], items[1], classifier, artifactType.getExtension(), items[2], artifactType);
+        return new DefaultArtifact(
+                coordinates.getGroupId(),
+                coordinates.getArtifactId(),
+                classifier,
+                artifactType.getExtension(),
+                coordinates.getVersion(),
+                artifactType);
     }
 
     private ArtifactType getArtifactType(String packaging) {

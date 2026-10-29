@@ -53,6 +53,16 @@ public class ArtifactItem {
     private String version = null;
 
     /**
+     * Classpath scope from which to infer a missing version when the artifact is not found in direct dependencies or
+     * dependency management. Supported values are {@code compile}, {@code runtime}, and {@code test}. When omitted,
+     * all three dependency graphs are considered and must agree on the selected version.
+     *
+     * @since 3.12.0
+     */
+    @Parameter
+    private String dependencyScope;
+
+    /**
      * Type of artifact (War, Jar, etc.)
      */
     @Parameter(required = true)
@@ -71,7 +81,8 @@ public class ArtifactItem {
     private File outputDirectory;
 
     /**
-     * Provides ability to change destination file name.
+     * Provides ability to change destination file name. Used by the {@code copy} goal only; the
+     * {@code unpack} goal ignores it, because unpacked entries keep their names from the archive.
      */
     @Parameter
     private String destFileName;
@@ -192,6 +203,22 @@ public class ArtifactItem {
      */
     public void setVersion(String version) {
         this.version = filterEmptyString(version);
+    }
+
+    /**
+     * @return classpath scope used to infer a missing version
+     * @since 3.12.0
+     */
+    public String getDependencyScope() {
+        return dependencyScope;
+    }
+
+    /**
+     * @param dependencyScope classpath scope used to infer a missing version
+     * @since 3.12.0
+     */
+    public void setDependencyScope(String dependencyScope) {
+        this.dependencyScope = filterEmptyString(dependencyScope);
     }
 
     /**

@@ -50,7 +50,7 @@ under the License.
 		                        <id>compile-sources</id>
 								<phase>generate-sources</phase>
 		                        <goals>
-		                            <goal>sources</goal>
+		                            <goal>resolve-sources</goal>
 		                        </goals>
 		                        <configuration>
 									<includeScope>compile</includeScope>
@@ -60,7 +60,7 @@ under the License.
 		                        <id>test-sources</id>
 								<phase>generate-sources</phase>
 		                        <goals>
-		                            <goal>sources</goal>
+		                            <goal>resolve-sources</goal>
 		                        </goals>
 		                        <configuration>
 									<includeScope>test</includeScope>

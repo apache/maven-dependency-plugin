@@ -20,7 +20,7 @@ package org.apache.maven.plugins.dependency.analyze;
 
 import java.io.File;
 import java.io.StringWriter;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -30,13 +30,11 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerException;
@@ -162,15 +160,25 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean skip;
 
     /**
+     * Whether test compilation is skipped, as set by <code>maven.test.skip</code>. When <code>true</code>, test scoped
+     * dependencies are left out of the "declared but unused" list, because no test class is analyzed. Dependencies of
+     * other scopes are still analyzed.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "maven.test.skip", defaultValue = "false", readonly = true)
+    private boolean testSkip;
+
+    /**
      * List of dependencies that will be ignored. Any dependency on this list will be excluded from the "declared but
      * unused", the "used but undeclared", and the "non-test scoped" list. The filter syntax is:
      *
      * <pre>
-     * [groupId]:[artifactId]:[type]:[version]
+     * [groupId]:[artifactId]:[type]:[version]:[scope]
      * </pre>
      *
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
-     * segment is treated as an implicit wildcard. *
+     * segment is treated as an implicit wildcard. The <code>scope</code> segment is available since 3.12.0.
      * <p>
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
@@ -178,18 +186,18 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 2.10
      */
-    @Parameter
+    @Parameter(property = "mdep.analyze.ignoredDependencies")
     private String[] ignoredDependencies = new String[0];
 
     /**
      * List of dependencies that will be ignored if they are used but undeclared. The filter syntax is:
      *
      * <pre>
-     * [groupId]:[artifactId]:[type]:[version]
+     * [groupId]:[artifactId]:[type]:[version]:[scope]
      * </pre>
      *
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
-     * segment is treated as an implicit wildcard. *
+     * segment is treated as an implicit wildcard. The <code>scope</code> segment is available since 3.12.0.
      * <p>
      * For example, <code>org.apache.*</code> will match all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
@@ -197,18 +205,18 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 2.10
      */
-    @Parameter
+    @Parameter(property = "mdep.analyze.ignoredUsedUndeclaredDependencies")
     private String[] ignoredUsedUndeclaredDependencies = new String[0];
 
     /**
      * List of dependencies that are ignored if they are declared but unused. The filter syntax is:
      *
      * <pre>
-     * [groupId]:[artifactId]:[type]:[version]
+     * [groupId]:[artifactId]:[type]:[version]:[scope]
      * </pre>
      *
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
-     * segment is treated as an implicit wildcard. *
+     * segment is treated as an implicit wildcard. The <code>scope</code> segment is available since 3.12.0.
      * <p>
      * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
@@ -219,7 +227,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 2.10
      */
-    @Parameter
+    @Parameter(property = "mdep.analyze.ignoredUnusedDeclaredDependencies")
     private String[] ignoredUnusedDeclaredDependencies = new String[0];
 
     private String[] unconditionallyIgnoredDeclaredDependencies = {"org.slf4j:slf4j-simple::"};
@@ -229,11 +237,11 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      * The filter syntax is:
      *
      * <pre>
-     * [groupId]:[artifactId]:[type]:[version]
+     * [groupId]:[artifactId]:[type]:[version]:[scope]
      * </pre>
      *
      * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty pattern
-     * segment is treated as an implicit wildcard. *
+     * segment is treated as an implicit wildcard. The <code>scope</code> segment is available since 3.12.0.
      * <p>
      * For example, <code>org.apache.*</code> matched all artifacts whose group id starts with
      * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> will match all snapshot artifacts.
@@ -241,7 +249,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      *
      * @since 3.3.0
      */
-    @Parameter(defaultValue = "org.slf4j:slf4j-simple::")
+    @Parameter(property = "mdep.analyze.ignoredNonTestScopedDependencies", defaultValue = "org.slf4j:slf4j-simple::")
     private String[] ignoredNonTestScopedDependencies;
 
     /**
@@ -300,6 +308,11 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
             return;
         }
 
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredDependencies);
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredUsedUndeclaredDependencies);
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredUnusedDeclaredDependencies);
+        ArtifactPatternMatcher.warnAboutUnsupportedPatterns(getLog(), ignoredNonTestScopedDependencies);
+
         boolean warning = checkDependencies();
 
         if (warning && failOnWarning) {
@@ -332,11 +345,16 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
     private boolean checkDependencies() throws MojoExecutionException {
         ProjectDependencyAnalysis analysis;
+        List<String> unneededForcedUsage = Collections.emptyList();
         try {
             analysis = createProjectDependencyAnalyzer().analyze(project, excludedClasses);
 
             if (usedDependencies != null) {
-                analysis = analysis.forceDeclaredDependenciesUsage(usedDependencies);
+                ForcedUsage forced = new ForcedUsage(analysis, usedDependencies);
+                unneededForcedUsage = forced.getUnneeded();
+                if (forced.getToForce().length > 0) {
+                    analysis = analysis.forceDeclaredDependenciesUsage(forced.getToForce());
+                }
             }
         } catch (ProjectDependencyAnalyzerException exception) {
             throw new MojoExecutionException("Cannot analyze dependencies", exception);
@@ -356,6 +374,14 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         Set<Artifact> ignoredUnusedDeclared = new LinkedHashSet<>();
         Set<Artifact> ignoredNonTestScope = new LinkedHashSet<>();
 
+        if (testSkip) {
+            int before = unusedDeclared.size();
+            unusedDeclared.removeIf(artifact -> Artifact.SCOPE_TEST.equals(artifact.getScope()));
+            if (unusedDeclared.size() < before) {
+                getLog().info("maven.test.skip is set: test scoped dependencies are not analyzed for being unused");
+            }
+        }
+
         if (ignoreUnusedRuntime) {
             filterArtifactsByScope(unusedDeclared, Artifact.SCOPE_RUNTIME);
         }
@@ -373,10 +399,24 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         } else {
             ignoredNonTestScope.addAll(filterDependencies(nonTestScope, ignoredDependencies));
             ignoredNonTestScope.addAll(filterDependencies(nonTestScope, ignoredNonTestScopedDependencies));
+            // an ignored used undeclared dependency is deliberately not declared, so its scope cannot be changed
+            for (Iterator<Artifact> it = nonTestScope.iterator(); it.hasNext(); ) {
+                Artifact artifact = it.next();
+                if (ignoredUsedUndeclared.contains(artifact)) {
+                    it.remove();
+                    ignoredNonTestScope.add(artifact);
+                }
+            }
         }
 
         boolean reported = false;
         boolean warning = false;
+
+        for (String entry : unneededForcedUsage) {
+            logDependencyWarning(ForcedUsage.message(entry));
+            reported = true;
+            warning = true;
+        }
 
         if (verbose && !usedDeclared.isEmpty()) {
             getLog().info("Used declared dependencies found:");
@@ -547,7 +587,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                         .append(":")
                         .append(artifact.getDependencyConflictId())
                         .append(":")
-                        .append(artifact.getClassifier())
+                        .append(artifact.getClassifier() != null ? artifact.getClassifier() : "")
                         .append(":")
                         .append(artifact.getBaseVersion())
                         .append(":")
@@ -559,20 +599,6 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     }
 
     private Set<Artifact> filterDependencies(Set<Artifact> artifacts, String[] excludes) {
-        if (excludes == null || excludes.length == 0) {
-            return artifacts;
-        }
-        ArtifactFilter filter = new StrictPatternExcludesArtifactFilter(Arrays.asList(excludes));
-        Set<Artifact> result = new LinkedHashSet<>();
-
-        for (Iterator<Artifact> it = artifacts.iterator(); it.hasNext(); ) {
-            Artifact artifact = it.next();
-            if (!filter.include(artifact)) {
-                it.remove();
-                result.add(artifact);
-            }
-        }
-
-        return result;
+        return ArtifactPatternMatcher.removeMatching(artifacts, excludes);
     }
 }
