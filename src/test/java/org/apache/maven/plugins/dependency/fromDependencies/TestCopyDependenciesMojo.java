@@ -398,6 +398,45 @@ class TestCopyDependenciesMojo {
 
     @Test
     @InjectMojo(goal = "copy-dependencies")
+    void testIncludeGroupIdDoesNotMatchUnrelatedGroupIdSharingStringPrefix(CopyDependenciesMojo mojo) throws Exception {
+        Set<Artifact> artifacts = new HashSet<>();
+        artifacts.add(stubFactory.createArtifact("org.example", "one", "1.0"));
+        artifacts.add(stubFactory.createArtifact("org.example.foo", "two", "1.0"));
+        artifacts.add(stubFactory.createArtifact("org.example2", "three", "1.0"));
+        mojo.getProject().setArtifacts(artifacts);
+
+        // nested under org.example is included, an unrelated group id sharing the same string prefix is not
+        mojo.includeGroupIds = "org.example";
+        mojo.execute();
+
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertEquals(!"org.example2".equals(artifact.getGroupId()), file.exists());
+        }
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
+    void testIncludeGroupIdExactMatchOnlyMatchesTheListedGroupId(CopyDependenciesMojo mojo) throws Exception {
+        Set<Artifact> artifacts = new HashSet<>();
+        artifacts.add(stubFactory.createArtifact("org.example", "one", "1.0"));
+        artifacts.add(stubFactory.createArtifact("org.example.foo", "two", "1.0"));
+        mojo.getProject().setArtifacts(artifacts);
+
+        mojo.includeGroupIds = "org.example";
+        mojo.groupIdsExactMatch = true;
+        mojo.execute();
+
+        for (Artifact artifact : artifacts) {
+            String fileName = DependencyUtil.getFormattedFileName(artifact, false);
+            File file = new File(mojo.outputDirectory, fileName);
+            assertEquals("org.example".equals(artifact.getGroupId()), file.exists());
+        }
+    }
+
+    @Test
+    @InjectMojo(goal = "copy-dependencies")
     void testExcludeClassifier(CopyDependenciesMojo mojo) throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getClassifiedArtifacts());
 
