@@ -45,6 +45,7 @@ import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ExcludeOptionalArtifactsFilter;
+import org.apache.maven.plugins.dependency.utils.filters.GroupIdFilter;
 import org.apache.maven.plugins.dependency.utils.translators.ArtifactTranslator;
 import org.apache.maven.plugins.dependency.utils.translators.ClassifierTypeTranslator;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
@@ -57,7 +58,6 @@ import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.artifact.filter.collection.ClassifierFilter;
 import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
-import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ProjectTransitivityFilter;
 import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
@@ -228,6 +228,17 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected String includeGroupIds;
 
     /**
+     * Whether {@code includeGroupIds}/{@code excludeGroupIds} only match a listed group id exactly, the same way
+     * {@code includeArtifactIds}/{@code excludeArtifactIds} match artifact ids. By default, a listed group id such
+     * as {@code org.example} also matches every group id nested under it, such as {@code org.example.foo}, but
+     * never an unrelated group id that merely shares the same string prefix, such as {@code org.example2}.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "groupIdsExactMatch", defaultValue = "false")
+    protected boolean groupIdsExactMatch;
+
+    /**
      * Directory to store flag files.
      *
      * @since 2.0
@@ -389,7 +400,8 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
         filter.addFilter(new GroupIdFilter(
                 DependencyUtil.cleanToBeTokenizedString(this.includeGroupIds),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeGroupIds)));
+                DependencyUtil.cleanToBeTokenizedString(this.excludeGroupIds),
+                this.groupIdsExactMatch));
 
         filter.addFilter(new ArtifactIdFilter(
                 DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
