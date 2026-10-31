@@ -19,15 +19,14 @@ package hello;
  * under the License.
  */
 
-import static org.hamcrest.CoreMatchers.is;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HelloTest {
 
   @Test
   public void add() {
-    assertThat(1 + 1, is(2));
+    assertEquals(2, 1 + 1);
   }
 
 }
