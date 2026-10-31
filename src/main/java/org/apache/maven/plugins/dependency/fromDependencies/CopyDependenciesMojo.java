@@ -54,8 +54,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 /**
  * Goal that copies the files for a project's dependencies from the repository to a directory.
  * The default location to copy to is target/dependencies.
- * Since all files are copied to the same directory by default, a dependency that
- * has the same file name as another dependency will be overwritten.
+ * If dependencies map to the same destination file, the goal fails before copying to avoid overwriting an artifact.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @since 1.0
@@ -161,18 +160,29 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         Set<Artifact> artifacts = dss.getResolvedDependencies();
 
         if (!useRepositoryLayout) {
-            Map<String, Integer> copies = new HashMap<>();
+            Map<File, Artifact> copies = new HashMap<>();
             for (Artifact artifactItem : artifacts) {
                 String destFileName = DependencyUtil.getFormattedFileName(
                         artifactItem, stripVersion, prependGroupId, useBaseVersion, stripClassifier);
-                int numCopies = copies.getOrDefault(destFileName, 0);
-                copies.put(destFileName, numCopies + 1);
-            }
-            for (Map.Entry<String, Integer> entry : copies.entrySet()) {
-                if (entry.getValue() > 1) {
-                    getLog().warn("Multiple files with the name " + entry.getKey() + " in the dependency tree.");
-                    getLog().warn(
-                                    "Not all JARs will be available. Consider using prependGroupId, useSubDirectoryPerArtifact, or useRepositoryLayout.");
+                File destDir = DependencyUtil.getFormattedOutputDirectory(
+                        useSubDirectoryPerScope,
+                        useSubDirectoryPerType,
+                        useSubDirectoryPerArtifact,
+                        useRepositoryLayout,
+                        stripVersion,
+                        stripType,
+                        outputDirectory,
+                        artifactItem);
+                File destFile = new File(destDir, destFileName)
+                        .getAbsoluteFile()
+                        .toPath()
+                        .normalize()
+                        .toFile();
+                Artifact existingArtifact = copies.putIfAbsent(destFile, artifactItem);
+                if (existingArtifact != null) {
+                    throw new MojoExecutionException("Multiple artifacts map to the same destination file '" + destFile
+                            + "': " + existingArtifact.getId() + " and " + artifactItem.getId()
+                            + ". Consider using prependGroupId, useSubDirectoryPerArtifact, or useRepositoryLayout.");
                 }
             }
 
