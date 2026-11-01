@@ -22,9 +22,13 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
@@ -38,6 +42,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.CopyUtil;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.ParamArtifact;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
 import org.apache.maven.project.MavenProject;
@@ -46,8 +51,10 @@ import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.installation.InstallationException;
 import org.eclipse.aether.repository.LocalRepositoryManager;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.util.artifact.SubArtifact;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -62,6 +69,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  */
 @Mojo(
         name = "copy-dependencies",
+        requiresProject = false,
         requiresDependencyCollection = ResolutionScope.TEST,
         defaultPhase = LifecyclePhase.PROCESS_SOURCES,
         threadSafe = true)
@@ -125,6 +133,8 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     @Parameter(property = "mdep.copyChecksums", defaultValue = "false")
     protected boolean copyChecksums;
 
+    private final ParamArtifact paramArtifact = new ParamArtifact();
+
     @Inject
     public CopyDependenciesMojo(
             MavenSession session,
@@ -144,6 +154,21 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
     }
 
     /**
+     * A string of the form {@code groupId:artifactId:version[:packaging[:classifier]]} identifying a single
+     * artifact to resolve, together with its transitive dependencies, instead of this project's own dependencies.
+     * When set, the goal needs no {@code pom.xml} at all and can be run directly from the command line in any
+     * directory, for example {@code mvn dependency:copy-dependencies -Dartifact=groupId:artifactId:version}.
+     * Ignored when not set, in which case this project's dependencies are copied as before.
+     *
+     * @param artifact the artifact coordinates
+     * @since 3.12.0
+     */
+    @Parameter(property = "artifact")
+    public void setArtifact(String artifact) {
+        paramArtifact.setArtifact(artifact);
+    }
+
+    /**
      * Main entry into mojo. Gets the list of dependencies and iterates through calling copyArtifact.
      *
      * @throws MojoExecutionException with a message if an error occurs
@@ -156,10 +181,66 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
             getLog().warn(
                             "copyChecksums only applies together with useRepositoryLayout, no checksum files are copied.");
         }
-        DependencyStatusSets dss =
-                getDependencySets(this.failOnMissingClassifierArtifact, addParentPoms, addImportedBoms);
-        Set<Artifact> artifacts = dss.getResolvedDependencies();
 
+        Set<Artifact> artifacts;
+        Set<Artifact> skippedArtifacts;
+        if (paramArtifact.isDataSet()) {
+            artifacts = resolveArtifactWithTransitiveDependencies();
+            skippedArtifacts = Collections.emptySet();
+        } else {
+            DependencyStatusSets dss =
+                    getDependencySets(this.failOnMissingClassifierArtifact, addParentPoms, addImportedBoms);
+            artifacts = dss.getResolvedDependencies();
+            skippedArtifacts = dss.getSkippedDependencies();
+        }
+
+        copyOrInstall(artifacts, skippedArtifacts);
+    }
+
+    /**
+     * Resolves the artifact identified by {@link #setArtifact(String)} together with its transitive dependencies,
+     * via the repository system directly, without relying on this project's own dependencies.
+     *
+     * @return the resolved artifact and its transitive dependencies
+     * @throws MojoExecutionException if the artifact or one of its dependencies cannot be resolved
+     */
+    private Set<Artifact> resolveArtifactWithTransitiveDependencies() throws MojoExecutionException {
+        org.eclipse.aether.artifact.Artifact rootArtifact = getResolverUtil().createArtifactFromParams(paramArtifact);
+        List<RemoteRepository> repositories = getProject().getRemoteProjectRepositories();
+
+        List<org.eclipse.aether.artifact.Artifact> resolved;
+        try {
+            resolved = getResolverUtil().resolveDependencies(rootArtifact, repositories);
+        } catch (DependencyResolutionException e) {
+            throw new MojoExecutionException("Failed to resolve " + rootArtifact + " with its dependencies", e);
+        }
+
+        if (excludeTransitive) {
+            resolved = resolved.stream()
+                    .filter(resolvedArtifact -> isSameArtifact(resolvedArtifact, rootArtifact))
+                    .collect(Collectors.toList());
+        }
+
+        return resolved.stream().map(RepositoryUtils::toArtifact).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private static boolean isSameArtifact(
+            org.eclipse.aether.artifact.Artifact artifact, org.eclipse.aether.artifact.Artifact other) {
+        return artifact.getGroupId().equals(other.getGroupId())
+                && artifact.getArtifactId().equals(other.getArtifactId())
+                && artifact.getVersion().equals(other.getVersion())
+                && artifact.getExtension().equals(other.getExtension())
+                && artifact.getClassifier().equals(other.getClassifier());
+    }
+
+    /**
+     * Copies, or installs in repository layout, the resolved artifacts, then copies their POMs if requested.
+     *
+     * @param artifacts the artifacts to copy or install
+     * @param skippedArtifacts artifacts that already exist in the destination and were not re-copied
+     * @throws MojoExecutionException with a message if an error occurs
+     */
+    private void copyOrInstall(Set<Artifact> artifacts, Set<Artifact> skippedArtifacts) throws MojoExecutionException {
         if (!useRepositoryLayout) {
             Map<String, Integer> copies = new HashMap<>();
             for (Artifact artifactItem : artifacts) {
@@ -186,11 +267,10 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
             artifacts.forEach(artifact -> installArtifact(artifact, repositorySystemSession));
             if (isCopyPom()) {
                 // Artifacts that already exist may not yet have poms
-                dss.getSkippedDependencies().forEach(artifact -> installMissingPom(artifact, repositorySystemSession));
+                skippedArtifacts.forEach(artifact -> installMissingPom(artifact, repositorySystemSession));
             }
         }
 
-        Set<Artifact> skippedArtifacts = dss.getSkippedDependencies();
         for (Artifact artifact : skippedArtifacts) {
             getLog().info(artifact.getId() + " already exists in destination.");
         }
