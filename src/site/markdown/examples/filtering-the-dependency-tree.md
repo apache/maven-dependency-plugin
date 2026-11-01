@@ -34,7 +34,7 @@ mvn dependency:tree -Dincludes=velocity:velocity
 
 Which outputs:
 
-```unknown
+```text
 [INFO] [dependency:tree]
 [INFO] org.apache.maven.plugins:maven-dependency-plugin:maven-plugin:2.0-alpha-5-SNAPSHOT
 [INFO] \- org.apache.maven.doxia:doxia-site-renderer:jar:1.0-alpha-8:compile
@@ -48,7 +48,7 @@ Thus we can see that Velocity is being brought in by Plexus Velocity, which in t
 
 The syntax for filter patterns is as follows:
 
-```unknown
+```text
 [groupId]:[artifactId]:[type]:[version]
 ```
 

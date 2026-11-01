@@ -438,7 +438,7 @@ mvn dependency:analyze
 
 Sample output:
 
-```unknown
+```text
 [INFO] [dependency:analyze]
 [WARNING] Used undeclared dependencies found: (in org.example:my-app)
 [WARNING]    classworlds:classworlds:jar:1.1-alpha-2:compile
@@ -467,7 +467,7 @@ mvn dependency:analyze-dep-mgt
 
 Sample output:
 
-```unknown
+```text
 [INFO] Found Resolved Dependency / DependencyManagement mismatches:
 [INFO]  Dependency: commons-lang:commons-lang:jar
 [INFO]          DepMgt  : 1.0
@@ -720,7 +720,7 @@ mvn dependency:analyze-exclusions
 
 Sample output:
 
-```unknown
+```text
 [WARNING] The following dependencies defines unnecessary excludes
 [WARNING]     org.apache.maven:maven-artifact:
 [WARNING]         - javax.annotation:javax.annotation-api

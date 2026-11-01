@@ -120,7 +120,7 @@ Some POMs declare dependencies using Maven property references for the `groupId`
 
 When `dependency:add` detects that a dependency with the same coordinates already exists in the resolved (effective) model but cannot be found in the raw XML, it means the dependency is declared using property interpolation. In this case, the goal **fails** with an error message explaining that the dependency cannot be safely added or updated automatically:
 
-```unknown
+```text
 [ERROR] Dependency com.example:lib already exists in the POM (using property references).
 Cannot safely add or update automatically. Please edit the POM manually.
 ```
