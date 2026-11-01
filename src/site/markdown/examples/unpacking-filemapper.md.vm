@@ -75,7 +75,7 @@ Any Plexus File Mapper (i. e. implementation of the interface `org.codehaus.plex
 
 The Regular Expression Mapper is useful to modify or cut away prefixes or suffixes, or to rewrite file extensions:
 
-```unknown
+```xml
  [...]
  <org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
    <pattern>[...]</pattern>
@@ -86,7 +86,7 @@ The Regular Expression Mapper is useful to modify or cut away prefixes or suffix
 
 The Prefix File Mapper is useful to add prefixes:
 
-```unknown
+```xml
  [...]
  <org.codehaus.plexus.components.io.filemappers.PrefixFileMapper>
    <prefix>[...]</prefix>
@@ -96,7 +96,7 @@ The Prefix File Mapper is useful to add prefixes:
 
 The Flatten File Mapper removes the path completey, effectively putting all files in the same folder:
 
-```unknown
+```xml
  [...]
  <org.codehaus.plexus.components.io.filemappers.FlattenFileMapper/>
  [...]

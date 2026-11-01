@@ -69,7 +69,7 @@ mvn dependency:tree -DoutputType=<format> -DoutputFile=<filename>
 
 **Example**:
 
-```unknown
+```json
 {
   "groupId": "org.apache.maven.extensions",
   "artifactId": "maven-build-cache-extension",
@@ -143,7 +143,7 @@ mvn dependency:tree -DoutputType=json -DoutputFile=dependency-tree.json
 
 **Example**:
 
-```unknown
+```text
 digraph "org.apache.maven.extensions:maven-build-cache-extension:jar:1.2.1-SNAPSHOT:" {
   "org.apache.maven.extensions:maven-build-cache-extension:jar:1.2.1-SNAPSHOT:" -> "net.openhft:zero-allocation-hashing:jar:0.27ea0:compile";
   "org.apache.maven.extensions:maven-build-cache-extension:jar:1.2.1-SNAPSHOT:" -> "org.apache.maven.wagon:wagon-webdav-jackrabbit:jar:3.5.3:compile";
@@ -162,7 +162,7 @@ mvn dependency:tree -DoutputType=dot -DoutputFile=dependency-tree.dot
 
 **Visualization**: Convert the DOT file to an image using Graphviz:
 
-```unknown
+```bash
 dot -Tpng dependency-tree.dot -o dependency-tree.png
 ```
 
@@ -219,7 +219,7 @@ mvn dependency:tree -DoutputType=graphml -DoutputFile=dependency-tree.graphml
 
 **Example**:
 
-```unknown
+```text
 1474640235 org.apache.maven.extensions:maven-build-cache-extension:jar:1.2.1-SNAPSHOT:
 788877168 net.openhft:zero-allocation-hashing:jar:0.27ea0:compile
 1662807313 org.apache.maven.wagon:wagon-webdav-jackrabbit:jar:3.5.3:compile
