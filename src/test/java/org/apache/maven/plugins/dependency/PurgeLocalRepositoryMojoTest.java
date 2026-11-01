@@ -40,6 +40,8 @@ import org.eclipse.aether.artifact.DefaultArtifactType;
 import org.eclipse.aether.graph.DefaultDependencyNode;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.util.artifact.DefaultArtifactTypeRegistry;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,6 +71,8 @@ class PurgeLocalRepositoryMojoTest {
 
     private ResolverUtil resolverUtil;
 
+    private RepositorySystemSession repositorySession;
+
     private PurgeLocalRepositoryMojo mojo;
 
     @BeforeEach
@@ -80,7 +84,7 @@ class PurgeLocalRepositoryMojoTest {
         DefaultArtifactTypeRegistry typeRegistry = new DefaultArtifactTypeRegistry();
         typeRegistry.add(new DefaultArtifactType("jar", "jar", "", "java"));
         typeRegistry.add(new DefaultArtifactType("custom", "cext", "", "java"));
-        RepositorySystemSession repositorySession = mock(RepositorySystemSession.class);
+        repositorySession = mock(RepositorySystemSession.class);
         when(repositorySession.getArtifactTypeRegistry()).thenReturn(typeRegistry);
         when(session.getRepositorySession()).thenReturn(repositorySession);
 
@@ -128,6 +132,61 @@ class PurgeLocalRepositoryMojoTest {
 
     private static Artifact artifact(String artifactId, String version) {
         return new DefaultArtifact("org.example", artifactId, "jar", version);
+    }
+
+    /**
+     * Lays installed artifacts out under {@code installed/tag-1/} and cached ones under {@code cached/<repository>/},
+     * like a split enhanced local repository.
+     */
+    private void splitLocalRepository() {
+        LocalRepositoryManager localRepositoryManager = mock(LocalRepositoryManager.class);
+        when(localRepositoryManager.getRepository()).thenReturn(new LocalRepository(localRepo.toFile()));
+        when(localRepositoryManager.getPathForLocalArtifact(any(Artifact.class)))
+                .thenAnswer(invocation -> "installed/tag-1/" + layoutPath(invocation.getArgument(0)));
+        when(localRepositoryManager.getPathForRemoteArtifact(any(Artifact.class), any(RemoteRepository.class), any()))
+                .thenAnswer(invocation ->
+                        "cached/" + invocation.<RemoteRepository>getArgument(1).getId() + "/"
+                                + layoutPath(invocation.getArgument(0)));
+        when(repositorySession.getLocalRepositoryManager()).thenReturn(localRepositoryManager);
+        when(project.getRemoteProjectRepositories())
+                .thenReturn(Collections.singletonList(
+                        new RemoteRepository.Builder("central", "default", "https://repo.example").build()));
+    }
+
+    private static String layoutPath(Artifact artifact) {
+        return artifact.getGroupId().replace('.', '/') + "/" + artifact.getArtifactId() + "/"
+                + artifact.getBaseVersion() + "/" + artifact.getArtifactId() + "-" + artifact.getVersion() + "."
+                + artifact.getExtension();
+    }
+
+    @Test
+    void splitLocalRepositoryDeletesInstalledAndCachedCopies() throws Exception {
+        Path plain = artifactFile("lib", "1.0");
+        Path installed = file("installed/tag-1/" + GROUP_PATH + "/lib/1.0/lib-1.0.jar");
+        Path cached = file("cached/central/" + GROUP_PATH + "/lib/1.0/lib-1.0.jar");
+        Path otherVersion = file("installed/tag-1/" + GROUP_PATH + "/lib/2.0/lib-2.0.jar");
+        splitLocalRepository();
+        resolvesTo(artifact("lib", "1.0"));
+
+        mojo.execute();
+
+        assertThat(plain.getParent()).doesNotExist();
+        assertThat(installed.getParent()).doesNotExist();
+        assertThat(cached.getParent()).doesNotExist();
+        assertThat(otherVersion).exists();
+    }
+
+    @Test
+    void splitLocalRepositoryManualIncludeDeletesInstalledCopy() throws Exception {
+        Path installed = file("installed/tag-1/" + GROUP_PATH + "/lib/1.0-SNAPSHOT/lib-1.0-SNAPSHOT.pom");
+        Path sibling = file("installed/tag-1/" + GROUP_PATH + "/sibling/1.0/sibling-1.0.pom");
+        splitLocalRepository();
+        setVariableValueToObject(mojo, "manualInclude", "org.example:lib");
+
+        mojo.execute();
+
+        assertThat(installed.getParent().getParent()).doesNotExist();
+        assertThat(sibling).exists();
     }
 
     @Test
