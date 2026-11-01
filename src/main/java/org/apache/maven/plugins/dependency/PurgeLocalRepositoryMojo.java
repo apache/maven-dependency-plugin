@@ -66,6 +66,8 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.DefaultDependencyNode;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.repository.LocalRepositoryManager;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 
@@ -438,18 +440,57 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
                 continue;
             }
 
-            File purgeDir = new File(localRepository.getBasedir(), relativePath);
-            if (purgeDir.exists()) {
-                getLog().debug("Deleting directory: " + purgeDir);
-                try {
-                    FileUtils.deleteDirectory(purgeDir);
-                } catch (IOException e) {
-                    throw new MojoExecutionException("Unable to purge directory: " + purgeDir);
+            String[] gav = gavPattern.split(":");
+            for (File root : localRepositoryRoots(project, gav[0], gav.length > 1 ? gav[1] : "x")) {
+                File purgeDir = new File(root, relativePath);
+                if (purgeDir.exists()) {
+                    getLog().debug("Deleting directory: " + purgeDir);
+                    try {
+                        FileUtils.deleteDirectory(purgeDir);
+                    } catch (IOException e) {
+                        throw new MojoExecutionException("Unable to purge directory: " + purgeDir);
+                    }
+                } else {
+                    getLog().debug("Directory: " + purgeDir + " doesn't exist");
                 }
-            } else {
-                getLog().debug("Directory: " + purgeDir + " doesn't exist");
             }
         }
+    }
+
+    /**
+     * Returns the directories the local repository lays artifacts out under: its base directory and, for a split
+     * local repository, the prefixed directories that hold installed and cached artifacts.
+     *
+     * @param theProject the project whose remote repositories may have cached the artifact
+     * @param groupId the groupId of the artifact
+     * @param artifactId the artifactId of the artifact
+     * @return the base directory followed by any prefixed directories
+     */
+    private Set<File> localRepositoryRoots(MavenProject theProject, String groupId, String artifactId) {
+        LocalRepositoryManager localRepositoryManager =
+                session.getRepositorySession().getLocalRepositoryManager();
+        if (localRepositoryManager == null) {
+            return Collections.singleton(new File(localRepository.getBasedir()));
+        }
+        File basedir = localRepositoryManager.getRepository().getBasedir();
+        Set<File> roots = new LinkedHashSet<>();
+        roots.add(basedir);
+        // A split prefix depends only on installed or cached, the remote repository, and release or snapshot.
+        for (String version : Arrays.asList("0", "0-SNAPSHOT")) {
+            DefaultArtifact probe = new DefaultArtifact(groupId, artifactId, "pom", version);
+            String layoutPath = localRepository.pathOf(RepositoryUtils.toArtifact(probe));
+            List<String> paths = new ArrayList<>();
+            paths.add(localRepositoryManager.getPathForLocalArtifact(probe));
+            for (RemoteRepository repository : theProject.getRemoteProjectRepositories()) {
+                paths.add(localRepositoryManager.getPathForRemoteArtifact(probe, repository, ""));
+            }
+            for (String path : paths) {
+                if (path != null && path.endsWith(layoutPath)) {
+                    roots.add(new File(basedir, path.substring(0, path.length() - layoutPath.length())));
+                }
+            }
+        }
+        return roots;
     }
 
     /**
@@ -626,7 +667,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
         for (Artifact artifact : artifacts) {
             verbose("Purging artifact: " + artifact.getId());
 
-            for (File deleteTarget : findDeleteTargets(artifact)) {
+            for (File deleteTarget : findDeleteTargets(theProject, artifact)) {
                 verbose("Deleting: " + deleteTarget);
 
                 if (deleteTarget.isDirectory()) {
@@ -675,10 +716,21 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
         }
     }
 
-    private List<File> findDeleteTargets(Artifact artifact) {
-        // Use localRepository.pathOf() in case artifact.getFile() is not set
-        File deleteTarget = new File(localRepository.getBasedir(), localRepository.pathOf(artifact));
+    private List<File> findDeleteTargets(MavenProject theProject, Artifact artifact) {
+        List<File> deleteTargets = new ArrayList<>();
+        for (File root : localRepositoryRoots(theProject, artifact.getGroupId(), artifact.getArtifactId())) {
+            // Use localRepository.pathOf() in case artifact.getFile() is not set
+            File deleteTarget = new File(root, localRepository.pathOf(artifact));
+            for (File target : findDeleteTargets(deleteTarget)) {
+                if (target.exists()) {
+                    deleteTargets.add(target);
+                }
+            }
+        }
+        return deleteTargets;
+    }
 
+    private List<File> findDeleteTargets(File deleteTarget) {
         if (GROUP_ID_FUZZINESS.equals(resolutionFuzziness)) {
             // get the groupId dir.
             deleteTarget = deleteTarget.getParentFile().getParentFile().getParentFile();
