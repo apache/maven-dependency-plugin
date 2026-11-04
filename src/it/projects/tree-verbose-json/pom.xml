@@ -49,4 +49,26 @@
       <version>1.0</version>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>@project.version@</version>
+        <executions>
+          <execution>
+            <id>plain</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>tree</goal>
+            </goals>
+            <configuration>
+              <outputType>json</outputType>
+              <outputFile>target/plain.json</outputFile>
+              <verbose>false</verbose>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

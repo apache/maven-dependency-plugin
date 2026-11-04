@@ -44,4 +44,38 @@
     </dependency>
   </dependencies>
 
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>@project.version@</version>
+        <executions>
+          <execution>
+            <id>included-excluded</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>tree</goal>
+            </goals>
+            <configuration>
+              <outputFile>target/included-excluded.txt</outputFile>
+              <includes>junit:junit</includes>
+              <excludes>org.codehaus.plexus:*</excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>included-survives</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>tree</goal>
+            </goals>
+            <configuration>
+              <outputFile>target/included-survives.txt</outputFile>
+              <includes>:wagon*</includes>
+              <excludes>org.codehaus.plexus:*</excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

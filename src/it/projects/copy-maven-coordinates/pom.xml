@@ -25,4 +25,36 @@
   <description>
     dependency:copy takes the artifact in the form that Maven and dependency:list print.
   </description>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>@project.version@</version>
+        <executions>
+          <execution>
+            <id>type-classifier-version-scope</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifact>org.apache.maven.its.dependency:ResourceArtifact:test-jar:tests:1.0:test</artifact>
+              <outputDirectory>target/type-classifier-version-scope</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>legacy</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifact>org.apache.maven.its.dependency:ResourceArtifact:1.0:jar:client</artifact>
+              <outputDirectory>target/legacy</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -1,0 +1,28 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+def lines = new File(basedir, "target/collected.txt").readLines()*.trim()
+
+assert lines[0] == "The following files have been resolved:" : "Unexpected header in " + lines
+def artifacts = lines.findAll { it.contains(":jar:") }
+// the direct dependency and one that only the POM chain knows about
+assert artifacts.contains("org.apache.maven:maven-project:jar:2.0.6:compile") : "Expected the dependency in " + lines
+assert artifacts.contains("org.apache.maven:maven-model:jar:2.0.6:compile") : "Expected a transitive dependency in " + lines
+assert !lines.any { it.startsWith("The following files have NOT been resolved") } : "Nothing may be unresolved in " + lines
+// collect reads POMs only, so no jar is resolved and no module name can be read from one
+assert !artifacts.any { it.contains(" -- module ") } : "collect must not resolve jars: " + lines
