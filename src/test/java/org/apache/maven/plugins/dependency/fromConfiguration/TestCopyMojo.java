@@ -388,6 +388,27 @@ class TestCopyMojo {
 
     @Test
     @InjectMojo(goal = "copy")
+    @MojoParameter(name = "prependGroupId", value = "true")
+    void testCopyPrependGroupIdSetInMojo(CopyMojo mojo) throws Exception {
+        List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getReleaseAndSnapshotArtifacts());
+        mojo.setArtifactItems(createArtifactItemArtifacts(list));
+
+        mojo.execute();
+
+        for (ArtifactItem item : list) {
+            Artifact artifact = item.getArtifact();
+            assertEquals(
+                    artifact.getGroupId() + "." + artifact.getArtifactId() + "-" + artifact.getVersion() + ".jar",
+                    item.getDestFileName());
+            assertTrue(new File(item.getOutputDirectory(), item.getDestFileName()).isFile());
+            assertFalse(
+                    new File(item.getOutputDirectory(), artifact.getArtifactId() + "-" + artifact.getVersion() + ".jar")
+                            .exists());
+        }
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
     void testCopyStripClassifierSetInMojo(CopyMojo mojo) throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
 

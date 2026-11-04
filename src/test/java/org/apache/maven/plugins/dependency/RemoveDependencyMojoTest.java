@@ -127,7 +127,7 @@ class RemoveDependencyMojoTest {
         setVariableValueToObject(mojo, "gav", "nonexistent:lib");
 
         MojoFailureException ex = assertThrows(MojoFailureException.class, () -> mojo.execute());
-        assertTrue(ex.getMessage().contains("not found"));
+        assertTrue(ex.getMessage().contains("Dependency nonexistent:lib not found in <dependencies>"), ex.getMessage());
     }
 
     @Test

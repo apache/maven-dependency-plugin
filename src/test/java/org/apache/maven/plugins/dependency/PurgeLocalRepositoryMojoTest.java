@@ -31,8 +31,10 @@ import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecution.Source;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -53,6 +55,7 @@ import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValue
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -174,6 +177,25 @@ class PurgeLocalRepositoryMojoTest {
         assertThat(installed.getParent()).doesNotExist();
         assertThat(cached.getParent()).doesNotExist();
         assertThat(otherVersion).exists();
+    }
+
+    @Test
+    void manualIncludeDeletesAnArtifactWithoutPomFromThePlainLocalRepository() throws Exception {
+        Path jar = artifactFile("lib", "1.0");
+        Path sibling = artifactFile("sibling", "1.0");
+        Log log = mock(Log.class);
+        mojo.setLog(log);
+        setVariableValueToObject(mojo, "manualInclude", "org.example:lib");
+
+        mojo.execute();
+
+        assertThat(jar.getParent().getParent()).doesNotExist();
+        assertThat(sibling).exists();
+        ArgumentCaptor<CharSequence> info = ArgumentCaptor.forClass(CharSequence.class);
+        verify(log, atLeastOnce()).info(info.capture());
+        assertThat(info.getAllValues())
+                .anyMatch(message -> MessageUtils.stripAnsiCodes(message.toString())
+                        .startsWith("Deleting 1 manual dependency from "));
     }
 
     @Test

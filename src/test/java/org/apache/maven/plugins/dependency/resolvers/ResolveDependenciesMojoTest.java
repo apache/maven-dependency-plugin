@@ -18,20 +18,35 @@
  */
 package org.apache.maven.plugins.dependency.resolvers;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class ResolveDependenciesMojoTest {
+
+    @TempDir
+    File tempDir;
 
     private DependencyArtifactStubFactory stubFactory;
 
@@ -69,6 +84,61 @@ class ResolveDependenciesMojoTest {
         mojo.results.setResolvedDependencies(set);
         String output = mojo.getOutput(false, true, false);
         assertTrue(output.contains("g:a:jar:1.0:test (optional)" + System.lineSeparator()));
+    }
+
+    @Test
+    void testModuleInfoIsAppendedToResolvedJars() throws IOException {
+        assumeTrue(hasModuleSystem(), "module names need Java 9 or later");
+        ResolveDependenciesMojo mojo = newMojo(new DependencyStatusSets());
+        mojo.outputFile = new File(tempDir, "list.txt");
+        mojo.includeModuleInfo = true;
+        mojo.results.setResolvedDependencies(Collections.singleton(automaticModuleArtifact()));
+
+        assertEquals(
+                "   g:a:jar:1.0:compile -- module demo.auto [auto]" + System.lineSeparator(),
+                resolvedLines(mojo.getOutput(false, true, false)));
+    }
+
+    @Test
+    void testModuleInfoCanBeSwitchedOff() throws IOException {
+        assumeTrue(hasModuleSystem(), "module names need Java 9 or later");
+        ResolveDependenciesMojo mojo = newMojo(new DependencyStatusSets());
+        mojo.outputFile = new File(tempDir, "list.txt");
+        mojo.includeModuleInfo = false;
+        mojo.results.setResolvedDependencies(Collections.singleton(automaticModuleArtifact()));
+
+        String output = mojo.getOutput(false, true, false);
+
+        assertEquals("   g:a:jar:1.0:compile" + System.lineSeparator(), resolvedLines(output));
+        assertFalse(output.contains("\u001B"), "no escape codes in a file");
+    }
+
+    private static boolean hasModuleSystem() {
+        try {
+            Class.forName("java.lang.module.ModuleFinder");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    /** The artifact lines of the output, without the header and the trailing blank line. */
+    private static String resolvedLines(String output) {
+        String header = "The following files have been resolved:" + System.lineSeparator();
+        assertTrue(output.contains(header), output);
+        return output.substring(output.indexOf(header) + header.length()).replaceFirst("(\\R)+$", "$1");
+    }
+
+    private Artifact automaticModuleArtifact() throws IOException {
+        File jar = new File(tempDir, "a-1.0.jar");
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().putValue("Automatic-Module-Name", "demo.auto");
+        new JarOutputStream(new FileOutputStream(jar), manifest).close();
+        Artifact artifact =
+                new DefaultArtifact("g", "a", "1.0", "compile", "jar", null, new DefaultArtifactHandler("jar"));
+        artifact.setFile(jar);
+        return artifact;
     }
 
     private void doTestDependencyStatusLog(Set<Artifact> artifacts) {
