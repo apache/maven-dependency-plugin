@@ -52,4 +52,25 @@
 
   </dependencies>
 
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>@project.version@</version>
+        <executions>
+          <execution>
+            <id>scope-test</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>tree</goal>
+            </goals>
+            <configuration>
+              <outputFile>target/tree2.txt</outputFile>
+              <scope>test</scope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

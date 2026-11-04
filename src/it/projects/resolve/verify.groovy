@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,5 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+def lines = new File(basedir, "target/resolved.txt").readLines()*.trim()
 
-assert new File( basedir, 'target/dependency/a1-1.0.0.jar' ).isFile();
+assert lines[0] == "The following files have been resolved:" : "Unexpected header in " + lines
+assert lines.any { it.startsWith("org.apache.maven:maven-project:jar:2.0.6:compile") } : "Expected the dependency in " + lines
+assert lines.any { it.startsWith("org.apache.maven:maven-model:jar:2.0.6:compile") } : "Expected a transitive dependency in " + lines
+assert lines.any { it.startsWith("junit:junit:jar:3.8.1:compile") } : "Expected a transitive dependency in " + lines
+assert !lines.any { it.startsWith("The following files have NOT been resolved") } : "Nothing may be unresolved in " + lines
