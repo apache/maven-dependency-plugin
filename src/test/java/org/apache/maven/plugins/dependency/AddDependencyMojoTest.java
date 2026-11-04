@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +40,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.sonatype.plexus.build.incremental.BuildContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -413,6 +418,194 @@ class AddDependencyMojoTest {
         String result = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(result.contains("<version>1.0</version>"), "version from gav should be used");
         assertTrue(result.contains("<scope>test</scope>"), "explicit -Dscope should override");
+    }
+
+    @Test
+    void managedAddWritesToDependencyManagement() throws Exception {
+        File pomFile = createTempPom("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n"
+                + "  <artifactId>app</artifactId>\n" + "</project>\n");
+        when(project.getFile()).thenReturn(pomFile);
+        when(project.getOriginalModel()).thenReturn(new Model());
+        when(project.getModules()).thenReturn(Collections.emptyList());
+
+        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0.0");
+        setVariableValueToObject(mojo, "managed", true);
+
+        mojo.execute();
+
+        Element root = parse(pomFile).getDocumentElement();
+        assertEquals(
+                Collections.singletonList("com.example:lib:1.0.0"),
+                dependencies(child(root, "dependencyManagement")),
+                "managed entry");
+        assertNull(child(root, "dependencies"), "a managed add must not declare the dependency");
+    }
+
+    @Test
+    void importedBomDoesNotMakeTheAddManaged() throws Exception {
+        // the only dependencyManagement entry is an import-scope BOM, and there is no parent to manage versions
+        File pomFile = createTempPom("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <dependencyManagement>\n"
+                + "    <dependencies>\n"
+                + "      <dependency>\n"
+                + "        <groupId>org.junit</groupId>\n"
+                + "        <artifactId>junit-bom</artifactId>\n"
+                + "        <version>5.11.0</version>\n"
+                + "        <type>pom</type>\n"
+                + "        <scope>import</scope>\n"
+                + "      </dependency>\n"
+                + "    </dependencies>\n"
+                + "  </dependencyManagement>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>org.junit.jupiter</groupId>\n"
+                + "      <artifactId>junit-jupiter-api</artifactId>\n"
+                + "      <scope>test</scope>\n"
+                + "    </dependency>\n"
+                + "    <dependency>\n"
+                + "      <groupId>org.junit.jupiter</groupId>\n"
+                + "      <artifactId>junit-jupiter-params</artifactId>\n"
+                + "      <scope>test</scope>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n");
+        when(project.getFile()).thenReturn(pomFile);
+        when(project.getOriginalModel()).thenReturn(new Model());
+        when(project.getModules()).thenReturn(Collections.emptyList());
+        when(project.getParent()).thenReturn(null);
+
+        setVariableValueToObject(mojo, "align", true);
+        setVariableValueToObject(mojo, "gav", "com.example:lib:1.0.0");
+
+        mojo.execute();
+
+        Element root = parse(pomFile).getDocumentElement();
+        assertTrue(
+                dependencies(child(root, "dependencies")).contains("com.example:lib:1.0.0"), "added to <dependencies>");
+        assertEquals(
+                Collections.singletonList("org.junit:junit-bom:5.11.0"),
+                dependencies(child(root, "dependencyManagement")),
+                "only the BOM import stays in <dependencyManagement>");
+    }
+
+    @Test
+    void parentManagedDependencyWithDotVersionPropertyConvention() throws Exception {
+        assertCrossPomAdd("a1.version", "a2.version");
+    }
+
+    @Test
+    void parentManagedDependencyWithDashVersionPropertyConvention() throws Exception {
+        assertCrossPomAdd("a1-version", "a2-version");
+    }
+
+    /**
+     * The child declares {@code a1} without a version, its parent manages {@code a1} through the property
+     * {@code existingProperty}. Adding {@code a2} puts the property {@code expectedProperty} and the managed entry in
+     * the parent and a version-less dependency in the child.
+     */
+    private void assertCrossPomAdd(String existingProperty, String expectedProperty) throws Exception {
+        File parentPom = new File(tempDir, "parent/pom.xml");
+        Files.createDirectories(parentPom.getParentFile().toPath());
+        Files.write(
+                parentPom.toPath(),
+                ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                                + "<project>\n"
+                                + "  <artifactId>parent</artifactId>\n"
+                                + "  <packaging>pom</packaging>\n"
+                                + "  <properties>\n"
+                                + "    <" + existingProperty + ">1.0.0</" + existingProperty + ">\n"
+                                + "  </properties>\n"
+                                + "  <dependencyManagement>\n"
+                                + "    <dependencies>\n"
+                                + "      <dependency>\n"
+                                + "        <groupId>com.example</groupId>\n"
+                                + "        <artifactId>a1</artifactId>\n"
+                                + "        <version>${" + existingProperty + "}</version>\n"
+                                + "      </dependency>\n"
+                                + "    </dependencies>\n"
+                                + "  </dependencyManagement>\n"
+                                + "</project>\n")
+                        .getBytes(StandardCharsets.UTF_8));
+        File childPom = createTempPom("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<project>\n"
+                + "  <artifactId>child</artifactId>\n"
+                + "  <dependencies>\n"
+                + "    <dependency>\n"
+                + "      <groupId>com.example</groupId>\n"
+                + "      <artifactId>a1</artifactId>\n"
+                + "    </dependency>\n"
+                + "  </dependencies>\n"
+                + "</project>\n");
+
+        Dependency managedA1 = new Dependency();
+        managedA1.setGroupId("com.example");
+        managedA1.setArtifactId("a1");
+        managedA1.setVersion("${" + existingProperty + "}");
+        DependencyManagement parentManagement = new DependencyManagement();
+        parentManagement.addDependency(managedA1);
+        Model parentModel = new Model();
+        parentModel.setDependencyManagement(parentManagement);
+        MavenProject parentProject = mock(MavenProject.class);
+        when(parentProject.getFile()).thenReturn(parentPom);
+        when(parentProject.getOriginalModel()).thenReturn(parentModel);
+        when(parentProject.getParent()).thenReturn(null);
+        when(project.getFile()).thenReturn(childPom);
+        when(project.getOriginalModel()).thenReturn(new Model());
+        when(project.getModules()).thenReturn(Collections.emptyList());
+        when(project.getParent()).thenReturn(parentProject);
+
+        setVariableValueToObject(mojo, "align", true);
+        setVariableValueToObject(mojo, "gav", "com.example:a2:1.0.0");
+
+        mojo.execute();
+
+        Element parentRoot = parse(parentPom).getDocumentElement();
+        assertEquals(
+                "1.0.0",
+                child(child(parentRoot, "properties"), expectedProperty).getTextContent());
+        assertTrue(
+                dependencies(child(parentRoot, "dependencyManagement"))
+                        .contains("com.example:a2:${" + expectedProperty + "}"),
+                "managed entry with the property reference");
+
+        Element childRoot = parse(childPom).getDocumentElement();
+        assertEquals(
+                Arrays.asList("com.example:a1:", "com.example:a2:"),
+                dependencies(child(childRoot, "dependencies")),
+                "the new dependency has no version");
+    }
+
+    private static Document parse(File file) throws Exception {
+        return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
+    }
+
+    private static Element child(Element parent, String name) {
+        for (Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
+            if (node instanceof Element && name.equals(node.getNodeName())) {
+                return (Element) node;
+            }
+        }
+        return null;
+    }
+
+    /** The {@code groupId:artifactId:version} of each dependency in the section, the version empty when absent. */
+    private static List<String> dependencies(Element section) {
+        List<String> result = new java.util.ArrayList<>();
+        if (section == null) {
+            return result;
+        }
+        Element dependencies = "dependencies".equals(section.getNodeName()) ? section : child(section, "dependencies");
+        for (Node node = dependencies.getFirstChild(); node != null; node = node.getNextSibling()) {
+            if (node instanceof Element) {
+                Element dependency = (Element) node;
+                Element version = child(dependency, "version");
+                result.add(child(dependency, "groupId").getTextContent() + ":"
+                        + child(dependency, "artifactId").getTextContent() + ":"
+                        + (version == null ? "" : version.getTextContent()));
+            }
+        }
+        return result;
     }
 
     // --- Convention detection unit tests ---

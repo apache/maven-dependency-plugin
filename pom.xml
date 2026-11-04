@@ -449,7 +449,6 @@ under the License.
                 <pomInclude>*/pom.xml</pomInclude>
                 <pomInclude>add-dependency/*/pom.xml</pomInclude>
                 <pomInclude>remove-dependency/*/pom.xml</pomInclude>
-                <pomInclude>purge-local-repository-without-pom</pomInclude>
               </pomIncludes>
               <!-- for mrm -->
               <settingsFile>src/it/mrm/settings.xml</settingsFile>
