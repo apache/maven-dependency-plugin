@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat
 def names = { String dir -> new File(basedir, dir).list().toList() }
 
 assertThat(names("target/type-version")).containsExactly("ResourceArtifact-1.0.jar")
+assertThat(names("target/version-only")).containsExactly("ResourceArtifact-1.0.jar")
 assertThat(names("target/type-classifier-version-scope")).containsExactly("ResourceArtifact-1.0-tests.jar")
 assertThat(names("target/legacy")).containsExactly("ResourceArtifact-1.0-client.jar")
 
