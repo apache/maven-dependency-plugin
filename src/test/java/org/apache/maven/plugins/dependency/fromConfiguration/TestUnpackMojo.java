@@ -52,6 +52,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -411,6 +412,41 @@ class TestUnpackMojo {
         mojo.execute();
 
         assertTrue(new File(mojo.getOutputDirectory(), "hello.txt").isFile());
+    }
+
+    @Test
+    @InjectMojo(goal = "unpack")
+    void testUnpackWithIncludesFindsTheMarkerOfThePreviousRun(UnpackMojo mojo) throws Exception {
+        File repo = new File(tempDir, "remote-repo");
+        File dir = new File(repo, "remote/only/1.0");
+        Files.createDirectories(dir.toPath());
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(new File(dir, "only-1.0.jar").toPath()))) {
+            for (String name : new String[] {"hello.txt", "other.txt"}) {
+                zip.putNextEntry(new ZipEntry(name));
+                zip.write(name.getBytes(StandardCharsets.UTF_8));
+                zip.closeEntry();
+            }
+        }
+
+        ArtifactItem item = new ArtifactItem();
+        item.setGroupId("remote");
+        item.setArtifactId("only");
+        item.setVersion("1.0");
+        mojo.setArtifactItems(Collections.singletonList(item));
+        mojo.setRemoteRepositories(Collections.singletonList("remote-repo::default::" + repo.toURI()));
+        mojo.setIncludes("hello.txt");
+
+        mojo.execute();
+
+        File hello = new File(mojo.getOutputDirectory(), "hello.txt");
+        assertTrue(hello.isFile());
+        assertFalse(new File(mojo.getOutputDirectory(), "other.txt").exists());
+
+        // the second execution must find the marker written by the first one and skip the unpack
+        assertTrue(hello.delete());
+        mojo.execute();
+
+        assertFalse(hello.exists());
     }
 
     @Test
