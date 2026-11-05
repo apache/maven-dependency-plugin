@@ -371,6 +371,19 @@ class TestCopyMojo {
 
     @Test
     @InjectMojo(goal = "copy")
+    void testCopyWithDestFileName(CopyMojo mojo) throws Exception {
+        stubFactory.createArtifact("groupId", "artifact", "1.0", null, "jar", null);
+        mojo.setLocalRepositoryDirectory(stubFactory.getWorkingDir());
+        mojo.setArtifact("groupId:artifact:1.0:jar::renamed.jar");
+
+        mojo.execute();
+
+        assertTrue(new File(mojo.getOutputDirectory(), "renamed.jar").isFile());
+        assertFalse(new File(mojo.getOutputDirectory(), "artifact-1.0.jar").exists());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
     void testCopyStripVersionSetInMojo(CopyMojo mojo) throws Exception {
         List<ArtifactItem> list = stubFactory.getArtifactItems(stubFactory.getClassifiedArtifacts());
 
