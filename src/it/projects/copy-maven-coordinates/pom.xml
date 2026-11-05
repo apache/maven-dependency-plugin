@@ -53,6 +53,17 @@
               <outputDirectory>target/legacy</outputDirectory>
             </configuration>
           </execution>
+          <execution>
+            <id>version-only</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifact>org.apache.maven.its.dependency:ResourceArtifact:1.0</artifact>
+              <outputDirectory>target/version-only</outputDirectory>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>

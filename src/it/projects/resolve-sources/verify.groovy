@@ -24,7 +24,8 @@ def missing = notResolved < 0 ? [] : lines.subList(notResolved, lines.size())
 assert lines[0] == "The following files have been resolved:" : "Unexpected header in " + lines
 assert resolved.any { it.startsWith("org.apache.maven:maven-project:jar:sources:2.0.8") } : "Expected the sources of the dependency in " + lines
 assert resolved.any { it.startsWith("org.apache.maven:maven-model:jar:sources:2.0.8") } : "Expected the sources of a transitive dependency in " + lines
-// some old dependencies have no sources (which ones differs between Maven 3 and 4); they are listed instead of failing the build
+// some old dependencies have no sources on Central (which ones differs between Maven 3 and 4 and over time); they are
+// listed instead of failing the build, so only check that whatever is listed is a sources jar
 def missingSources = missing.drop(1).findAll { it }
-assert !missingSources.isEmpty() : "Expected the missing sources to be listed in " + lines
 assert missingSources.every { it.contains(":jar:sources:") } : "Expected only sources jars among the missing in " + lines
+assert resolved.every { it.contains(":jar:sources:") || it.startsWith("The following") || !it } : "Expected only sources jars among the resolved in " + lines
