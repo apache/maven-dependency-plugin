@@ -44,6 +44,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.fromDependencies.AbstractDependencyFilterMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.plugins.dependency.utils.filters.GroupIdFilter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
@@ -51,7 +52,6 @@ import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.artifact.filter.collection.ClassifierFilter;
 import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
-import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
 import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
@@ -292,7 +292,8 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
 
         filter.addFilter(new GroupIdFilter(
                 DependencyUtil.cleanToBeTokenizedString(this.includeGroupIds),
-                DependencyUtil.cleanToBeTokenizedString(this.excludeGroupIds)));
+                DependencyUtil.cleanToBeTokenizedString(this.excludeGroupIds),
+                this.groupIdsExactMatch));
 
         filter.addFilter(new ArtifactIdFilter(
                 DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
