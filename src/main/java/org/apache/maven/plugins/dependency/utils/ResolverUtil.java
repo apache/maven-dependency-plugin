@@ -382,7 +382,16 @@ public class ResolverUtil {
         return resolveDependencies(collectRequest, dependencyFilter);
     }
 
-    private List<Artifact> resolveDependencies(CollectRequest collectRequest, DependencyFilter dependencyFilter)
+    /**
+     * Resolve the dependencies described by a collection request, applying the filter to the dependency graph.
+     *
+     * @param collectRequest the dependencies and root to collect
+     * @param dependencyFilter dependency filter, or {@code null}
+     * @return resolved dependencies
+     * @throws DependencyResolutionException if the dependency tree could not be built or any dependency artifact could
+     *                                       not be resolved
+     */
+    public List<Artifact> resolveDependencies(CollectRequest collectRequest, DependencyFilter dependencyFilter)
             throws DependencyResolutionException {
         MavenSession session = mavenSessionProvider.get();
         DependencyRequest request = new DependencyRequest(collectRequest, dependencyFilter);
