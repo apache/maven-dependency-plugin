@@ -238,6 +238,7 @@ public class CopyDependenciesMojo extends AbstractFromDependenciesMojo {
         try {
             getResolverUtil().installArtifact(pomArtifact, repositorySystemSession);
             installBaseSnapshot(pomArtifact, repositorySystemSession);
+            copyChecksumFiles(pomArtifact, repositorySystemSession);
         } catch (InstallationException e) {
             getLog().warn("unable to install " + pomArtifact, e);
         }
