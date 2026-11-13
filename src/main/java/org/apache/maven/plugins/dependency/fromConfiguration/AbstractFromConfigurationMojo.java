@@ -138,6 +138,22 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     @Parameter(property = "remoteRepositories")
     private List<String> remoteRepositories;
 
+    /**
+     * Fail if an item of {@code artifactItems} is not declared as a dependency of the project, or is declared with a
+     * different version. Maven orders the reactor by the declared dependencies only, so an undeclared item that is
+     * built by another module of the reactor may be missing or stale. Declare such an item as a dependency, for
+     * example with scope {@code provided} or {@code test}, or with type {@code pom} where only its content is needed.
+     * Items match on groupId, artifactId, type and classifier, where {@code test-jar} equals {@code jar} with the
+     * classifier {@code tests}. The check only applies to items configured in the POM, not to the command line
+     * parameter {@code artifact}.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.requireExplicitDependencies", defaultValue = "false")
+    private boolean requireExplicitDependencies;
+
+    private boolean artifactFromCommandLine;
+
     private final ArtifactHandlerManager artifactHandlerManager;
 
     private final ResolverUtil resolverUtil;
@@ -167,6 +183,22 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     protected void verifyRequirements() throws MojoFailureException {
         if (artifactItems == null || artifactItems.isEmpty()) {
             throw new MojoFailureException("Either artifact or artifactItems is required ");
+        }
+        if (requireExplicitDependencies) {
+            if (artifactFromCommandLine) {
+                getLog().warn("requireExplicitDependencies is ignored for the artifact parameter");
+            } else {
+                List<String> violations = new ExplicitDependencyMatcher(
+                                artifactHandlerManager, getProject().getDependencies())
+                        .findViolations(artifactItems);
+                if (!violations.isEmpty()) {
+                    throw new MojoFailureException("requireExplicitDependencies is set, but artifactItems must be "
+                            + "declared as dependencies of the project, so that Maven orders the reactor by them:"
+                            + System.lineSeparator() + "  " + String.join(System.lineSeparator() + "  ", violations)
+                            + System.lineSeparator() + "Declare each of them in the dependencies of the project, "
+                            + "for example with scope provided or test, or with type pom, and use the same version.");
+                }
+            }
         }
     }
 
@@ -338,6 +370,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      */
     public void setArtifactItems(List<ArtifactItem> theArtifactItems) {
         this.artifactItems = theArtifactItems;
+        this.artifactFromCommandLine = false;
     }
 
     /**
@@ -394,6 +427,14 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      */
     public void setOverWriteSnapshots(boolean theOverWriteSnapshots) {
         this.overWriteSnapshots = theOverWriteSnapshots;
+    }
+
+    /**
+     * @param requireExplicitDependencies {@link #requireExplicitDependencies}
+     * @since 3.12.0
+     */
+    public void setRequireExplicitDependencies(boolean requireExplicitDependencies) {
+        this.requireExplicitDependencies = requireExplicitDependencies;
     }
 
     /**
@@ -454,6 +495,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             }
 
             setArtifactItems(Collections.singletonList(artifactItem));
+            artifactFromCommandLine = true;
         }
     }
 }
