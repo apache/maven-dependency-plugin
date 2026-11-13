@@ -313,6 +313,16 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
     protected abstract ArtifactsFilter getMarkedArtifactFilter();
 
     /**
+     * Return an {@link ArtifactsFilter} applied after the other filters of {@link #getDependencySets}, for goals
+     * that match artifacts by {@code [groupId]:[artifactId]:[type]:[version]} patterns.
+     *
+     * @return the filter, or {@code null} (the default) if the goal has no such patterns
+     */
+    protected ArtifactsFilter getPatternsFilter() {
+        return null;
+    }
+
+    /**
      * Tells whether this goal asks Maven for the dependency graph only ({@code requiresDependencyCollection}) and
      * resolves the artifacts that are left after filtering itself. This way a dependency that the filters drop, for
      * example a {@code provided} module of the same reactor that has not been built, is never resolved.
@@ -413,6 +423,11 @@ public abstract class AbstractDependencyFilterMojo extends AbstractDependencyMoj
 
         if (isExcludeReactor()) {
             filter.addFilter(new ExcludeReactorProjectsArtifactFilter(session.getProjects(), getLog()));
+        }
+
+        ArtifactsFilter patternsFilter = getPatternsFilter();
+        if (patternsFilter != null) {
+            filter.addFilter(patternsFilter);
         }
 
         // start with all artifacts.

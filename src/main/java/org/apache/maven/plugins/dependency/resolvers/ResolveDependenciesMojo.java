@@ -44,6 +44,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
+import org.apache.maven.plugins.dependency.utils.filters.PatternsArtifactsFilter;
 import org.apache.maven.plugins.dependency.utils.filters.ResolveFileFilter;
 import org.apache.maven.plugins.dependency.utils.markers.SourcesFileMarkerHandler;
 import org.apache.maven.project.MavenProject;
@@ -121,6 +122,48 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
     String outputType;
 
     /**
+     * A comma-separated list of artifact patterns to include in the output, or <code>null</code> not to filter.
+     * The syntax is the same as for the <code>includes</code> parameter of <code>dependency:tree</code>:
+     *
+     * <pre>
+     * [groupId]:[artifactId]:[type]:[version]
+     * </pre>
+     *
+     * where each pattern segment is optional and supports full and partial <code>*</code> wildcards. An empty
+     * pattern segment is treated as an implicit wildcard.
+     * <p>
+     * For example, <code>org.apache.*</code> matches all artifacts whose group id starts with
+     * <code>org.apache.</code>, and <code>:::*-SNAPSHOT</code> matches all snapshot artifacts.
+     * </p>
+     * The filter applies in addition to the other include and exclude parameters, such as
+     * <code>includeGroupIds</code>, and the {@link #excludes} patterns take precedence. Unlike in
+     * <code>dependency:tree</code>, which keeps the path to an included artifact, only the matching artifacts
+     * are listed, and an excluded artifact does not remove its dependencies.
+     * <p>
+     * The property <code>includes</code> is shared with <code>dependency:tree</code>, so one
+     * <code>-Dincludes</code> value applies to both goals in the same command line.
+     * </p>
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "includes")
+    private List<String> includes;
+
+    /**
+     * A comma-separated list of artifact patterns to leave out of the output, or <code>null</code> not to filter.
+     * The syntax is the same as for the <code>excludes</code> parameter of <code>dependency:tree</code>, see
+     * {@link #includes}. An artifact that matches an exclude pattern is not listed, even if it matches an include
+     * pattern.
+     * <p>
+     * The property <code>excludes</code> is shared with <code>dependency:tree</code>.
+     * </p>
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "excludes")
+    private List<String> excludes;
+
+    /**
      * Only used to store results for integration test validation.
      */
     DependencyStatusSets results;
@@ -161,6 +204,11 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
         super(session, buildContext, project, resolverUtil, projectBuilder, artifactHandlerManager);
     }
     // CHECKSTYLE_ON: ParameterNumber
+
+    @Override
+    protected ArtifactsFilter getPatternsFilter() {
+        return new PatternsArtifactsFilter(includes, excludes);
+    }
 
     /**
      * Main entry into mojo. Gets the list of dependencies and iterates through displaying the resolved version.
