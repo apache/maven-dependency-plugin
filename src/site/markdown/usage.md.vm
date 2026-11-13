@@ -368,12 +368,15 @@ The `outputType` parameter (since 3.12.0) of `dependency:resolve`, `dependency:l
 mvn dependency:list -DoutputType=pom -DoutputFile=dependencies.xml
 ```
 
-The `includes` and `excludes` parameters (since 3.12.0) of `dependency:resolve` and `dependency:list` take the same comma-separated `[groupId]:[artifactId]:[type]:[version]` patterns as the parameters of `dependency:tree`, with `*` wildcards. They apply in addition to the other `include*` and `exclude*` parameters, and an exclusion wins over an inclusion. The goals list only the matching artifacts; unlike `dependency:tree`, they do not keep the path to an included artifact.
+The `includes` and `excludes` parameters (since 3.12.0) of `dependency:resolve`, `dependency:list`, `dependency:collect` and `dependency:resolve-sources` take the same comma-separated `[groupId]:[artifactId]:[type]:[version]` patterns as the parameters of `dependency:tree`, with `*` wildcards. They apply in addition to the other `include*` and `exclude*` parameters, and an exclusion wins over an inclusion. The goals list only the matching artifacts, including parent POMs added by `includeParents`; unlike `dependency:tree`, they do not keep the path to an included artifact, and excluding an artifact does not exclude its dependencies. For `dependency:resolve-sources`, the patterns match the declared dependencies, not the `sources` artifacts resolved for them.
 
 ```
-mvn dependency:list -Dincludes=org.springframework.*
+mvn dependency:list -Dincludes=org.springframework
+mvn dependency:list -Dincludes=org.springframework*
 mvn dependency:list -Dincludes=:::*-SNAPSHOT -Dexcludes=org.acme
 ```
+
+`org.springframework` matches that group id only; `org.springframework*` also matches groups such as `org.springframework.boot`.
 
 `dependency:resolve-sources`
 ----------------------------
