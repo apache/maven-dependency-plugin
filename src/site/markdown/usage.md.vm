@@ -38,6 +38,8 @@ This goal is meant to be bound to a lifecycle phase and configured in your `pom.
 
 The artifact version is optional. If not set, the plugin will attempt to resolve it from the project dependencies and then the dependencyManagement section.
 
+Set `requireExplicitDependencies` (`-Dmdep.requireExplicitDependencies=true`) to fail the build when an artifact item is not declared in the `dependencies` of the project, or is declared with another version. Maven orders the modules of a reactor build by the declared dependencies only, so an undeclared item built by another module can be missing or stale. The check does not apply to the `artifact` command line parameter.
+
 See the [Overwrite Rules](#Overwrite_Rules) section for rules about how overwriting is handled.
 
 Configure the plugin something like this if you intend to bind it to execute along with your build:
@@ -193,6 +195,8 @@ A single artifact can be unpacked multiple times if different include/exclude pa
 See the [Overwrite Rules](#Overwrite_Rules) section for rules about how overwriting is handled.
 
 The artifact version is optional. If not set, the plugin will attempt to resolve it from the project dependencies and then the dependencyManagement section.
+
+Set `requireExplicitDependencies` (`-Dmdep.requireExplicitDependencies=true`) to fail the build when an artifact item is not declared in the `dependencies` of the project, or is declared with another version. Maven orders the modules of a reactor build by the declared dependencies only, so an undeclared item built by another module can be missing or stale. The check does not apply to the `artifact` command line parameter.
 
 Configure the plugin something like this if you intend to bind it to execute along with your build:
 
