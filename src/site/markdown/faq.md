@@ -87,6 +87,18 @@ unpack uses the following code to determine which files to unpack:
 When excludes are set, the default excludes of the file selector (for example `.svn`, `CVS` and `.git`) apply as well.
 Set `useDefaultExcludes` to `false` to unpack those files too.
 
+<a id="overwritefiles"></a>
+
+### How do I keep files that already exist in the output directory when unpacking?
+
+`overWriteReleases`, `overWriteSnapshots`, `overWriteIfNewer` and the marker files decide whether an artifact is
+unpacked at all. Once it is, `unpack` and `unpack-dependencies` write every entry of the archive. Set
+`overWriteFiles` (user property `mdep.unpack.overWriteFiles`) to `false` to decide per file instead: an entry is
+written only if no file of that name exists yet, or if the existing file is older than the entry's timestamp in the
+archive. A file that is as new as or newer than the archive entry is kept, for example a resource that was filtered
+into the output directory after the archive was built. Because an older existing file is still replaced, this is not
+a guarantee that no file is ever touched. For `unpack`, the parameter can also be set on a single `artifactItem`.
+
 <a id="unused"></a>
 
 ### Why does my dependency analysis report `Unused declared dependencies`?
