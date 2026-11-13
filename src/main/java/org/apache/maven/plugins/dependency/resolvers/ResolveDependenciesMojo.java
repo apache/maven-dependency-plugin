@@ -139,6 +139,8 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
      * <code>includeGroupIds</code>, and the {@link #excludes} patterns take precedence. Unlike in
      * <code>dependency:tree</code>, which keeps the path to an included artifact, only the matching artifacts
      * are listed, and an excluded artifact does not remove its dependencies.
+     * Parent POMs added by <code>includeParents</code> are filtered too. For <code>resolve-sources</code>, the
+     * patterns match the declared dependencies, not the <code>sources</code> artifacts that are resolved for them.
      * <p>
      * The property <code>includes</code> is shared with <code>dependency:tree</code>, so one
      * <code>-Dincludes</code> value applies to both goals in the same command line.
