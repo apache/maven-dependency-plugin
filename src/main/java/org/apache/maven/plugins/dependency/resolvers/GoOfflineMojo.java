@@ -25,7 +25,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -66,7 +69,10 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 import static java.util.Optional.ofNullable;
 
 /**
- * Goal that resolves all project dependencies, including plugins and reports and their dependencies.
+ * Goal that resolves all project dependencies, including plugins and reports and their dependencies. It also
+ * resolves the {@code annotationProcessorPaths} configured for the {@code maven-compiler-plugin}, in the plugin
+ * configuration and in each execution, together with their transitive dependencies. The scope filters of this goal
+ * treat these paths as compile scope dependencies.
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @author Maarten Mulders
@@ -186,13 +192,7 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
                 .map(d -> RepositoryUtils.toDependency(d, artifactTypeRegistry))
                 .collect(Collectors.toList());
 
-        List<org.eclipse.aether.graph.Dependency> managedDependencies = ofNullable(
-                        getProject().getDependencyManagement())
-                .map(DependencyManagement::getDependencies)
-                .map(list -> list.stream()
-                        .map(d -> RepositoryUtils.toDependency(d, artifactTypeRegistry))
-                        .collect(Collectors.toList()))
-                .orElse(null);
+        List<org.eclipse.aether.graph.Dependency> managedDependencies = managedDependencies(artifactTypeRegistry);
 
         return getResolverUtil()
                 .resolveDependenciesForArtifact(
@@ -204,47 +204,63 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
 
     /**
      * Resolves the {@code annotationProcessorPaths} of the {@code maven-compiler-plugin}, which Maven 3 resolves
-     * only when it compiles. The artifact filters of this goal apply to the paths; the transitive dependencies of a
-     * path are resolved unless {@code excludeTransitive} is set.
+     * only when it compiles. Each configuration of the compiler plugin is resolved on its own, as the compiler does,
+     * and the results are merged. The artifact filters of this goal apply to the paths; the transitive dependencies
+     * of a path are resolved unless {@code excludeTransitive} is set.
      */
     private List<org.eclipse.aether.artifact.Artifact> resolveAnnotationProcessorPaths()
             throws ArtifactFilterException, ArtifactResolutionException, DependencyResolutionException {
-        List<Dependency> paths = AnnotationProcessorPaths.collect(
-                getProject().getBuild().getPlugins(), getProject().getDependencyManagement(), getLog()::warn);
-
-        List<Dependency> selected = new ArrayList<>();
-        for (Dependency path : paths) {
-            if (!filterDependencies(Collections.singletonList(path)).isEmpty()) {
-                selected.add(path);
-            }
-        }
-        if (selected.isEmpty()) {
-            return Collections.emptyList();
-        }
+        Set<String> warnings = new LinkedHashSet<>();
+        List<AnnotationProcessorPaths.Group> groups = AnnotationProcessorPaths.collect(
+                getProject().getBuild().getPlugins(), getProject().getDependencyManagement(), warnings::add);
+        warnings.forEach(getLog()::warn);
 
         ArtifactTypeRegistry artifactTypeRegistry =
                 session.getRepositorySession().getArtifactTypeRegistry();
-        List<org.eclipse.aether.graph.Dependency> coordinates = selected.stream()
-                .map(d -> RepositoryUtils.toDependency(d, artifactTypeRegistry))
-                .collect(Collectors.toList());
-
-        if (excludeTransitive) {
-            return getResolverUtil()
-                    .resolveArtifacts(
-                            coordinates.stream()
-                                    .map(org.eclipse.aether.graph.Dependency::getArtifact)
-                                    .collect(Collectors.toList()),
-                            getProject().getRemoteProjectRepositories())
-                    .stream()
-                    .map(ArtifactResult::getArtifact)
-                    .collect(Collectors.toList());
+        Map<String, org.eclipse.aether.artifact.Artifact> result = new LinkedHashMap<>();
+        for (AnnotationProcessorPaths.Group group : groups) {
+            List<org.eclipse.aether.graph.Dependency> coordinates = new ArrayList<>();
+            for (Dependency path : group.getPaths()) {
+                if (!filterDependencies(Collections.singletonList(path)).isEmpty()) {
+                    coordinates.add(RepositoryUtils.toDependency(path, artifactTypeRegistry));
+                }
+            }
+            if (coordinates.isEmpty()) {
+                continue;
+            }
+            List<org.eclipse.aether.artifact.Artifact> resolved;
+            if (excludeTransitive) {
+                resolved = getResolverUtil()
+                        .resolveArtifacts(
+                                coordinates.stream()
+                                        .map(org.eclipse.aether.graph.Dependency::getArtifact)
+                                        .collect(Collectors.toList()),
+                                getProject().getRemoteProjectRepositories())
+                        .stream()
+                        .map(ArtifactResult::getArtifact)
+                        .collect(Collectors.toList());
+            } else {
+                resolved = getResolverUtil()
+                        .resolveDependenciesForArtifact(
+                                RepositoryUtils.toArtifact(getProject().getArtifact()),
+                                coordinates,
+                                group.isUseDependencyManagement() ? managedDependencies(artifactTypeRegistry) : null,
+                                getProject().getRemoteProjectRepositories());
+            }
+            for (org.eclipse.aether.artifact.Artifact artifact : resolved) {
+                result.putIfAbsent(artifact.toString(), artifact);
+            }
         }
-        return getResolverUtil()
-                .resolveDependenciesForArtifact(
-                        RepositoryUtils.toArtifact(getProject().getArtifact()),
-                        coordinates,
-                        null,
-                        getProject().getRemoteProjectRepositories());
+        return new ArrayList<>(result.values());
+    }
+
+    private List<org.eclipse.aether.graph.Dependency> managedDependencies(ArtifactTypeRegistry artifactTypeRegistry) {
+        return ofNullable(getProject().getDependencyManagement())
+                .map(DependencyManagement::getDependencies)
+                .map(list -> list.stream()
+                        .map(d -> RepositoryUtils.toDependency(d, artifactTypeRegistry))
+                        .collect(Collectors.toList()))
+                .orElse(null);
     }
 
     /**

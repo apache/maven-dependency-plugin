@@ -25,6 +25,11 @@ under the License.
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.its.dependency</groupId>
+      <artifactId>mdep907-lib</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.its.dependency</groupId>
       <artifactId>mdep907-processor-dep</artifactId>
       <version>1.0</version>
     </dependency>

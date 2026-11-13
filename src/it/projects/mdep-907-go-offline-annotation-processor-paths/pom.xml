@@ -31,7 +31,12 @@ under the License.
       <dependency>
         <groupId>org.apache.maven.its.dependency</groupId>
         <artifactId>mdep907-managed-processor</artifactId>
-        <version>1.0</version>
+        <version>1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.its.dependency</groupId>
+        <artifactId>mdep907-lib</artifactId>
+        <version>2.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -42,24 +47,30 @@ under the License.
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.14.1</version>
-        <configuration>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>org.apache.maven.its.dependency</groupId>
-              <artifactId>mdep907-processor</artifactId>
-              <version>1.0</version>
-              <exclusions>
-                <exclusion>
-                  <groupId>org.apache.maven.its.dependency</groupId>
-                  <artifactId>mdep907-excluded-dep</artifactId>
-                </exclusion>
-              </exclusions>
-            </path>
-          </annotationProcessorPaths>
-        </configuration>
+        <!-- the paths are configured in executions only: the model builder merges a plugin level <path> into an
+             execution's first <path> by position, which would hide the version lookup -->
         <executions>
           <execution>
-            <id>other</id>
+            <id>explicit</id>
+            <phase>none</phase>
+            <configuration>
+              <annotationProcessorPaths>
+                <path>
+                  <groupId>org.apache.maven.its.dependency</groupId>
+                  <artifactId>mdep907-processor</artifactId>
+                  <version>1.0</version>
+                  <exclusions>
+                    <exclusion>
+                      <groupId>org.apache.maven.its.dependency</groupId>
+                      <artifactId>mdep907-excluded-dep</artifactId>
+                    </exclusion>
+                  </exclusions>
+                </path>
+              </annotationProcessorPaths>
+            </configuration>
+          </execution>
+          <execution>
+            <id>managed</id>
             <phase>none</phase>
             <configuration>
               <annotationProcessorPathsUseDepMgmt>true</annotationProcessorPathsUseDepMgmt>
