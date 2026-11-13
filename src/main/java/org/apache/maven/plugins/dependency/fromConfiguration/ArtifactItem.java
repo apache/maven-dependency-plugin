@@ -98,6 +98,16 @@ public class ArtifactItem {
     @Parameter
     private String encoding;
 
+    /**
+     * Whether unpacking may replace files that already exist in the output directory, for this item only. Overrides
+     * the {@code overWriteFiles} parameter of the {@code unpack} goal; {@code null} means the goal's value applies.
+     * Used by the {@code unpack} goal only.
+     *
+     * @since 3.12.0
+     */
+    @Parameter
+    private Boolean overWriteFiles;
+
     private boolean needsProcessing;
 
     /**
@@ -381,5 +391,23 @@ public class ArtifactItem {
      */
     public void setFileMappers(FileMapper[] fileMappers) {
         this.fileMappers = fileMappers;
+    }
+
+    /**
+     * @return whether files that already exist may be replaced when unpacking this item, or {@code null} if the
+     *         {@code unpack} goal's {@code overWriteFiles} applies
+     * @since 3.12.0
+     */
+    public Boolean getOverWriteFiles() {
+        return this.overWriteFiles;
+    }
+
+    /**
+     * @param overWriteFiles whether files that already exist may be replaced when unpacking this item, or
+     *                       {@code null} to use the {@code unpack} goal's value
+     * @since 3.12.0
+     */
+    public void setOverWriteFiles(Boolean overWriteFiles) {
+        this.overWriteFiles = overWriteFiles;
     }
 }

@@ -87,6 +87,25 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
     private boolean useDefaultExcludes = true;
 
     /**
+     * Whether unpacking may replace files that already exist in the output directory. This is decided for each file,
+     * independently of the per-artifact {@code overWriteReleases}, {@code overWriteSnapshots} and
+     * {@code overWriteIfNewer} parameters and of the marker files: those decide whether an artifact is unpacked at
+     * all, this one decides what happens to a file that is already there once the artifact is unpacked.
+     * <p>
+     * With {@code true} (the default) every archive entry is written, as before. With {@code false} the unarchiver
+     * ({@code plexus-archiver}) writes an entry only if there is no file of that name yet, or if the existing file's
+     * last modified time is older than the entry's time stored in the archive. An existing file that is as new as or
+     * newer than the archive entry is kept. This means that a file created or filtered after the archive was built
+     * is kept, whereas an older file is still replaced. Entries are compared by the archive's own timestamp, so
+     * archives that carry a reproducible build timestamp are compared against that timestamp.
+     * </p>
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.unpack.overWriteFiles", defaultValue = "true")
+    private boolean overWriteFiles = true;
+
+    /**
      * Ignore to set file permissions when unpacking a dependency.
      *
      * @since 2.7
@@ -158,6 +177,7 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
                     getIncludes(),
                     getExcludes(),
                     useDefaultExcludes,
+                    overWriteFiles,
                     getEncoding(),
                     ignorePermissions,
                     getFileMappers(),
@@ -192,6 +212,14 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     public void setExcludes(String excludes) {
         this.excludes = excludes;
+    }
+
+    /**
+     * @param overWriteFiles whether files that already exist in the output directory may be replaced
+     * @since 3.12.0
+     */
+    public void setOverWriteFiles(boolean overWriteFiles) {
+        this.overWriteFiles = overWriteFiles;
     }
 
     /**

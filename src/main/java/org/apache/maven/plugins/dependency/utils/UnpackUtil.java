@@ -95,6 +95,8 @@ public class UnpackUtil {
     }
 
     /**
+     * Unpacks, replacing existing files.
+     *
      * @param file              file to unpack
      * @param type              file / artifact type
      * @param location          the location
@@ -105,8 +107,7 @@ public class UnpackUtil {
      * @param encoding          the encoding
      * @param ignorePermissions ignore permissions
      * @param fileMappers       {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
-     *                          rewriting
-     *                          shall happen
+     *                          rewriting shall happen
      * @param logger            a Mojo logger
      * @throws MojoExecutionException in case of an error
      */
@@ -117,6 +118,51 @@ public class UnpackUtil {
             String includes,
             String excludes,
             boolean useDefaultExcludes,
+            String encoding,
+            boolean ignorePermissions,
+            FileMapper[] fileMappers,
+            Log logger)
+            throws MojoExecutionException {
+        unpack(
+                file,
+                type,
+                location,
+                includes,
+                excludes,
+                useDefaultExcludes,
+                true,
+                encoding,
+                ignorePermissions,
+                fileMappers,
+                logger);
+    }
+
+    /**
+     * @param file              file to unpack
+     * @param type              file / artifact type
+     * @param location          the location
+     * @param includes          includes list
+     * @param excludes          excludes list
+     * @param useDefaultExcludes whether the default excludes (such as {@code .svn} and {@code .git}) are applied
+     *                          when excludes are set
+     * @param overWriteFiles    {@code false} to keep an existing file that is not older than its archive entry, see
+     *                          {@link UnArchiver#setOverwrite(boolean)}
+     * @param encoding          the encoding
+     * @param ignorePermissions ignore permissions
+     * @param fileMappers       {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
+     *                          rewriting shall happen
+     * @param logger            a Mojo logger
+     * @throws MojoExecutionException in case of an error
+     * @since 3.12.0
+     */
+    public void unpack(
+            File file,
+            String type,
+            File location,
+            String includes,
+            String excludes,
+            boolean useDefaultExcludes,
+            boolean overWriteFiles,
             String encoding,
             boolean ignorePermissions,
             FileMapper[] fileMappers,
@@ -153,6 +199,8 @@ public class UnpackUtil {
             }
 
             unArchiver.setIgnorePermissions(ignorePermissions);
+
+            unArchiver.setOverwrite(overWriteFiles);
 
             unArchiver.setSourceFile(file);
 
