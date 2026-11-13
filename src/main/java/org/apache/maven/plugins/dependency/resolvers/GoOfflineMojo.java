@@ -20,6 +20,7 @@ package org.apache.maven.plugins.dependency.resolvers;
 
 import javax.inject.Inject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +43,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.fromDependencies.AbstractDependencyFilterMojo;
+import org.apache.maven.plugins.dependency.utils.AnnotationProcessorPaths;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.GroupIdFilter;
@@ -57,6 +59,7 @@ import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -128,6 +131,11 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
                         + DependencyUtil.getFormattedFileName(RepositoryUtils.toArtifact(artifact), false));
             }
 
+            for (org.eclipse.aether.artifact.Artifact artifact : resolveAnnotationProcessorPaths()) {
+                logMessage("Resolved annotation processor path: "
+                        + DependencyUtil.getFormattedFileName(RepositoryUtils.toArtifact(artifact), false));
+            }
+
         } catch (ArtifactFilterException
                 | ArtifactResolutionException
                 | DependencyResolutionException
@@ -191,6 +199,51 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
                         RepositoryUtils.toArtifact(getProject().getArtifact()),
                         dependableCoordinates,
                         managedDependencies,
+                        getProject().getRemoteProjectRepositories());
+    }
+
+    /**
+     * Resolves the {@code annotationProcessorPaths} of the {@code maven-compiler-plugin}, which Maven 3 resolves
+     * only when it compiles. The artifact filters of this goal apply to the paths; the transitive dependencies of a
+     * path are resolved unless {@code excludeTransitive} is set.
+     */
+    private List<org.eclipse.aether.artifact.Artifact> resolveAnnotationProcessorPaths()
+            throws ArtifactFilterException, ArtifactResolutionException, DependencyResolutionException {
+        List<Dependency> paths = AnnotationProcessorPaths.collect(
+                getProject().getBuild().getPlugins(), getProject().getDependencyManagement(), getLog()::warn);
+
+        List<Dependency> selected = new ArrayList<>();
+        for (Dependency path : paths) {
+            if (!filterDependencies(Collections.singletonList(path)).isEmpty()) {
+                selected.add(path);
+            }
+        }
+        if (selected.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        ArtifactTypeRegistry artifactTypeRegistry =
+                session.getRepositorySession().getArtifactTypeRegistry();
+        List<org.eclipse.aether.graph.Dependency> coordinates = selected.stream()
+                .map(d -> RepositoryUtils.toDependency(d, artifactTypeRegistry))
+                .collect(Collectors.toList());
+
+        if (excludeTransitive) {
+            return getResolverUtil()
+                    .resolveArtifacts(
+                            coordinates.stream()
+                                    .map(org.eclipse.aether.graph.Dependency::getArtifact)
+                                    .collect(Collectors.toList()),
+                            getProject().getRemoteProjectRepositories())
+                    .stream()
+                    .map(ArtifactResult::getArtifact)
+                    .collect(Collectors.toList());
+        }
+        return getResolverUtil()
+                .resolveDependenciesForArtifact(
+                        RepositoryUtils.toArtifact(getProject().getArtifact()),
+                        coordinates,
+                        null,
                         getProject().getRemoteProjectRepositories());
     }
 
