@@ -36,6 +36,7 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.contains;
@@ -121,5 +122,73 @@ class TestPropertiesMojo {
 
         assertFalse(project.getProperties().containsKey("group:artifact"));
         verify(log).warn(contains("group:artifact"));
+    }
+
+    @Test
+    @InjectMojo(goal = "properties")
+    void testVersionsNotSetByDefault(PropertiesMojo mojo) throws Exception {
+        Artifact artifact = mockArtifact("group:artifact:jar", "1.0", "1.0");
+        when(this.project.getArtifacts()).thenReturn(new HashSet<>(Arrays.asList(artifact)));
+
+        mojo.execute();
+
+        assertTrue(project.getProperties().containsKey("group:artifact:jar"));
+        assertFalse(project.getProperties().containsKey("group:artifact:jar.version"));
+    }
+
+    @Test
+    @InjectMojo(goal = "properties")
+    void testIncludeVersionsUsesBaseVersion(PropertiesMojo mojo) throws Exception {
+        Artifact release = mockArtifact("group:release:jar", "2.0.16", "2.0.16");
+        Artifact snapshot = mockArtifact("group:snapshot:jar:tests", "1.0-20260101.101010-1", "1.0-SNAPSHOT");
+        when(this.project.getArtifacts()).thenReturn(new HashSet<>(Arrays.asList(release, snapshot)));
+        ReflectionUtils.setVariableValueInObject(mojo, "includeVersions", true);
+
+        mojo.execute();
+
+        assertEquals("2.0.16", project.getProperties().getProperty("group:release:jar.version"));
+        assertEquals("1.0-SNAPSHOT", project.getProperties().getProperty("group:snapshot:jar:tests.version"));
+        assertTrue(project.getProperties().getProperty("group:release:jar").endsWith("group-release.jar"));
+    }
+
+    @Test
+    @InjectMojo(goal = "properties")
+    void testIncludeVersionsSkipsArtifactWithoutFile(PropertiesMojo mojo) throws Exception {
+        Artifact artifact = mockArtifact("group:artifact:jar", "1.0", "1.0");
+        when(artifact.getFile()).thenReturn(null);
+        when(this.project.getArtifacts()).thenReturn(new HashSet<>(Arrays.asList(artifact)));
+        mojo.setLog(Mockito.mock(Log.class));
+        ReflectionUtils.setVariableValueInObject(mojo, "includeVersions", true);
+
+        mojo.execute();
+
+        assertFalse(project.getProperties().containsKey("group:artifact:jar.version"));
+    }
+
+    @Test
+    @InjectMojo(goal = "properties")
+    void testIncludeVersionsForExtraArtifacts(PropertiesMojo mojo) throws Exception {
+        ParamArtifact a1 = new ParamArtifact();
+        a1.setGroupId("org.apache.commons");
+        a1.setArtifactId("commons-lang3");
+        a1.setVersion("3.6");
+        ReflectionUtils.setVariableValueInObject(mojo, "extraArtifacts", Arrays.asList(a1));
+        ReflectionUtils.setVariableValueInObject(mojo, "includeVersions", true);
+
+        mojo.execute();
+
+        assertEquals("3.6", project.getProperties().getProperty("org.apache.commons:commons-lang3:jar.version"));
+    }
+
+    private static Artifact mockArtifact(String conflictId, String version, String baseVersion) {
+        Artifact artifact = Mockito.mock(Artifact.class);
+        when(artifact.getDependencyConflictId()).thenReturn(conflictId);
+        when(artifact.getFile())
+                .thenReturn(new File(
+                        MojoExtension.getBasedir(),
+                        conflictId.split(":")[0] + "-" + conflictId.split(":")[1] + ".jar"));
+        when(artifact.getVersion()).thenReturn(version);
+        when(artifact.getBaseVersion()).thenReturn(baseVersion);
+        return artifact;
     }
 }

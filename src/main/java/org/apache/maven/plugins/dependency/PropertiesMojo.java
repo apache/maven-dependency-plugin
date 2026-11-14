@@ -40,7 +40,8 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
 /**
  * Goal that sets a property pointing to the artifact file for each project dependency. For each dependency (direct and
  * transitive) a project property will be set which follows the <code>groupId:artifactId:type:[classifier]</code> form
- * and contains the path to the resolved artifact.
+ * and contains the path to the resolved artifact. When {@link #includeVersions} is enabled, a second property named
+ * like the first one with a <code>.version</code> suffix holds the resolved version.
  *
  * @author Paul Gier
  * @since 2.2
@@ -51,6 +52,8 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
         defaultPhase = LifecyclePhase.INITIALIZE,
         threadSafe = true)
 public class PropertiesMojo extends AbstractMojo {
+
+    private static final String VERSION_SUFFIX = ".version";
 
     /**
      * The current Maven project.
@@ -72,6 +75,17 @@ public class PropertiesMojo extends AbstractMojo {
      */
     @Parameter(property = "mdep.skip", defaultValue = "false")
     private boolean skip;
+
+    /**
+     * Also set a property holding the resolved version of each artifact. The property is named like the path property
+     * with a <code>.version</code> suffix, for example <code>org.slf4j:slf4j-api:jar.version</code>. For a snapshot
+     * the base version (<code>1.0-SNAPSHOT</code>) is used, not the timestamped version of the resolved file. It is
+     * set for the same artifacts as the path property, including the {@link #extraArtifacts}.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.properties.includeVersions", defaultValue = "false")
+    private boolean includeVersions;
 
     /**
      * Extra artifacts that can be provided to the plugin. For each artifact in this list a property will be set
@@ -115,6 +129,9 @@ public class PropertiesMojo extends AbstractMojo {
             File file = artifact.getFile();
             if (file != null) {
                 project.getProperties().setProperty(conflictId, file.getAbsolutePath());
+                if (includeVersions) {
+                    project.getProperties().setProperty(conflictId + VERSION_SUFFIX, artifact.getBaseVersion());
+                }
             } else {
                 getLog().warn("Artifact " + conflictId + " has no associated file; no property will be set for it.");
             }
@@ -135,6 +152,11 @@ public class PropertiesMojo extends AbstractMojo {
                     File file = artifact.getFile();
                     if (file != null) {
                         this.project.getProperties().setProperty(conflictId, file.getAbsolutePath());
+                        if (includeVersions) {
+                            this.project
+                                    .getProperties()
+                                    .setProperty(conflictId + VERSION_SUFFIX, artifact.getBaseVersion());
+                        }
                     } else {
                         getLog().warn("Extra artifact " + conflictId
                                 + " has no associated file; no property will be set for it.");
