@@ -309,6 +309,35 @@ public class ResolverUtil {
     }
 
     /**
+     * Resolve an artifact that is named by its coordinates alone, that is, without a project, and optionally its
+     * transitive dependencies, the way {@code dependency:get} does. The transitive dependencies are those of the
+     * runtime classpath: test and provided dependencies, and optional ones, are left out.
+     *
+     * @param artifact     an artifact to resolve
+     * @param repositories remote repositories list
+     * @param transitive   whether to resolve the dependencies of the artifact as well
+     * @return the resolved artifacts, each with its file set. The artifact itself comes first, followed by its
+     *         dependencies in the order in which the resolver of the running Maven returns them, which may differ
+     *         between Maven versions. With {@code transitive} set to {@code false} the list holds the artifact only.
+     * @throws ArtifactResolutionException   if the artifact could not be resolved
+     * @throws ArtifactDescriptorException   if the descriptor of the artifact could not be read
+     * @throws DependencyResolutionException if the dependency tree could not be built or any dependency artifact could
+     *                                       not be resolved
+     */
+    public List<Artifact> resolveArtifactAndDependencies(
+            Artifact artifact, List<RemoteRepository> repositories, boolean transitive)
+            throws ArtifactResolutionException, ArtifactDescriptorException, DependencyResolutionException {
+        if (transitive) {
+            // The artifact is a direct dependency of a rootless request, so the session's selectors treat its own
+            // dependencies as transitive ones: test, provided and optional dependencies stay out.
+            CollectRequest collectRequest =
+                    new CollectRequest(Collections.singletonList(new Dependency(artifact, null)), null, repositories);
+            return resolveDependencies(collectRequest, null);
+        }
+        return Collections.singletonList(resolveArtifact(artifact, repositories));
+    }
+
+    /**
      * Resolve transitive dependencies for artifact.
      *
      * @param artifact an artifact to resolve

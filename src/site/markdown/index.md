@@ -46,6 +46,7 @@ The Dependency plugin has several goals:
 - [dependency:copy-dependencies](./copy-dependencies-mojo.html) takes the list of project direct dependencies and optionally transitive dependencies and copies them to a specified location, stripping the version if desired. This goal can also be run from the command line.
 - [dependency:display-ancestors](./display-ancestors-mojo.html) displays all ancestor POMs of the project. This may be useful in a continuous integration system where you want to know all parent poms of the project. This goal can also be run from the command line.
 - [dependency:get](./get-mojo.html) resolves a single artifact, eventually transitively, from a specified remote repository.
+- [dependency:get-classpath](./get-classpath-mojo.html) resolves a single artifact given by its coordinates, with its transitive runtime dependencies, and outputs the classpath string to a file or the log. Like `get`, it needs no project.
 - [dependency:go-offline](./go-offline-mojo.html) tells Maven to resolve everything this project is dependent on (dependencies, plugins, reports) in preparation for going offline.
 - [dependency:list](./list-mojo.html) alias for resolve that lists the dependencies for this project.
 - [dependency:list-classes](./list-classes-mojo.html) displays the fully package-qualified names of all classes found in a specified artifact.

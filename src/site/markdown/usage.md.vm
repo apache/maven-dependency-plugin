@@ -782,6 +782,19 @@ mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=
 mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=2.2.1 -Dpackaging=jar -Dclassifier=sources -DremoteRepositories=https://myrepo.com/maven2
 ```
 
+`dependency:get-classpath`
+-------------------------
+
+This goal resolves an artifact, given by its Maven coordinates, and its transitive runtime dependencies, and outputs the classpath string of the files in the local repository. It needs no project, so it works in any directory. Use it to get the classpath of an ad-hoc artifact for `java -cp`. The artifact comes first, followed by its dependencies in the order in which the resolver of the running Maven returns them, which may differ between Maven versions. Test, provided and optional dependencies are left out.
+
+```
+mvn dependency:get-classpath -Dartifact=org.apache.maven:maven-model:3.9.9
+mvn dependency:get-classpath -Dartifact=org.apache.maven:maven-model:3.9.9 -Dmdep.outputFile=classpath.txt
+mvn dependency:get-classpath -Dartifact=org.apache.maven:maven-model:3.9.9 -Dtransitive=false -DremoteRepositories=https://myrepo.com/maven2
+```
+
+Without `mdep.outputFile` the classpath is logged at the INFO level. Use `-q` together with `mdep.outputFile` to keep the build output quiet. The separators and a path prefix can be changed with `mdep.pathSeparator`, `mdep.fileSeparator` and `mdep.prefix`, as for `dependency:build-classpath`.
+
 `dependency:analyze-exclusions`
 -------------------------------
 
