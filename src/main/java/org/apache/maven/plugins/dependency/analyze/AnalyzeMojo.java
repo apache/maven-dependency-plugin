@@ -20,12 +20,14 @@ package org.apache.maven.plugins.dependency.analyze;
 
 import javax.inject.Inject;
 
+import java.util.Map;
+
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.PlexusContainer;
+import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 
 /**
  * Analyzes the dependencies of this project and determines which are: used and declared; used and undeclared; unused
@@ -47,7 +49,7 @@ public class AnalyzeMojo extends AbstractAnalyzeMojo {
     // subclassed to provide annotations
 
     @Inject
-    public AnalyzeMojo(PlexusContainer plexusContainer, MavenProject project) {
-        super(plexusContainer, project);
+    public AnalyzeMojo(Map<String, ProjectDependencyAnalyzer> analyzers, MavenProject project) {
+        super(analyzers, project);
     }
 }
