@@ -36,7 +36,7 @@ import org.apache.maven.model.Dependency;
  * Items and dependencies are compared on groupId, artifactId, extension and classifier. The type is translated with
  * the artifact handler, so {@code type=test-jar} equals {@code type=jar} with {@code classifier=tests}. The type
  * defaults to {@code jar} and an empty classifier is no classifier. A declared dependency of type {@code pom}
- * matches every type and classifier. An item without a version matches regardless of the declared version. A declared
+ * matches every type and classifier. The mojo fills in a missing item version before the check. A declared
  * version range matches an item version it contains; an item version range is only matched by an identical
  * declaration, because the goal resolves such a range to the highest available version, which may not be the
  * declared one.
@@ -74,6 +74,7 @@ final class ExplicitDependencyMatcher {
         String version = item.getVersion() == null ? "" : item.getVersion().trim();
 
         List<String> declaredVersions = new ArrayList<>();
+        List<String> otherVariants = new ArrayList<>();
         for (Dependency dependency : declared) {
             if (!Objects.equals(item.getGroupId(), dependency.getGroupId())
                     || !Objects.equals(item.getArtifactId(), dependency.getArtifactId())) {
@@ -89,10 +90,18 @@ final class ExplicitDependencyMatcher {
                     return null;
                 }
                 declaredVersions.add(String.valueOf(dependency.getVersion()));
+            } else {
+                String other = dependency.getType() == null ? "jar" : dependency.getType();
+                if (dependency.getClassifier() != null
+                        && !dependency.getClassifier().isEmpty()) {
+                    other += ":" + dependency.getClassifier();
+                }
+                otherVariants.add(other);
             }
         }
         if (declaredVersions.isEmpty()) {
-            return item + " is not declared as a dependency of the project";
+            return item + " is not declared as a dependency of the project"
+                    + (otherVariants.isEmpty() ? "" : " (declared as " + String.join(", ", otherVariants) + ")");
         }
         return item + " is declared as a dependency with version " + String.join(", ", declaredVersions) + ", not "
                 + version;

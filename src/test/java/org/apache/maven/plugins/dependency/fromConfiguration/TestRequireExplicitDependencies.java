@@ -90,7 +90,7 @@ class TestRequireExplicitDependencies {
                         + "  g:b:resources:1.0:zip is not declared as a dependency of the project" + nl
                         + "  g:a:2.0:jar is declared as a dependency with version 1.0, not 2.0" + nl
                         + "Declare each of them in the dependencies of the project, for example with scope provided "
-                        + "or test, or with type pom, and use the same version.",
+                        + "or test, and use the same version.",
                 e.getMessage());
     }
 
@@ -149,5 +149,23 @@ class TestRequireExplicitDependencies {
 
         assertTrue(e.getMessage().contains("g:undeclared"), e.getMessage());
         assertTrue(e.getMessage().contains("is not declared as a dependency of the project"), e.getMessage());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "requireExplicitDependencies", value = "true")
+    void namesTheVariantsThatAreDeclaredInstead(CopyMojo mojo) throws Exception {
+        setSource(mojo, lifecycleExecution());
+        mojo.getProject()
+                .setDependencies(java.util.Arrays.asList(
+                        dependency("a", "1.0", "jar", null), dependency("a", "1.0", "zip", "resources")));
+        mojo.setArtifactItems(Collections.singletonList(item("a", "1.0", "war", null)));
+
+        MojoFailureException e = assertThrows(MojoFailureException.class, mojo::execute);
+
+        assertTrue(
+                e.getMessage()
+                        .contains("is not declared as a dependency of the project (declared as jar, zip:resources)"),
+                e.getMessage());
     }
 }

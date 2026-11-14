@@ -155,7 +155,8 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * </p>
      * <p>
      * Items match on groupId, artifactId, extension and classifier, where {@code test-jar} equals {@code jar} with
-     * the classifier {@code tests}. An item without a version matches a declaration of any version. A version
+     * the classifier {@code tests}. An item without a version takes its version from the
+     * project, as for the goal itself, and is then checked like any other item. A version
      * range in the declaration matches an item version it contains; a version range in an item matches only an
      * identical declaration, as the goal resolves it to the highest available version.
      * </p>
@@ -236,7 +237,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
                     + "declared as dependencies of the project, so that Maven orders the reactor by them:"
                     + System.lineSeparator() + "  " + String.join(System.lineSeparator() + "  ", violations)
                     + System.lineSeparator() + "Declare each of them in the dependencies of the project, "
-                    + "for example with scope provided or test, or with type pom, and use the same version.");
+                    + "for example with scope provided or test, and use the same version.");
         }
     }
 

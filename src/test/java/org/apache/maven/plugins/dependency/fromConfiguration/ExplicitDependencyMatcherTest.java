@@ -29,6 +29,7 @@ import org.apache.maven.model.Dependency;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -217,7 +218,7 @@ class ExplicitDependencyMatcherTest {
                 handlers, Collections.singletonList(dependency("a", "1.0", "zip", "resources")));
 
         assertTrue(matcher.isDeclaredInAnyVariant(item("a", null, "jar", null)));
-        assertTrue(!matcher.isDeclaredInAnyVariant(item("b", null, "jar", null)));
+        assertFalse(matcher.isDeclaredInAnyVariant(item("b", null, "jar", null)));
     }
 
     @Test
