@@ -147,6 +147,7 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
         }
 
         verifyRequirements();
+        verifyExplicitDependencies();
 
         List<ArtifactItem> processedItems = getProcessedArtifactItems(false);
         for (ArtifactItem artifactItem : processedItems) {

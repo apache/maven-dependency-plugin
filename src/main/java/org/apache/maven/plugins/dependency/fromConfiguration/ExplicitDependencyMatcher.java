@@ -24,6 +24,9 @@ import java.util.Objects;
 
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 
 /**
@@ -32,8 +35,9 @@ import org.apache.maven.model.Dependency;
  * <p>
  * Items and dependencies are compared on groupId, artifactId, extension and classifier. The type is translated with
  * the artifact handler, so {@code type=test-jar} equals {@code type=jar} with {@code classifier=tests}. The type
- * defaults to {@code jar} and an empty classifier is no classifier. An item without a version matches regardless of
- * the declared version.
+ * defaults to {@code jar} and an empty classifier is no classifier. A declared dependency of type {@code pom}
+ * matches every type and classifier. An item without a version matches regardless of the declared version, and a
+ * version range matches a version it contains.
  */
 final class ExplicitDependencyMatcher {
     private final ArtifactHandlerManager artifactHandlerManager;
@@ -69,11 +73,17 @@ final class ExplicitDependencyMatcher {
 
         List<String> declaredVersions = new ArrayList<>();
         for (Dependency dependency : declared) {
-            if (Objects.equals(item.getGroupId(), dependency.getGroupId())
-                    && Objects.equals(item.getArtifactId(), dependency.getArtifactId())
-                    && extension.equals(extension(dependency.getType()))
-                    && Objects.equals(classifier, classifier(dependency.getType(), dependency.getClassifier()))) {
-                if (version.isEmpty() || version.equals(dependency.getVersion())) {
+            if (!Objects.equals(item.getGroupId(), dependency.getGroupId())
+                    || !Objects.equals(item.getArtifactId(), dependency.getArtifactId())) {
+                continue;
+            }
+            // The reactor orders on groupId:artifactId:version only, so a pom declaration covers every variant.
+            boolean sameVariant = "pom".equals(dependency.getType())
+                    || (extension.equals(extension(dependency.getType()))
+                            && Objects.equals(
+                                    classifier, classifier(dependency.getType(), dependency.getClassifier())));
+            if (sameVariant) {
+                if (version.isEmpty() || versionsMatch(version, dependency.getVersion())) {
                     return null;
                 }
                 declaredVersions.add(String.valueOf(dependency.getVersion()));
@@ -84,6 +94,27 @@ final class ExplicitDependencyMatcher {
         }
         return item + " is declared as a dependency with version " + String.join(", ", declaredVersions) + ", not "
                 + version;
+    }
+
+    static boolean versionsMatch(String itemVersion, String declaredVersion) {
+        if (itemVersion.equals(declaredVersion)) {
+            return true;
+        }
+        if (declaredVersion == null) {
+            return false;
+        }
+        return contains(declaredVersion, itemVersion) || contains(itemVersion, declaredVersion);
+    }
+
+    private static boolean contains(String rangeSpec, String version) {
+        if (!rangeSpec.startsWith("[") && !rangeSpec.startsWith("(")) {
+            return false;
+        }
+        try {
+            return VersionRange.createFromVersionSpec(rangeSpec).containsVersion(new DefaultArtifactVersion(version));
+        } catch (InvalidVersionSpecificationException e) {
+            return false;
+        }
     }
 
     private ArtifactHandler handler(String type) {
