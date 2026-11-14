@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
@@ -33,11 +34,14 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.utils.CopyUtil;
+import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.filters.ArtifactItemFilter;
 import org.apache.maven.plugins.dependency.utils.filters.DestFileFilter;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
@@ -94,6 +98,19 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     @Parameter(property = "artifact")
     private String artifact;
 
+    /**
+     * Resolve the single artifact identified by {@link #artifact} (or by a single-entry {@link #artifactItems})
+     * together with its transitive dependencies, directly through the repository system, and copy all of them.
+     * Lets this goal be used like {@code dependency:get}, but copying the resolved files instead of only
+     * downloading them into the local repository. Not supported together with more than one artifact item.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "transitive", defaultValue = "false")
+    private boolean transitive = false;
+
+    private final ResolverUtil resolverUtil;
+
     @Inject
     public CopyMojo(
             MavenSession session,
@@ -105,6 +122,7 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
             ResolverUtil resolverUtil) {
         super(session, buildContext, project, artifactHandlerManager, repositorySystem, resolverUtil);
         this.copyUtil = copyUtil;
+        this.resolverUtil = resolverUtil;
     }
 
     /**
@@ -121,14 +139,62 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
         verifyRequirements();
         verifyExplicitDependencies();
 
+        if (transitive && getArtifactItems().size() != 1) {
+            throw new MojoFailureException("transitive requires a single artifact, not "
+                    + getArtifactItems().size() + " artifactItems");
+        }
+
         List<ArtifactItem> theArtifactItems = getProcessedArtifactItems(
                 new ProcessArtifactItemsRequest(stripVersion, prependGroupId, useBaseVersion, stripClassifier));
+
+        if (transitive) {
+            copyWithTransitiveDependencies(theArtifactItems.get(0));
+            return;
+        }
 
         for (ArtifactItem artifactItem : theArtifactItems) {
             if (artifactItem.isNeedsProcessing()) {
                 copyArtifact(artifactItem);
             } else {
                 getLog().info(artifactItem + " already exists in " + artifactItem.getOutputDirectory());
+            }
+        }
+    }
+
+    /**
+     * Resolves {@code rootItem}'s artifact together with its transitive dependencies, directly through the
+     * repository system, and copies every one of them to {@code rootItem}'s output directory.
+     *
+     * @param rootItem the single configured artifact
+     * @throws MojoExecutionException if the artifact or one of its dependencies cannot be resolved, or if one of
+     *                                 them cannot be copied
+     */
+    private void copyWithTransitiveDependencies(ArtifactItem rootItem) throws MojoExecutionException {
+        org.eclipse.aether.artifact.Artifact rootArtifact = RepositoryUtils.toArtifact(rootItem.getArtifact());
+        List<RemoteRepository> repositories = getRemoteRepositories();
+
+        List<org.eclipse.aether.artifact.Artifact> resolved;
+        try {
+            resolved = resolverUtil.resolveDependencies(rootArtifact, repositories);
+        } catch (DependencyResolutionException e) {
+            throw new MojoExecutionException("Failed to resolve " + rootArtifact + " with its dependencies", e);
+        }
+
+        for (org.eclipse.aether.artifact.Artifact resolvedArtifact : resolved) {
+            Artifact artifactToCopy = RepositoryUtils.toArtifact(resolvedArtifact);
+            String destFileName = DependencyUtil.getFormattedFileName(
+                    artifactToCopy, stripVersion, prependGroupId, useBaseVersion, stripClassifier);
+            File destFile = new File(rootItem.getOutputDirectory(), destFileName);
+            if (destFile.exists()) {
+                getLog().warn("Overwriting " + destFile);
+            }
+            try {
+                copyUtil.copyArtifactFile(artifactToCopy, destFile);
+            } catch (IOException e) {
+                throw new MojoExecutionException(
+                        "Failed to copy artifact '" + artifactToCopy + "' (" + artifactToCopy.getFile() + ") to "
+                                + destFile,
+                        e);
             }
         }
     }
@@ -204,5 +270,19 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
      */
     public void setUseBaseVersion(boolean useBaseVersion) {
         this.useBaseVersion = useBaseVersion;
+    }
+
+    /**
+     * @return returns the transitive
+     */
+    public boolean isTransitive() {
+        return this.transitive;
+    }
+
+    /**
+     * @param transitive the transitive to set
+     */
+    public void setTransitive(boolean transitive) {
+        this.transitive = transitive;
     }
 }

@@ -362,7 +362,7 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
         }
     }
 
-    private List<RemoteRepository> getRemoteRepositories() {
+    protected List<RemoteRepository> getRemoteRepositories() {
         if (remoteRepositories == null || remoteRepositories.isEmpty()) {
             return getProject().getRemoteProjectRepositories();
         }
