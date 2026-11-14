@@ -31,7 +31,8 @@ under the License.
 4. [Why is Maven resolving &quot;dependency:xxx&quot; to the older org.codehaus.mojo:dependency-maven-plugin?](#question)
 5. [Why am I having trouble unpacking only a specific file?](#includes)
 6. [How do I keep files that already exist in the output directory when unpacking?](#overwritefiles)
-7. [Why does my dependency analysis report `Unused declared dependencies`?](#unused)
+7. [How do I make unpacking fail when two archives contain the same file?](#failonduplicates)
+8. [Why does my dependency analysis report `Unused declared dependencies`?](#unused)
 
 <a id="plugin_name"></a>
 
@@ -111,6 +112,12 @@ by the one unpacked last. With the option set, the build fails after all artifac
 with the entries that target it. The comparison is made after any `fileMappers` are applied, so it also finds entries
 that a mapper moves to the same path, and a second entry for one path within a single archive. Directories are not
 compared.
+
+Every jar contains `META-INF/MANIFEST.MF`, and many contain `module-info.class` and `META-INF/LICENSE` or `NOTICE`, so
+`unpack-dependencies` on several jars reports those. Exclude them, for example with
+`<excludes>META-INF/**,module-info.class</excludes>`. Names that differ only by case, such as `A.txt` and `a.txt`, are
+also found on file systems that ignore case (macOS and Windows by default), where they would replace each other, and
+so are paths that reach the output directory through a symbolic link.
 
 Only the first entry for a path is written; later ones are skipped, also when `overWriteFiles` is `false`. The marker
 files are not written for a failed execution, so running it again unpacks again and fails again. Files that already

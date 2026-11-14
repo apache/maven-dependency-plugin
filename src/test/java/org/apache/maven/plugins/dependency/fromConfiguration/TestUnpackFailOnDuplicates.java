@@ -24,12 +24,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -46,6 +48,8 @@ import org.codehaus.plexus.components.io.filemappers.FileMapper;
 import org.codehaus.plexus.components.io.filemappers.FlattenFileMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -107,6 +111,9 @@ class TestUnpackFailOnDuplicates {
         }
         String content = new String(bytes.toByteArray(), StandardCharsets.ISO_8859_1);
         for (Map.Entry<String, String> placeholder : placeholders.entrySet()) {
+            // the local header and the central directory
+            int count = content.split(Pattern.quote(placeholder.getKey()), -1).length - 1;
+            assertEquals(2, count, placeholder.getKey());
             content = content.replace(placeholder.getKey(), placeholder.getValue());
         }
         File zip = new File(tempDir, zipName);
@@ -225,6 +232,7 @@ class TestUnpackFailOnDuplicates {
         mojo.setFailOnDuplicates(true);
         assertDoesNotThrow(mojo::execute);
         assertEquals("y", read(mojo.getOutputDirectory(), "y/a.txt"));
+        assertEquals(1, markerCount(mojo));
     }
 
     @Test
@@ -240,5 +248,45 @@ class TestUnpackFailOnDuplicates {
         mojo.setFailOnDuplicates(true);
         assertDoesNotThrow(mojo::execute);
         assertEquals("from two", read(new File(tempDir, "out-two"), "same.txt"));
+    }
+
+    @Test
+    @InjectMojo(goal = "unpack")
+    void testNamesDifferingByCaseFailOnlyOnCaseInsensitiveFileSystem(UnpackMojo mojo) throws Exception {
+        Path probe = tempDir.toPath().resolve("Probe.txt");
+        Files.write(probe, new byte[0]);
+        boolean caseInsensitive = Files.exists(tempDir.toPath().resolve("probe.txt"))
+                && Files.isSameFile(probe, tempDir.toPath().resolve("probe.txt"));
+        artifact("one", zip("one.zip", "A.txt", "upper", "a.txt", "lower"));
+        mojo.setArtifactItems(Collections.singletonList(item("one")));
+        mojo.setFailOnDuplicates(true);
+        if (caseInsensitive) {
+            MojoFailureException e = assertThrows(MojoFailureException.class, mojo::execute);
+            assertTrue(e.getMessage().contains("A.txt"), e.getMessage());
+            assertTrue(e.getMessage().contains("(a.txt)"), e.getMessage());
+        } else {
+            // on a case-sensitive file system these are two files
+            assertDoesNotThrow(mojo::execute);
+            assertEquals("upper", read(mojo.getOutputDirectory(), "A.txt"));
+            assertEquals("lower", read(mojo.getOutputDirectory(), "a.txt"));
+        }
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    @InjectMojo(goal = "unpack")
+    void testOutputDirectoryReachedThroughSymbolicLinkIsTheSame(UnpackMojo mojo) throws Exception {
+        Path real = Files.createDirectories(tempDir.toPath().resolve("real-out"));
+        Path link = Files.createSymbolicLink(tempDir.toPath().resolve("link-out"), real);
+        artifact("one", zip("one.zip", "same.txt", "from one"));
+        artifact("two", zip("two.zip", "same.txt", "from two"));
+        ArtifactItem one = item("one");
+        one.setOutputDirectory(real.toFile());
+        ArtifactItem two = item("two");
+        two.setOutputDirectory(link.toFile());
+        mojo.setArtifactItems(Arrays.asList(one, two));
+        mojo.setFailOnDuplicates(true);
+        MojoFailureException e = assertThrows(MojoFailureException.class, mojo::execute);
+        assertTrue(e.getMessage().contains("same.txt"), e.getMessage());
     }
 }

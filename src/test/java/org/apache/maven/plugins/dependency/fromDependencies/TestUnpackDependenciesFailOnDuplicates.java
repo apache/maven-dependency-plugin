@@ -109,6 +109,7 @@ class TestUnpackDependenciesFailOnDuplicates {
         mojo.setFailOnDuplicates(true);
         mojo.setUseSubDirectoryPerArtifact(true);
         assertDoesNotThrow(mojo::execute);
+        assertTrue(markerCount(mojo) > 1);
     }
 
     @Test
