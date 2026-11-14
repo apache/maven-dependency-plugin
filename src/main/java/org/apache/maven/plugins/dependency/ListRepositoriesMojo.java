@@ -33,6 +33,9 @@ import java.util.stream.Collectors;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.InputLocation;
+import org.apache.maven.model.InputSource;
+import org.apache.maven.model.Repository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.project.MavenProject;
@@ -119,8 +122,16 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
             }
 
             StringBuilder message = new StringBuilder();
-            prepareRemoteRepositoriesList(message, "Project remote repositories used by this build:", repositories);
-            prepareRemoteRepositoriesList(message, "Plugin repositories used by this build:", pluginRepositories);
+            prepareRemoteRepositoriesList(
+                    message,
+                    "Project remote repositories used by this build:",
+                    repositories,
+                    declaredLocations(getProject().getRepositories()));
+            prepareRemoteRepositoriesList(
+                    message,
+                    "Plugin repositories used by this build:",
+                    pluginRepositories,
+                    declaredLocations(getProject().getPluginRepositories()));
 
             getLog().info(message);
 
@@ -145,8 +156,74 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
         });
     }
 
+    /**
+     * Maps each repository on the project model that carries an input location (the project, its parent POMs, and
+     * the super POM) to a human readable description of where it was declared. Repositories that only come from the
+     * POMs of transitive dependencies are not part of the project model and have no entry.
+     */
+    private static Map<String, String> declaredLocations(List<Repository> modelRepositories) {
+        Map<String, String> locations = new HashMap<>();
+        if (modelRepositories == null) {
+            return locations;
+        }
+        for (Repository repository : modelRepositories) {
+            String description = describeLocation(repository);
+            if (description != null) {
+                locations.putIfAbsent(locationKey(repository.getId(), repository.getUrl()), description);
+            }
+        }
+        return locations;
+    }
+
+    private static String locationKey(String id, String url) {
+        String normalizedUrl = url == null ? "" : url.trim();
+        while (normalizedUrl.endsWith("/")) {
+            normalizedUrl = normalizedUrl.substring(0, normalizedUrl.length() - 1);
+        }
+        return id + '\n' + normalizedUrl;
+    }
+
+    private static String describeLocation(Repository repository) {
+        InputLocation location = repository.getLocation("");
+        if (location == null) {
+            location = repository.getLocation("id");
+        }
+        if (location == null || location.getSource() == null) {
+            return null;
+        }
+        InputSource source = location.getSource();
+        if (source.getModelId() != null && source.getModelId().endsWith(":super-pom")) {
+            return "the Maven super POM";
+        }
+        StringBuilder description = new StringBuilder();
+        if (source.getModelId() != null && !source.getModelId().isEmpty()) {
+            description.append(source.getModelId());
+        }
+        if (source.getLocation() != null) {
+            if (description.length() > 0) {
+                description.append(' ');
+            }
+            description.append(source.getLocation());
+            if (location.getLineNumber() > 0) {
+                description.append(':').append(location.getLineNumber());
+            }
+        }
+        return description.length() == 0 ? null : description.toString();
+    }
+
+    /**
+     * Returns an indented line saying where the repository was declared, or an empty string when that is unknown. It
+     * goes on its own line so the repository lines keep their format.
+     */
+    private static String declaredLine(RemoteRepository repo, Map<String, String> locations) {
+        String declared = locations.get(locationKey(repo.getId(), repo.getUrl()));
+        return declared == null ? "" : "   declared in " + declared + System.lineSeparator();
+    }
+
     private void prepareRemoteMirrorRepositoriesList(
-            StringBuilder message, Collection<RemoteRepository> remoteProjectRepositories) {
+            StringBuilder message,
+            Collection<RemoteRepository> remoteProjectRepositories,
+            Map<String, String> locations) {
 
         Map<RemoteRepository, RemoteRepository> mirrorMap = new HashMap<>();
         remoteProjectRepositories.forEach(
@@ -156,11 +233,15 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
                 .append(repo)
                 .append(" mirrored by ")
                 .append(mirror)
-                .append(System.lineSeparator()));
+                .append(System.lineSeparator())
+                .append(declaredLine(repo, locations)));
     }
 
     private void prepareRemoteRepositoriesList(
-            StringBuilder message, String heading, Collection<RemoteRepository> repositories) {
+            StringBuilder message,
+            String heading,
+            Collection<RemoteRepository> repositories,
+            Map<String, String> locations) {
         if (repositories.isEmpty()) {
             return;
         }
@@ -173,8 +254,11 @@ public class ListRepositoriesMojo extends AbstractDependencyMojo {
 
         repoGroupByMirrors
                 .getOrDefault(Boolean.TRUE, Collections.emptyList())
-                .forEach(repo -> message.append(" * ").append(repo).append(System.lineSeparator()));
+                .forEach(repo -> message.append(" * ")
+                        .append(repo)
+                        .append(System.lineSeparator())
+                        .append(declaredLine(repo, locations)));
         prepareRemoteMirrorRepositoriesList(
-                message, repoGroupByMirrors.getOrDefault(Boolean.FALSE, Collections.emptyList()));
+                message, repoGroupByMirrors.getOrDefault(Boolean.FALSE, Collections.emptyList()), locations);
     }
 }
