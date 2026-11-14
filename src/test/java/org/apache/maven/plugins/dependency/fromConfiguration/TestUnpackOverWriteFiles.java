@@ -22,6 +22,7 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -149,7 +150,7 @@ class TestUnpackOverWriteFiles {
         Path link = new File(out, "existing.txt").toPath();
         try {
             Files.createSymbolicLink(link, new File(tempDir, "does-not-exist").toPath());
-        } catch (UnsupportedOperationException | java.io.IOException e) {
+        } catch (UnsupportedOperationException | IOException e) {
             Assumptions.abort("symbolic links are not available: " + e);
         }
         mojo.setOverWriteFiles(false);
