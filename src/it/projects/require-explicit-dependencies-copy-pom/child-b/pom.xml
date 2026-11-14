@@ -46,6 +46,13 @@
       <artifactId>child-a</artifactId>
       <version>1.0-SNAPSHOT</version>
       <type>pom</type>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 

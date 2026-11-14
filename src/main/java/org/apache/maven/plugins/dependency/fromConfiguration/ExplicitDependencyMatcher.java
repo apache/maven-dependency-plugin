@@ -36,8 +36,10 @@ import org.apache.maven.model.Dependency;
  * Items and dependencies are compared on groupId, artifactId, extension and classifier. The type is translated with
  * the artifact handler, so {@code type=test-jar} equals {@code type=jar} with {@code classifier=tests}. The type
  * defaults to {@code jar} and an empty classifier is no classifier. A declared dependency of type {@code pom}
- * matches every type and classifier. An item without a version matches regardless of the declared version, and a
- * version range matches a version it contains.
+ * matches every type and classifier. An item without a version matches regardless of the declared version. A declared
+ * version range matches an item version it contains; an item version range is only matched by an identical
+ * declaration, because the goal resolves such a range to the highest available version, which may not be the
+ * declared one.
  */
 final class ExplicitDependencyMatcher {
     private final ArtifactHandlerManager artifactHandlerManager;
@@ -96,14 +98,28 @@ final class ExplicitDependencyMatcher {
                 + version;
     }
 
+    /**
+     * Returns whether the project declares a dependency with the groupId and artifactId of the item, of any type,
+     * classifier and version.
+     *
+     * @param item the item to look up
+     * @return {@code true} if there is such a dependency
+     */
+    boolean isDeclaredInAnyVariant(ArtifactItem item) {
+        for (Dependency dependency : declared) {
+            if (Objects.equals(item.getGroupId(), dependency.getGroupId())
+                    && Objects.equals(item.getArtifactId(), dependency.getArtifactId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     static boolean versionsMatch(String itemVersion, String declaredVersion) {
         if (itemVersion.equals(declaredVersion)) {
             return true;
         }
-        if (declaredVersion == null) {
-            return false;
-        }
-        return contains(declaredVersion, itemVersion) || contains(itemVersion, declaredVersion);
+        return declaredVersion != null && contains(declaredVersion, itemVersion);
     }
 
     private static boolean contains(String rangeSpec, String version) {

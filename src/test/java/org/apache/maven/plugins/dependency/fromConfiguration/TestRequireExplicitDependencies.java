@@ -136,4 +136,18 @@ class TestRequireExplicitDependencies {
 
         assertTrue(e.getMessage().contains("is declared as a dependency with version 1.0, not 2.0"), e.getMessage());
     }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "requireExplicitDependencies", value = "true")
+    void listsAVersionlessItemThatIsNotDeclaredWithoutLookingUpItsVersion(CopyMojo mojo) throws Exception {
+        setSource(mojo, lifecycleExecution());
+        mojo.getProject().setDependencies(Collections.singletonList(dependency("a", "1.0", "jar", null)));
+        mojo.setArtifactItems(Collections.singletonList(item("undeclared", null, "jar", null)));
+
+        MojoFailureException e = assertThrows(MojoFailureException.class, mojo::execute);
+
+        assertTrue(e.getMessage().contains("g:undeclared"), e.getMessage());
+        assertTrue(e.getMessage().contains("is not declared as a dependency of the project"), e.getMessage());
+    }
 }

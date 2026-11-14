@@ -145,13 +145,25 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      * Fail if an item of {@code artifactItems} (or the {@code artifact} configured in the POM) is not declared as a
      * dependency of the project, or is declared with a different version. Maven orders the reactor by the declared
      * dependencies, not by plugin configuration, so an undeclared item that is built by another module of the reactor
-     * may be missing or stale. Declare such an item as a dependency, for example with scope {@code provided} or
-     * {@code test}. A dependency of type {@code pom} with the same groupId, artifactId and version also satisfies the
-     * check for any type and classifier, and keeps the artifact off the classpath, but then the artifact is not
-     * visible in {@code dependency:tree} or SBOMs either. Items match on groupId, artifactId, extension and
-     * classifier, where {@code test-jar} equals {@code jar} with the classifier {@code tests}. A version range
-     * matches a version it contains. The check does not apply to a goal invoked from the command line, such as
-     * {@code mvn dependency:copy -Dartifact=...}.
+     * may be missing or stale. Declare such an item as a dependency with scope {@code provided} or {@code test}.
+     * <p>
+     * A dependency of type {@code pom} with the same groupId, artifactId and version also satisfies the check for
+     * any type and classifier. Such a declaration adds the transitive dependencies of the module to the classpath
+     * (with the declared scope, {@code compile} by default) and shows as {@code g:a:pom:v} in
+     * {@code dependency:tree}. Use scope {@code provided} or {@code test} and, to avoid the transitive dependencies,
+     * an exclusion of {@code *:*}.
+     * </p>
+     * <p>
+     * Items match on groupId, artifactId, extension and classifier, where {@code test-jar} equals {@code jar} with
+     * the classifier {@code tests}. An item without a version matches a declaration of any version. A version
+     * range in the declaration matches an item version it contains; a version range in an item matches only an
+     * identical declaration, as the goal resolves it to the highest available version.
+     * </p>
+     * <p>
+     * The check does not apply when the goal is invoked directly from the command line, such as
+     * {@code mvn dependency:copy}. An execution that is bound to the lifecycle is checked, even when the property is
+     * given on the command line.
+     * </p>
      *
      * @since 3.12.0
      */
@@ -195,7 +207,8 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
 
     /**
      * Fails if {@link #requireExplicitDependencies} is set and an item is not declared as a dependency. Must run
-     * after {@link #verifyRequirements()} and before anything is resolved.
+     * after {@link #verifyRequirements()}. Nothing is resolved for an item whose groupId and artifactId are not
+     * declared at all; a missing version of any other item is looked up first.
      *
      * @throws MojoFailureException if an item is not declared
      * @throws MojoExecutionException if a missing version cannot be determined
@@ -208,14 +221,16 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             getLog().warn("requireExplicitDependencies is ignored when the goal is invoked from the command line");
             return;
         }
+        ExplicitDependencyMatcher matcher = new ExplicitDependencyMatcher(
+                artifactHandlerManager, getProject().getDependencies());
         for (ArtifactItem item : artifactItems) {
-            if (item.getVersion() == null || item.getVersion().isEmpty()) {
+            // An item that is not declared in any variant is a violation anyway; the version lookup would only fail
+            // with "Unable to find artifact version" instead of listing it.
+            if ((item.getVersion() == null || item.getVersion().isEmpty()) && matcher.isDeclaredInAnyVariant(item)) {
                 fillMissingArtifactVersion(item);
             }
         }
-        List<String> violations = new ExplicitDependencyMatcher(
-                        artifactHandlerManager, getProject().getDependencies())
-                .findViolations(artifactItems);
+        List<String> violations = matcher.findViolations(artifactItems);
         if (!violations.isEmpty()) {
             throw new MojoFailureException("requireExplicitDependencies is set, but artifactItems must be "
                     + "declared as dependencies of the project, so that Maven orders the reactor by them:"
