@@ -704,6 +704,18 @@ or to write the classpath to cp.txt:
 mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 ```
 
+Without `prefix`, each entry is the actual file of the artifact. In a multi-module build, the file of a module in the same reactor is in its build output (`target/classes`, or the packaged file after `package`), not in the local repository. To get a classpath that is the same for every artifact, set `prefix` together with `useRepositoryLayout`. Each entry then has the layout of a Maven repository below the prefix:
+
+```
+mvn package dependency:build-classpath -Dmdep.prefix=repository -Dmdep.useRepositoryLayout=true -Dmdep.outputFile=cp.txt
+```
+
+```
+repository/org/example/module-a/1.0-SNAPSHOT/module-a-1.0-SNAPSHOT.jar:repository/junit/junit/3.8.1/junit-3.8.1.jar
+```
+
+`useRepositoryLayout` has no effect without `prefix`. With `prefix` alone, each entry is the prefix followed by the file name only.
+
 The goal can also be bound to a lifecycle phase with the following configuration:
 
 ```xml
