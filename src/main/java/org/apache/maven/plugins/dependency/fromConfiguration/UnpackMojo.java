@@ -93,7 +93,8 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
      * Whether unpacking may replace files that already exist in the output directory. This is decided for each file.
      * With {@code true} (the default) every entry of the archive is written. With {@code false} an entry is skipped
      * whenever a file already exists at its target path, after the {@code fileMappers} have been applied, however old
-     * that file is; only the missing files are written. Directories are not affected. The option has no effect on
+     * that file is; only the missing files are written, so when several entries or dependencies map to the same path,
+     * the first one wins. Directories are not affected. The option has no effect on
      * single-file compression formats such as gzip.
      * <p>
      * This differs from {@code overWriteReleases}, {@code overWriteSnapshots} and {@code overWriteIfNewer}, and from

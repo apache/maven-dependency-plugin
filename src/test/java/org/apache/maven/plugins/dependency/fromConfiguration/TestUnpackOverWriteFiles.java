@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -38,12 +39,14 @@ import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFacto
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
 import org.codehaus.plexus.components.io.filemappers.PrefixFileMapper;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * MDEP-480: existing files can be kept when unpacking.
@@ -135,6 +138,25 @@ class TestUnpackOverWriteFiles {
         mojo.execute();
         assertEquals(EXISTING, read(mojo.getOutputDirectory(), "existing.txt"));
         assertEquals("from archive", read(mojo.getOutputDirectory(), "added.txt"));
+    }
+
+    @Test
+    @InjectMojo(goal = "unpack")
+    void testDanglingSymlinkCountsAsExisting(UnpackMojo mojo) throws Exception {
+        Assumptions.assumeFalse(System.getProperty("os.name").toLowerCase().contains("win"));
+        File out = mojo.getOutputDirectory();
+        out.mkdirs();
+        Path link = new File(out, "existing.txt").toPath();
+        try {
+            Files.createSymbolicLink(link, new File(tempDir, "does-not-exist").toPath());
+        } catch (UnsupportedOperationException | java.io.IOException e) {
+            Assumptions.abort("symbolic links are not available: " + e);
+        }
+        mojo.setOverWriteFiles(false);
+        mojo.execute();
+        assertTrue(Files.isSymbolicLink(link));
+        assertFalse(new File(out, "existing.txt").exists());
+        assertEquals("from archive", read(out, "added.txt"));
     }
 
     @Test
