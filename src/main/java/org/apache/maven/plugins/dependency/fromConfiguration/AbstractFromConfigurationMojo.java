@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.dependency.fromConfiguration;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +30,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -139,20 +142,24 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
     private List<String> remoteRepositories;
 
     /**
-     * Fail if an item of {@code artifactItems} is not declared as a dependency of the project, or is declared with a
-     * different version. Maven orders the reactor by the declared dependencies only, so an undeclared item that is
-     * built by another module of the reactor may be missing or stale. Declare such an item as a dependency, for
-     * example with scope {@code provided} or {@code test}, or with type {@code pom} where only its content is needed.
-     * Items match on groupId, artifactId, type and classifier, where {@code test-jar} equals {@code jar} with the
-     * classifier {@code tests}. The check only applies to items configured in the POM, not to the command line
-     * parameter {@code artifact}.
+     * Fail if an item of {@code artifactItems} (or the {@code artifact} configured in the POM) is not declared as a
+     * dependency of the project, or is declared with a different version. Maven orders the reactor by the declared
+     * dependencies, not by plugin configuration, so an undeclared item that is built by another module of the reactor
+     * may be missing or stale. Declare such an item as a dependency, for example with scope {@code provided} or
+     * {@code test}. A dependency of type {@code pom} with the same groupId, artifactId and version also satisfies the
+     * check for any type and classifier, and keeps the artifact off the classpath, but then the artifact is not
+     * visible in {@code dependency:tree} or SBOMs either. Items match on groupId, artifactId, extension and
+     * classifier, where {@code test-jar} equals {@code jar} with the classifier {@code tests}. A version range
+     * matches a version it contains. The check does not apply to a goal invoked from the command line, such as
+     * {@code mvn dependency:copy -Dartifact=...}.
      *
      * @since 3.12.0
      */
     @Parameter(property = "mdep.requireExplicitDependencies", defaultValue = "false")
     private boolean requireExplicitDependencies;
 
-    private boolean artifactFromCommandLine;
+    @Inject
+    private MojoExecution mojoExecution;
 
     private final ArtifactHandlerManager artifactHandlerManager;
 
@@ -184,21 +191,37 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
         if (artifactItems == null || artifactItems.isEmpty()) {
             throw new MojoFailureException("Either artifact or artifactItems is required ");
         }
-        if (requireExplicitDependencies) {
-            if (artifactFromCommandLine) {
-                getLog().warn("requireExplicitDependencies is ignored for the artifact parameter");
-            } else {
-                List<String> violations = new ExplicitDependencyMatcher(
-                                artifactHandlerManager, getProject().getDependencies())
-                        .findViolations(artifactItems);
-                if (!violations.isEmpty()) {
-                    throw new MojoFailureException("requireExplicitDependencies is set, but artifactItems must be "
-                            + "declared as dependencies of the project, so that Maven orders the reactor by them:"
-                            + System.lineSeparator() + "  " + String.join(System.lineSeparator() + "  ", violations)
-                            + System.lineSeparator() + "Declare each of them in the dependencies of the project, "
-                            + "for example with scope provided or test, or with type pom, and use the same version.");
-                }
+    }
+
+    /**
+     * Fails if {@link #requireExplicitDependencies} is set and an item is not declared as a dependency. Must run
+     * after {@link #verifyRequirements()} and before anything is resolved.
+     *
+     * @throws MojoFailureException if an item is not declared
+     * @throws MojoExecutionException if a missing version cannot be determined
+     */
+    protected void verifyExplicitDependencies() throws MojoExecutionException, MojoFailureException {
+        if (!requireExplicitDependencies) {
+            return;
+        }
+        if (mojoExecution != null && mojoExecution.getSource() == MojoExecution.Source.CLI) {
+            getLog().warn("requireExplicitDependencies is ignored when the goal is invoked from the command line");
+            return;
+        }
+        for (ArtifactItem item : artifactItems) {
+            if (item.getVersion() == null || item.getVersion().isEmpty()) {
+                fillMissingArtifactVersion(item);
             }
+        }
+        List<String> violations = new ExplicitDependencyMatcher(
+                        artifactHandlerManager, getProject().getDependencies())
+                .findViolations(artifactItems);
+        if (!violations.isEmpty()) {
+            throw new MojoFailureException("requireExplicitDependencies is set, but artifactItems must be "
+                    + "declared as dependencies of the project, so that Maven orders the reactor by them:"
+                    + System.lineSeparator() + "  " + String.join(System.lineSeparator() + "  ", violations)
+                    + System.lineSeparator() + "Declare each of them in the dependencies of the project, "
+                    + "for example with scope provided or test, or with type pom, and use the same version.");
         }
     }
 
@@ -370,7 +393,6 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
      */
     public void setArtifactItems(List<ArtifactItem> theArtifactItems) {
         this.artifactItems = theArtifactItems;
-        this.artifactFromCommandLine = false;
     }
 
     /**
@@ -495,7 +517,6 @@ public abstract class AbstractFromConfigurationMojo extends AbstractDependencyMo
             }
 
             setArtifactItems(Collections.singletonList(artifactItem));
-            artifactFromCommandLine = true;
         }
     }
 }

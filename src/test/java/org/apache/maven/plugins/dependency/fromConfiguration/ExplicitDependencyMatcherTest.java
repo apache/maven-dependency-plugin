@@ -172,4 +172,50 @@ class ExplicitDependencyMatcherTest {
                 check(Collections.<Dependency>emptyList(), item("a", "1", null, null), item("b", "1", null, null))
                         .size());
     }
+
+    @Test
+    void pomDeclarationCoversEveryVariant() {
+        List<Dependency> declared = Collections.singletonList(dependency("a", "1.0", "pom", null));
+        ArtifactItem zip = item("a", "1.0", "zip", "resources");
+        assertTrue(check(declared, zip).isEmpty());
+        assertTrue(check(declared, item("a", "1.0", "test-jar", null)).isEmpty());
+        assertEquals(1, check(declared, item("a", "2.0", "zip", "resources")).size());
+        assertEquals(1, check(declared, item("b", "1.0", "zip", "resources")).size());
+    }
+
+    @Test
+    void rangeMatchesContainedVersionInBothDirections() {
+        assertTrue(
+                check(Collections.singletonList(dependency("a", "[1.0,2.0)", null, null)), item("a", "1.5", null, null))
+                        .isEmpty());
+        assertTrue(
+                check(Collections.singletonList(dependency("a", "1.5", null, null)), item("a", "[1.0,2.0)", null, null))
+                        .isEmpty());
+        assertEquals(
+                1,
+                check(Collections.singletonList(dependency("a", "[1.0,2.0)", null, null)), item("a", "2.0", null, null))
+                        .size());
+        assertEquals(
+                1,
+                check(Collections.singletonList(dependency("a", "2.0", null, null)), item("a", "[1.0,2.0)", null, null))
+                        .size());
+    }
+
+    @Test
+    void snapshotVersions() {
+        assertTrue(check(
+                        Collections.singletonList(dependency("a", "1.0-SNAPSHOT", null, null)),
+                        item("a", "1.0-SNAPSHOT", null, null))
+                .isEmpty());
+        assertEquals(
+                1,
+                check(
+                                Collections.singletonList(dependency("a", "[1.0,2.0)", null, null)),
+                                item("a", "1.0-SNAPSHOT", null, null))
+                        .size());
+        assertTrue(check(
+                        Collections.singletonList(dependency("a", "[1.0-SNAPSHOT,2.0)", null, null)),
+                        item("a", "1.0-SNAPSHOT", null, null))
+                .isEmpty());
+    }
 }

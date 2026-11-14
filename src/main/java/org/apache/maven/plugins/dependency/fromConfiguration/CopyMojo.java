@@ -119,6 +119,7 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     @Override
     protected void doExecute() throws MojoExecutionException, MojoFailureException {
         verifyRequirements();
+        verifyExplicitDependencies();
 
         List<ArtifactItem> theArtifactItems = getProcessedArtifactItems(
                 new ProcessArtifactItemsRequest(stripVersion, prependGroupId, useBaseVersion, stripClassifier));

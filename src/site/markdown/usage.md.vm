@@ -38,7 +38,7 @@ This goal is meant to be bound to a lifecycle phase and configured in your `pom.
 
 The artifact version is optional. If not set, the plugin will attempt to resolve it from the project dependencies and then the dependencyManagement section.
 
-Set `requireExplicitDependencies` (`-Dmdep.requireExplicitDependencies=true`) to fail the build when an artifact item is not declared in the `dependencies` of the project, or is declared with another version. Maven orders the modules of a reactor build by the declared dependencies only, so an undeclared item built by another module can be missing or stale. The check does not apply to the `artifact` command line parameter.
+Set `requireExplicitDependencies` (`-Dmdep.requireExplicitDependencies=true`) to fail the build when an artifact item is not declared in the `dependencies` of the project, or is declared with another version. Maven orders the modules of a reactor build by the declared dependencies, not by plugin configuration, so an undeclared item built by another module can be missing or stale. A dependency of type `pom` with the same groupId, artifactId and version satisfies the check for any type and classifier, and keeps the artifact off the classpath, but then the artifact does not show in `dependency:tree` or in SBOMs either. The check does not apply when the goal is invoked from the command line, such as with `-Dartifact`.
 
 See the [Overwrite Rules](#Overwrite_Rules) section for rules about how overwriting is handled.
 
@@ -196,7 +196,7 @@ See the [Overwrite Rules](#Overwrite_Rules) section for rules about how overwrit
 
 The artifact version is optional. If not set, the plugin will attempt to resolve it from the project dependencies and then the dependencyManagement section.
 
-Set `requireExplicitDependencies` (`-Dmdep.requireExplicitDependencies=true`) to fail the build when an artifact item is not declared in the `dependencies` of the project, or is declared with another version. Maven orders the modules of a reactor build by the declared dependencies only, so an undeclared item built by another module can be missing or stale. The check does not apply to the `artifact` command line parameter.
+Set `requireExplicitDependencies` (`-Dmdep.requireExplicitDependencies=true`) to fail the build when an artifact item is not declared in the `dependencies` of the project, or is declared with another version. Maven orders the modules of a reactor build by the declared dependencies, not by plugin configuration, so an undeclared item built by another module can be missing or stale. A dependency of type `pom` with the same groupId, artifactId and version satisfies the check for any type and classifier, and keeps the artifact off the classpath, but then the artifact does not show in `dependency:tree` or in SBOMs either. The check does not apply when the goal is invoked from the command line, such as with `-Dartifact`.
 
 Configure the plugin something like this if you intend to bind it to execute along with your build:
 
