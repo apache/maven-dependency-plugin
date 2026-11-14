@@ -38,7 +38,7 @@
       <artifactId>get-classpath-lib-system</artifactId>
       <version>1.0</version>
       <scope>system</scope>
-      <systemPath>/nonexistent/get-classpath-lib-system.jar</systemPath>
+      <systemPath>${java.home}/nonexistent/get-classpath-lib-system.jar</systemPath>
     </dependency>
   </dependencies>
 
