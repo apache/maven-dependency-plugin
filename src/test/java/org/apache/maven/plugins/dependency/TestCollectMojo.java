@@ -26,15 +26,12 @@ import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.dependency.resolvers.CollectDependenciesMojo;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
-import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @MojoTest
@@ -99,15 +96,5 @@ class TestCollectMojo {
         assertEquals(directArtifacts.size(), results.getResolvedDependencies().size());
     }
 
-    @Test
-    @InjectMojo(goal = "collect")
-    void testSilent(CollectDependenciesMojo mojo) {
-        assertFalse(mojo.getLog() instanceof DependencySilentLog);
-
-        mojo.setSilent(true);
-        assertInstanceOf(DependencySilentLog.class, mojo.getLog());
-
-        mojo.setSilent(false);
-        assertFalse(mojo.getLog() instanceof DependencySilentLog);
-    } // TODO: Test skipping artifacts.
+    // TODO: Test skipping artifacts.
 }

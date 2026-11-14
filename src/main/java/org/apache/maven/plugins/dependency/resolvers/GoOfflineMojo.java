@@ -117,15 +117,15 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
                 org.eclipse.aether.artifact.Artifact artifact =
                         getResolverUtil().resolvePlugin(plugin);
 
-                logMessage("Resolved plugin: "
+                getLog().debug("Resolved plugin: "
                         + DependencyUtil.getFormattedFileName(RepositoryUtils.toArtifact(artifact), false));
                 if (!excludeTransitive) {
-                    logMessage("Resolved plugin dependency:");
+                    getLog().debug("Resolved plugin dependency:");
                     List<org.eclipse.aether.artifact.Artifact> artifacts =
                             getResolverUtil().resolveDependencies(plugin, getDependencyFilter());
                     for (org.eclipse.aether.artifact.Artifact a : artifacts) {
-                        logMessage(
-                                "      " + DependencyUtil.getFormattedFileName(RepositoryUtils.toArtifact(a), false));
+                        getLog().debug("      "
+                                + DependencyUtil.getFormattedFileName(RepositoryUtils.toArtifact(a), false));
                     }
                 }
             }
@@ -133,12 +133,12 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
             final List<org.eclipse.aether.artifact.Artifact> dependencies = resolveDependencyArtifacts();
 
             for (org.eclipse.aether.artifact.Artifact artifact : dependencies) {
-                logMessage("Resolved dependency: "
+                getLog().debug("Resolved dependency: "
                         + DependencyUtil.getFormattedFileName(RepositoryUtils.toArtifact(artifact), false));
             }
 
             for (org.eclipse.aether.artifact.Artifact artifact : resolveAnnotationProcessorPaths()) {
-                logMessage("Resolved annotation processor path: "
+                getLog().debug("Resolved annotation processor path: "
                         + DependencyUtil.getFormattedFileName(RepositoryUtils.toArtifact(artifact), false));
             }
 
@@ -155,14 +155,6 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
             return new ExcludeReactorProjectsDependencyFilter(session.getProjects());
         } else {
             return __ -> true;
-        }
-    }
-
-    private void logMessage(String message) {
-        if (isSilent()) {
-            getLog().debug(message);
-        } else {
-            getLog().info(message);
         }
     }
 
