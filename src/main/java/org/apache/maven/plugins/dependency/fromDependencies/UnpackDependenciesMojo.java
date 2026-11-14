@@ -116,10 +116,16 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
      * after all artifacts are processed, naming each path and the entries that target it. This also applies with
      * {@code overWriteFiles} set to {@code false}. The marker files are then not written, so a repeated execution
      * unpacks again.
+     * Names that differ only by case are found on file systems that ignore case, such as on macOS and Windows, and so
+     * are paths that reach the output directory through a symbolic link. Every jar delivers {@code META-INF/MANIFEST.MF},
+     * and often {@code module-info.class} and {@code META-INF/LICENSE} and {@code NOTICE}, so with
+     * {@code unpack-dependencies} use excludes such as {@code META-INF/**,module-info.class}.
      * <p>
      * Files that already exist in the output directory before the execution are not duplicates; use
      * {@code overWriteFiles} for those. Artifacts skipped because they are already unpacked (see the marker files)
-     * are not compared, and the option has no effect on single-file compression formats such as gzip.
+     * are not compared, and the option has no effect on single-file compression formats such as gzip. With the
+     * option set, a failed execution leaves none of its artifacts marked, as a repeated execution has to detect the
+     * duplicate again.
      * </p>
      *
      * @since 3.12.0

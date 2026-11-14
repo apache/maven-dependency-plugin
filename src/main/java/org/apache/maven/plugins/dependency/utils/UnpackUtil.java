@@ -23,8 +23,10 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
+import java.nio.file.Path;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -313,6 +315,8 @@ public class UnpackUtil {
             unArchiver.extract();
         } catch (NoSuchArchiverException e) {
             throw new MojoExecutionException("Unknown archiver type", e);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Cannot resolve the location to write unpacked files to: " + location, e);
         } catch (ArchiverException e) {
             throw new MojoExecutionException("Error unpacking file: " + file + " to: " + location, e);
         }
@@ -362,7 +366,7 @@ public class UnpackUtil {
      * mappers are applied here as well.
      */
     private static final class DuplicateFileSelector implements FileSelector {
-        private final File location;
+        private final Path location;
 
         private final FileMapper[] fileMappers;
 
@@ -370,8 +374,11 @@ public class UnpackUtil {
 
         private final String source;
 
-        DuplicateFileSelector(File location, FileMapper[] fileMappers, DuplicateTargetTracker tracker, String source) {
-            this.location = location;
+        DuplicateFileSelector(File location, FileMapper[] fileMappers, DuplicateTargetTracker tracker, String source)
+                throws IOException {
+            // The location exists by now. Its real path makes the same directory reached by different paths, such as
+            // through a symbolic link, give the same keys.
+            this.location = location.toPath().toRealPath();
             this.fileMappers = fileMappers;
             this.tracker = tracker;
             this.source = source;
@@ -383,7 +390,9 @@ public class UnpackUtil {
                 return true;
             }
             String name = fileInfo.getName();
-            return tracker.register(new File(location, mappedName(name, fileMappers)), source + " (" + name + ")");
+            File target =
+                    location.resolve(mappedName(name, fileMappers)).normalize().toFile();
+            return tracker.register(target, source + " (" + name + ")");
         }
     }
 
