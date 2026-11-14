@@ -63,6 +63,17 @@
               <outputFile>${project.build.directory}/project.properties</outputFile>
             </configuration>
           </execution>
+          <execution>
+            <id>test-2</id>
+            <goals>
+              <goal>write-project-properties</goal>
+            </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <!-- the version property set by dependency:properties above must be visible here -->
+              <outputFile>${project.build.directory}/interpolated-${org.apache.maven:maven-artifact:jar.version}.properties</outputFile>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>

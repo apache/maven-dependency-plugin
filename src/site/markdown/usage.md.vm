@@ -404,17 +404,13 @@ This is the same as the resolve goal except it resolves plugins and optionally t
 This goal resolves the same artifacts as calling `mvn dependency:resolve dependency:resolve-plugins`. In addition, it resolves the artifacts listed in the `annotationProcessorPaths` of the `maven-compiler-plugin`, which Maven 3 resolves only when it compiles. The paths are read from the plugin configuration and from each execution, and their transitive dependencies are resolved too (with the project's `dependencyManagement` when `annotationProcessorPathsUseDepMgmt` is `true`). The scope filters, such as `includeScope` and `excludeScope`, treat annotation processor paths as compile scope.
 
 `dependency:properties`
-----------------------
+------------------------
 
 This goal sets a project property for each project dependency (direct and transitive), named `<groupId>:<artifactId>:<type>[:<classifier>]`, that holds the absolute path of the resolved artifact file. It is bound to the `initialize` phase by default.
 
-Set `includeVersions` (user property `mdep.properties.includeVersions`) to also get a property with the resolved version, named like the path property plus a `.version` suffix. For a snapshot dependency the base version, for example `1.0-SNAPSHOT`, is used. To enable it from the command line:
+Set `includeVersions` (user property `mdep.properties.includeVersions`) to also get a property with the version of the resolved artifact, named like the path property plus a `.version` suffix. This includes transitive dependencies, and the version is set even for an artifact that has no file. For a snapshot dependency the base version, for example `1.0-SNAPSHOT`, is used. An artifact from `extraArtifacts` with the same key overrides the value of the project dependency. The suffix can only collide with another key if a type or classifier itself ends in `.version`.
 
-```
-mvn dependency:properties -Dmdep.properties.includeVersions=true
-```
-
-or in the `pom.xml`:
+Bind the goal in the `pom.xml` and let the user property switch the versions on:
 
 ```xml
 <plugin>
@@ -426,15 +422,12 @@ or in the `pom.xml`:
       <goals>
         <goal>properties</goal>
       </goals>
-      <configuration>
-        <includeVersions>true</includeVersions>
-      </configuration>
     </execution>
   </executions>
 </plugin>
 ```
 
-With this, `${org.slf4j:slf4j-api:jar.version}` resolves to the version Maven selected, for example `2.0.16`, in the configuration of plugins that run after this goal.
+Then run `mvn verify -Dmdep.properties.includeVersions=true`. A plugin that runs after the goal can read the property in its configuration, for example `#[[${org.slf4j:slf4j-api:jar.version}]]#` resolves to the version Maven selected, such as `2.0.16`. To always set the versions, put `<includeVersions>true</includeVersions>` in the `<configuration>` of the execution.
 
 `dependency:purge-local-repository`
 -----------------------------------

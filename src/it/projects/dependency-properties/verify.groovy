@@ -36,4 +36,12 @@ assert (new File( mavenArtifactPath )).isFile() : "maven-artifact jar is not a f
 assert "1.0".equals( props.getProperty( "org.apache.maven.its.dependency:unpack-fixture:jar.version" ) ) : "unpack-fixture version: " + props.getProperty( "org.apache.maven.its.dependency:unpack-fixture:jar.version" )
 assert "2.0.9".equals( props.getProperty( "org.apache.maven:maven-artifact:jar.version" ) ) : "maven-artifact version: " + props.getProperty( "org.apache.maven:maven-artifact:jar.version" )
 
+// transitive dependency of maven-artifact 2.0.9
+String plexusUtilsVersion = props.getProperty( "org.codehaus.plexus:plexus-utils:jar.version" )
+assert "1.5.1".equals( plexusUtilsVersion ) : "plexus-utils version: " + plexusUtilsVersion
+
+// the version property is visible to the configuration of a plugin running after the goal
+File interpolated = new File( basedir, "target/interpolated-2.0.9.properties" )
+assert interpolated.isFile() : "version property not interpolated into a later plugin configuration"
+
 return true;
