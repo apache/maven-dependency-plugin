@@ -831,23 +831,151 @@ class TestCopyMojo {
         assertTrue(new File(mojo.getOutputDirectory(), "leaf-1.0.jar").isFile());
     }
 
+    private static String dependencyXml(String artifactId, String version, String extra) {
+        return "<dependency><groupId>transitive-test</groupId><artifactId>" + artifactId + "</artifactId>" + "<version>"
+                + version + "</version>" + extra + "</dependency>";
+    }
+
+    private static ArtifactItem transitiveItem(String artifactId, String version) {
+        ArtifactItem item = new ArtifactItem();
+        item.setGroupId("transitive-test");
+        item.setArtifactId(artifactId);
+        item.setVersion(version);
+        return item;
+    }
+
+    private static List<String> copiedFiles(File outputDirectory) {
+        // files only: a directory created for an item's output path is not a copied artifact
+        String[] names = outputDirectory.list((dir, name) -> new File(dir, name).isFile());
+        List<String> files = names == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(names));
+        Collections.sort(files);
+        return files;
+    }
+
     @Test
     @InjectMojo(goal = "copy")
     @MojoParameter(name = "transitive", value = "true")
-    void testTransitiveRejectsMultipleArtifactItems(CopyMojo mojo) {
-        ArtifactItem first = new ArtifactItem();
-        first.setGroupId("transitive-test");
-        first.setArtifactId("root");
-        first.setVersion("1.0");
-        ArtifactItem second = new ArtifactItem();
-        second.setGroupId("transitive-test");
-        second.setArtifactId("leaf");
-        second.setVersion("1.0");
+    void testTransitiveMultipleItemsCopySharedDependencyOnce(CopyMojo mojo) throws Exception {
+        File repo = new File(tempDir, "transitive-multi-repo");
+        installRemoteArtifactWithPom(repo, "transitive-test", "shared", "1.0", null);
+        installRemoteArtifactWithPom(repo, "transitive-test", "shared", "2.0", null);
+        installRemoteArtifactWithPom(repo, "transitive-test", "first", "1.0", dependencyXml("shared", "1.0", ""));
+        installRemoteArtifactWithPom(repo, "transitive-test", "second", "1.0", dependencyXml("shared", "2.0", ""));
+
+        mojo.setArtifactItems(Arrays.asList(transitiveItem("first", "1.0"), transitiveItem("second", "1.0")));
+        mojo.setRemoteRepositories(Collections.singletonList("transitive-multi-repo::default::" + repo.toURI()));
+
+        mojo.execute();
+
+        // both shared versions are at the same depth, so the one reached through the first item wins
+        assertEquals(
+                Arrays.asList("first-1.0.jar", "second-1.0.jar", "shared-1.0.jar"),
+                copiedFiles(mojo.getOutputDirectory()));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "transitive", value = "true")
+    void testTransitiveMultipleItemsLeaveOutTestAndOptionalDependencies(CopyMojo mojo) throws Exception {
+        File repo = new File(tempDir, "transitive-scope-repo");
+        installRemoteArtifactWithPom(repo, "transitive-test", "runtime-dep", "1.0", null);
+        installRemoteArtifactWithPom(repo, "transitive-test", "test-dep", "1.0", null);
+        installRemoteArtifactWithPom(repo, "transitive-test", "optional-dep", "1.0", null);
+        installRemoteArtifactWithPom(
+                repo,
+                "transitive-test",
+                "first",
+                "1.0",
+                dependencyXml("runtime-dep", "1.0", "<scope>runtime</scope>")
+                        + dependencyXml("test-dep", "1.0", "<scope>test</scope>")
+                        + dependencyXml("optional-dep", "1.0", "<optional>true</optional>"));
+        installRemoteArtifactWithPom(repo, "transitive-test", "second", "1.0", null);
+
+        mojo.setArtifactItems(Arrays.asList(transitiveItem("first", "1.0"), transitiveItem("second", "1.0")));
+        mojo.setRemoteRepositories(Collections.singletonList("transitive-scope-repo::default::" + repo.toURI()));
+
+        mojo.execute();
+
+        assertEquals(
+                Arrays.asList("first-1.0.jar", "runtime-dep-1.0.jar", "second-1.0.jar"),
+                copiedFiles(mojo.getOutputDirectory()));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "transitive", value = "true")
+    void testTransitiveSingleItemKeepsItsOptionalDependencies(CopyMojo mojo) throws Exception {
+        File repo = new File(tempDir, "transitive-single-scope-repo");
+        installRemoteArtifactWithPom(repo, "transitive-test", "runtime-dep", "1.0", null);
+        installRemoteArtifactWithPom(repo, "transitive-test", "test-dep", "1.0", null);
+        installRemoteArtifactWithPom(repo, "transitive-test", "optional-dep", "1.0", null);
+        installRemoteArtifactWithPom(
+                repo,
+                "transitive-test",
+                "first",
+                "1.0",
+                dependencyXml("runtime-dep", "1.0", "<scope>runtime</scope>")
+                        + dependencyXml("test-dep", "1.0", "<scope>test</scope>")
+                        + dependencyXml("optional-dep", "1.0", "<optional>true</optional>"));
+
+        mojo.setArtifact("transitive-test:first:1.0");
+        mojo.setRemoteRepositories(Collections.singletonList("transitive-single-scope-repo::default::" + repo.toURI()));
+
+        mojo.execute();
+
+        // a single artifact is the root of the graph, as for dependency:get, so its optional dependencies stay in
+        assertEquals(
+                Arrays.asList("first-1.0.jar", "optional-dep-1.0.jar", "runtime-dep-1.0.jar"),
+                copiedFiles(mojo.getOutputDirectory()));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "transitive", value = "true")
+    void testTransitiveAcceptsTheSameItemTwiceAndEquivalentDirectories(CopyMojo mojo) throws Exception {
+        File repo = new File(tempDir, "transitive-twice-repo");
+        installRemoteArtifactWithPom(repo, "transitive-test", "first", "1.0", null);
+        mojo.setRemoteRepositories(Collections.singletonList("transitive-twice-repo::default::" + repo.toURI()));
+        ArtifactItem second = transitiveItem("first", "1.0");
+        second.setOutputDirectory(new File(new File(mojo.getOutputDirectory(), "sub"), ".."));
+        mojo.setArtifactItems(Arrays.asList(transitiveItem("first", "1.0"), second));
+
+        mojo.execute();
+
+        assertEquals(Collections.singletonList("first-1.0.jar"), copiedFiles(mojo.getOutputDirectory()));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "transitive", value = "true")
+    void testTransitiveRejectsDifferentOutputDirectories(CopyMojo mojo) throws Exception {
+        File repo = new File(tempDir, "transitive-dirs-repo");
+        installRemoteArtifactWithPom(repo, "transitive-test", "first", "1.0", null);
+        installRemoteArtifactWithPom(repo, "transitive-test", "second", "1.0", null);
+        mojo.setRemoteRepositories(Collections.singletonList("transitive-dirs-repo::default::" + repo.toURI()));
+        ArtifactItem first = transitiveItem("first", "1.0");
+        ArtifactItem second = transitiveItem("second", "1.0");
+        second.setOutputDirectory(new File(tempDir, "elsewhere"));
         mojo.setArtifactItems(Arrays.asList(first, second));
 
         MojoFailureException e = assertThrows(MojoFailureException.class, mojo::execute);
 
-        assertTrue(e.getMessage().contains("transitive"), e.getMessage());
+        assertTrue(e.getMessage().contains("outputDirectory"), e.getMessage());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "transitive", value = "true")
+    void testTransitiveRejectsOneArtifactInTwoVersions(CopyMojo mojo) throws Exception {
+        File repo = new File(tempDir, "transitive-versions-repo");
+        installRemoteArtifactWithPom(repo, "transitive-test", "first", "1.0", null);
+        installRemoteArtifactWithPom(repo, "transitive-test", "first", "2.0", null);
+        mojo.setRemoteRepositories(Collections.singletonList("transitive-versions-repo::default::" + repo.toURI()));
+        mojo.setArtifactItems(Arrays.asList(transitiveItem("first", "1.0"), transitiveItem("first", "2.0")));
+
+        MojoFailureException e = assertThrows(MojoFailureException.class, mojo::execute);
+
+        assertTrue(e.getMessage().contains("different versions"), e.getMessage());
     }
 
     @Test
