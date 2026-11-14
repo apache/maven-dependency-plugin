@@ -83,11 +83,26 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     private boolean stripClassifier = false;
 
     /**
-     * The prefix to prepend on each dependent artifact. If undefined, the paths refer to the actual files store in the
-     * local repository (the stripVersion parameter does nothing then).
+     * The prefix to prepend on each dependent artifact. If undefined, the paths refer to the actual files of the
+     * resolved artifacts: files in the local repository, or the build output (<code>target/classes</code> or the
+     * packaged file) for artifacts of modules in the same reactor. In that case the stripVersion, prependGroupId and
+     * useRepositoryLayout parameters do nothing.
+     * If defined, each path is the prefix followed by the artifact file name only (or by the
+     * repository layout path if {@link #useRepositoryLayout} is {@code true}), independent of where the artifact
+     * file actually is.
      */
     @Parameter(property = "mdep.prefix")
     private String prefix;
+
+    /**
+     * Only used together with {@link #prefix}. If {@code true}, each path is built in the layout of a Maven
+     * repository below the prefix, for example <code>prefix/junit/junit/3.8.1/junit-3.8.1.jar</code>, for every
+     * artifact including those of modules in the same reactor, whose files are in the build output directory.
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.useRepositoryLayout", defaultValue = "false")
+    private boolean useRepositoryLayout;
 
     /**
      * If defined, the name of a property to which the classpath string will be written.
@@ -288,6 +303,14 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
         } else {
             sb.append(prefix);
             sb.append(File.separator);
+            if (useRepositoryLayout) {
+                sb.append(artifact.getGroupId().replace('.', File.separatorChar))
+                        .append(File.separatorChar)
+                        .append(artifact.getArtifactId())
+                        .append(File.separatorChar)
+                        .append(artifact.getBaseVersion())
+                        .append(File.separatorChar);
+            }
             sb.append(DependencyUtil.getFormattedFileName(
                     artifact, this.stripVersion, this.prependGroupId, this.useBaseVersion, this.stripClassifier));
         }
