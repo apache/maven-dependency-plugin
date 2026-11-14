@@ -172,6 +172,69 @@ class TestBuildClasspathMojo {
         assertEquals("prefix" + File.separator + DependencyUtil.getFormattedFileName(artifact, true), sb.toString());
     }
 
+    private static String sep(String path) {
+        return path.replace("/", File.separator);
+    }
+
+    private String layoutPath(BuildClasspathMojo mojo, Artifact artifact) {
+        StringBuilder sb = new StringBuilder();
+        mojo.appendArtifactPath(artifact, sb);
+        return sb.toString();
+    }
+
+    @Test
+    @InjectMojo(goal = "build-classpath")
+    void testRepositoryLayoutWithClassifier(BuildClasspathMojo mojo) {
+        Artifact artifact = new DefaultArtifact(
+                "org.test", "lib", "1.0", null, "jar", "sources", new DefaultArtifactHandler("jar"));
+        artifact.setFile(new File(testDir, "module/target/classes"));
+
+        mojo.setPrefix("repository");
+        mojo.setUseRepositoryLayout(true);
+        assertEquals(sep("repository/org/test/lib/1.0/lib-1.0-sources.jar"), layoutPath(mojo, artifact));
+
+        // negative control: without the layout only the file name is used
+        mojo.setUseRepositoryLayout(false);
+        assertEquals(sep("repository/lib-1.0-sources.jar"), layoutPath(mojo, artifact));
+    }
+
+    @Test
+    @InjectMojo(goal = "build-classpath")
+    void testRepositoryLayoutUsesBaseVersionOfTimestampedSnapshot(BuildClasspathMojo mojo) {
+        Artifact artifact = new DefaultArtifact(
+                "org.test", "lib", "1.0-20260101.120000-1", null, "jar", "", new DefaultArtifactHandler("jar"));
+        artifact.setBaseVersion("1.0-SNAPSHOT");
+        artifact.setFile(new File(testDir, "lib.jar"));
+
+        mojo.setPrefix("repository");
+        mojo.setUseBaseVersion(false);
+        mojo.setUseRepositoryLayout(true);
+        assertEquals(sep("repository/org/test/lib/1.0-SNAPSHOT/lib-1.0-SNAPSHOT.jar"), layoutPath(mojo, artifact));
+
+        // negative control: without the layout useBaseVersion=false keeps the timestamp
+        mojo.setUseRepositoryLayout(false);
+        assertEquals(sep("repository/lib-1.0-20260101.120000-1.jar"), layoutPath(mojo, artifact));
+    }
+
+    @Test
+    @InjectMojo(goal = "build-classpath")
+    void testRepositoryLayoutIgnoresStripAndPrepend(BuildClasspathMojo mojo) {
+        Artifact artifact =
+                new DefaultArtifact("org.test", "lib", "1.0", null, "jar", "tests", new DefaultArtifactHandler("jar"));
+        artifact.setFile(new File(testDir, "lib.jar"));
+
+        mojo.setPrefix("repository");
+        mojo.setStripVersion(true);
+        mojo.setPrependGroupId(true);
+        mojo.setStripClassifier(true);
+        mojo.setUseRepositoryLayout(true);
+        assertEquals(sep("repository/org/test/lib/1.0/lib-1.0-tests.jar"), layoutPath(mojo, artifact));
+
+        // negative control: without the layout the same flags change the name
+        mojo.setUseRepositoryLayout(false);
+        assertEquals(sep("repository/org.test.lib.jar"), layoutPath(mojo, artifact));
+    }
+
     private Set<Artifact> getArtifacts() {
         Artifact artifact1 = new DefaultArtifact(
                 "testGroupId", "release1", "1.0", null, "jar", "", new DefaultArtifactHandler("jar"));

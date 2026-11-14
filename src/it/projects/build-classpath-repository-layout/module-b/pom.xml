@@ -71,6 +71,7 @@
             <configuration>
               <outputFile>${project.build.directory}/prefix-only.txt</outputFile>
               <prefix>repository</prefix>
+              <useRepositoryLayout>false</useRepositoryLayout>
             </configuration>
           </execution>
           <execution>
@@ -82,7 +83,10 @@
             <configuration>
               <outputFile>${project.build.directory}/layout.txt</outputFile>
               <prefix>repository</prefix>
-              <useRepositoryLayout>true</useRepositoryLayout>
+              <!-- useRepositoryLayout comes from -Dmdep.useRepositoryLayout=true in invoker.properties -->
+              <!-- ignored with the layout -->
+              <stripVersion>true</stripVersion>
+              <prependGroupId>true</prependGroupId>
               <pathSeparator>:</pathSeparator>
               <fileSeparator>/</fileSeparator>
             </configuration>
