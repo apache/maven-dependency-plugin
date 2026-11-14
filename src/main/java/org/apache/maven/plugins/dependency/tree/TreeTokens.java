@@ -24,8 +24,7 @@ import java.util.Map;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.SerializingDependencyNodeVisitor.GraphTokens;
+import org.apache.maven.plugins.dependency.tree.SerializingDependencyNodeVisitor.GraphTokens;
 
 /** Selects text tree tokens using Maven's optional execution-request output metadata. */
 final class TreeTokens {

@@ -106,10 +106,10 @@ class TestTreeMojo {
         capabilities.put("encoding", "UTF-8");
         session.getRequest().getData().put("maven.logging.outputCapabilities", capabilities);
 
-        DefaultDependencyNode root =
-                new DefaultDependencyNode(stubFactory.createArtifact("testGroupId", "project", "1.0"));
-        DefaultDependencyNode child =
-                new DefaultDependencyNode(stubFactory.createArtifact("testGroupId", "child", "1.0"));
+        Artifact rootArtifact = stubFactory.createArtifact("testGroupId", "project", "1.0");
+        Artifact childArtifact = stubFactory.createArtifact("testGroupId", "child", "1.0");
+        DependencyNode root = new DependencyNode(null, rootArtifact, rootArtifact.toString());
+        DependencyNode child = new DependencyNode(root, childArtifact, childArtifact.toString());
         child.setChildren(Collections.emptyList());
         root.setChildren(Collections.singletonList(child));
         StringWriter writer = new StringWriter();
@@ -122,12 +122,13 @@ class TestTreeMojo {
     void nonTextFormatsSkipCapabilityLookup() throws Exception {
         MavenSession unusedSession = mock(MavenSession.class);
         TreeMojo mojo = new TreeMojo(null, unusedSession, null, null);
-        String[] formats = {"dot", "graphml", "tgf", "json"};
+        String[] formats = {"dot", "graphml", "tgf", "json", "mermaid"};
         Class<?>[] visitors = {
             DOTDependencyNodeVisitor.class,
             GraphmlDependencyNodeVisitor.class,
             TGFDependencyNodeVisitor.class,
-            JsonDependencyNodeVisitor.class
+            JsonDependencyNodeVisitor.class,
+            MermaidDependencyNodeVisitor.class
         };
         for (int i = 0; i < formats.length; i++) {
             setVariableValueToObject(mojo, "outputType", formats[i]);
