@@ -173,6 +173,61 @@ public class UnpackUtil {
             FileMapper[] fileMappers,
             Log logger)
             throws MojoExecutionException {
+        unpack(
+                file,
+                type,
+                location,
+                includes,
+                excludes,
+                useDefaultExcludes,
+                overWriteFiles,
+                encoding,
+                ignorePermissions,
+                fileMappers,
+                null,
+                null,
+                logger);
+    }
+
+    /**
+     * @param file              file to unpack
+     * @param type              file / artifact type
+     * @param location          the location
+     * @param includes          includes list
+     * @param excludes          excludes list
+     * @param useDefaultExcludes whether the default excludes (such as {@code .svn} and {@code .git}) are applied
+     *                          when excludes are set
+     * @param overWriteFiles    {@code false} to keep every file that already exists in the location, whatever its
+     *                          timestamp; not applied to single-file compression formats such as gzip, whose
+     *                          unarchivers do not consult file selectors
+     * @param encoding          the encoding
+     * @param ignorePermissions ignore permissions
+     * @param fileMappers       {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
+     *                          rewriting shall happen
+     * @param duplicateTracker  if not {@code null}, every non-directory entry that is selected is registered here,
+     *                          and an entry whose target path was registered before is not extracted; the caller
+     *                          decides when to {@linkplain DuplicateTargetTracker#verify() fail}. Not applied to
+     *                          single-file compression formats such as gzip.
+     * @param source            describes the file in messages about duplicates; used with {@code duplicateTracker}
+     * @param logger            a Mojo logger
+     * @throws MojoExecutionException in case of an error
+     * @since 3.12.0
+     */
+    public void unpack(
+            File file,
+            String type,
+            File location,
+            String includes,
+            String excludes,
+            boolean useDefaultExcludes,
+            boolean overWriteFiles,
+            String encoding,
+            boolean ignorePermissions,
+            FileMapper[] fileMappers,
+            DuplicateTargetTracker duplicateTracker,
+            String source,
+            Log logger)
+            throws MojoExecutionException {
         try {
             logUnpack(logger, file, location, includes, excludes);
 
@@ -232,6 +287,15 @@ public class UnpackUtil {
                 fileSelectors = selectors;
             }
 
+            if (duplicateTracker != null) {
+                // Before the keep-existing selector, so that an entry is registered even when a file is kept.
+                FileSelector[] all = new FileSelector[fileSelectors.length + 1];
+                System.arraycopy(fileSelectors, 0, all, 0, fileSelectors.length);
+                all[fileSelectors.length] = new DuplicateFileSelector(
+                        location, fileMappers, duplicateTracker, source != null ? source : file.getName());
+                fileSelectors = all;
+            }
+
             if (!overWriteFiles) {
                 // plexus-archiver's own overwrite=false still replaces a file that is older than its entry, so keep
                 // existing files with a selector. It is AND-ed with the include/exclude selector.
@@ -283,6 +347,46 @@ public class UnpackUtil {
         }
     }
 
+    private static String mappedName(String name, FileMapper[] fileMappers) {
+        if (fileMappers != null) {
+            for (FileMapper fileMapper : fileMappers) {
+                name = fileMapper.getMappedFileName(name);
+            }
+        }
+        return name;
+    }
+
+    /**
+     * Registers every non-directory entry with its target, after the file mappers are applied, and rejects an entry
+     * whose target was registered before. The unarchiver asks selectors before it maps the entry name, so the
+     * mappers are applied here as well.
+     */
+    private static final class DuplicateFileSelector implements FileSelector {
+        private final File location;
+
+        private final FileMapper[] fileMappers;
+
+        private final DuplicateTargetTracker tracker;
+
+        private final String source;
+
+        DuplicateFileSelector(File location, FileMapper[] fileMappers, DuplicateTargetTracker tracker, String source) {
+            this.location = location;
+            this.fileMappers = fileMappers;
+            this.tracker = tracker;
+            this.source = source;
+        }
+
+        @Override
+        public boolean isSelected(FileInfo fileInfo) {
+            if (fileInfo.isDirectory()) {
+                return true;
+            }
+            String name = fileInfo.getName();
+            return tracker.register(new File(location, mappedName(name, fileMappers)), source + " (" + name + ")");
+        }
+    }
+
     /**
      * Rejects a non-directory entry whose target, after the file mappers are applied, already exists. The
      * unarchiver asks selectors before it maps the entry name, so the mappers are applied here as well.
@@ -305,13 +409,7 @@ public class UnpackUtil {
             if (fileInfo.isDirectory()) {
                 return true;
             }
-            String name = fileInfo.getName();
-            if (fileMappers != null) {
-                for (FileMapper fileMapper : fileMappers) {
-                    name = fileMapper.getMappedFileName(name);
-                }
-            }
-            File target = new File(location, name);
+            File target = new File(location, mappedName(fileInfo.getName(), fileMappers));
             if (Files.exists(target.toPath(), LinkOption.NOFOLLOW_LINKS)) {
                 logger.debug("Keeping existing file " + target);
                 return false;

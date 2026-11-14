@@ -101,6 +101,23 @@ the goal's value in either direction. It has no effect on single-file compressio
 This is a per-file rule. `overWriteReleases`, `overWriteSnapshots`, `overWriteIfNewer` and the `overWrite` of an
 `artifactItem` work per artifact: together with the marker files they decide whether an artifact is unpacked at all.
 
+<a id="failonduplicates"></a>
+
+### How do I make unpacking fail when two archives contain the same file?
+
+Set `failOnDuplicates` (user property `mdep.unpack.failOnDuplicates`) to `true` on `unpack` or `unpack-dependencies`.
+When several artifacts are unpacked into one directory, a file that two of them contain is otherwise silently replaced
+by the one unpacked last. With the option set, the build fails after all artifacts are processed and names each path
+with the entries that target it. The comparison is made after any `fileMappers` are applied, so it also finds entries
+that a mapper moves to the same path, and a second entry for one path within a single archive. Directories are not
+compared.
+
+Only the first entry for a path is written; later ones are skipped, also when `overWriteFiles` is `false`. The marker
+files are not written for a failed execution, so running it again unpacks again and fails again. Files that already
+exist in the output directory before the execution are not duplicates: use `overWriteFiles` to decide about those.
+Artifacts that are skipped because they are already unpacked are not compared, and the option has no effect on
+single-file compression formats such as gzip.
+
 <a id="unused"></a>
 
 ### Why does my dependency analysis report `Unused declared dependencies`?

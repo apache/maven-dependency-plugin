@@ -57,6 +57,8 @@ To unpack the artifacts, use the `dependency:unpack-dependencies` mojo and confi
               <overWriteSnapshots>true</overWriteSnapshots>
               <!-- per file: never replace a file that already exists -->
               <overWriteFiles>false</overWriteFiles>
+              <!-- fail if two entries are unpacked to the same path -->
+              <failOnDuplicates>true</failOnDuplicates>
             </configuration>
           </execution>
         </executions>

@@ -21,17 +21,21 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 import javax.inject.Inject;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
+import org.apache.maven.plugins.dependency.utils.DuplicateTargetTracker;
 import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.plugins.dependency.utils.UnpackUtil;
 import org.apache.maven.plugins.dependency.utils.filters.MarkerFileFilter;
@@ -106,6 +110,24 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
     private boolean overWriteFiles = true;
 
     /**
+     * Whether to fail when, within this execution, two entries are unpacked to the same path of the output directory:
+     * from two different artifacts, or twice from one archive. Paths are compared after the {@code fileMappers} have
+     * been applied; directories are not compared. The first entry is written, a later one is not, and the build fails
+     * after all artifacts are processed, naming each path and the entries that target it. This also applies with
+     * {@code overWriteFiles} set to {@code false}. The marker files are then not written, so a repeated execution
+     * unpacks again.
+     * <p>
+     * Files that already exist in the output directory before the execution are not duplicates; use
+     * {@code overWriteFiles} for those. Artifacts skipped because they are already unpacked (see the marker files)
+     * are not compared, and the option has no effect on single-file compression formats such as gzip.
+     * </p>
+     *
+     * @since 3.12.0
+     */
+    @Parameter(property = "mdep.unpack.failOnDuplicates", defaultValue = "false")
+    private boolean failOnDuplicates;
+
+    /**
      * Ignore to set file permissions when unpacking a dependency.
      *
      * @since 2.7
@@ -154,11 +176,15 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
      * DependencyUtil.unpackFile().
      *
      * @throws MojoExecutionException with a message if an error occurs
+     * @throws MojoFailureException if {@code failOnDuplicates} is set and several entries target the same path
      * @see #getDependencySets(boolean)
      */
     @Override
-    protected void doExecute() throws MojoExecutionException {
+    protected void doExecute() throws MojoExecutionException, MojoFailureException {
         DependencyStatusSets dss = getDependencySets(this.failOnMissingClassifierArtifact);
+
+        DuplicateTargetTracker tracker = failOnDuplicates ? new DuplicateTargetTracker() : null;
+        List<DefaultFileMarkerHandler> handlers = new ArrayList<>();
 
         for (Artifact artifact : dss.getResolvedDependencies()) {
             File destDir = DependencyUtil.getFormattedOutputDirectory(
@@ -181,9 +207,23 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
                     getEncoding(),
                     ignorePermissions,
                     getFileMappers(),
+                    tracker,
+                    artifact.getId(),
                     getLog());
             DefaultFileMarkerHandler handler = new DefaultFileMarkerHandler(artifact, this.markersDirectory);
-            handler.setMarker();
+            if (tracker == null) {
+                handler.setMarker();
+            } else {
+                // only mark as unpacked once it is known that no entry was skipped as a duplicate
+                handlers.add(handler);
+            }
+        }
+
+        if (tracker != null) {
+            tracker.verify();
+            for (DefaultFileMarkerHandler handler : handlers) {
+                handler.setMarker();
+            }
         }
 
         for (Artifact artifact : dss.getSkippedDependencies()) {
@@ -220,6 +260,14 @@ public class UnpackDependenciesMojo extends AbstractFromDependenciesMojo {
      */
     public void setOverWriteFiles(boolean overWriteFiles) {
         this.overWriteFiles = overWriteFiles;
+    }
+
+    /**
+     * @param failOnDuplicates whether to fail when several entries are unpacked to the same path
+     * @since 3.12.0
+     */
+    public void setFailOnDuplicates(boolean failOnDuplicates) {
+        this.failOnDuplicates = failOnDuplicates;
     }
 
     /**
