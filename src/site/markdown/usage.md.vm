@@ -785,7 +785,7 @@ mvn dependency:get -DgroupId=org.apache.maven -DartifactId=maven-core -Dversion=
 `dependency:get-classpath`
 -------------------------
 
-This goal resolves an artifact, given by its Maven coordinates, and its transitive runtime dependencies, and outputs the classpath string of the files in the local repository. It needs no project, so it works in any directory. Use it to get the classpath of an ad-hoc artifact for `java -cp`. The artifact comes first, followed by its dependencies in the order in which the resolver of the running Maven returns them, which may differ between Maven versions. Test, provided and optional dependencies are left out.
+This goal resolves an artifact, given by its Maven coordinates, and its transitive runtime dependencies, and outputs the classpath string of the files in the local repository. It needs no project, so it works in any directory. Use it to get the classpath of an ad-hoc artifact for `java -cp`. The artifact is resolved as for a project that depends on it, so the result can differ from `dependency:get -Dtransitive`. The artifact comes first, followed by its runtime dependencies. Test, provided, system and optional dependencies are left out. The versions and the order of the dependencies follow the dependency management rules of the running Maven, which differ between Maven versions.
 
 ```
 mvn dependency:get-classpath -Dartifact=org.apache.maven:maven-model:3.9.9
@@ -793,7 +793,7 @@ mvn dependency:get-classpath -Dartifact=org.apache.maven:maven-model:3.9.9 -Dmde
 mvn dependency:get-classpath -Dartifact=org.apache.maven:maven-model:3.9.9 -Dtransitive=false -DremoteRepositories=https://myrepo.com/maven2
 ```
 
-Without `mdep.outputFile` the classpath is logged at the INFO level. Use `-q` together with `mdep.outputFile` to keep the build output quiet. The separators and a path prefix can be changed with `mdep.pathSeparator`, `mdep.fileSeparator` and `mdep.prefix`, as for `dependency:build-classpath`.
+Without `mdep.outputFile` the classpath is logged at the INFO level. Use `-q` together with `mdep.outputFile` to keep the build output quiet. The separators and a path prefix can be changed with `mdep.pathSeparator`, `mdep.fileSeparator` and `mdep.prefix`, as for `dependency:build-classpath`. The file separator is applied to each path entry on its own.
 
 `dependency:analyze-exclusions`
 -------------------------------

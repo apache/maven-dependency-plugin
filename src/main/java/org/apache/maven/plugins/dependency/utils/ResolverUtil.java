@@ -76,7 +76,9 @@ import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResolutionException;
 import org.eclipse.aether.resolution.VersionRangeResult;
 import org.eclipse.aether.util.artifact.ArtifactIdUtils;
+import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.artifact.SubArtifact;
+import org.eclipse.aether.util.filter.DependencyFilterUtils;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 import org.eclipse.aether.version.Version;
 
@@ -310,8 +312,11 @@ public class ResolverUtil {
 
     /**
      * Resolve an artifact that is named by its coordinates alone, that is, without a project, and optionally its
-     * transitive dependencies, the way {@code dependency:get} does. The transitive dependencies are those of the
-     * runtime classpath: test and provided dependencies, and optional ones, are left out.
+     * transitive dependencies of the runtime classpath. The artifact is resolved as for a project that depends on
+     * it: its test and provided dependencies, its optional ones and its {@code system} ones are left out, and both
+     * the versions and the order of the dependencies follow the dependency management rules of the running Maven.
+     * The result can therefore differ from {@code dependency:get -Dtransitive}, which resolves the artifact as the
+     * root of the graph.
      *
      * @param artifact     an artifact to resolve
      * @param repositories remote repositories list
@@ -328,13 +333,43 @@ public class ResolverUtil {
             Artifact artifact, List<RemoteRepository> repositories, boolean transitive)
             throws ArtifactResolutionException, ArtifactDescriptorException, DependencyResolutionException {
         if (transitive) {
-            // The artifact is a direct dependency of a rootless request, so the session's selectors treat its own
-            // dependencies as transitive ones: test, provided and optional dependencies stay out.
-            CollectRequest collectRequest =
-                    new CollectRequest(Collections.singletonList(new Dependency(artifact, null)), null, repositories);
-            return resolveDependencies(collectRequest, null);
+            return resolveArtifactAndDependencies(
+                    artifact,
+                    repositories,
+                    DependencyFilterUtils.classpathFilter(JavaScopes.RUNTIME),
+                    mavenSessionProvider.get().getRepositorySession());
         }
         return Collections.singletonList(resolveArtifact(artifact, repositories));
+    }
+
+    /**
+     * Resolve an artifact and its transitive dependencies as for a project that depends on it, keeping the
+     * dependencies that the filter accepts.
+     *
+     * @param artifact         an artifact to resolve
+     * @param repositories     remote repositories list
+     * @param dependencyFilter dependency filter, or {@code null}; it is applied to the artifact itself as well
+     * @param session          a repository system session
+     * @return the resolved artifacts, the artifact itself first, as for
+     *         {@link #resolveArtifactAndDependencies(Artifact, List, boolean)}
+     * @throws DependencyResolutionException if the dependency tree could not be built or any dependency artifact could
+     *                                       not be resolved
+     */
+    public List<Artifact> resolveArtifactAndDependencies(
+            Artifact artifact,
+            List<RemoteRepository> repositories,
+            DependencyFilter dependencyFilter,
+            RepositorySystemSession session)
+            throws DependencyResolutionException {
+        // The artifact is a direct dependency of a rootless request, so the session's selectors treat its own
+        // dependencies as transitive ones: test, provided and optional dependencies stay out.
+        CollectRequest collectRequest =
+                new CollectRequest(Collections.singletonList(new Dependency(artifact, null)), null, repositories);
+        DependencyResult result =
+                repositorySystem.resolveDependencies(session, new DependencyRequest(collectRequest, dependencyFilter));
+        return result.getArtifactResults().stream()
+                .map(ArtifactResult::getArtifact)
+                .collect(Collectors.toList());
     }
 
     /**

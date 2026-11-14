@@ -33,6 +33,13 @@
       <artifactId>get-classpath-lib-leaf</artifactId>
       <version>1.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.its.dependency</groupId>
+      <artifactId>get-classpath-lib-system</artifactId>
+      <version>1.0</version>
+      <scope>system</scope>
+      <systemPath>/nonexistent/get-classpath-lib-system.jar</systemPath>
+    </dependency>
   </dependencies>
 
 </project>

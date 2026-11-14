@@ -33,12 +33,20 @@ String read( String name )
     return new String( Files.readAllBytes( file.toPath() ), StandardCharsets.UTF_8 );
 }
 
-// the artifact first, then its runtime dependencies in the order of the dependency graph; the test, provided
-// and optional dependencies of the artifact are not part of the classpath
-String expected = [ jar( "get-classpath-lib" ), jar( "get-classpath-lib-dep" ), jar( "get-classpath-lib-leaf" ) ]
+// The artifact is resolved as for a project that depends on it, in the order of the running Maven's resolver: the
+// artifact first, then its runtime dependencies. The test, provided and optional dependencies of the artifact and the
+// system dependency of its dependency are not part of the classpath. The artifact's own dependencyManagement,
+// which sets the version of the leaf to 2.0, is applied by Maven 4 only.
+String mavenVersion = new File( basedir, "build.log" ).readLines().find { it.startsWith( "Apache Maven " ) };
+assert mavenVersion != null : "No Maven version in build.log";
+String leafVersion = mavenVersion.startsWith( "Apache Maven 4" ) ? "2.0" : "1.0";
+
+String leaf = new File( localRepositoryPath,
+    "org/apache/maven/its/dependency/get-classpath-lib-leaf/" + leafVersion + "/get-classpath-lib-leaf-" + leafVersion + ".jar" ).getPath();
+String expected = [ jar( "get-classpath-lib" ), jar( "get-classpath-lib-dep" ), jar( "get-classpath-lib-runtime" ), leaf ]
     .join( File.pathSeparator );
 String actual = read( "classpath.txt" );
-assert actual.equals( expected ) : "Unexpected classpath: " + actual + ", expected: " + expected;
+assert actual.equals( expected ) : "Unexpected classpath: " + actual + ", expected: " + expected + " for " + mavenVersion;
 
 String noTransitive = read( "classpath-no-transitive.txt" );
 assert noTransitive.equals( jar( "get-classpath-lib" ) ) : "Unexpected classpath: " + noTransitive;

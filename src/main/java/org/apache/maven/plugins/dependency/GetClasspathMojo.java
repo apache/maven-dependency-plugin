@@ -53,10 +53,14 @@ import org.eclipse.aether.resolution.DependencyResolutionException;
  * <pre>
  * mvn dependency:get-classpath -Dartifact=org.apache.maven:maven-model:3.9.9 -Dmdep.outputFile=cp.txt
  * </pre>
- * The artifact itself comes first in the classpath, followed by its dependencies in the order in which the resolver
- * of the running Maven returns them, which may differ between Maven versions. Test and provided dependencies, and
- * optional ones, are not part of the classpath. As <code>dependency:get</code> does, this goal always checks the
- * central repository defined in the super POM. You could use a mirror entry in your <code>settings.xml</code>.
+ * The artifact is resolved as for a project that depends on it. The artifact comes first in the classpath, followed by
+ * its runtime dependencies. Test, provided, system and optional dependencies are not part of the classpath. Both the
+ * versions and the order of the dependencies follow the dependency management rules of the running Maven, which
+ * differ between Maven versions: Maven 3.9 and Maven 4 do not apply the artifact's own
+ * <code>dependencyManagement</code> alike. The result can therefore differ from
+ * <code>dependency:get -Dtransitive</code>, which resolves the artifact as the root of the graph. As
+ * <code>dependency:get</code> does, this goal always checks the central repository defined in the super POM. You
+ * could use a mirror entry in your <code>settings.xml</code>.
  *
  * @since 3.12.0
  */
@@ -75,6 +79,10 @@ public class GetClasspathMojo extends AbstractMojo {
      * <p>
      * The comma-separated form works both on the command line and as the text of a single
      * <code>&lt;remoteRepositories&gt;</code> element. In a POM the repositories may also be listed one per element.
+     * <p>
+     * Without this parameter the repositories of the current project are used, which, when run without a project, are
+     * the central repository of the super POM plus those of the active profiles of <code>settings.xml</code>. Only
+     * the repositories given by this parameter are checked for updates on every run.
      */
     @Parameter(property = "remoteRepositories")
     private List<String> remoteRepositories;
@@ -109,7 +117,7 @@ public class GetClasspathMojo extends AbstractMojo {
 
     /**
      * Override the char used between path folders. The default is the system-dependent file-separator character: '/'
-     * on UNIX systems, '\' on Microsoft Windows systems.
+     * on UNIX systems, '\' on Microsoft Windows systems. It is applied to each path entry on its own.
      */
     @Parameter(property = "mdep.fileSeparator", defaultValue = "")
     private String fileSeparator;
@@ -139,8 +147,8 @@ public class GetClasspathMojo extends AbstractMojo {
         }
 
         if (paramArtifact.getArtifact() == null) {
-            throw new MojoFailureException("You must specify an artifact, "
-                    + "e.g. -Dartifact=org.apache.maven.plugins:maven-downloader-plugin:1.0");
+            throw new MojoFailureException(
+                    "You must specify an artifact, " + "e.g. -Dartifact=org.apache.commons:commons-lang3:3.17.0");
         }
 
         List<Artifact> artifacts;
