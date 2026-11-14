@@ -32,4 +32,8 @@ String mavenArtifactPath = props.getProperty( "org.apache.maven:maven-artifact:j
 assert mavenArtifactPath != null : "org.apache.maven:maven-artifact:jar is null";
 assert (new File( mavenArtifactPath )).isFile() : "maven-artifact jar is not a file: " + mavenArtifactPath;
 
+// bound through the mdep.properties.includeVersions user property
+assert "1.0".equals( props.getProperty( "org.apache.maven.its.dependency:unpack-fixture:jar.version" ) ) : "unpack-fixture version: " + props.getProperty( "org.apache.maven.its.dependency:unpack-fixture:jar.version" )
+assert "2.0.9".equals( props.getProperty( "org.apache.maven:maven-artifact:jar.version" ) ) : "maven-artifact version: " + props.getProperty( "org.apache.maven:maven-artifact:jar.version" )
+
 return true;
