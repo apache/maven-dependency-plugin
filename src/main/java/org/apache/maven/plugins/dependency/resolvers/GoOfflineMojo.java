@@ -297,7 +297,10 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
      * Applies the artifact filters of this goal to the given dependencies. The original dependencies are returned,
      * not copies rebuilt from their coordinates, so their exclusions, optional flag and system path are kept.
      */
-    private List<Dependency> filterDependencies(Collection<Dependency> deps) throws ArtifactFilterException {
+    private List<Dependency> filterDependencies(Collection<Dependency> dependencies) throws ArtifactFilterException {
+        // Copy first: on Maven 4 the model's lists can hand out a new wrapper on every iteration, which would defeat
+        // the identity map below.
+        List<Dependency> deps = new ArrayList<>(dependencies);
         Map<Dependency, Artifact> artifacts = new IdentityHashMap<>();
         for (Dependency dep : deps) {
             artifacts.put(
