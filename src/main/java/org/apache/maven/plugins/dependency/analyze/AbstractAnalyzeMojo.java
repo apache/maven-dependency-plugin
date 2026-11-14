@@ -38,8 +38,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerException;
-import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 
 /**
@@ -271,18 +269,18 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private Set<String> excludedClasses;
 
     /**
-     * The plexusContainer to look up the {@link ProjectDependencyAnalyzer} implementation depending on the mojo
+     * The {@link ProjectDependencyAnalyzer} implementations by role hint, to select the one named by the mojo
      * configuration.
      */
-    private final PlexusContainer plexusContainer;
+    private final Map<String, ProjectDependencyAnalyzer> analyzers;
 
     /**
      * The Maven project to analyze.
      */
     private final MavenProject project;
 
-    protected AbstractAnalyzeMojo(PlexusContainer plexusContainer, MavenProject project) {
-        this.plexusContainer = plexusContainer;
+    protected AbstractAnalyzeMojo(Map<String, ProjectDependencyAnalyzer> analyzers, MavenProject project) {
+        this.analyzers = analyzers;
         this.project = project;
     }
 
@@ -326,12 +324,12 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
      */
     protected ProjectDependencyAnalyzer createProjectDependencyAnalyzer() throws MojoExecutionException {
 
-        try {
-            return plexusContainer.lookup(ProjectDependencyAnalyzer.class, analyzer);
-        } catch (ComponentLookupException exception) {
+        ProjectDependencyAnalyzer projectDependencyAnalyzer = analyzers.get(analyzer);
+        if (projectDependencyAnalyzer == null) {
             throw new MojoExecutionException(
-                    "Failed to instantiate ProjectDependencyAnalyser" + " / role-hint " + analyzer, exception);
+                    "Failed to instantiate ProjectDependencyAnalyser" + " / role-hint " + analyzer);
         }
+        return projectDependencyAnalyzer;
     }
 
     /**

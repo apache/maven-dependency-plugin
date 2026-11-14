@@ -34,7 +34,6 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
-import org.codehaus.plexus.PlexusContainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -90,14 +89,12 @@ class AbstractAnalyzeMojoTest {
         when(analyzer.analyze(any(MavenProject.class), any()))
                 .thenReturn(new ProjectDependencyAnalysis(
                         Collections.emptySet(), setOf(jodaTime, commonsIo), Collections.emptySet(), setOf(jodaTime)));
-        PlexusContainer container = mock(PlexusContainer.class);
-        when(container.lookup(ProjectDependencyAnalyzer.class, "default")).thenReturn(analyzer);
 
         MavenProject project = new MavenProject();
         project.setGroupId("org.example");
         project.setArtifactId("module-a");
         project.setPackaging("jar");
-        mojo = new AnalyzeOnlyMojo(container, project);
+        mojo = new AnalyzeOnlyMojo(Collections.singletonMap("default", analyzer), project);
         log = mock(Log.class);
         mojo.setLog(log);
         set(mojo, "analyzer", "default");
@@ -233,5 +230,14 @@ class AbstractAnalyzeMojoTest {
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoExecutionException.class)
                 .hasMessage("Cannot analyze dependencies");
+    }
+
+    @Test
+    void unknownAnalyzerFails() throws Exception {
+        set(mojo, "analyzer", "unknown");
+
+        assertThatThrownBy(mojo::execute)
+                .isInstanceOf(MojoExecutionException.class)
+                .hasMessage("Failed to instantiate ProjectDependencyAnalyser / role-hint unknown");
     }
 }
