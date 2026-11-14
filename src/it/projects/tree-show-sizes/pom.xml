@@ -25,13 +25,20 @@
   <artifactId>tree-show-sizes</artifactId>
   <version>1.0-SNAPSHOT</version>
   <description>
-    dependency:tree with showSizes resolves the artifacts and shows sizes and totals in text and json, ignoring them for dot.
+    dependency:tree with showSizes resolves the artifacts, measures a system dependency at its systemPath, and shows sizes and totals in text and json, ignoring them for dot.
   </description>
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.its.dependency</groupId>
       <artifactId>tree-sizes-root</artifactId>
       <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.its.dependency</groupId>
+      <artifactId>tree-sizes-system</artifactId>
+      <version>1.0</version>
+      <scope>system</scope>
+      <systemPath>${basedir}/lib/system.jar</systemPath>
     </dependency>
   </dependencies>
 </project>

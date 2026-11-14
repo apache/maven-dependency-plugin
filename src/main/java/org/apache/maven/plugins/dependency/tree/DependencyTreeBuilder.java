@@ -129,6 +129,7 @@ class DependencyTreeBuilder {
         DependencyNode current = new DependencyNode(
                 parent, artifact, verbose ? verboseNodeString(info, artifact) : nodeString(artifact));
         current.setVerboseInfo(info);
+        current.setResolution(node.getArtifact(), node.getRepositories());
 
         List<DependencyNode> children = new ArrayList<>(node.getChildren().size());
         for (org.eclipse.aether.graph.DependencyNode child : node.getChildren()) {

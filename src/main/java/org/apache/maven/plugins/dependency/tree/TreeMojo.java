@@ -28,14 +28,13 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
 import org.apache.maven.RepositoryUtils;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.execution.MavenSession;
@@ -46,7 +45,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.tree.SerializingDependencyNodeVisitor.GraphTokens;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
-import org.apache.maven.plugins.dependency.utils.ResolverUtil;
 import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
@@ -54,6 +52,8 @@ import org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilt
 import org.apache.maven.shared.artifact.filter.StrictPatternIncludesArtifactFilter;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.collection.DependencyCollectionException;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 
@@ -182,12 +182,19 @@ public class TreeMojo extends AbstractMojo {
     private List<String> excludes;
 
     /**
-     * Whether to show the size of the file of each artifact and, for an artifact with dependencies, the total size of
-     * the artifact and its dependencies. Showing sizes downloads the artifacts that are not in the local repository
-     * yet, which the goal does not do otherwise. In the total each distinct artifact of the subtree counts once, the
-     * nodes that <code>verbose</code> shows as omitted do not count, and an artifact that cannot be resolved counts as
-     * zero and is shown as <code>(size unknown)</code>. The total of the project, the root of the tree, is the size
-     * of all distinct dependencies. A size is shown with the units B, KB, MB, GB and TB, where 1 KB is 1024 bytes.
+     * Whether to show the size of the file of each artifact and, for an artifact that brings in others, its total.
+     * Showing sizes downloads the artifacts that are not in the local repository yet, which the goal does not do
+     * otherwise.
+     * <p>
+     * The total of a node is the size of all the distinct artifacts that the dependency brings in as Maven resolves
+     * them: its own artifact and those of its dependencies, transitively, each counted once, where distinct means a
+     * different <code>groupId:artifactId:type[:classifier]:version</code>. A dependency that Maven resolves once, below
+     * another node, counts for every node that depends on it, so the totals of two branches can overlap and the total
+     * of the project, which is the size of all distinct dependencies, is less than the sum of the totals of its
+     * dependencies. The totals are computed on the verbose tree even without <code>verbose</code>, and on the tree
+     * before <code>includes</code> and <code>excludes</code> filter it. An artifact that cannot be resolved is shown as
+     * <code>(size unknown)</code> and counts as zero. A size is shown with the units B, KB, MB, GB and TB, where 1 KB
+     * is 1024 bytes.
      * <p>
      * The sizes are shown for the output types <code>text</code>, as in
      * <code>+- org.foo:foo-all:jar:2.0:compile (200 KB, total 1.5 MB)</code>, and <code>json</code>, as the numbers
@@ -257,8 +264,22 @@ public class TreeMojo extends AbstractMojo {
                 rootNode = dependencyTreeBuilder.build(project, session.getRepositorySession(), artifactFilter);
             }
 
+            DependencyNode completeRoot = null;
+            if (showSizes) {
+                if (isSizesOutputType()) {
+                    // the totals of the plain tree count what a node brings in, also where Maven kept it elsewhere
+                    completeRoot = verbose
+                            ? rootNode
+                            : dependencyTreeBuilder.buildVerbose(
+                                    project, session.getRepositorySession(), artifactFilter);
+                } else {
+                    getLog().warn("showSizes is ignored for outputType " + outputType
+                            + ", it applies to text and json");
+                }
+            }
+
             boolean joinDotGraphs = outputFile != null && appendOutput && "dot".equals(outputType);
-            String dependencyTreeString = serializeDependencyTree(rootNode, !joinDotGraphs);
+            String dependencyTreeString = serializeDependencyTree(rootNode, completeRoot, !joinDotGraphs);
 
             if (outputFile != null) {
                 String encoding = Objects.toString(outputEncoding, "UTF-8");
@@ -339,16 +360,18 @@ public class TreeMojo extends AbstractMojo {
      * Serializes the specified dependency tree to a string.
      *
      * @param theRootNode the dependency tree root node to serialize
+     * @param completeRoot the verbose tree to compute the sizes on, or <code>null</code> to show no sizes
      * @return the serialized dependency tree
      */
-    private String serializeDependencyTree(DependencyNode theRootNode, boolean dotGraphEnvelope) {
+    private String serializeDependencyTree(
+            DependencyNode theRootNode, DependencyNode completeRoot, boolean dotGraphEnvelope) {
         StringWriter writer = new StringWriter();
 
         DependencyNode displayed =
                 theRootNode.filter(null, createExcludesDependencyNodeFilter(), createIncludesDependencyNodeFilter());
         if (displayed != null) {
-            if (showSizes) {
-                annotateSizes(displayed);
+            if (completeRoot != null) {
+                annotateSizes(displayed, completeRoot);
             }
             displayed.accept(
                     dotGraphEnvelope
@@ -360,56 +383,62 @@ public class TreeMojo extends AbstractMojo {
     }
 
     /**
-     * Resolves the artifacts of the tree, in one request, and sets their sizes on the nodes. An artifact that cannot
-     * be resolved, or whose file is not a regular file such as the classes directory of a module of the reactor, has
-     * an unknown size.
+     * Resolves the artifacts of the tree, in one request, and sets their sizes and totals on the displayed nodes. An
+     * artifact that cannot be resolved, or whose file is not a regular file such as the classes directory of a module
+     * of the reactor, has an unknown size. A dependency of scope <code>system</code> is measured at its
+     * <code>systemPath</code>.
      */
-    private void annotateSizes(DependencyNode displayed) {
-        if (!isSizesOutputType()) {
-            getLog().warn("showSizes is ignored for outputType " + outputType + ", it applies to text and json");
-            return;
-        }
-
-        Map<String, Artifact> artifacts = DependencySizes.artifacts(displayed);
+    private void annotateSizes(DependencyNode displayed, DependencyNode complete) {
+        Map<String, DependencyNode> nodes = DependencySizes.nodes(displayed, complete);
         Map<String, Long> sizes = new HashMap<>();
-        Map<String, org.eclipse.aether.artifact.Artifact> toResolve = new LinkedHashMap<>();
-        for (Map.Entry<String, Artifact> entry : artifacts.entrySet()) {
-            File file = entry.getValue().getFile();
+        List<ArtifactRequest> requests = new ArrayList<>();
+        Map<org.eclipse.aether.artifact.Artifact, String> keys = new IdentityHashMap<>();
+        for (Map.Entry<String, DependencyNode> entry : nodes.entrySet()) {
+            DependencyNode node = entry.getValue();
+            File file = DependencySizes.localFile(node);
             if (file != null) {
                 if (file.isFile()) {
                     sizes.put(entry.getKey(), file.length());
+                } else {
+                    getLog().debug("No size for " + node.getArtifact() + ", not a file: " + file);
                 }
             } else {
-                toResolve.put(entry.getKey(), RepositoryUtils.toArtifact(entry.getValue()));
+                org.eclipse.aether.artifact.Artifact artifact = node.getResolverArtifact() != null
+                        ? node.getResolverArtifact()
+                        : RepositoryUtils.toArtifact(node.getArtifact());
+                List<RemoteRepository> repositories = node.getRepositories().isEmpty()
+                        ? project.getRemoteProjectRepositories()
+                        : node.getRepositories();
+                requests.add(new ArtifactRequest(artifact, repositories, null));
+                keys.put(artifact, entry.getKey());
             }
         }
 
-        if (!toResolve.isEmpty()) {
-            List<String> keys = new ArrayList<>(toResolve.keySet());
+        if (!requests.isEmpty()) {
             List<ArtifactResult> results;
             try {
-                results = new ResolverUtil(repositorySystem, () -> session)
-                        .resolveArtifacts(toResolve.values(), project.getRemoteProjectRepositories());
+                results = repositorySystem.resolveArtifacts(session.getRepositorySession(), requests);
             } catch (ArtifactResolutionException e) {
                 results = e.getResults();
             }
-            for (int i = 0; i < results.size() && i < keys.size(); i++) {
-                File file = results.get(i).isResolved()
-                        ? results.get(i).getArtifact().getFile()
-                        : null;
-                if (file != null && file.isFile()) {
-                    sizes.put(keys.get(i), file.length());
+            for (ArtifactResult result : results) {
+                String key = keys.get(result.getRequest().getArtifact());
+                File file = result.isResolved() ? result.getArtifact().getFile() : null;
+                if (key != null && file != null && file.isFile()) {
+                    sizes.put(key, file.length());
+                } else {
+                    getLog().debug("No size for " + result.getRequest().getArtifact() + ": " + result.getExceptions());
                 }
             }
         }
 
-        int unknown = artifacts.size() - sizes.size();
+        int unknown = nodes.size() - sizes.size();
         if (unknown > 0) {
             getLog().warn("The size of " + unknown + (unknown > 1 ? " artifacts is" : " artifact is")
                     + " unknown, counted as zero in the totals");
         }
 
-        DependencySizes.annotate(displayed, sizes);
+        DependencySizes.annotate(displayed, complete, sizes);
     }
 
     private boolean isSizesOutputType() {

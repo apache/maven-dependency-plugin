@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.apache.maven.artifact.Artifact;
+import org.eclipse.aether.repository.RemoteRepository;
 
 /**
  * A node of the dependency tree displayed by the {@link TreeMojo}.
@@ -40,6 +41,12 @@ public class DependencyNode {
     private VerboseInfo verboseInfo;
 
     private boolean sized;
+
+    private boolean bringsOthers;
+
+    private org.eclipse.aether.artifact.Artifact resolverArtifact;
+
+    private List<RemoteRepository> repositories = Collections.emptyList();
 
     private Long size;
 
@@ -88,37 +95,58 @@ public class DependencyNode {
         this.verboseInfo = verboseInfo;
     }
 
-    /**
-     * @return whether the sizes were computed for this node, which they are for the nodes of the tree displayed by
-     *         <code>dependency:tree -DshowSizes</code> that are not omitted
-     * @since 3.12.0
-     */
-    public boolean hasSizes() {
+    boolean hasSizes() {
         return sized;
     }
 
     /**
      * @return the size in bytes of the file of the artifact, or <code>null</code> if it is not known, or for the root
      *         node, which is the project
-     * @since 3.12.0
      */
-    public Long getSize() {
+    Long getSize() {
         return size;
     }
 
     /**
-     * @return the size in bytes of the distinct artifacts of this node and its descendants, those of unknown size
+     * @return the size in bytes of the distinct artifacts this node brings in, itself included, those of unknown size
      *         counted as zero
-     * @since 3.12.0
      */
-    public long getTotalSize() {
+    long getTotalSize() {
         return totalSize;
     }
 
-    void setSizes(Long size, long totalSize) {
+    /**
+     * @return whether the node brings in artifacts other than its own
+     */
+    boolean bringsOthers() {
+        return bringsOthers;
+    }
+
+    void setSizes(Long size, long totalSize, boolean bringsOthers) {
         this.sized = true;
         this.size = size;
         this.totalSize = totalSize;
+        this.bringsOthers = bringsOthers;
+    }
+
+    /**
+     * @return the artifact of the resolver graph, which keeps the <code>systemPath</code> of a dependency of scope
+     *         <code>system</code>, or <code>null</code>
+     */
+    org.eclipse.aether.artifact.Artifact getResolverArtifact() {
+        return resolverArtifact;
+    }
+
+    /**
+     * @return the repositories the artifact can be resolved from, empty if not known
+     */
+    List<RemoteRepository> getRepositories() {
+        return repositories;
+    }
+
+    void setResolution(org.eclipse.aether.artifact.Artifact resolverArtifact, List<RemoteRepository> repositories) {
+        this.resolverArtifact = resolverArtifact;
+        this.repositories = repositories == null ? Collections.<RemoteRepository>emptyList() : repositories;
     }
 
     /**
@@ -162,6 +190,7 @@ public class DependencyNode {
 
         DependencyNode copy = new DependencyNode(newParent, artifact, nodeString);
         copy.setVerboseInfo(verboseInfo);
+        copy.setResolution(resolverArtifact, repositories);
         List<DependencyNode> copiedChildren = new ArrayList<>(children.size());
         for (DependencyNode child : children) {
             DependencyNode copiedChild = child.filter(copy, keep, include);

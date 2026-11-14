@@ -29,22 +29,26 @@ def jarSize = { String artifactId ->
 }
 long leaf = jarSize("tree-sizes-leaf")
 long root = jarSize("tree-sizes-root")
-long total = leaf + root
+long system = new File(basedir, "lib/system.jar").length()
+assertThat(system).isEqualTo(100L)
+long total = leaf + root + system
 // the sizes are formatted as bytes below 1 KB
 assertThat(total).isLessThan(1024L)
 
 assertThat(new File(basedir, "target/tree.txt").readLines()).containsExactly(
         "org.apache.maven.plugins.dependency.its:tree-show-sizes:jar:1.0-SNAPSHOT (total ${total} B)".toString(),
-        "\\- org.apache.maven.its.dependency:tree-sizes-root:jar:1.0:compile (${root} B, total ${total} B)".toString(),
-        "   +- org.apache.maven.its.dependency:tree-sizes-leaf:jar:1.0:compile (${leaf} B)".toString(),
-        "   \\- org.apache.maven.its.dependency:tree-sizes-gone:jar:1.0:compile (size unknown)")
+        "+- org.apache.maven.its.dependency:tree-sizes-root:jar:1.0:compile (${root} B, total ${root + leaf} B)".toString(),
+        "|  +- org.apache.maven.its.dependency:tree-sizes-leaf:jar:1.0:compile (${leaf} B)".toString(),
+        "|  \\- org.apache.maven.its.dependency:tree-sizes-gone:jar:1.0:compile (size unknown)",
+        "\\- org.apache.maven.its.dependency:tree-sizes-system:jar:1.0:system (${system} B)".toString())
 
 def json = new JsonSlurper().parse(new File(basedir, "target/tree.json"))
 assertThat(json).doesNotContainKey("size")
 assertThat(json.totalSize).isEqualTo(total)
 def node = json.children[0]
 assertThat(node.size).isEqualTo(root)
-assertThat(node.totalSize).isEqualTo(total)
+assertThat(node.totalSize).isEqualTo(root + leaf)
+assertThat(json.children[1].size).isEqualTo(system)
 assertThat(node.children[0].size).isEqualTo(leaf)
 assertThat(node.children[0].totalSize).isEqualTo(leaf)
 assertThat(node.children[1]).doesNotContainKey("size")

@@ -18,7 +18,10 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +31,9 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.plugins.dependency.tree.DependencyNode.VerboseInfo;
+import org.eclipse.aether.artifact.ArtifactProperties;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,84 +41,120 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DependencySizesTest {
+    // the verbose tree Maven collects; sizes in brackets
     //   root
-    //   +- a (1000)
-    //   |  +- shared (100)
-    //   |  \- a2 (10)
-    //   \- b (2000)
-    //      +- shared (100)
-    //      \- (shared2 omitted for duplicate, 5000)
-    private final DependencyNode root = node(null, "root");
-    private final DependencyNode a = node(root, "a");
-    private final DependencyNode aShared = node(a, "shared");
-    private final DependencyNode a2 = node(a, "a2");
-    private final DependencyNode b = node(root, "b");
-    private final DependencyNode bShared = node(b, "shared");
-    private final DependencyNode omitted = node(b, "omitted");
+    //   +- a:1.0 [1000]
+    //   |  +- shared:1.0 [100]
+    //   |  |  \- deep:1.0 [5]
+    //   |  +- a2:1.0 [10]
+    //   |  \- lib:1.0 [50]
+    //   \- b:1.0 [2000]
+    //      +- (shared:1.0, omitted for duplicate)
+    //      \- (lib:2.0 [999], omitted for conflict with 1.0)
+    private final DependencyNode root = node(null, "root", "1.0");
+    private final DependencyNode a = node(root, "a", "1.0");
+    private final DependencyNode shared = node(a, "shared", "1.0");
+    private final DependencyNode deep = node(shared, "deep", "1.0");
+    private final DependencyNode a2 = node(a, "a2", "1.0");
+    private final DependencyNode lib = node(a, "lib", "1.0");
+    private final DependencyNode b = node(root, "b", "1.0");
+    private final DependencyNode sharedAgain = node(b, "shared", "1.0");
+    private final DependencyNode libLoser = node(b, "lib", "2.0");
 
     private final Map<String, Long> sizes = new HashMap<>();
 
     DependencySizesTest() {
         root.setChildren(Arrays.asList(a, b));
-        a.setChildren(Arrays.asList(aShared, a2));
-        b.setChildren(Arrays.asList(bShared, omitted));
-        omitted.setVerboseInfo(new VerboseInfo(VerboseInfo.OMITTED_FOR_DUPLICATE, "1.0", null, null, null));
-        sizes.put(DependencySizes.key(a.getArtifact()), 1000L);
-        sizes.put(DependencySizes.key(aShared.getArtifact()), 100L);
-        sizes.put(DependencySizes.key(a2.getArtifact()), 10L);
-        sizes.put(DependencySizes.key(b.getArtifact()), 2000L);
-        sizes.put(DependencySizes.key(omitted.getArtifact()), 5000L);
+        a.setChildren(Arrays.asList(shared, a2, lib));
+        shared.setChildren(Arrays.asList(deep));
+        b.setChildren(Arrays.asList(sharedAgain, libLoser));
+        sharedAgain.setVerboseInfo(new VerboseInfo(VerboseInfo.OMITTED_FOR_DUPLICATE, "1.0", null, null, null));
+        libLoser.setVerboseInfo(new VerboseInfo(VerboseInfo.OMITTED_FOR_CONFLICT, "1.0", null, null, null));
+        size(a, 1000);
+        size(shared, 100);
+        size(deep, 5);
+        size(a2, 10);
+        size(lib, 50);
+        size(b, 2000);
+        size(libLoser, 999);
+    }
+
+    /** The tree as Maven resolves it, without the omitted nodes. */
+    private DependencyNode plain() {
+        return root.filter(
+                null, n -> n.getVerboseInfo() == null || n.getVerboseInfo().isIncluded(), null);
     }
 
     @Test
-    void totalIsOwnSizePlusDescendants() {
-        DependencySizes.annotate(root, sizes);
+    void totalCountsWhatTheDependencyBringsInAlsoWhereMavenKeptItElsewhere() {
+        DependencyNode plain = plain();
+        DependencySizes.annotate(plain, root, sizes);
 
-        assertEquals(Long.valueOf(1000), a.getSize());
-        assertEquals(1110, a.getTotalSize());
-        assertEquals(Long.valueOf(10), a2.getSize());
-        assertEquals(10, a2.getTotalSize());
-        assertEquals(2100, b.getTotalSize());
+        DependencyNode plainA = plain.getChildren().get(0);
+        DependencyNode plainB = plain.getChildren().get(1);
+        assertEquals(1000 + 100 + 5 + 10 + 50, plainA.getTotalSize());
+        // b keeps no child in the plain tree, but depends on shared (with deep) and on lib 1.0
+        assertTrue(plainB.getChildren().isEmpty());
+        assertEquals(2000 + 100 + 5 + 50, plainB.getTotalSize());
+        assertEquals(Long.valueOf(2000), plainB.getSize());
+        // shared counts once for the project, the omitted lib 2.0 not at all
+        assertEquals(1000 + 100 + 5 + 10 + 50 + 2000, plain.getTotalSize());
+        assertNull(plain.getSize());
     }
 
     @Test
-    void artifactOccurringTwiceInASubtreeCountsOnce() {
-        // the same artifact below a and below b, counted once in the total of the root and once in each branch
-        DependencySizes.annotate(root, sizes);
+    void sameTotalsInTheVerboseTree() {
+        DependencySizes.annotate(root, root, sizes);
 
-        assertEquals(1000 + 100 + 10 + 2000, root.getTotalSize());
-        assertNull(root.getSize());
+        assertEquals(1165, a.getTotalSize());
+        assertEquals(2155, b.getTotalSize());
+        assertEquals(105, shared.getTotalSize());
+        assertEquals(3165, root.getTotalSize());
+        assertEquals(Long.valueOf(100), shared.getSize());
     }
 
     @Test
-    void omittedNodeContributesNothingAndGetsNoSizes() {
-        DependencySizes.annotate(root, sizes);
+    void omittedNodeShowsNoSizeAndTheOmittedVersionDoesNotCount() {
+        DependencySizes.annotate(root, root, sizes);
 
-        assertFalse(omitted.hasSizes());
-        assertEquals("", DependencySizes.describe(omitted));
-        assertFalse(DependencySizes.artifacts(root).containsKey(DependencySizes.key(omitted.getArtifact())));
-        assertEquals(2100, b.getTotalSize());
+        assertFalse(sharedAgain.hasSizes());
+        assertFalse(libLoser.hasSizes());
+        assertEquals("", DependencySizes.describe(libLoser));
+        assertFalse(DependencySizes.nodes(root, root).containsKey(DependencySizes.key(libLoser.getArtifact())));
     }
 
     @Test
     void unknownSizeIsReportedAndCountsAsZero() {
-        sizes.remove(DependencySizes.key(a.getArtifact()));
+        sizes.remove(DependencySizes.key(a2.getArtifact()));
+        sizes.remove(DependencySizes.key(b.getArtifact()));
 
-        DependencySizes.annotate(root, sizes);
+        DependencyNode plain = plain();
+        DependencySizes.annotate(plain, root, sizes);
 
-        assertNull(a.getSize());
-        assertEquals(110, a.getTotalSize());
-        assertEquals(" (size unknown, total 110 B)", DependencySizes.describe(a));
-        assertEquals(" (10 B)", DependencySizes.describe(a2));
+        assertEquals(
+                " (1000 B, total 1.1 KB)",
+                DependencySizes.describe(plain.getChildren().get(0)));
+        DependencyNode plainB = plain.getChildren().get(1);
+        assertNull(plainB.getSize());
+        assertEquals(155, plainB.getTotalSize());
+        assertEquals(" (size unknown, total 155 B)", DependencySizes.describe(plainB));
     }
 
     @Test
-    void leafShowsOnlyItsSizeAndParentsShowTotal() {
-        DependencySizes.annotate(root, sizes);
+    void leafShowsOnlyItsSizeAndAnArtifactThatBringsInOthersShowsTotal() {
+        DependencyNode plain = plain();
+        DependencySizes.annotate(plain, root, sizes);
 
-        assertEquals(" (10 B)", DependencySizes.describe(a2));
-        assertEquals(" (1000 B, total 1.1 KB)", DependencySizes.describe(a));
-        assertEquals(" (total 3 KB)", DependencySizes.describe(root));
+        DependencyNode plainA = plain.getChildren().get(0);
+        assertEquals(" (10 B)", DependencySizes.describe(plainA.getChildren().get(1)));
+        assertEquals(
+                " (100 B, total 105 B)",
+                DependencySizes.describe(plainA.getChildren().get(0)));
+        // b has no child to show in the plain tree, still it brings in others
+        assertEquals(
+                " (2 KB, total 2.1 KB)",
+                DependencySizes.describe(plain.getChildren().get(1)));
+        assertEquals(" (total 3.1 KB)", DependencySizes.describe(plain));
     }
 
     @Test
@@ -124,25 +165,27 @@ class DependencySizesTest {
 
     @Test
     void collectsDistinctArtifactsExceptRootAndOmitted() {
-        Map<String, Artifact> artifacts = DependencySizes.artifacts(root);
+        Map<String, DependencyNode> nodes = DependencySizes.nodes(plain(), root);
 
-        assertEquals(4, artifacts.size());
-        assertTrue(artifacts.containsKey(DependencySizes.key(aShared.getArtifact())));
-        assertFalse(artifacts.containsKey(DependencySizes.key(root.getArtifact())));
+        assertEquals(6, nodes.size());
+        assertTrue(nodes.containsKey(DependencySizes.key(deep.getArtifact())));
+        assertFalse(nodes.containsKey(DependencySizes.key(root.getArtifact())));
+        assertFalse(nodes.containsKey(DependencySizes.key(libLoser.getArtifact())));
     }
 
     @Test
     void textOutputAppendsSizes() {
-        DependencySizes.annotate(root, sizes);
+        DependencyNode plain = plain();
+        DependencySizes.annotate(plain, root, sizes);
         StringWriter writer = new StringWriter();
-        root.accept(new SerializingDependencyNodeVisitor(writer, SerializingDependencyNodeVisitor.STANDARD_TOKENS));
+        plain.accept(new SerializingDependencyNodeVisitor(writer, SerializingDependencyNodeVisitor.STANDARD_TOKENS));
 
         List<String> lines = Arrays.asList(writer.toString().split("\\R"));
-        assertEquals("root (total 3 KB)", lines.get(0));
+        assertEquals("root (total 3.1 KB)", lines.get(0));
         assertEquals("+- a (1000 B, total 1.1 KB)", lines.get(1));
-        assertEquals("|  +- shared (100 B)", lines.get(2));
-        assertEquals("\\- b (2 KB, total 2.1 KB)", lines.get(4));
-        assertEquals("   \\- omitted", lines.get(6));
+        assertEquals("|  +- shared (100 B, total 105 B)", lines.get(2));
+        assertEquals("|  |  \\- deep (5 B)", lines.get(3));
+        assertEquals("\\- b (2 KB, total 2.1 KB)", lines.get(6));
     }
 
     @Test
@@ -167,20 +210,38 @@ class DependencySizesTest {
 
         // a2 has an unknown size: totalSize only
         sizes.remove(DependencySizes.key(a2.getArtifact()));
-        DependencySizes.annotate(root, sizes);
+        DependencySizes.annotate(root, root, sizes);
         StringWriter withSizes = new StringWriter();
         root.accept(new JsonDependencyNodeVisitor(withSizes));
         String json = withSizes.toString();
         assertTrue(json.contains("\"size\": 1000,"));
-        assertTrue(json.contains("\"totalSize\": 1100"));
+        assertTrue(json.contains("\"totalSize\": 1155"));
         assertTrue(json.contains("\"totalSize\": 0"));
         assertFalse(json.contains("\"size\": 10,"));
-        assertFalse(json.contains("\"size\": 10\n"));
     }
 
-    private static DependencyNode node(DependencyNode parent, String artifactId) {
+    @Test
+    void systemScopeUsesTheSystemPathNotTheResolver(@TempDir File dir) throws IOException {
+        File jar = new File(dir, "system.jar");
+        Files.write(jar.toPath(), new byte[123]);
+        DependencyNode system = node(root, "system", "1.0");
+        system.setResolution(
+                new org.eclipse.aether.artifact.DefaultArtifact("g:system:jar:1.0")
+                        .setProperties(java.util.Collections.singletonMap(
+                                ArtifactProperties.LOCAL_PATH, jar.getAbsolutePath())),
+                null);
+
+        assertEquals(jar, DependencySizes.localFile(system));
+        assertNull(DependencySizes.localFile(a));
+    }
+
+    private void size(DependencyNode node, long bytes) {
+        sizes.put(DependencySizes.key(node.getArtifact()), bytes);
+    }
+
+    private static DependencyNode node(DependencyNode parent, String artifactId, String version) {
         Artifact artifact = new DefaultArtifact(
-                "g", artifactId, "1.0", Artifact.SCOPE_COMPILE, "jar", null, new DefaultArtifactHandler("jar"));
+                "g", artifactId, version, Artifact.SCOPE_COMPILE, "jar", null, new DefaultArtifactHandler("jar"));
         return new DependencyNode(parent, artifact, artifactId);
     }
 }

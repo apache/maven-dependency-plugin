@@ -18,21 +18,31 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.eclipse.aether.artifact.ArtifactProperties;
 
 /**
  * Computes and formats the sizes shown by <code>dependency:tree -DshowSizes</code>.
  * <p>
  * The size of a node is the length of the file of its artifact. The total of a node is the sum of the sizes of the
- * distinct artifacts in its subtree: the artifact of the node itself and the artifacts of all its descendants, each
- * counted once even when it occurs several times in the subtree. Nodes that the verbose tree marks as omitted are
- * neither shown with a size nor counted, so the totals are the same with and without <code>-Dverbose</code>. An
- * artifact without a known size counts as zero. The project itself, the root of the tree, has no size of its own and
- * its total is the sum over all its dependencies.
+ * distinct artifacts that the dependency brings in as Maven resolves them: its own artifact and the artifacts of all
+ * its dependencies, transitively, each counted once. Distinct means a different
+ * <code>groupId:artifactId:type[:classifier]:version</code>. A dependency that Maven resolves once, below another
+ * node, still counts for every node that depends on it: the totals are computed on the verbose tree, where a node
+ * that is omitted for being a duplicate, or for losing to another version, stands for the node that Maven kept, and
+ * adds the artifacts of that node and of its dependencies. The omitted version itself does not count. An artifact
+ * without a known size counts as zero. The project, the root of the tree, has no size of its own and its total is
+ * the sum over all its dependencies.
  */
 final class DependencySizes {
     private static final String[] UNITS = {"B", "KB", "MB", "GB", "TB"};
@@ -40,65 +50,136 @@ final class DependencySizes {
     private DependencySizes() {}
 
     /**
-     * Collects the distinct artifacts whose size is needed: those of the nodes below the root that are not omitted.
+     * Collects the nodes whose size is needed, one per distinct artifact: those of the trees below the roots that are
+     * not omitted.
      *
-     * @param root the root of the displayed tree
-     * @return the artifacts by {@link #key(Artifact)}, in tree order
+     * @param displayed the root of the displayed tree
+     * @param complete the root of the verbose tree the totals are computed on
+     * @return the nodes by {@link #key(Artifact)}, in tree order
      */
-    static Map<String, Artifact> artifacts(DependencyNode root) {
-        Map<String, Artifact> artifacts = new LinkedHashMap<>();
-        for (DependencyNode child : root.getChildren()) {
-            collect(child, artifacts);
+    static Map<String, DependencyNode> nodes(DependencyNode displayed, DependencyNode complete) {
+        Map<String, DependencyNode> nodes = new LinkedHashMap<>();
+        for (DependencyNode child : complete.getChildren()) {
+            collect(child, nodes);
         }
-        return artifacts;
+        for (DependencyNode child : displayed.getChildren()) {
+            collect(child, nodes);
+        }
+        return nodes;
     }
 
-    private static void collect(DependencyNode node, Map<String, Artifact> artifacts) {
+    private static void collect(DependencyNode node, Map<String, DependencyNode> nodes) {
         if (!isIncluded(node)) {
             return;
         }
-        artifacts.putIfAbsent(key(node.getArtifact()), node.getArtifact());
+        nodes.putIfAbsent(key(node.getArtifact()), node);
         for (DependencyNode child : node.getChildren()) {
-            collect(child, artifacts);
+            collect(child, nodes);
         }
     }
 
     /**
-     * Sets the size and the total on every node of the tree that is not omitted.
+     * Sets the size and the total on every node of the displayed tree that is not omitted.
      *
-     * @param root the root of the displayed tree
+     * @param displayed the root of the displayed tree
+     * @param complete the root of the verbose tree, as collected, that the totals are computed on
      * @param fileSizes the size in bytes of the artifacts by {@link #key(Artifact)}; an artifact that is not in the
      *            map has an unknown size
      */
-    static void annotate(DependencyNode root, Map<String, Long> fileSizes) {
-        annotate(root, fileSizes, true);
+    static void annotate(DependencyNode displayed, DependencyNode complete, Map<String, Long> fileSizes) {
+        Totals totals = new Totals(complete);
+        Set<String> all = new LinkedHashSet<>();
+        for (DependencyNode child : complete.getChildren()) {
+            all.addAll(totals.brought(child));
+        }
+        displayed.setSizes(null, sum(all, fileSizes), true);
+        for (DependencyNode child : displayed.getChildren()) {
+            annotateDisplayed(child, totals, fileSizes);
+        }
+    }
+
+    private static void annotateDisplayed(DependencyNode node, Totals totals, Map<String, Long> fileSizes) {
+        if (!isIncluded(node)) {
+            return;
+        }
+        Set<String> brought = totals.brought(node);
+        node.setSizes(fileSizes.get(key(node.getArtifact())), sum(brought, fileSizes), brought.size() > 1);
+        for (DependencyNode child : node.getChildren()) {
+            annotateDisplayed(child, totals, fileSizes);
+        }
+    }
+
+    private static long sum(Set<String> keys, Map<String, Long> fileSizes) {
+        long total = 0;
+        for (String key : keys) {
+            Long size = fileSizes.get(key);
+            if (size != null) {
+                total += size;
+            }
+        }
+        return total;
     }
 
     /**
-     * @return the distinct artifacts of the subtree with their sizes, those of unknown size left out
+     * The artifacts that the nodes of the verbose tree bring in, with the node that Maven kept standing for each
+     * omitted one.
      */
-    private static Map<String, Long> annotate(DependencyNode node, Map<String, Long> fileSizes, boolean isRoot) {
-        Map<String, Long> subtree = new LinkedHashMap<>();
-        Long own = null;
-        if (!isRoot) {
-            own = fileSizes.get(key(node.getArtifact()));
-            if (own != null) {
-                subtree.put(key(node.getArtifact()), own);
-            }
+    private static final class Totals {
+        private final Map<String, DependencyNode> kept = new HashMap<>();
+
+        private final Map<String, Set<String>> brought = new HashMap<>();
+
+        private final Set<String> inProgress = new HashSet<>();
+
+        Totals(DependencyNode complete) {
+            index(complete);
         }
-        for (DependencyNode child : node.getChildren()) {
-            if (isIncluded(child)) {
-                subtree.putAll(annotate(child, fileSizes, false));
+
+        private void index(DependencyNode node) {
+            for (DependencyNode child : node.getChildren()) {
+                if (isIncluded(child)) {
+                    kept.putIfAbsent(key(child.getArtifact()), child);
+                    index(child);
+                }
             }
         }
 
-        long total = 0;
-        for (Long size : subtree.values()) {
-            total += size;
+        /**
+         * @return the keys of the node itself and of everything it brings in, also for a node of another tree such
+         *         as the displayed one
+         */
+        Set<String> brought(DependencyNode node) {
+            String key = key(node.getArtifact());
+            DependencyNode complete = kept.getOrDefault(key, node);
+            Set<String> known = brought.get(key);
+            if (known != null) {
+                return known;
+            }
+            if (!inProgress.add(key)) {
+                return Collections.singleton(key);
+            }
+            Set<String> result = new LinkedHashSet<>();
+            result.add(key);
+            for (DependencyNode child : complete.getChildren()) {
+                if (isIncluded(child)) {
+                    result.addAll(brought(child));
+                } else {
+                    DependencyNode winner = kept.get(winnerKey(child));
+                    if (winner != null) {
+                        result.addAll(brought(winner));
+                    }
+                }
+            }
+            inProgress.remove(key);
+            brought.put(key, result);
+            return result;
         }
-        node.setSizes(own, total);
+    }
 
-        return subtree;
+    private static String winnerKey(DependencyNode omitted) {
+        Artifact artifact = omitted.getArtifact();
+        return artifact.getDependencyConflictId() + ":"
+                + omitted.getVerboseInfo().getWinnerVersion();
     }
 
     private static boolean isIncluded(DependencyNode node) {
@@ -113,29 +194,42 @@ final class DependencySizes {
     }
 
     /**
+     * The file of a node that is known without resolving it: the file of the artifact, or the <code>systemPath</code>
+     * of a dependency of scope <code>system</code>.
+     *
+     * @return the file, or <code>null</code> if the artifact has to be resolved
+     */
+    static File localFile(DependencyNode node) {
+        if (node.getArtifact().getFile() != null) {
+            return node.getArtifact().getFile();
+        }
+        org.eclipse.aether.artifact.Artifact resolverArtifact = node.getResolverArtifact();
+        if (resolverArtifact == null) {
+            return null;
+        }
+        if (resolverArtifact.getFile() != null) {
+            return resolverArtifact.getFile();
+        }
+        String localPath = resolverArtifact.getProperty(ArtifactProperties.LOCAL_PATH, null);
+        return localPath != null ? new File(localPath) : null;
+    }
+
+    /**
      * The text shown after the label of a node, such as <code> (200 KB, total 1.5 MB)</code>, or the empty string for a
-     * node without sizes.
+     * node without sizes. The total is shown for the project and for a node that brings in other artifacts.
      */
     static String describe(DependencyNode node) {
         if (!node.hasSizes()) {
             return "";
         }
-
-        StringBuilder text = new StringBuilder(" (");
-        boolean hasSizedChild = false;
-        for (DependencyNode child : node.getChildren()) {
-            hasSizedChild |= child.hasSizes();
-        }
         if (node.getParent() == null) {
             // the project has no size of its own
-            return text.append("total ")
-                    .append(format(node.getTotalSize()))
-                    .append(')')
-                    .toString();
+            return " (total " + format(node.getTotalSize()) + ")";
         }
 
+        StringBuilder text = new StringBuilder(" (");
         text.append(node.getSize() != null ? format(node.getSize()) : "size unknown");
-        if (hasSizedChild) {
+        if (node.bringsOthers()) {
             text.append(", total ").append(format(node.getTotalSize()));
         }
         return text.append(')').toString();
