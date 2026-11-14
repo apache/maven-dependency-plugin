@@ -85,8 +85,8 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
     /**
      * The prefix to prepend on each dependent artifact. If undefined, the paths refer to the actual files of the
      * resolved artifacts: files in the local repository, or the build output (<code>target/classes</code> or the
-     * packaged file) for artifacts of modules in the same reactor. In that case the stripVersion, prependGroupId and
-     * useRepositoryLayout parameters do nothing.
+     * packaged file) for artifacts of modules in the same reactor. In that case the stripVersion, stripClassifier,
+     * useBaseVersion, prependGroupId and useRepositoryLayout parameters do nothing.
      * If defined, each path is the prefix followed by the artifact file name only (or by the
      * repository layout path if {@link #useRepositoryLayout} is {@code true}), independent of where the artifact
      * file actually is.
@@ -98,6 +98,10 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
      * Only used together with {@link #prefix}. If {@code true}, each path is built in the layout of a Maven
      * repository below the prefix, for example <code>prefix/junit/junit/3.8.1/junit-3.8.1.jar</code>, for every
      * artifact including those of modules in the same reactor, whose files are in the build output directory.
+     * The stripVersion, stripClassifier, useBaseVersion and prependGroupId parameters are ignored then, so that the
+     * classpath matches a directory filled by <code>copy-dependencies</code> with
+     * <code>-Dmdep.useRepositoryLayout=true</code>. The user property is shared with that goal.
+     * A reactor module must be packaged (run at <code>package</code> or later) for the path to name an existing jar.
      *
      * @since 3.12.0
      */
@@ -211,6 +215,13 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
             localRepoProperty = "${M2_REPO}";
         }
 
+        if (prefix != null
+                && useRepositoryLayout
+                && (stripVersion || stripClassifier || prependGroupId || !useBaseVersion)) {
+            getLog().warn("useRepositoryLayout ignores stripVersion, stripClassifier, prependGroupId and "
+                    + "useBaseVersion, to match the file names written by copy-dependencies.");
+        }
+
         Set<Artifact> artifacts = getResolvedDependencies(true);
 
         if (artifacts.isEmpty()) {
@@ -304,15 +315,18 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
             sb.append(prefix);
             sb.append(File.separator);
             if (useRepositoryLayout) {
+                // same names as copy-dependencies with useRepositoryLayout: base version, no strip or prepend
                 sb.append(artifact.getGroupId().replace('.', File.separatorChar))
                         .append(File.separatorChar)
                         .append(artifact.getArtifactId())
                         .append(File.separatorChar)
                         .append(artifact.getBaseVersion())
-                        .append(File.separatorChar);
+                        .append(File.separatorChar)
+                        .append(DependencyUtil.getFormattedFileName(artifact, false, false, true, false));
+            } else {
+                sb.append(DependencyUtil.getFormattedFileName(
+                        artifact, this.stripVersion, this.prependGroupId, this.useBaseVersion, this.stripClassifier));
             }
-            sb.append(DependencyUtil.getFormattedFileName(
-                    artifact, this.stripVersion, this.prependGroupId, this.useBaseVersion, this.stripClassifier));
         }
     }
 
@@ -460,6 +474,27 @@ public class BuildClasspathMojo extends AbstractDependencyFilterMojo implements 
      */
     public void setStripVersion(boolean theStripVersion) {
         this.stripVersion = theStripVersion;
+    }
+
+    /**
+     * @param stripClassifier {@link #stripClassifier}
+     */
+    public void setStripClassifier(boolean stripClassifier) {
+        this.stripClassifier = stripClassifier;
+    }
+
+    /**
+     * @param useBaseVersion {@link #useBaseVersion}
+     */
+    public void setUseBaseVersion(boolean useBaseVersion) {
+        this.useBaseVersion = useBaseVersion;
+    }
+
+    /**
+     * @param useRepositoryLayout {@link #useRepositoryLayout}
+     */
+    public void setUseRepositoryLayout(boolean useRepositoryLayout) {
+        this.useRepositoryLayout = useRepositoryLayout;
     }
 
     /**
