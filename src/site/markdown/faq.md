@@ -30,7 +30,8 @@ under the License.
 3. [Why am I getting errors that a documented goal or parameter is missing?](#missing)
 4. [Why is Maven resolving &quot;dependency:xxx&quot; to the older org.codehaus.mojo:dependency-maven-plugin?](#question)
 5. [Why am I having trouble unpacking only a specific file?](#includes)
-6. [Why does my dependency analysis report `Unused declared dependencies`?](#unused)
+6. [How do I keep files that already exist in the output directory when unpacking?](#overwritefiles)
+7. [Why does my dependency analysis report `Unused declared dependencies`?](#unused)
 
 <a id="plugin_name"></a>
 
@@ -91,13 +92,14 @@ Set `useDefaultExcludes` to `false` to unpack those files too.
 
 ### How do I keep files that already exist in the output directory when unpacking?
 
-`overWriteReleases`, `overWriteSnapshots`, `overWriteIfNewer` and the marker files decide whether an artifact is
-unpacked at all. Once it is, `unpack` and `unpack-dependencies` write every entry of the archive. Set
-`overWriteFiles` (user property `mdep.unpack.overWriteFiles`) to `false` to decide per file instead: an entry is
-written only if no file of that name exists yet, or if the existing file is older than the entry's timestamp in the
-archive. A file that is as new as or newer than the archive entry is kept, for example a resource that was filtered
-into the output directory after the archive was built. Because an older existing file is still replaced, this is not
-a guarantee that no file is ever touched. For `unpack`, the parameter can also be set on a single `artifactItem`.
+Set `overWriteFiles` (user property `mdep.unpack.overWriteFiles`) to `false` on `unpack` or `unpack-dependencies`.
+Each entry of the archive is then written only if no file exists at its target path yet, after any `fileMappers` are
+applied. An existing file is never replaced, whatever its timestamp, so a resource that was filtered into the output
+directory stays as it is. For `unpack`, the parameter can also be set on a single `artifactItem`, where it overrides
+the goal's value in either direction. It has no effect on single-file compression formats such as gzip.
+
+This is a per-file rule. `overWriteReleases`, `overWriteSnapshots`, `overWriteIfNewer` and the `overWrite` of an
+`artifactItem` work per artifact: together with the marker files they decide whether an artifact is unpacked at all.
 
 <a id="unused"></a>
 

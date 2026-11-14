@@ -100,8 +100,10 @@ public class ArtifactItem {
 
     /**
      * Whether unpacking may replace files that already exist in the output directory, for this item only. Overrides
-     * the {@code overWriteFiles} parameter of the {@code unpack} goal; {@code null} means the goal's value applies.
-     * Used by the {@code unpack} goal only.
+     * the {@code overWriteFiles} parameter of the {@code unpack} goal, in either direction; {@code null} means the
+     * goal's value applies. With {@code false}, no file that already exists at the target path is replaced. Unlike
+     * {@link #getOverWrite() overWrite}, which decides per artifact whether it is unpacked at all, this applies to
+     * the files of an artifact that is unpacked. Used by the {@code unpack} goal only.
      *
      * @since 3.12.0
      */
