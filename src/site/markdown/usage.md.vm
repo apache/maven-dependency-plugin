@@ -581,6 +581,26 @@ Also, the `outputType` parameter can be used to generate different formats of ou
 mvn dependency:tree -DoutputFile=/path/to/file.graphml -DoutputType=graphml
 ```
 
+The `showSizes` parameter (since 3.12.0) shows how much each dependency weighs. By default `dependency:tree` only collects the dependency graph and downloads no artifacts. With `-DshowSizes` the goal also resolves the artifact of each node, which downloads those missing from the local repository, and shows its file size and, for an artifact with dependencies, the total:
+
+```
+mvn dependency:tree -DshowSizes
+```
+
+```
+org.example:app:jar:1.0-SNAPSHOT (total 1.5 MB)
+\- org.foo:foo-all:jar:2.0:compile (200 KB, total 1.5 MB)
+   +- org.foo:foo-core:jar:2.0:compile (1.3 MB)
+   \- org.foo:foo-gone:jar:2.0:compile (size unknown)
+```
+
+- The total of a node is the sum of the sizes of the distinct artifacts in its subtree: the node itself and all its descendants, each artifact counted once even when it occurs several times in the subtree. The total of the project at the top is the size of all its distinct dependencies.
+- Sizes use the units B, KB, MB, GB and TB, where 1 KB is 1024 bytes, rounded to one decimal.
+- An artifact that cannot be resolved is shown as `(size unknown)`, counts as zero in the totals, and the goal logs one warning with the number of such artifacts. An artifact whose file is not a regular file, such as the classes directory of a module of the same reactor build, is shown the same way.
+- Nodes that `-Dverbose` shows as omitted are not resolved, show no size and do not count, so the totals count the artifacts that Maven resolves.
+- The `includes` and `excludes` filters apply first: the totals cover the tree as displayed.
+- With `-DoutputType=json` each node that is not omitted gets the number `totalSize` and, when known, the number `size`, both in bytes. The `dot`, `graphml`, `tgf` and `mermaid` formats ignore the parameter with a warning and download nothing.
+
 The `verbose` parameter explains the tree. By default the tree shows what Maven resolves: each artifact once, at the version and scope Maven selected. With `-Dverbose` the goal collects the dependencies again and also shows the nodes that Maven left out, and why:
 
 ```

@@ -132,6 +132,7 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
     private void appendNodeValues(StringBuilder sb, int indent, DependencyNode node, boolean hasChildren) {
         Artifact artifact = node.getArtifact();
         Map<String, String> verboseValues = verboseValues(node.getVerboseInfo());
+        sizeValues(node, verboseValues);
         appendKeyValue(sb, indent, "groupId", artifact.getGroupId());
         appendKeyValue(sb, indent, "artifactId", artifact.getArtifactId());
         appendKeyValue(sb, indent, "version", artifact.getVersion());
@@ -175,6 +176,20 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
         putString(values, "scopeManagedFrom", info.getPremanagedScope());
         putString(values, "scopeNotUpdatedTo", info.getScopeNotUpdatedTo());
         return values;
+    }
+
+    /**
+     * Adds <code>size</code>, when known, and <code>totalSize</code> in bytes, as JSON numbers, to a node that has
+     * sizes.
+     */
+    private static void sizeValues(DependencyNode node, Map<String, String> values) {
+        if (!node.hasSizes()) {
+            return;
+        }
+        if (node.getSize() != null) {
+            values.put("size", String.valueOf(node.getSize()));
+        }
+        values.put("totalSize", String.valueOf(node.getTotalSize()));
     }
 
     private static void putString(Map<String, String> values, String key, String value) {
