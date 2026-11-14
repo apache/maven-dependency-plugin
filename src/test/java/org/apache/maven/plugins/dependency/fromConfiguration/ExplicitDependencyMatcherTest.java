@@ -184,21 +184,40 @@ class ExplicitDependencyMatcherTest {
     }
 
     @Test
-    void rangeMatchesContainedVersionInBothDirections() {
+    void declaredRangeMatchesAContainedItemVersion() {
         assertTrue(
                 check(Collections.singletonList(dependency("a", "[1.0,2.0)", null, null)), item("a", "1.5", null, null))
-                        .isEmpty());
-        assertTrue(
-                check(Collections.singletonList(dependency("a", "1.5", null, null)), item("a", "[1.0,2.0)", null, null))
                         .isEmpty());
         assertEquals(
                 1,
                 check(Collections.singletonList(dependency("a", "[1.0,2.0)", null, null)), item("a", "2.0", null, null))
                         .size());
+    }
+
+    @Test
+    void itemRangeMatchesOnlyAnIdenticalDeclaration() {
+        // the goal resolves the range to the highest available version, which may not be the declared one
+        assertEquals(
+                1,
+                check(Collections.singletonList(dependency("a", "1.5", null, null)), item("a", "[1.0,2.0)", null, null))
+                        .size());
         assertEquals(
                 1,
                 check(Collections.singletonList(dependency("a", "2.0", null, null)), item("a", "[1.0,2.0)", null, null))
                         .size());
+        assertTrue(check(
+                        Collections.singletonList(dependency("a", "[1.0,2.0)", null, null)),
+                        item("a", "[1.0,2.0)", null, null))
+                .isEmpty());
+    }
+
+    @Test
+    void detectsAnyVariantOfAnItem() {
+        ExplicitDependencyMatcher matcher = new ExplicitDependencyMatcher(
+                handlers, Collections.singletonList(dependency("a", "1.0", "zip", "resources")));
+
+        assertTrue(matcher.isDeclaredInAnyVariant(item("a", null, "jar", null)));
+        assertTrue(!matcher.isDeclaredInAnyVariant(item("b", null, "jar", null)));
     }
 
     @Test

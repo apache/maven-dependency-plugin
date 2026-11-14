@@ -17,7 +17,7 @@
  * under the License.
  */
 
-File unpacked = new File( basedir, "child-b/target/dependency/child-a-1.0-SNAPSHOT.jar" )
-assert unpacked.isFile() : "Missing file " + unpacked
+File copied = new File( basedir, "child-b/target/dependency/child-a-1.0-SNAPSHOT.jar" )
+assert copied.isFile() : "Missing file " + copied
 
 return true;
