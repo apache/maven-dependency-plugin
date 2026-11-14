@@ -23,6 +23,8 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -310,7 +312,7 @@ public class UnpackUtil {
                 }
             }
             File target = new File(location, name);
-            if (target.exists()) {
+            if (Files.exists(target.toPath(), LinkOption.NOFOLLOW_LINKS)) {
                 logger.debug("Keeping existing file " + target);
                 return false;
             }

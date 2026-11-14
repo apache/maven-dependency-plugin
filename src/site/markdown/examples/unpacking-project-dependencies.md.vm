@@ -55,7 +55,7 @@ To unpack the artifacts, use the `dependency:unpack-dependencies` mojo and confi
               <outputDirectory>${esc.d}{project.build.directory}/alternateLocation</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>
-              <!-- per file: keep existing files that are not older than the archive entry -->
+              <!-- per file: never replace a file that already exists -->
               <overWriteFiles>false</overWriteFiles>
             </configuration>
           </execution>
