@@ -185,7 +185,7 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
      * @throws MojoExecutionException with a message if an error occurs
      * @see ArtifactItem
      * @see #getArtifactItems
-     * @see #unpackArtifact(ArtifactItem)
+     * @see #unpackArtifact(ArtifactItem, DuplicateTargetTracker)
      */
     @Override
     protected void doExecute() throws MojoExecutionException, MojoFailureException {
