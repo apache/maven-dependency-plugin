@@ -121,6 +121,8 @@ you must not put the configuration inside the _executions_ tag. Your configurati
               <overWriteFiles>[ false to keep every file that already exists ]</overWriteFiles>
             </artifactItem>
           </artifactItems>
+          <!-- fail if two entries are unpacked to the same path -->
+          <failOnDuplicates>true</failOnDuplicates>
           <!-- other configurations here -->
         </configuration>
       </plugin>
