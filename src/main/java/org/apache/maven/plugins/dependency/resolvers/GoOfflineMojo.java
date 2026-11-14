@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -293,47 +293,30 @@ public class GoOfflineMojo extends AbstractDependencyFilterMojo {
         return Arrays.asList(DependencyUtil.cleanToBeTokenizedString(list).split(","));
     }
 
-    private Collection<Dependency> filterDependencies(Collection<Dependency> deps) throws ArtifactFilterException {
-
-        Set<Artifact> artifacts = createArtifactSetFromDependencies(deps);
-
-        final FilterArtifacts filter = getArtifactsFilter();
-        artifacts = filter.filter(artifacts);
-
-        return createDependencySetFromArtifacts(artifacts);
-    }
-
-    private Set<Artifact> createArtifactSetFromDependencies(Collection<Dependency> deps) {
-        Set<Artifact> artifacts = new HashSet<>();
+    /**
+     * Applies the artifact filters of this goal to the given dependencies. The original dependencies are returned,
+     * not copies rebuilt from their coordinates, so their exclusions, optional flag and system path are kept.
+     */
+    private List<Dependency> filterDependencies(Collection<Dependency> deps) throws ArtifactFilterException {
+        Map<Dependency, Artifact> artifacts = new IdentityHashMap<>();
         for (Dependency dep : deps) {
-            DefaultArtifactHandler handler = new DefaultArtifactHandler(dep.getType());
-            artifacts.add(new DefaultArtifact(
-                    dep.getGroupId(),
-                    dep.getArtifactId(),
-                    dep.getVersion(),
-                    dep.getScope(),
-                    dep.getType(),
-                    dep.getClassifier(),
-                    handler));
-        }
-        return artifacts;
-    }
-
-    private Collection<Dependency> createDependencySetFromArtifacts(Set<Artifact> artifacts) {
-        Set<Dependency> dependencies = new HashSet<>();
-
-        for (Artifact artifact : artifacts) {
-            Dependency d = new Dependency();
-            d.setGroupId(artifact.getGroupId());
-            d.setArtifactId(artifact.getArtifactId());
-            d.setVersion(artifact.getVersion());
-            d.setType(artifact.getType());
-            d.setClassifier(artifact.getClassifier());
-            d.setScope(artifact.getScope());
-            dependencies.add(d);
+            artifacts.put(
+                    dep,
+                    new DefaultArtifact(
+                            dep.getGroupId(),
+                            dep.getArtifactId(),
+                            dep.getVersion(),
+                            dep.getScope(),
+                            dep.getType(),
+                            dep.getClassifier(),
+                            new DefaultArtifactHandler(dep.getType())));
         }
 
-        return dependencies;
+        Set<Artifact> selected = getArtifactsFilter().filter(new LinkedHashSet<>(artifacts.values()));
+
+        return deps.stream()
+                .filter(dep -> selected.contains(artifacts.get(dep)))
+                .collect(Collectors.toList());
     }
 
     /**
