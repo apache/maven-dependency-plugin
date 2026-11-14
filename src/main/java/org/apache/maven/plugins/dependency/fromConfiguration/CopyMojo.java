@@ -22,7 +22,11 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
@@ -99,10 +103,19 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
     private String artifact;
 
     /**
-     * Resolve the single artifact identified by {@link #artifact} (or by a single-entry {@link #artifactItems})
-     * together with its transitive dependencies, directly through the repository system, and copy all of them.
-     * Lets this goal be used like {@code dependency:get}, but copying the resolved files instead of only
-     * downloading them into the local repository. Not supported together with more than one artifact item.
+     * Resolve the artifact identified by {@link #artifact} (or by the {@link #artifactItems}) together with its
+     * transitive dependencies, directly through the repository system, and copy all of them. With a single artifact
+     * this goal works like {@code dependency:get}, but copies the resolved files instead of only downloading them
+     * into the local repository.
+     * <p>
+     * With several artifact items, all of them are resolved in one dependency graph, as if a project declared them
+     * as dependencies, so a dependency they share is copied once, in the version chosen by Maven's usual mediation
+     * rules. Their own test, provided and optional dependencies are then left out, whereas a single artifact,
+     * being the root of the graph, keeps its optional dependencies. No project dependency management applies. All
+     * the artifact items must use the same output directory, and no two of them may name the same artifact in
+     * different versions. The {@code destFileName} and {@code overWrite} settings of the artifact items are not
+     * used: every resolved file is copied under the name built from {@code stripVersion}, {@code stripClassifier},
+     * {@code prependGroupId} and {@code useBaseVersion}.
      *
      * @since 3.12.0
      */
@@ -139,16 +152,15 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
         verifyRequirements();
         verifyExplicitDependencies();
 
-        if (transitive && getArtifactItems().size() != 1) {
-            throw new MojoFailureException("transitive requires a single artifact, not "
-                    + getArtifactItems().size() + " artifactItems");
-        }
-
         List<ArtifactItem> theArtifactItems = getProcessedArtifactItems(
                 new ProcessArtifactItemsRequest(stripVersion, prependGroupId, useBaseVersion, stripClassifier));
 
         if (transitive) {
-            copyWithTransitiveDependencies(theArtifactItems.get(0));
+            if (theArtifactItems.size() == 1) {
+                copyWithTransitiveDependencies(theArtifactItems.get(0));
+            } else {
+                copyAllWithTransitiveDependencies(theArtifactItems);
+            }
             return;
         }
 
@@ -180,11 +192,71 @@ public class CopyMojo extends AbstractFromConfigurationMojo {
             throw new MojoExecutionException("Failed to resolve " + rootArtifact + " with its dependencies", e);
         }
 
+        copyResolved(resolved, rootItem.getOutputDirectory());
+    }
+
+    /**
+     * Resolves the artifacts of all {@code items} together with their transitive dependencies in one dependency
+     * graph, and copies every resolved artifact to the items' common output directory.
+     *
+     * @param items the configured artifact items, more than one
+     * @throws MojoFailureException   if the items use different output directories, or name one artifact in two
+     *                                 versions
+     * @throws MojoExecutionException if an artifact or one of its dependencies cannot be resolved, or if one of them
+     *                                 cannot be copied
+     */
+    private void copyAllWithTransitiveDependencies(List<ArtifactItem> items)
+            throws MojoExecutionException, MojoFailureException {
+        File outputDirectory = items.get(0).getOutputDirectory();
+        Map<String, ArtifactItem> byKey = new HashMap<>();
+        List<org.eclipse.aether.artifact.Artifact> roots = new ArrayList<>();
+        for (ArtifactItem item : items) {
+            if (!normalized(outputDirectory).equals(normalized(item.getOutputDirectory()))) {
+                throw new MojoFailureException("transitive requires all artifactItems to use the same outputDirectory,"
+                        + " but " + items.get(0) + " uses " + outputDirectory + " and " + item + " uses "
+                        + item.getOutputDirectory());
+            }
+            org.eclipse.aether.artifact.Artifact root = RepositoryUtils.toArtifact(item.getArtifact());
+            String key = root.getGroupId()
+                    + ':'
+                    + root.getArtifactId()
+                    + ':'
+                    + root.getExtension()
+                    + ':'
+                    + root.getClassifier();
+            ArtifactItem previous = byKey.putIfAbsent(key, item);
+            if (previous == null) {
+                roots.add(root);
+            } else if (!previous.getArtifact()
+                    .getVersion()
+                    .equals(item.getArtifact().getVersion())) {
+                throw new MojoFailureException("transitive cannot copy " + previous + " and " + item
+                        + ": they name the same artifact in different versions");
+            }
+        }
+
+        List<org.eclipse.aether.artifact.Artifact> resolved;
+        try {
+            resolved = resolverUtil.resolveArtifactsAndDependencies(
+                    roots, getRemoteRepositories(), null, session.getRepositorySession());
+        } catch (DependencyResolutionException e) {
+            throw new MojoExecutionException("Failed to resolve " + roots + " with their dependencies", e);
+        }
+
+        copyResolved(resolved, outputDirectory);
+    }
+
+    private static Path normalized(File directory) {
+        return directory.toPath().toAbsolutePath().normalize();
+    }
+
+    private void copyResolved(List<org.eclipse.aether.artifact.Artifact> resolved, File outputDirectory)
+            throws MojoExecutionException {
         for (org.eclipse.aether.artifact.Artifact resolvedArtifact : resolved) {
             Artifact artifactToCopy = RepositoryUtils.toArtifact(resolvedArtifact);
             String destFileName = DependencyUtil.getFormattedFileName(
                     artifactToCopy, stripVersion, prependGroupId, useBaseVersion, stripClassifier);
-            File destFile = new File(rootItem.getOutputDirectory(), destFileName);
+            File destFile = new File(outputDirectory, destFileName);
             if (destFile.exists()) {
                 getLog().warn("Overwriting " + destFile);
             }

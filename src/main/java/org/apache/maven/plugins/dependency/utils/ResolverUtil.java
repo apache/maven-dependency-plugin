@@ -361,10 +361,35 @@ public class ResolverUtil {
             DependencyFilter dependencyFilter,
             RepositorySystemSession session)
             throws DependencyResolutionException {
-        // The artifact is a direct dependency of a rootless request, so the session's selectors treat its own
+        return resolveArtifactsAndDependencies(
+                Collections.singletonList(artifact), repositories, dependencyFilter, session);
+    }
+
+    /**
+     * Resolve several artifacts named by their coordinates alone, together with their transitive dependencies, in
+     * one dependency graph. Each artifact is a direct dependency of a rootless request, as if a project declared all
+     * of them, so a dependency they share is resolved to a single version by the usual mediation rules.
+     *
+     * @param artifacts        the artifacts to resolve
+     * @param repositories     remote repositories list
+     * @param dependencyFilter dependency filter, or {@code null}; it is applied to the artifacts themselves as well
+     * @param session          a repository system session
+     * @return the resolved artifacts
+     * @throws DependencyResolutionException if the dependency tree could not be built or any dependency artifact could
+     *                                       not be resolved
+     */
+    public List<Artifact> resolveArtifactsAndDependencies(
+            List<Artifact> artifacts,
+            List<RemoteRepository> repositories,
+            DependencyFilter dependencyFilter,
+            RepositorySystemSession session)
+            throws DependencyResolutionException {
+        // The artifacts are direct dependencies of a rootless request, so the session's selectors treat their own
         // dependencies as transitive ones: test, provided and optional dependencies stay out.
-        CollectRequest collectRequest =
-                new CollectRequest(Collections.singletonList(new Dependency(artifact, null)), null, repositories);
+        List<Dependency> dependencies = artifacts.stream()
+                .map(artifact -> new Dependency(artifact, null))
+                .collect(Collectors.toList());
+        CollectRequest collectRequest = new CollectRequest(dependencies, null, repositories);
         DependencyResult result =
                 repositorySystem.resolveDependencies(session, new DependencyRequest(collectRequest, dependencyFilter));
         return result.getArtifactResults().stream()
