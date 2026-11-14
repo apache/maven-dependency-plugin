@@ -131,21 +131,20 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
      */
     private void appendNodeValues(StringBuilder sb, int indent, DependencyNode node, boolean hasChildren) {
         Artifact artifact = node.getArtifact();
-        Map<String, String> verboseValues = verboseValues(node.getVerboseInfo());
-        sizeValues(node, verboseValues);
+        Map<String, String> extraValues = extraValues(node);
         appendKeyValue(sb, indent, "groupId", artifact.getGroupId());
         appendKeyValue(sb, indent, "artifactId", artifact.getArtifactId());
         appendKeyValue(sb, indent, "version", artifact.getVersion());
         appendKeyValue(sb, indent, "type", artifact.getType());
         appendKeyValue(sb, indent, "scope", artifact.getScope());
         appendKeyValue(sb, indent, "classifier", artifact.getClassifier());
-        if (hasChildren || !verboseValues.isEmpty()) {
+        if (hasChildren || !extraValues.isEmpty()) {
             appendKeyValue(sb, indent, "optional", String.valueOf(artifact.isOptional()));
         } else {
             appendKeyWithoutComma(sb, indent, "optional", String.valueOf(artifact.isOptional()));
         }
 
-        Iterator<Map.Entry<String, String>> entries = verboseValues.entrySet().iterator();
+        Iterator<Map.Entry<String, String>> entries = extraValues.entrySet().iterator();
         while (entries.hasNext()) {
             Map.Entry<String, String> entry = entries.next();
             sb.append(indent(indent))
@@ -159,37 +158,30 @@ public class JsonDependencyNodeVisitor extends AbstractSerializingVisitor implem
     }
 
     /**
-     * The additional JSON values of a verbose node, in output order. The values are already JSON strings, like the
-     * existing <code>optional</code>.
+     * The additional JSON values of a node, in output order: those of a verbose node, as far as the tree was built
+     * verbose, then <code>size</code>, when known, and <code>totalSize</code> in bytes, as far as the node has sizes.
+     * The values are already JSON, strings in quotes and numbers without, like the existing <code>optional</code>.
      */
-    private static Map<String, String> verboseValues(DependencyNode.VerboseInfo info) {
+    private static Map<String, String> extraValues(DependencyNode node) {
         Map<String, String> values = new LinkedHashMap<>();
-        if (info == null) {
-            return values;
+        DependencyNode.VerboseInfo info = node.getVerboseInfo();
+        if (info != null) {
+            putString(values, "included", String.valueOf(info.isIncluded()));
+            putString(values, "omittedReason", info.getOmittedReason());
+            if (DependencyNode.VerboseInfo.OMITTED_FOR_CONFLICT.equals(info.getOmittedReason())) {
+                putString(values, "winnerVersion", info.getWinnerVersion());
+            }
+            putString(values, "versionManagedFrom", info.getPremanagedVersion());
+            putString(values, "scopeManagedFrom", info.getPremanagedScope());
+            putString(values, "scopeNotUpdatedTo", info.getScopeNotUpdatedTo());
         }
-        putString(values, "included", String.valueOf(info.isIncluded()));
-        putString(values, "omittedReason", info.getOmittedReason());
-        if (DependencyNode.VerboseInfo.OMITTED_FOR_CONFLICT.equals(info.getOmittedReason())) {
-            putString(values, "winnerVersion", info.getWinnerVersion());
+        if (node.hasSizes()) {
+            if (node.getSize() != null) {
+                values.put("size", String.valueOf(node.getSize()));
+            }
+            values.put("totalSize", String.valueOf(node.getTotalSize()));
         }
-        putString(values, "versionManagedFrom", info.getPremanagedVersion());
-        putString(values, "scopeManagedFrom", info.getPremanagedScope());
-        putString(values, "scopeNotUpdatedTo", info.getScopeNotUpdatedTo());
         return values;
-    }
-
-    /**
-     * Adds <code>size</code>, when known, and <code>totalSize</code> in bytes, as JSON numbers, to a node that has
-     * sizes.
-     */
-    private static void sizeValues(DependencyNode node, Map<String, String> values) {
-        if (!node.hasSizes()) {
-            return;
-        }
-        if (node.getSize() != null) {
-            values.put("size", String.valueOf(node.getSize()));
-        }
-        values.put("totalSize", String.valueOf(node.getTotalSize()));
     }
 
     private static void putString(Map<String, String> values, String key, String value) {
