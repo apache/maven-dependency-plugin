@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -238,6 +239,7 @@ class TestCopyMojo {
         assertFalse(mojo.isStripVersion());
         assertFalse(mojo.isSkip());
         assertFalse(mojo.isStripClassifier());
+        assertFalse(mojo.isTransitive());
     }
 
     @Test
@@ -782,6 +784,70 @@ class TestCopyMojo {
         mojo.execute();
 
         assertTrue(new File(mojo.getOutputDirectory(), "only-1.0.jar").isFile());
+    }
+
+    /**
+     * Installs a minimal jar and POM for {@code groupId:artifactId:version} under {@code repo}, in the repository's
+     * default layout, so the artifact can be resolved (together with the dependencies declared in
+     * {@code pomDependencies}, if any) from a {@code file:} remote repository pointed at {@code repo}.
+     */
+    private void installRemoteArtifactWithPom(
+            File repo, String groupId, String artifactId, String version, String pomDependencies) throws IOException {
+        File dir = new File(repo, groupId + "/" + artifactId + "/" + version);
+        Files.createDirectories(dir.toPath());
+        String base = artifactId + "-" + version;
+        Files.write(new File(dir, base + ".jar").toPath(), "content".getBytes(StandardCharsets.UTF_8));
+        String pom = "<project xmlns=\"http://maven.apache.org/POM/4.0.0\">"
+                + "<modelVersion>4.0.0</modelVersion>"
+                + "<groupId>" + groupId + "</groupId>"
+                + "<artifactId>" + artifactId + "</artifactId>"
+                + "<version>" + version + "</version>"
+                + "<packaging>jar</packaging>"
+                + (pomDependencies == null ? "" : "<dependencies>" + pomDependencies + "</dependencies>")
+                + "</project>";
+        Files.write(new File(dir, base + ".pom").toPath(), pom.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "transitive", value = "true")
+    void testTransitiveCopiesArtifactAndItsDependencies(CopyMojo mojo) throws Exception {
+        File repo = new File(tempDir, "transitive-remote-repo");
+        installRemoteArtifactWithPom(repo, "transitive-test", "leaf", "1.0", null);
+        installRemoteArtifactWithPom(
+                repo,
+                "transitive-test",
+                "root",
+                "1.0",
+                "<dependency><groupId>transitive-test</groupId><artifactId>leaf</artifactId>"
+                        + "<version>1.0</version></dependency>");
+
+        mojo.setArtifact("transitive-test:root:1.0");
+        mojo.setRemoteRepositories(Collections.singletonList("transitive-remote-repo::default::" + repo.toURI()));
+
+        mojo.execute();
+
+        assertTrue(new File(mojo.getOutputDirectory(), "root-1.0.jar").isFile());
+        assertTrue(new File(mojo.getOutputDirectory(), "leaf-1.0.jar").isFile());
+    }
+
+    @Test
+    @InjectMojo(goal = "copy")
+    @MojoParameter(name = "transitive", value = "true")
+    void testTransitiveRejectsMultipleArtifactItems(CopyMojo mojo) {
+        ArtifactItem first = new ArtifactItem();
+        first.setGroupId("transitive-test");
+        first.setArtifactId("root");
+        first.setVersion("1.0");
+        ArtifactItem second = new ArtifactItem();
+        second.setGroupId("transitive-test");
+        second.setArtifactId("leaf");
+        second.setVersion("1.0");
+        mojo.setArtifactItems(Arrays.asList(first, second));
+
+        MojoFailureException e = assertThrows(MojoFailureException.class, mojo::execute);
+
+        assertTrue(e.getMessage().contains("transitive"), e.getMessage());
     }
 
     @Test
