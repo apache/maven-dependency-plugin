@@ -39,6 +39,12 @@ public class DependencyNode {
 
     private VerboseInfo verboseInfo;
 
+    private boolean sized;
+
+    private Long size;
+
+    private long totalSize;
+
     /**
      * @param parent the parent node, or <code>null</code> for the root
      * @param artifact the artifact of this node
@@ -80,6 +86,39 @@ public class DependencyNode {
      */
     public void setVerboseInfo(VerboseInfo verboseInfo) {
         this.verboseInfo = verboseInfo;
+    }
+
+    /**
+     * @return whether the sizes were computed for this node, which they are for the nodes of the tree displayed by
+     *         <code>dependency:tree -DshowSizes</code> that are not omitted
+     * @since 3.12.0
+     */
+    public boolean hasSizes() {
+        return sized;
+    }
+
+    /**
+     * @return the size in bytes of the file of the artifact, or <code>null</code> if it is not known, or for the root
+     *         node, which is the project
+     * @since 3.12.0
+     */
+    public Long getSize() {
+        return size;
+    }
+
+    /**
+     * @return the size in bytes of the distinct artifacts of this node and its descendants, those of unknown size
+     *         counted as zero
+     * @since 3.12.0
+     */
+    public long getTotalSize() {
+        return totalSize;
+    }
+
+    void setSizes(Long size, long totalSize) {
+        this.sized = true;
+        this.size = size;
+        this.totalSize = totalSize;
     }
 
     /**

@@ -65,6 +65,7 @@ mvn dependency:tree -DoutputType=<format> -DoutputFile=<filename>
     - `optional`: Whether the dependency is optional (`true` or `false`).
     - `children`: An array of dependency objects with the same structure, representing transitive dependencies.
     - With `-Dverbose`, every node also has `included` (the string `"true"`, or `"false"` for a node Maven leaves out of the resolved tree), and, when they apply, `omittedReason` (`duplicate` or `conflict`), `winnerVersion` (the version kept instead, for `conflict`), `versionManagedFrom`, `scopeManagedFrom` and `scopeNotUpdatedTo`. These fields are not written without `-Dverbose`.
+    - With `-DshowSizes` (since 3.12.0), every node that is not omitted also has the number `totalSize`, the size in bytes of its distinct artifacts and those of its dependencies, and, when the artifact could be resolved, the number `size`, the size in bytes of its file. The project has only `totalSize`. These members are not written without `-DshowSizes`.
 - **Nested Dependencies**: Each dependency in the `children` array follows the same structure, allowing for recursive representation of the dependency tree.
 
 **Example**:

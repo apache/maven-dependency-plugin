@@ -73,7 +73,7 @@ class SerializingDependencyNodeVisitor implements DependencyNodeVisitor {
     public boolean visit(DependencyNode node) {
         indent(node);
 
-        writer.println(node.toNodeString());
+        writer.println(node.toNodeString() + DependencySizes.describe(node));
 
         depth++;
 
