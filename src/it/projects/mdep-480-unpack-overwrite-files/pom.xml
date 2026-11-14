@@ -26,7 +26,7 @@ under the License.
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <description>Unpacking onto an existing file keeps it with overWriteFiles=false and replaces it by default</description>
+    <description>Unpacking onto an existing file keeps it when -Dmdep.unpack.overWriteFiles=false is set on the command line</description>
 
     <dependencies>
         <dependency>
@@ -44,30 +44,18 @@ under the License.
                 <version>@project.version@</version>
                 <executions>
                     <execution>
-                        <id>unpack-dependencies-default</id>
+                        <id>unpack-dependencies</id>
                         <phase>process-sources</phase>
                         <goals>
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/dependencies-default</outputDirectory>
-                            <markersDirectory>${project.build.directory}/markers-dependencies-default</markersDirectory>
+                            <outputDirectory>${basedir}/dependencies</outputDirectory>
+                            <markersDirectory>${project.build.directory}/markers-dependencies</markersDirectory>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>unpack-dependencies-keep</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>unpack-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <overWriteFiles>false</overWriteFiles>
-                            <outputDirectory>${basedir}/dependencies-keep</outputDirectory>
-                            <markersDirectory>${project.build.directory}/markers-dependencies-keep</markersDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>unpack-default</id>
+                        <id>unpack</id>
                         <phase>process-sources</phase>
                         <goals>
                             <goal>unpack</goal>
@@ -80,46 +68,8 @@ under the License.
                                     <version>1.0</version>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${basedir}/unpack-default</outputDirectory>
-                            <markersDirectory>${project.build.directory}/markers-unpack-default</markersDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>unpack-keep</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.apache.maven.its.dependency</groupId>
-                                    <artifactId>ResourceArtifact</artifactId>
-                                    <version>1.0</version>
-                                </artifactItem>
-                            </artifactItems>
-                            <overWriteFiles>false</overWriteFiles>
-                            <outputDirectory>${basedir}/unpack-keep</outputDirectory>
-                            <markersDirectory>${project.build.directory}/markers-unpack-keep</markersDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>unpack-item-keep</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.apache.maven.its.dependency</groupId>
-                                    <artifactId>ResourceArtifact</artifactId>
-                                    <version>1.0</version>
-                                    <overWriteFiles>false</overWriteFiles>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${basedir}/unpack-item-keep</outputDirectory>
-                            <markersDirectory>${project.build.directory}/markers-unpack-item-keep</markersDirectory>
+                            <outputDirectory>${basedir}/unpack</outputDirectory>
+                            <markersDirectory>${project.build.directory}/markers-unpack</markersDirectory>
                         </configuration>
                     </execution>
                 </executions>

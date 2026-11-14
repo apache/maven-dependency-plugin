@@ -17,15 +17,14 @@
  * under the License.
  */
 
-// resource1.txt exists before the plugin runs and is newer than the archive entry (a filtered resource, say);
+// resource1.txt exists before the plugin runs and is OLDER than the archive entry: it must be kept all the same;
 // the ITs run "clean" first, so the directories are outside of target
-def now = System.currentTimeMillis()
-for ( dir in ["dependencies-default", "dependencies-keep", "unpack-default", "unpack-keep", "unpack-item-keep"] )
+for ( dir in ["dependencies", "unpack"] )
 {
     File existing = new File( basedir, dir + "/resource1.txt" )
     existing.parentFile.mkdirs()
     existing.text = "existing"
-    existing.setLastModified( now + 24L * 60 * 60 * 1000 )
+    existing.setLastModified( 1000000000000L )
 }
 
 return true

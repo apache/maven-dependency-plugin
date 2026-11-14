@@ -17,14 +17,8 @@
  * under the License.
  */
 
-// overWriteFiles decides per file; resource2.txt did not exist and is extracted in every case
-for ( dir in ["dependencies-default", "unpack-default"] )
-{
-    assert new File( basedir, dir + "/resource1.txt" ).text.contains( "Resource 1" ) : dir + " should be replaced"
-    assert new File( basedir, dir + "/resource2.txt" ).isFile()
-}
-
-for ( dir in ["dependencies-keep", "unpack-keep", "unpack-item-keep"] )
+// -Dmdep.unpack.overWriteFiles=false from cli.properties reaches both goals; resource2.txt did not exist
+for ( dir in ["dependencies", "unpack"] )
 {
     assert new File( basedir, dir + "/resource1.txt" ).text == "existing" : dir + " should be kept"
     assert new File( basedir, dir + "/resource2.txt" ).isFile()

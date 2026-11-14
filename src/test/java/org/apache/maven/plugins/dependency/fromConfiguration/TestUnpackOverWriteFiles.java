@@ -36,11 +36,14 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.dependency.testUtils.DependencyArtifactStubFactory;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.components.io.filemappers.FileMapper;
+import org.codehaus.plexus.components.io.filemappers.PrefixFileMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * MDEP-480: existing files can be kept when unpacking.
@@ -112,8 +115,8 @@ class TestUnpackOverWriteFiles {
         mojo.setOverWriteFiles(false);
         mojo.execute();
         assertEquals(EXISTING, read(mojo.getOutputDirectory(), "existing.txt"));
-        // the per file rule of plexus-archiver still replaces a file that is older than its archive entry
-        assertEquals("from archive", read(mojo.getOutputDirectory(), "old.txt"));
+        // timestamps do not matter: a file older than its archive entry is kept as well
+        assertEquals(EXISTING, read(mojo.getOutputDirectory(), "old.txt"));
         assertEquals("from archive", read(mojo.getOutputDirectory(), "added.txt"));
     }
 
@@ -132,5 +135,45 @@ class TestUnpackOverWriteFiles {
         mojo.execute();
         assertEquals(EXISTING, read(mojo.getOutputDirectory(), "existing.txt"));
         assertEquals("from archive", read(mojo.getOutputDirectory(), "added.txt"));
+    }
+
+    @Test
+    @InjectMojo(goal = "unpack")
+    void testMappedTargetIsChecked(UnpackMojo mojo) throws Exception {
+        File mapped = new File(mojo.getOutputDirectory(), "sub");
+        createExisting(mapped);
+        PrefixFileMapper mapper = new PrefixFileMapper();
+        mapper.setPrefix("sub/");
+        ArtifactItem item = new ArtifactItem();
+        item.setGroupId("test");
+        item.setArtifactId("test");
+        item.setVersion("1.0");
+        item.setType("jar");
+        item.setFileMappers(new FileMapper[] {mapper});
+        mojo.setArtifactItems(Collections.singletonList(item));
+        mojo.setOverWriteFiles(false);
+        mojo.execute();
+        assertEquals(EXISTING, read(mapped, "existing.txt"));
+        assertEquals(EXISTING, read(mapped, "old.txt"));
+        assertEquals("from archive", read(mapped, "added.txt"));
+        // nothing was written to the unmapped paths
+        assertFalse(new File(mojo.getOutputDirectory(), "added.txt").exists());
+    }
+
+    @Test
+    @InjectMojo(goal = "unpack")
+    void testArtifactItemTrueOverridesMojoFalse(UnpackMojo mojo) throws Exception {
+        ArtifactItem item = new ArtifactItem();
+        item.setGroupId("test");
+        item.setArtifactId("test");
+        item.setVersion("1.0");
+        item.setType("jar");
+        item.setOverWriteFiles(true);
+        mojo.setArtifactItems(Collections.singletonList(item));
+        mojo.setOverWriteFiles(false);
+        createExisting(mojo.getOutputDirectory());
+        mojo.execute();
+        assertEquals("from archive", read(mojo.getOutputDirectory(), "existing.txt"));
+        assertEquals("from archive", read(mojo.getOutputDirectory(), "old.txt"));
     }
 }

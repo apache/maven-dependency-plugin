@@ -90,17 +90,16 @@ public class UnpackMojo extends AbstractFromConfigurationMojo {
     private boolean useDefaultExcludes = true;
 
     /**
-     * Whether unpacking may replace files that already exist in the output directory. This is decided for each file,
-     * independently of the per-artifact {@code overWriteReleases}, {@code overWriteSnapshots} and
-     * {@code overWriteIfNewer} parameters and of the marker files: those decide whether an artifact is unpacked at
-     * all, this one decides what happens to a file that is already there once the artifact is unpacked.
+     * Whether unpacking may replace files that already exist in the output directory. This is decided for each file.
+     * With {@code true} (the default) every entry of the archive is written. With {@code false} an entry is skipped
+     * whenever a file already exists at its target path, after the {@code fileMappers} have been applied, however old
+     * that file is; only the missing files are written. Directories are not affected. The option has no effect on
+     * single-file compression formats such as gzip.
      * <p>
-     * With {@code true} (the default) every archive entry is written, as before. With {@code false} the unarchiver
-     * ({@code plexus-archiver}) writes an entry only if there is no file of that name yet, or if the existing file's
-     * last modified time is older than the entry's time stored in the archive. An existing file that is as new as or
-     * newer than the archive entry is kept. This means that a file created or filtered after the archive was built
-     * is kept, whereas an older file is still replaced. Entries are compared by the archive's own timestamp, so
-     * archives that carry a reproducible build timestamp are compared against that timestamp.
+     * This differs from {@code overWriteReleases}, {@code overWriteSnapshots} and {@code overWriteIfNewer}, and from
+     * the {@code overWrite} of an {@code artifactItem}, which are decided per artifact (together with the marker
+     * files) and only determine whether an artifact is unpacked at all. {@code overWriteFiles} applies to the files of
+     * an artifact that is unpacked.
      * </p>
      *
      * Can also be set for a single {@code artifactItem}, which then takes precedence.

@@ -32,6 +32,8 @@ import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.components.io.filemappers.FileMapper;
+import org.codehaus.plexus.components.io.fileselectors.FileInfo;
+import org.codehaus.plexus.components.io.fileselectors.FileSelector;
 import org.codehaus.plexus.components.io.fileselectors.IncludeExcludeFileSelector;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -145,8 +147,9 @@ public class UnpackUtil {
      * @param excludes          excludes list
      * @param useDefaultExcludes whether the default excludes (such as {@code .svn} and {@code .git}) are applied
      *                          when excludes are set
-     * @param overWriteFiles    {@code false} to keep an existing file that is not older than its archive entry, see
-     *                          {@link UnArchiver#setOverwrite(boolean)}
+     * @param overWriteFiles    {@code false} to keep every file that already exists in the location, whatever its
+     *                          timestamp; not applied to single-file compression formats such as gzip, whose
+     *                          unarchivers do not consult file selectors
      * @param encoding          the encoding
      * @param ignorePermissions ignore permissions
      * @param fileMappers       {@link FileMapper}s to be used for rewriting each target path, or {@code null} if no
@@ -200,12 +203,11 @@ public class UnpackUtil {
 
             unArchiver.setIgnorePermissions(ignorePermissions);
 
-            unArchiver.setOverwrite(overWriteFiles);
-
             unArchiver.setSourceFile(file);
 
             unArchiver.setDestDirectory(location);
 
+            FileSelector[] fileSelectors = new FileSelector[0];
             if ((excludes != null && !excludes.isEmpty()) || (includes != null && !includes.isEmpty())) {
                 // Create the selectors that will filter
                 // based on include/exclude parameters
@@ -225,7 +227,19 @@ public class UnpackUtil {
                     selectors[0].setIncludes(includes.split(","));
                 }
 
-                unArchiver.setFileSelectors(selectors);
+                fileSelectors = selectors;
+            }
+
+            if (!overWriteFiles) {
+                // plexus-archiver's own overwrite=false still replaces a file that is older than its entry, so keep
+                // existing files with a selector. It is AND-ed with the include/exclude selector.
+                FileSelector[] all = new FileSelector[fileSelectors.length + 1];
+                System.arraycopy(fileSelectors, 0, all, 0, fileSelectors.length);
+                all[fileSelectors.length] = new KeepExistingFileSelector(location, fileMappers, logger);
+                fileSelectors = all;
+            }
+            if (fileSelectors.length > 0) {
+                unArchiver.setFileSelectors(fileSelectors);
             }
 
             unArchiver.setFileMappers(fileMappers);
@@ -264,6 +278,43 @@ public class UnpackUtil {
             }
 
             logger.debug(msg.toString());
+        }
+    }
+
+    /**
+     * Rejects a non-directory entry whose target, after the file mappers are applied, already exists. The
+     * unarchiver asks selectors before it maps the entry name, so the mappers are applied here as well.
+     */
+    private static final class KeepExistingFileSelector implements FileSelector {
+        private final File location;
+
+        private final FileMapper[] fileMappers;
+
+        private final Log logger;
+
+        KeepExistingFileSelector(File location, FileMapper[] fileMappers, Log logger) {
+            this.location = location;
+            this.fileMappers = fileMappers;
+            this.logger = logger;
+        }
+
+        @Override
+        public boolean isSelected(FileInfo fileInfo) {
+            if (fileInfo.isDirectory()) {
+                return true;
+            }
+            String name = fileInfo.getName();
+            if (fileMappers != null) {
+                for (FileMapper fileMapper : fileMappers) {
+                    name = fileMapper.getMappedFileName(name);
+                }
+            }
+            File target = new File(location, name);
+            if (target.exists()) {
+                logger.debug("Keeping existing file " + target);
+                return false;
+            }
+            return true;
         }
     }
 }
