@@ -77,10 +77,11 @@ public class PropertiesMojo extends AbstractMojo {
     private boolean skip;
 
     /**
-     * Also set a property holding the resolved version of each artifact. The property is named like the path property
+     * Also set a property holding the version of the resolved artifact. The property is named like the path property
      * with a <code>.version</code> suffix, for example <code>org.slf4j:slf4j-api:jar.version</code>. For a snapshot
      * the base version (<code>1.0-SNAPSHOT</code>) is used, not the timestamped version of the resolved file. It is
-     * set for the same artifacts as the path property, including the {@link #extraArtifacts}.
+     * set for the same artifacts as the path property, including the {@link #extraArtifacts}, and also for an
+     * artifact that has no file. An extra artifact with the same key overrides the value of the project dependency.
      *
      * @since 3.12.0
      */
@@ -129,11 +130,11 @@ public class PropertiesMojo extends AbstractMojo {
             File file = artifact.getFile();
             if (file != null) {
                 project.getProperties().setProperty(conflictId, file.getAbsolutePath());
-                if (includeVersions) {
-                    project.getProperties().setProperty(conflictId + VERSION_SUFFIX, artifact.getBaseVersion());
-                }
             } else {
                 getLog().warn("Artifact " + conflictId + " has no associated file; no property will be set for it.");
+            }
+            if (includeVersions) {
+                project.getProperties().setProperty(conflictId + VERSION_SUFFIX, artifact.getBaseVersion());
             }
         }
 
@@ -152,14 +153,14 @@ public class PropertiesMojo extends AbstractMojo {
                     File file = artifact.getFile();
                     if (file != null) {
                         this.project.getProperties().setProperty(conflictId, file.getAbsolutePath());
-                        if (includeVersions) {
-                            this.project
-                                    .getProperties()
-                                    .setProperty(conflictId + VERSION_SUFFIX, artifact.getBaseVersion());
-                        }
                     } else {
                         getLog().warn("Extra artifact " + conflictId
                                 + " has no associated file; no property will be set for it.");
+                    }
+                    if (includeVersions) {
+                        this.project
+                                .getProperties()
+                                .setProperty(conflictId + VERSION_SUFFIX, artifact.getBaseVersion());
                     }
                 }
             } catch (ArtifactResolutionException | ArtifactDescriptorException e) {

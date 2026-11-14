@@ -153,7 +153,7 @@ class TestPropertiesMojo {
 
     @Test
     @InjectMojo(goal = "properties")
-    void testIncludeVersionsSkipsArtifactWithoutFile(PropertiesMojo mojo) throws Exception {
+    void testIncludeVersionsSetForArtifactWithoutFile(PropertiesMojo mojo) throws Exception {
         Artifact artifact = mockArtifact("group:artifact:jar", "1.0", "1.0");
         when(artifact.getFile()).thenReturn(null);
         when(this.project.getArtifacts()).thenReturn(new HashSet<>(Arrays.asList(artifact)));
@@ -162,7 +162,8 @@ class TestPropertiesMojo {
 
         mojo.execute();
 
-        assertFalse(project.getProperties().containsKey("group:artifact:jar.version"));
+        assertFalse(project.getProperties().containsKey("group:artifact:jar"));
+        assertEquals("1.0", project.getProperties().getProperty("group:artifact:jar.version"));
     }
 
     @Test
