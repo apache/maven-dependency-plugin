@@ -34,6 +34,8 @@ import org.apache.maven.plugins.dependency.tree.DependencyNode.VerboseInfo;
 import org.eclipse.aether.artifact.ArtifactProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -188,7 +190,7 @@ class DependencySizesTest {
         DependencySizes.annotate(plain, root, sizes);
 
         assertEquals(
-                " (1000 B, total 1.1 KB)",
+                " (1.0 kB, total 1.2 kB)",
                 DependencySizes.describe(plain.getChildren().get(0)));
         DependencyNode plainB = plain.getChildren().get(1);
         assertNull(plainB.getSize());
@@ -208,9 +210,9 @@ class DependencySizesTest {
                 DependencySizes.describe(plainA.getChildren().get(0)));
         // b has no child to show in the plain tree, still it brings in others
         assertEquals(
-                " (2 KB, total 2.1 KB)",
+                " (2.0 kB, total 2.2 kB)",
                 DependencySizes.describe(plain.getChildren().get(1)));
-        assertEquals(" (total 3.1 KB)", DependencySizes.describe(plain));
+        assertEquals(" (total 3.2 kB)", DependencySizes.describe(plain));
     }
 
     @Test
@@ -237,24 +239,32 @@ class DependencySizesTest {
         plain.accept(new SerializingDependencyNodeVisitor(writer, SerializingDependencyNodeVisitor.STANDARD_TOKENS));
 
         List<String> lines = Arrays.asList(writer.toString().split("\\R"));
-        assertEquals("root (total 3.1 KB)", lines.get(0));
-        assertEquals("+- a (1000 B, total 1.1 KB)", lines.get(1));
+        assertEquals("root (total 3.2 kB)", lines.get(0));
+        assertEquals("+- a (1.0 kB, total 1.2 kB)", lines.get(1));
         assertEquals("|  +- shared (100 B, total 105 B)", lines.get(2));
         assertEquals("|  |  \\- deep (5 B)", lines.get(3));
-        assertEquals("\\- b (2 KB, total 2.1 KB)", lines.get(6));
+        assertEquals("\\- b (2.0 kB, total 2.2 kB)", lines.get(6));
     }
 
-    @Test
-    void formatsUnits() {
-        assertEquals("0 B", DependencySizes.format(0));
-        assertEquals("1023 B", DependencySizes.format(1023));
-        assertEquals("1 KB", DependencySizes.format(1024));
-        assertEquals("200 KB", DependencySizes.format(200 * 1024));
-        assertEquals("1.5 KB", DependencySizes.format(1536));
-        assertEquals("1.5 MB", DependencySizes.format(1536 * 1024));
-        assertEquals("1 MB", DependencySizes.format(1024 * 1024 - 1));
-        assertEquals("2.3 GB", DependencySizes.format(2469606195L));
-        assertEquals("2048 TB", DependencySizes.format(2048L * 1024 * 1024 * 1024 * 1024));
+    @ParameterizedTest
+    @CsvSource({
+        "0, 0 B",
+        "999, 999 B",
+        "1000, 1.0 kB",
+        "1949, 1.9 kB",
+        "1950, 2.0 kB",
+        "9949, 9.9 kB",
+        "9960, 10 kB",
+        "200000, 200 kB",
+        "999499, 999 kB",
+        // rounded to 1000 kB, so shown in the next unit
+        "999500, 1.0 MB",
+        "1500000, 1.5 MB",
+        "2469606195, 2.5 GB",
+        "2000000000000000, 2000 TB"
+    })
+    void formatsUnitsLikeMavenTransfers(long bytes, String expected) {
+        assertEquals(expected, DependencySizes.format(bytes));
     }
 
     @Test

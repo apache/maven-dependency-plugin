@@ -43,7 +43,7 @@ import org.eclipse.aether.artifact.ArtifactProperties;
  * the sum over all its dependencies.
  */
 final class DependencySizes {
-    private static final String[] UNITS = {"B", "KB", "MB", "GB", "TB"};
+    private static final String[] UNITS = {"B", "kB", "MB", "GB", "TB"};
 
     private DependencySizes() {}
 
@@ -219,7 +219,7 @@ final class DependencySizes {
     }
 
     /**
-     * The text shown after the label of a node, such as <code> (200 KB, total 1.5 MB)</code>, or the empty string for a
+     * The text shown after the label of a node, such as <code> (200 kB, total 1.5 MB)</code>, or the empty string for a
      * node without sizes. The total is shown for the project and for a node that brings in other artifacts.
      */
     static String describe(DependencyNode node) {
@@ -240,8 +240,10 @@ final class DependencySizes {
     }
 
     /**
-     * Formats a size with the units B, KB, MB, GB and TB, where 1 KB is 1024 bytes, rounded to one decimal that is
-     * left out when it is zero, such as <code>512 B</code>, <code>200 KB</code> or <code>1.5 MB</code>.
+     * Formats a size like Maven formats the sizes of the files it transfers: with the units B, kB, MB, GB and TB, where
+     * 1 kB is 1000 bytes, with one decimal below 10 and none from 10 on, such as <code>512 B</code>,
+     * <code>1.5 MB</code> or <code>200 kB</code>. The unit is chosen after rounding, so that a size just below a unit
+     * is shown as <code>1.0 MB</code> rather than <code>1000 kB</code>.
      *
      * @param bytes the size, not negative
      * @return the formatted size
@@ -249,18 +251,26 @@ final class DependencySizes {
     static String format(long bytes) {
         int unit = 0;
         double value = bytes;
-        while (unit < UNITS.length - 1 && round(value) >= 1024) {
-            value /= 1024;
+        while (unit < UNITS.length - 1 && round(value) >= 1000) {
+            value /= 1000;
             unit++;
         }
-        String number = unit == 0 ? String.valueOf(bytes) : String.format(Locale.ROOT, "%.1f", value);
-        if (number.endsWith(".0")) {
-            number = number.substring(0, number.length() - 2);
+        String number;
+        if (unit == 0) {
+            number = String.valueOf(bytes);
+        } else if (round(value) < 10) {
+            number = String.format(Locale.ROOT, "%.1f", value);
+        } else {
+            number = String.format(Locale.ROOT, "%.0f", value);
         }
         return number + " " + UNITS[unit];
     }
 
+    /**
+     * Rounds a value as {@link #format(long)} shows it: to one decimal below 10, to an integer from 10 on.
+     */
     private static double round(double value) {
-        return Math.round(value * 10) / 10.0;
+        double oneDecimal = Math.round(value * 10) / 10.0;
+        return oneDecimal < 10 ? oneDecimal : Math.round(value);
     }
 }

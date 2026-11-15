@@ -589,7 +589,7 @@ mvn dependency:tree -DshowSizes
 
 ```
 org.example:app:jar:1.0-SNAPSHOT (total 1.5 MB)
-\- org.foo:foo-all:jar:2.0:compile (200 KB, total 1.5 MB)
+\- org.foo:foo-all:jar:2.0:compile (200 kB, total 1.5 MB)
    +- org.foo:foo-core:jar:2.0:compile (1.3 MB)
    \- org.foo:foo-gone:jar:2.0:compile (size unknown)
 ```
@@ -597,7 +597,7 @@ org.example:app:jar:1.0-SNAPSHOT (total 1.5 MB)
 - The total of a node is the size of all the distinct artifacts that the dependency brings in as Maven resolves them: its own artifact and those of its dependencies, transitively, each counted once. Distinct means a different `groupId:artifactId:type[:classifier]:version`.
 - A dependency that Maven resolves once, below another node, counts for every node that depends on it, also in the tree without `-Dverbose`, where it is shown only once. The totals of two branches can therefore overlap, and the total of the project at the top, which is the size of all distinct dependencies, is less than the sum of the totals of its dependencies. An artifact that Maven leaves out, because it is a duplicate or loses to another version, does not count itself; the kept one does.
 - The totals are computed on the verbose tree even without `-Dverbose`, and before the `includes` and `excludes` filters apply, so a filter changes which nodes are shown, not their totals.
-- Sizes use the units B, KB, MB, GB and TB, where 1 KB is 1024 bytes, rounded to one decimal.
+- Sizes are formatted as Maven formats the files it downloads: with the units B, kB, MB, GB and TB, where 1 kB is 1000 bytes, with one decimal below 10 and none from 10 on.
 - A dependency of scope `system` is measured at its `systemPath`. An artifact that cannot be resolved is shown as `(size unknown)`, counts as zero in the totals, and the goal logs one warning with the number of such artifacts. An artifact whose file is not a regular file, such as the classes directory of a module of the same reactor build, is shown the same way. Run with `-X` to see why.
 - Nodes that `-Dverbose` shows as omitted are not resolved and show no size.
 - With `-DoutputType=json` each node that is not omitted gets the number `totalSize` and, when known, the number `size`, both in bytes. The `dot`, `graphml`, `tgf` and `mermaid` formats ignore the parameter with a warning and download nothing.
