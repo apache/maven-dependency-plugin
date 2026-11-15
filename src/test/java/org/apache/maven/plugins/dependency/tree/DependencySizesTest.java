@@ -114,6 +114,62 @@ class DependencySizesTest {
     }
 
     @Test
+    void totalsAreCompleteWhereOmittedNodesCloseACycle() {
+        // root
+        // +- p:1.0 [10]
+        // |  +- c:1.0 [1000]
+        // |  \- (q:1.0, omitted for conflict with 2.0)
+        // \- q:2.0 [100]
+        //    \- (p:2.0, omitted for conflict with 1.0)
+        DependencyNode cycleRoot = node(null, "root", "1.0");
+        DependencyNode p = node(cycleRoot, "p", "1.0");
+        DependencyNode c = node(p, "c", "1.0");
+        DependencyNode qLoser = node(p, "q", "1.0");
+        DependencyNode q = node(cycleRoot, "q", "2.0");
+        DependencyNode pLoser = node(q, "p", "2.0");
+        cycleRoot.setChildren(Arrays.asList(p, q));
+        p.setChildren(Arrays.asList(c, qLoser));
+        q.setChildren(Arrays.asList(pLoser));
+        qLoser.setVerboseInfo(new VerboseInfo(VerboseInfo.OMITTED_FOR_CONFLICT, "2.0", null, null, null));
+        pLoser.setVerboseInfo(new VerboseInfo(VerboseInfo.OMITTED_FOR_CONFLICT, "1.0", null, null, null));
+        sizes.clear();
+        size(p, 10);
+        size(c, 1000);
+        size(q, 100);
+
+        DependencySizes.annotate(cycleRoot, cycleRoot, sizes);
+
+        assertEquals(1110, p.getTotalSize());
+        // q brings in p, which brings in c, however the cycle is entered
+        assertEquals(1110, q.getTotalSize());
+        assertEquals(1110, cycleRoot.getTotalSize());
+    }
+
+    @Test
+    void omittedNodeCountsItsTimestampedSnapshotWinner() {
+        String timestamped = "1.0-20261114.120000-1";
+        DependencyNode snapshotRoot = node(null, "root", "1.0");
+        DependencyNode x = node(snapshotRoot, "x", "1.0");
+        DependencyNode snapshot = node(x, "snapshot", timestamped);
+        DependencyNode y = node(snapshotRoot, "y", "1.0");
+        DependencyNode snapshotAgain = node(y, "snapshot", timestamped);
+        snapshotRoot.setChildren(Arrays.asList(x, y));
+        x.setChildren(Arrays.asList(snapshot));
+        y.setChildren(Arrays.asList(snapshotAgain));
+        // the winner version is the base version of the winner
+        snapshotAgain.setVerboseInfo(
+                new VerboseInfo(VerboseInfo.OMITTED_FOR_DUPLICATE, "1.0-SNAPSHOT", null, null, null));
+        sizes.clear();
+        size(x, 1);
+        size(snapshot, 100);
+        size(y, 2);
+
+        DependencySizes.annotate(snapshotRoot, snapshotRoot, sizes);
+
+        assertEquals(102, y.getTotalSize());
+    }
+
+    @Test
     void omittedNodeShowsNoSizeAndTheOmittedVersionDoesNotCount() {
         DependencySizes.annotate(root, root, sizes);
 

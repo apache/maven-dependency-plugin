@@ -19,9 +19,7 @@
 package org.apache.maven.plugins.dependency.tree;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -122,14 +120,12 @@ final class DependencySizes {
 
     /**
      * The artifacts that the nodes of the verbose tree bring in, with the node that Maven kept standing for each
-     * omitted one.
+     * omitted one. Standing in for omitted nodes can close a cycle, such as <code>p:1</code> depending on
+     * <code>q:1</code>, kept as <code>q:2</code>, which depends on <code>p:2</code>, kept as <code>p:1</code>, so the
+     * artifacts are collected anew for each node rather than reused from a node that is part of an unfinished cycle.
      */
     private static final class Totals {
         private final Map<String, DependencyNode> kept = new HashMap<>();
-
-        private final Map<String, Set<String>> brought = new HashMap<>();
-
-        private final Set<String> inProgress = new HashSet<>();
 
         Totals(DependencyNode complete) {
             index(complete);
@@ -149,33 +145,37 @@ final class DependencySizes {
          *         as the displayed one
          */
         Set<String> brought(DependencyNode node) {
-            String key = key(node.getArtifact());
-            DependencyNode complete = kept.getOrDefault(key, node);
-            Set<String> known = brought.get(key);
-            if (known != null) {
-                return known;
-            }
-            if (!inProgress.add(key)) {
-                return Collections.singleton(key);
-            }
             Set<String> result = new LinkedHashSet<>();
-            result.add(key);
+            collectBrought(node, result);
+            return result;
+        }
+
+        /**
+         * Adds the key of the node and, unless it was added before, the keys of everything it brings in.
+         */
+        private void collectBrought(DependencyNode node, Set<String> result) {
+            String key = key(node.getArtifact());
+            if (!result.add(key)) {
+                return;
+            }
+            DependencyNode complete = kept.getOrDefault(key, node);
             for (DependencyNode child : complete.getChildren()) {
                 if (isIncluded(child)) {
-                    result.addAll(brought(child));
+                    collectBrought(child, result);
                 } else {
                     DependencyNode winner = kept.get(winnerKey(child));
                     if (winner != null) {
-                        result.addAll(brought(winner));
+                        collectBrought(winner, result);
                     }
                 }
             }
-            inProgress.remove(key);
-            brought.put(key, result);
-            return result;
         }
     }
 
+    /**
+     * @return the key of the node that Maven kept instead of the omitted node, matching {@link #key(Artifact)}, which
+     *         like the winner version uses the base version
+     */
     private static String winnerKey(DependencyNode omitted) {
         Artifact artifact = omitted.getArtifact();
         return artifact.getDependencyConflictId() + ":"
@@ -187,10 +187,14 @@ final class DependencySizes {
     }
 
     /**
+     * The identity of an artifact for the purpose of counting it once. It uses the base version, as the winner version
+     * of an omitted node does, so that a timestamped snapshot is found as the winner. The tree keeps one version of
+     * each artifact, so the base version does not merge two artifacts that are both counted.
+     *
      * @return the identity of an artifact for the purpose of counting it once
      */
     static String key(Artifact artifact) {
-        return artifact.getDependencyConflictId() + ":" + artifact.getVersion();
+        return artifact.getDependencyConflictId() + ":" + artifact.getBaseVersion();
     }
 
     /**
