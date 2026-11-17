@@ -25,7 +25,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -51,7 +50,7 @@ class ExcludeReactorProjectsArtifactFilterTest {
     private MavenProject project;
 
     @Test
-    void testFilter() throws ArtifactFilterException {
+    void testFilter() throws Exception {
         Artifact artifact1 = anArtifact("maven-dependency-plugin-dummy");
         Artifact artifact2 = anArtifact("maven-dependency-plugin-other-dummy");
 
@@ -72,7 +71,7 @@ class ExcludeReactorProjectsArtifactFilterTest {
     }
 
     @Test
-    void testFilterWithLogging() throws ArtifactFilterException {
+    void testFilterWithLogging() throws Exception {
         Artifact artifact = anArtifact("maven-dependency-plugin-dummy");
 
         when(project.getArtifact()).thenReturn(artifact);

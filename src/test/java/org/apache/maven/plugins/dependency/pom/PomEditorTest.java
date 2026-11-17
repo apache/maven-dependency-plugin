@@ -177,7 +177,7 @@ class PomEditorTest {
     }
 
     @Test
-    void addDependencyToEmptyProject() throws IOException {
+    void addDependencyToEmptyProject() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
@@ -201,7 +201,7 @@ class PomEditorTest {
     }
 
     @Test
-    void addDependencyToExistingDependencies() throws IOException {
+    void addDependencyToExistingDependencies() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
@@ -233,7 +233,7 @@ class PomEditorTest {
     }
 
     @Test
-    void addDependencyToManagedSection() throws IOException {
+    void addDependencyToManagedSection() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
@@ -255,7 +255,7 @@ class PomEditorTest {
     }
 
     @Test
-    void addDependencyWithoutVersion() throws IOException {
+    void addDependencyWithoutVersion() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
@@ -281,7 +281,7 @@ class PomEditorTest {
     }
 
     @Test
-    void findExistingDependency() throws IOException {
+    void findExistingDependency() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
@@ -308,7 +308,7 @@ class PomEditorTest {
     }
 
     @Test
-    void removeDependency() throws IOException {
+    void removeDependency() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
@@ -342,7 +342,7 @@ class PomEditorTest {
     }
 
     @Test
-    void removeNonexistentDependencyReturnsFalse() throws IOException {
+    void removeNonexistentDependencyReturnsFalse() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
@@ -366,7 +366,7 @@ class PomEditorTest {
     }
 
     @Test
-    void preservesXmlComments() throws IOException {
+    void preservesXmlComments() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
@@ -395,7 +395,7 @@ class PomEditorTest {
     }
 
     @Test
-    void addBomDependency() throws IOException {
+    void addBomDependency() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
@@ -420,7 +420,7 @@ class PomEditorTest {
     }
 
     @Test
-    void addDependencyWithNamespacedPom() throws IOException {
+    void addDependencyWithNamespacedPom() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n"
                 + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
@@ -457,7 +457,7 @@ class PomEditorTest {
     }
 
     @Test
-    void addOptionalDependency() throws IOException {
+    void addOptionalDependency() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
@@ -479,7 +479,7 @@ class PomEditorTest {
     }
 
     @Test
-    void pomWithoutXmlDeclaration() throws IOException {
+    void pomWithoutXmlDeclaration() throws Exception {
         String pom = "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
                 + "    <groupId>com.example</groupId>\n"
@@ -500,7 +500,7 @@ class PomEditorTest {
     }
 
     @Test
-    void removeWithPrecedingComment() throws IOException {
+    void removeWithPrecedingComment() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
@@ -535,7 +535,7 @@ class PomEditorTest {
     }
 
     @Test
-    void preservesBom() throws IOException {
+    void preservesBom() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "    <modelVersion>4.0.0</modelVersion>\n"
@@ -566,7 +566,7 @@ class PomEditorTest {
     }
 
     @Test
-    void findDependencyByTypeAndClassifier() throws IOException {
+    void findDependencyByTypeAndClassifier() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <dependencies>\n"
@@ -603,7 +603,7 @@ class PomEditorTest {
     }
 
     @Test
-    void removeDependencyByTypeAndClassifier() throws IOException {
+    void removeDependencyByTypeAndClassifier() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <dependencies>\n"
@@ -634,7 +634,7 @@ class PomEditorTest {
     }
 
     @Test
-    void findDependencyWithClassifier() throws IOException {
+    void findDependencyWithClassifier() throws Exception {
         String pom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <dependencies>\n"
@@ -666,7 +666,7 @@ class PomEditorTest {
     }
 
     @Test
-    void rejectsNonProjectRootElement() throws IOException {
+    void rejectsNonProjectRootElement() throws Exception {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<settings>\n"
                 + "  <localRepository>/tmp/repo</localRepository>\n"
@@ -677,7 +677,7 @@ class PomEditorTest {
     }
 
     @Test
-    void rejectsDoctypeDeclaration() throws IOException {
+    void rejectsDoctypeDeclaration() throws Exception {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<!DOCTYPE project [\n"
                 + "  <!ENTITY xxe \"malicious\">\n"
@@ -690,7 +690,7 @@ class PomEditorTest {
     }
 
     @Test
-    void rejectsDoctypeDeclarationCaseInsensitive() throws IOException {
+    void rejectsDoctypeDeclarationCaseInsensitive() throws Exception {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<!doctype project [\n"
                 + "  <!entity xxe \"malicious\">\n"
@@ -703,7 +703,7 @@ class PomEditorTest {
     }
 
     @Test
-    void bomPrefixedFilePreservesXmlDeclaration() throws IOException {
+    void bomPrefixedFilePreservesXmlDeclaration() throws Exception {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <groupId>com.example</groupId>\n"
@@ -735,7 +735,7 @@ class PomEditorTest {
     }
 
     @Test
-    void addDependencyIgnoresEmptyStringFields() throws IOException {
+    void addDependencyIgnoresEmptyStringFields() throws Exception {
         String xml =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "  <dependencies/>\n" + "</project>\n";
         File pomFile = new File(tempDir, "pom.xml");
@@ -758,7 +758,7 @@ class PomEditorTest {
     }
 
     @Test
-    void addDependencyToExistingProfileWithNoDeps() throws IOException {
+    void addDependencyToExistingProfileWithNoDeps() throws Exception {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <dependencies>\n"
@@ -792,7 +792,7 @@ class PomEditorTest {
     }
 
     @Test
-    void addDependencyToExistingProfile() throws IOException {
+    void addDependencyToExistingProfile() throws Exception {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <profiles>\n"
@@ -825,7 +825,7 @@ class PomEditorTest {
     }
 
     @Test
-    void removeDependencyFromProfile() throws IOException {
+    void removeDependencyFromProfile() throws Exception {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <dependencies>\n"
@@ -861,7 +861,7 @@ class PomEditorTest {
     }
 
     @Test
-    void findDependencyInProfileDoesNotFindTopLevel() throws IOException {
+    void findDependencyInProfileDoesNotFindTopLevel() throws Exception {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <dependencies>\n"
@@ -885,7 +885,7 @@ class PomEditorTest {
     }
 
     @Test
-    void findProfileReturnsNullForNonexistent() throws IOException {
+    void findProfileReturnsNullForNonexistent() throws Exception {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <profiles>\n"
@@ -903,7 +903,7 @@ class PomEditorTest {
     }
 
     @Test
-    void findProfileReturnsNullWhenNoProfilesSection() throws IOException {
+    void findProfileReturnsNullWhenNoProfilesSection() throws Exception {
         String xml =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "  <dependencies/>\n" + "</project>\n";
         File pomFile = new File(tempDir, "pom.xml");
@@ -914,7 +914,7 @@ class PomEditorTest {
     }
 
     @Test
-    void addManagedDependencyToProfile() throws IOException {
+    void addManagedDependencyToProfile() throws Exception {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <profiles>\n"
@@ -939,7 +939,7 @@ class PomEditorTest {
     }
 
     @Test
-    void removeDependencyWhenSectionAbsentReturnsFalse() throws IOException {
+    void removeDependencyWhenSectionAbsentReturnsFalse() throws Exception {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<project>\n"
                 + "  <modelVersion>4.0.0</modelVersion>\n"
