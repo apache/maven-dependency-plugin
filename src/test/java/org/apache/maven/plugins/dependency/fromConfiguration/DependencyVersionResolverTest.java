@@ -90,7 +90,7 @@ class DependencyVersionResolverTest {
 
         assertEquals(Arrays.asList(main, sources), index.get(DependencyVersionResolver.GroupArtifactKey.from(main)));
         assertEquals(Arrays.asList(other), index.get(DependencyVersionResolver.GroupArtifactKey.from(other)));
-        assertThrows(UnsupportedOperationException.class, () -> index.clear());
+        assertThrows(UnsupportedOperationException.class, index::clear);
         assertThrows(
                 UnsupportedOperationException.class,
                 () -> index.get(DependencyVersionResolver.GroupArtifactKey.from(main))

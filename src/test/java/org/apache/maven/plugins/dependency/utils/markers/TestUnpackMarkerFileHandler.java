@@ -181,7 +181,7 @@ class TestUnpackMarkerFileHandler {
         handler.setMarker();
         assertTrue(handler.isMarkerSet());
         assertTrue(handle.exists());
-        String hashCode = "" + ("**/*.xml".hashCode());
+        String hashCode = String.valueOf("**/*.xml".hashCode());
         assertTrue(handle.getName().contains(hashCode));
 
         handle.delete();
@@ -204,7 +204,7 @@ class TestUnpackMarkerFileHandler {
         handler.setMarker();
         assertTrue(handler.isMarkerSet());
         assertTrue(handle.exists());
-        String hashCode = "" + ("**/*.class".hashCode());
+        String hashCode = String.valueOf("**/*.class".hashCode());
         assertTrue(handle.getName().contains(hashCode));
 
         handle.delete();
@@ -227,7 +227,7 @@ class TestUnpackMarkerFileHandler {
         handler.setMarker();
         assertTrue(handler.isMarkerSet());
         assertTrue(handle.exists());
-        String hashCode = "" + (0 + "**/*.class".hashCode() + "**/*.xml".hashCode());
+        String hashCode = String.valueOf(0 + "**/*.class".hashCode() + "**/*.xml".hashCode());
         assertTrue(handle.getName().contains(hashCode));
 
         handle.delete();
