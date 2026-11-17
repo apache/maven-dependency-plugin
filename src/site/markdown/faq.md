@@ -26,7 +26,7 @@ under the License.
 # Frequently Asked Questions
 
 1. [What is the difference between dependency-maven-plugin and maven-dependency-plugin?](#plugin_name)
-2. [When executing `mvn dependency:unpack` or `dependency:copy` from the command line, I get &quot;One or more required plugin parameters are invalid/missing for &apos;dependency:unpack&apos;&quot;](#cli)
+2. [When executing `mvn dependency:unpack` or `dependency:copy` from the command line, I get &quot;Either artifact or artifactItems is required&quot;](#cli)
 3. [Why am I getting errors that a documented goal or parameter is missing?](#missing)
 4. [Why is Maven resolving &quot;dependency:xxx&quot; to the older org.codehaus.mojo:dependency-maven-plugin?](#question)
 5. [Why am I having trouble unpacking only a specific file?](#includes)
@@ -38,44 +38,41 @@ under the License.
 
 ### What is the difference between dependency-maven-plugin and maven-dependency-plugin?
 
-Actually, they are the same, it's just that it was moved and renamed. The dependency-maven-plugin is hosted at
-Mojo while maven-dependency-plugin is hosted at Apache. The recommended plugin to use is the
+They are the same plugin. It started as `org.codehaus.mojo:dependency-maven-plugin` and moved to Apache Maven as
+`org.apache.maven.plugins:maven-dependency-plugin`. The Codehaus version is no longer maintained; use the
 maven-dependency-plugin.
 
 <a id="cli"></a>
 
-### When executing `mvn dependency:unpack` or `dependency:copy` from the command line, I get &quot;One or more required plugin parameters are invalid/missing for &apos;dependency:unpack&apos;&quot;
+### When executing `mvn dependency:unpack` or `dependency:copy` from the command line, I get &quot;Either artifact or artifactItems is required&quot;
 
-In order for this to work, you must configure the ArtifactItems as shown
-[here](examples/copying-artifacts.html#Copying_from_the_command_line). Note that when executing a plugin from
-the command line, you must put the configuration tag outside of the executions.
+Both goals need to know which artifacts to process. For a single artifact, pass its coordinates on the command line:
 
-If you haven't done this correctly, the error will look like this:
-
+```shell
+mvn dependency:copy -Dartifact=org.apache.commons:commons-collections4:4.4 -DoutputDirectory=target/libs
 ```
-[0] inside the definition for plugin: 'maven-dependency-plugin', specify the following:
-```
+
+For several artifacts, configure the `artifactItems` as shown in
+[Copying from the command line](examples/copying-artifacts.html#Copying_from_the_command_line). When a goal is run
+from the command line, the `configuration` element must be outside the `executions` element; a configuration inside
+an execution applies only to that execution.
 
 <a id="missing"></a>
 
 ### Why am I getting errors that a documented goal or parameter is missing?
 
-The latest documents are published and may preceed the actual release. Check to make sure the goal/parameter is
-in the most recent version. **-OR-** Maven may be resolving the older codehaus version of the dependency plugin.
-See next question.
+The documentation can be published before the release that contains the goal or parameter, and each goal and parameter
+page shows the version it was added in. Check that your build uses that version or a later one, for example with
+`mvn dependency:help`, which prints the version of the plugin that Maven resolves.
 
 <a id="question"></a>
 
 ### Why is Maven resolving &quot;dependency:xxx&quot; to the older org.codehaus.mojo:dependency-maven-plugin?
 
-Due to a bug in Maven in versions prior to 2.0.7
-([MNG-2926](https://issues.apache.org/jira/browse/MNG-2926)), the search order was reversed and caused Mojo
-plugins to supercede ones with the same prefix at Apache. The metadata at Mojo was cleaned up when the
-maven-dependency-plugin was released at Apache. If you are still experiencing this error, chances are you have
-old metadata in your local repository or in a proxy / internal repository. Removing
-`/org/codehaus/mojo/maven-metadata.*` from your repo/proxy will cause it to be refreshed. Alternatively, you can
-specify the groupId explicitely in your pom (if you are using a bound goal), or on the command line, use
-groupId:artifactId:version:mojo, ie `mvn org.apache.maven.plugins:maven-dependency-plugin:2.5:unpack`
+The `dependency` prefix belongs to the maven-dependency-plugin, and the current Maven versions resolve it to the Apache
+plugin. If an old plugin is still used, its metadata is probably left over in your local repository or in a repository
+manager. Delete `org/codehaus/mojo/maven-metadata-*.xml` from there, or call the plugin by its full coordinates, for
+example `mvn org.apache.maven.plugins:maven-dependency-plugin:<version>:unpack`.
 
 <a id="includes"></a>
 
@@ -134,4 +131,6 @@ detected. This is the case, for example, of constants, annotations with source r
 links.
 
 If the only use of a dependency consists of such undetected constructs, the dependency is analyzed as unused.
-Since 2.6, you can force use report with `usedDependencies` parameter.
+To count such a dependency as used, list it in the `usedDependencies` parameter. See
+[Exclude dependencies from dependency analysis](examples/exclude-dependencies-from-dependency-analysis.html) for
+more ways to handle these dependencies.

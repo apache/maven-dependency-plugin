@@ -26,26 +26,28 @@ under the License.
 
 # Dependency Tree Output Formats
 
-The `dependency:tree` goal of the Maven Dependency Plugin generates a representation of a project's dependency tree. The `outputType` parameter allows you to specify the output format, which can be written to a file using the `outputFile` parameter or printed to the console. Supported formats are `json`, `dot`, `graphml`, `tgf`, and `mermaid` (since 3.12.0). This section describes each format, its structure, and example usage.
+The `dependency:tree` goal displays the dependency tree of a project. By default it prints a text tree to the console.
+The `outputType` parameter selects another format: `json` (since 3.7.0), `dot`, `graphml`, `tgf` or `mermaid` (since
+3.12.0). The `outputFile` parameter writes the result to a file instead of the console. This page describes each
+format with its output for a small project that depends on Commons Text and Commons IO.
 
 ## Usage
 
-To **generate** the dependency tree in a specific format, use the following command:
+To write the dependency tree to a file in a specific format, run:
 
 ```shell
 mvn dependency:tree -DoutputType=<format> -DoutputFile=<filename>
 ```
 
-- `format`: One of `json`, `dot`, `graphml`, `tgf`, or `mermaid`. If omitted, the default is a text-based tree printed to the console.
-- `filename`: The file to write the output to (e.g., `dependency-tree.json`). If omitted, the output is printed to the console.
+- `format`: one of `text` (the default), `json`, `dot`, `graphml`, `tgf` or `mermaid`.
+- `filename`: the file to write the output to, for example `dependency-tree.json`. If omitted, the output is printed
+  to the console.
 
-    Example:
+For example:
 
-    ```shell
-    mvn dependency:tree -DoutputType=json -DoutputFile=dependency-tree.json
-    ```
-
-    **Note**: Ensure you are using Maven Dependency Plugin version 3.7.0 or later (latest is 3.8.1 as of June 2025) to access these output formats.
+```shell
+mvn dependency:tree -DoutputType=json -DoutputFile=dependency-tree.json
+```
 
 ## Text tree style
 
@@ -61,25 +63,19 @@ For example, to force box-drawing characters:
 mvn dependency:tree -Dtokens=extended
 ```
 
-When `tokens` is omitted, the plugin selects extended characters only for an
-interactive console whose reported encoding can represent all the branch
-characters. Compatible legacy encodings, such as CP437 and CP850, work as well
-as UTF-8. The plugin reads Maven's `maven.logging.outputCapabilities` map from
-execution-request data; it does not inspect terminal libraries or infer an
-encoding from the operating system or JVM default.
+When `tokens` is omitted, the plugin selects extended characters only for an interactive console whose reported
+encoding can represent all the branch characters. Compatible legacy encodings, such as CP437 and CP850, work as well
+as UTF-8. The plugin reads Maven's `maven.logging.outputCapabilities` map from the execution request; it does not
+inspect terminal libraries or infer an encoding from the operating system or JVM default.
 
-Automatic selection uses ASCII for `outputFile`, Maven's `-l`/`--log-file`,
-batch mode (`-B`), pipes and shell redirection, and missing or unusable output
-metadata. Maven versions without the capability map, including unmodified
-Maven 3.6.3 and 3.9.16, also use ASCII automatically. The minimum supported
-Maven and Java versions are unchanged. Color settings do not control this
-selection; the plugin follows the reported destination and encoding.
+Automatic selection uses ASCII for `outputFile`, Maven's `-l`/`--log-file`, batch mode (`-B`), pipes and shell
+redirection, and missing or unusable output metadata. Maven versions that do not provide the capability map, such as
+Maven 3.9.16, always get ASCII. Color settings do not control this selection; the plugin follows the reported
+destination and encoding.
 
-An explicit `tokens` value always takes precedence, including for files and
-batch mode. Unrecognized values retain the historical ASCII fallback.
-The `outputEncoding` parameter controls the plugin's `outputFile` encoding;
-it does not change Maven's console or `-l` log encoding. Other output formats
-are unaffected by `tokens`.
+An explicit `tokens` value always takes precedence, including for files and batch mode. An unrecognized value selects
+ASCII. The `outputEncoding` parameter controls the encoding of the `outputFile`; it does not change Maven's console or
+`-l` log encoding. The other output formats ignore `tokens`.
 
 ## Output Formats
 
@@ -90,13 +86,13 @@ are unaffected by `tokens`.
 **Structure**:
 
 - **Root Node**:
-    - `groupId`: The group ID of the project or dependency (e.g., `org.apache.maven.extensions`).
-    - `artifactId`: The artifact ID (e.g., `maven-build-cache-extension`).
-    - `version`: The version (e.g., `1.2.1-SNAPSHOT`).
+    - `groupId`: The group ID of the project or dependency (e.g., `org.example`).
+    - `artifactId`: The artifact ID (e.g., `app`).
+    - `version`: The version (e.g., `1.0`).
     - `type`: The artifact type (e.g., `jar`).
     - `scope`: The dependency scope (e.g., `compile`, `test`, or empty for the project itself).
     - `classifier`: The classifier, if any (e.g., empty string if none).
-    - `optional`: Whether the dependency is optional (`true` or `false`).
+    - `optional`: Whether the dependency is optional, as the string `"true"` or `"false"`.
     - `children`: An array of dependency objects with the same structure, representing transitive dependencies.
     - With `-Dverbose`, every node also has `included` (the string `"true"`, or `"false"` for a node Maven leaves out of the resolved tree), and, when they apply, `omittedReason` (`duplicate` or `conflict`), `winnerVersion` (the version kept instead, for `conflict`), `versionManagedFrom`, `scopeManagedFrom` and `scopeNotUpdatedTo`. These fields are not written without `-Dverbose`.
     - With `-DshowSizes` (since 3.12.0), every node that is not omitted also has the number `totalSize`, the size in bytes of the distinct artifacts it brings in, its own and those of its dependencies, and, when the artifact could be resolved, the number `size`, the size in bytes of its file. The project has only `totalSize`. These members are not written without `-DshowSizes`.
@@ -106,55 +102,44 @@ are unaffected by `tokens`.
 
 ```json
 {
-  "groupId": "org.apache.maven.extensions",
-  "artifactId": "maven-build-cache-extension",
-  "version": "1.2.1-SNAPSHOT",
+  "groupId": "org.example",
+  "artifactId": "app",
+  "version": "1.0",
   "type": "jar",
   "scope": "",
   "classifier": "",
   "optional": "false",
   "children": [
     {
-      "groupId": "net.openhft",
-      "artifactId": "zero-allocation-hashing",
-      "version": "0.27ea0",
-      "type": "jar",
-      "scope": "compile",
-      "classifier": "",
-      "optional": "false"
-    },
-    {
-      "groupId": "org.apache.maven.wagon",
-      "artifactId": "wagon-webdav-jackrabbit",
-      "version": "3.5.3",
+      "groupId": "org.apache.commons",
+      "artifactId": "commons-text",
+      "version": "1.12.0",
       "type": "jar",
       "scope": "compile",
       "classifier": "",
       "optional": "false",
       "children": [
         {
-          "groupId": "org.apache.jackrabbit",
-          "artifactId": "jackrabbit-webdav",
-          "version": "2.14.4",
+          "groupId": "org.apache.commons",
+          "artifactId": "commons-lang3",
+          "version": "3.14.0",
           "type": "jar",
           "scope": "compile",
           "classifier": "",
-          "optional": "false",
-          "children": [
-            {
-              "groupId": "commons-codec",
-              "artifactId": "commons-codec",
-              "version": "1.10",
-              "type": "jar",
-              "scope": "compile",
-              "classifier": "",
-              "optional": "false"
-            }
-          ]
+          "optional": "false"
         }
-      ]
+        ]
+    },
+    {
+      "groupId": "commons-io",
+      "artifactId": "commons-io",
+      "version": "2.16.1",
+      "type": "jar",
+      "scope": "compile",
+      "classifier": "",
+      "optional": "false"
     }
-  ]
+    ]
 }
 ```
 
@@ -168,23 +153,22 @@ mvn dependency:tree -DoutputType=json -DoutputFile=dependency-tree.json
 
 # <a id="DOT_.28outputType.3Ddot.29"></a>DOT (outputType\=dot)
 
-**Description**: The DOT format is a plain-text graph description language used by Graphviz. It represents the dependency tree as a directed graph (`digraph`), with nodes for artifacts and directed edges for dependencies, labeled with their scope (e.g., `compile`).
+**Description**: The DOT format is a plain-text graph description language used by Graphviz. It represents the dependency tree as a directed graph (`digraph`), with nodes for artifacts and directed edges for dependencies.
 
 **Structure**:
 
-- **Graph Declaration**: Starts with `digraph "<groupId>:<artifactId>:<type>:<version>:"`.
-- **Nodes**: Represented implicitly by their identifiers in edge definitions (e.g., `"org.apache.maven.extensions:maven-build-cache-extension:jar:1.2.1-SNAPSHOT:"`).
-- **Edges**: Defined as `"source" -> "target"`, where `source` is the parent artifact and `target` is the dependency, optionally labeled with the scope.
+- **Graph Declaration**: Starts with `digraph "<groupId>:<artifactId>:<type>:<version>"`, the coordinates of the project.
+- **Nodes**: Represented implicitly by their identifiers in edge definitions (e.g., `"org.apache.commons:commons-text:jar:1.12.0:compile"`).
+- **Edges**: Defined as `"source" -> "target"`, where `source` is the parent artifact and `target` is the dependency. Dependencies are written as `groupId:artifactId:type:version:scope`, the project without a scope.
 
 **Example**:
 
 ```text
-digraph "org.apache.maven.extensions:maven-build-cache-extension:jar:1.2.1-SNAPSHOT:" {
-  "org.apache.maven.extensions:maven-build-cache-extension:jar:1.2.1-SNAPSHOT:" -> "net.openhft:zero-allocation-hashing:jar:0.27ea0:compile";
-  "org.apache.maven.extensions:maven-build-cache-extension:jar:1.2.1-SNAPSHOT:" -> "org.apache.maven.wagon:wagon-webdav-jackrabbit:jar:3.5.3:compile";
-  "org.apache.maven.wagon:wagon-webdav-jackrabbit:jar:3.5.3:compile" -> "org.apache.jackrabbit:jackrabbit-webdav:jar:2.14.4:compile";
-  "org.apache.jackrabbit:jackrabbit-webdav:jar:2.14.4:compile" -> "commons-codec:commons-codec:jar:1.10:compile";
-}
+digraph "org.example:app:jar:1.0" {
+	"org.example:app:jar:1.0" -> "org.apache.commons:commons-text:jar:1.12.0:compile" ;
+	"org.example:app:jar:1.0" -> "commons-io:commons-io:jar:2.16.1:compile" ;
+	"org.apache.commons:commons-text:jar:1.12.0:compile" -> "org.apache.commons:commons-lang3:jar:3.14.0:compile" ;
+ }
 ```
 
 **Usage Example**:
@@ -217,19 +201,18 @@ dot -Tpng dependency-tree.dot -o dependency-tree.png
 **Example**:
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:y="http://www.yworks.com/xml/graphml">
+<?xml version="1.0" encoding="UTF-8"?> <graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:y="http://www.yworks.com/xml/graphml" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
   <key for="node" id="d0" yfiles.type="nodegraphics"/>
   <key for="edge" id="d1" yfiles.type="edgegraphics"/>
-  <graph id="dependencies" edgedefault="directed">
-    <node id="955994360"><data key="d0"><y:ShapeNode><y:NodeLabel>org.apache.maven.extensions:maven-build-cache-extension:jar:1.2.1-SNAPSHOT:</y:NodeLabel></y:ShapeNode></data></node>
-    <node id="2058879732"><data key="d0"><y:ShapeNode><y:NodeLabel>net.openhft:zero-allocation-hashing:jar:0.27ea0:compile</y:NodeLabel></y:ShapeNode></data></node>
-    <edge source="955994360" target="2058879732"><data key="d1"><y:PolyLineEdge><y:EdgeLabel>compile</y:EdgeLabel></y:PolyLineEdge></data></edge>
-    <node id="1889106580"><data key="d0"><y:ShapeNode><y:NodeLabel>org.apache.maven.wagon:wagon-webdav-jackrabbit:jar:3.5.3:compile</y:NodeLabel></y:ShapeNode></data></node>
-    <node id="1817415346"><data key="d0"><y:ShapeNode><y:NodeLabel>org.apache.jackrabbit:jackrabbit-webdav:jar:2.14.4:compile</y:NodeLabel></y:ShapeNode></data></node>
-    <edge source="1889106580" target="1817415346"><data key="d1"><y:PolyLineEdge><y:EdgeLabel>compile</y:EdgeLabel></y:PolyLineEdge></data></edge>
-  </graph>
-</graphml>
+<graph id="dependencies" edgedefault="directed">
+<node id="1293251731"><data key="d0"><y:ShapeNode><y:NodeLabel>org.example:app:jar:1.0</y:NodeLabel></y:ShapeNode></data></node>
+<node id="1422271143"><data key="d0"><y:ShapeNode><y:NodeLabel>org.apache.commons:commons-text:jar:1.12.0:compile</y:NodeLabel></y:ShapeNode></data></node>
+<node id="926188689"><data key="d0"><y:ShapeNode><y:NodeLabel>org.apache.commons:commons-lang3:jar:3.14.0:compile</y:NodeLabel></y:ShapeNode></data></node>
+<edge source="1422271143" target="926188689"><data key="d1"><y:PolyLineEdge><y:EdgeLabel>compile</y:EdgeLabel></y:PolyLineEdge></data></edge>
+<edge source="1293251731" target="1422271143"><data key="d1"><y:PolyLineEdge><y:EdgeLabel>compile</y:EdgeLabel></y:PolyLineEdge></data></edge>
+<node id="1994634331"><data key="d0"><y:ShapeNode><y:NodeLabel>commons-io:commons-io:jar:2.16.1:compile</y:NodeLabel></y:ShapeNode></data></node>
+<edge source="1293251731" target="1994634331"><data key="d1"><y:PolyLineEdge><y:EdgeLabel>compile</y:EdgeLabel></y:PolyLineEdge></data></edge>
+</graph></graphml>
 ```
 
 **Usage Example**:
@@ -255,16 +238,14 @@ mvn dependency:tree -DoutputType=graphml -DoutputFile=dependency-tree.graphml
 **Example**:
 
 ```text
-1474640235 org.apache.maven.extensions:maven-build-cache-extension:jar:1.2.1-SNAPSHOT:
-788877168 net.openhft:zero-allocation-hashing:jar:0.27ea0:compile
-1662807313 org.apache.maven.wagon:wagon-webdav-jackrabbit:jar:3.5.3:compile
-1655562261 org.apache.jackrabbit:jackrabbit-webdav:jar:2.14.4:compile
-1894638973 commons-codec:commons-codec:jar:1.10:compile
+943472307 org.example:app:jar:1.0
+548108014 org.apache.commons:commons-text:jar:1.12.0:compile
+1214032527 org.apache.commons:commons-lang3:jar:3.14.0:compile
+228756739 commons-io:commons-io:jar:2.16.1:compile
 #
-1474640235 788877168 compile
-1474640235 1662807313 compile
-1662807313 1655562261 compile
-1655562261 1894638973 compile
+548108014 1214032527 compile
+943472307 548108014 compile
+943472307 228756739 compile
 ```
 
 **Usage Example**:
@@ -292,10 +273,12 @@ mvn dependency:tree -DoutputType=tgf -DoutputFile=dependency-tree.tgf
 ```text
 graph LR
 	n0["org.example:app:jar:1.0"]
-	n1["org.example:lib:jar:1.0:compile"]
+	n1["org.apache.commons:commons-text:jar:1.12.0:compile"]
 	n0 -->|compile| n1
-	n2["org.example:util:jar:2.0:compile"]
-	n1 -->|compile| n2
+	n2["commons-io:commons-io:jar:2.16.1:compile"]
+	n0 -->|compile| n2
+	n3["org.apache.commons:commons-lang3:jar:3.14.0:compile"]
+	n1 -->|compile| n3
 ```
 
 **Usage Example**:

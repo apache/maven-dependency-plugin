@@ -28,7 +28,11 @@ under the License.
 
 # Render a Velocity template
 
-You can use `dependency:render-depedencies` mojo to a render a velocity template, with the **artifacts** (dependencies) as context:
+The `dependency:render-dependencies` goal renders a [Velocity](https://velocity.apache.org/engine/2.4/user-guide.html)
+template with the resolved dependencies of the project. The template sees the dependencies, sorted by group ID,
+artifact ID and version, as `$artifacts`, and a
+[CollectionTool](https://velocity.apache.org/tools/3.1/apidocs/org/apache/velocity/tools/generic/CollectionTool.html)
+as `$sorter`. The following execution writes a YAML list of the jars:
 
 ```xml
 <project>
@@ -41,14 +45,14 @@ You can use `dependency:render-depedencies` mojo to a render a velocity template
         <version>${project.version}</version>
         <executions>
           <execution>
-            <id>copy</id>
+            <id>render-libs</id>
             <phase>process-resources</phase>
             <goals>
               <goal>render-dependencies</goal>
             </goals>
             <configuration>
               <template><![CDATA[
-deps:
+#[[deps:
   jars:
 #foreach($dep in $sorter.sort($artifacts, ["artifactId:asc"]))
 #set($type = $dep.type)
@@ -60,7 +64,7 @@ deps:
   #set($classifierSuffix = "-$dep.classifier")
 #end
   - local:///opt/test/libs/$dep.artifactId-$dep.baseVersion$classifierSuffix.$type
-#end]]></template>
+#end]]#]]></template>
             </configuration>
           </execution>
         </executions>
@@ -71,6 +75,21 @@ deps:
 </project>
 ```
 
-Then after executing `mvn process-resources`, the template will be rendered. By default it is printed in the console but you can set **outputFile** to store it somewhere.
+After `mvn process-resources`, the build log shows the rendered template:
 
-The resolution uses exactly the same mechanism than for **dependency:build-classpath** mojo.
+```text
+[INFO] deps:
+  jars:
+  - local:///opt/test/libs/commons-lang3-3.14.0.jar
+  - local:///opt/test/libs/commons-text-1.12.0.jar
+
+[INFO] Wrote file '/path/to/project/target/template'.
+```
+
+The `template` parameter takes the template inline, as above, or the path of a template file. Without `outputFile`,
+the result is printed to the log. The `classifier` parameter, `template` by default, also attaches the result to the
+project with the `extension` parameter as its type, `txt` by default, so that it is installed and deployed with the
+main artifact; set `classifier` to an empty value to skip that.
+
+The goal selects the dependencies the same way as [dependency:build-classpath](../build-classpath-mojo.html), with
+the same filter parameters.

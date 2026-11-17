@@ -28,7 +28,7 @@ under the License.
 
 # Copying specific artifacts
 
-In copying specific artifacts, you need to bind the `dependency:copy` mojo to a lifecycle, configure the plugin and specify the artifacts you want to copy. See the following example:
+To copy specific artifacts, bind the `dependency:copy` goal to a lifecycle phase and list the artifacts to copy in its configuration:
 
 ```xml
 <project>
@@ -51,9 +51,9 @@ In copying specific artifacts, you need to bind the `dependency:copy` mojo to a 
         <configuration>
           <artifactItems>
             <artifactItem>
-              <groupId>junit</groupId>
-              <artifactId>junit</artifactId>
-              <version>3.8.1</version>
+              <groupId>org.apache.commons</groupId>
+              <artifactId>commons-lang3</artifactId>
+              <version>3.14.0</version>
               <type>jar</type>
               <overWrite>false</overWrite>
               <outputDirectory>${esc.d}{project.build.directory}/alternateLocation</outputDirectory>
@@ -71,7 +71,8 @@ In copying specific artifacts, you need to bind the `dependency:copy` mojo to a 
 </project>
 ```
 
-Then after executing `mvn package`, the artifact (junit) is copied to the given alternate location.
+After `mvn package`, the artifact is copied to `target/alternateLocation/optional-new-name.jar`. The `outputDirectory` of
+an `artifactItem` overrides the `outputDirectory` of the goal, which applies to the items that do not set one.
 
 Artifacts are resolved from the following sources in order:
 
@@ -93,10 +94,9 @@ to choose the intended graph, e.g.
   [...]
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.14.0</version>
     </dependency>
   </dependencies>
   [...]
@@ -116,8 +116,8 @@ to choose the intended graph, e.g.
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <groupId>junit</groupId>
-                  <artifactId>junit</artifactId>
+                  <groupId>org.apache.commons</groupId>
+                  <artifactId>commons-lang3</artifactId>
                   <overWrite>false</overWrite>
                   <outputDirectory>${esc.d}{project.build.directory}/alternateLocation</outputDirectory>
                   <destFileName>optional-new-name.jar</destFileName>
@@ -176,7 +176,7 @@ The `dependency:copy` goal can also be used to copy the just built artifact to a
 
 # <a id="Using_an_alternate_local_repository"></a>Using an alternate local repository
 
-**dependency:copy** always downloads artifacts to default local repository first, and then copy the artifacts to the desired locations. For large size unique snapshot artifacts, the downloads can quickly fill up default local repository, and therefore local disk, after many executions. To clean up the downloaded artifacts as part the build, set _localRepositoryDirectory_'s value to a location in your project's target directory.
+**dependency:copy** always downloads artifacts to the default local repository first, and then copies them to the desired locations. For large size unique snapshot artifacts, the downloads can quickly fill up default local repository, and therefore local disk, after many executions. To clean up the downloaded artifacts as part of the build, set `localRepositoryDirectory` to a location in your project's target directory.
 
 This use case also applies to **dependency:unpack** goal.
 
@@ -216,7 +216,7 @@ This use case also applies to **dependency:unpack** goal.
 
 # <a id="Copying_from_the_command_line"></a>Copying from the command line
 
-If you intend to configure this mojo for execution on the command line using:
+If you intend to configure this goal for execution on the command line using:
 
 ```shell
 mvn dependency:copy

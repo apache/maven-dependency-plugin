@@ -1,5 +1,5 @@
 ---
-title: Unpacking project dependencies
+title: Using project dependencies' sources
 author: 
   - Carlos Sanchez
 date: 2007-10-01
@@ -26,9 +26,9 @@ under the License.
 
 # Using project dependencies' sources
 
-This is pretty similar to the [Copying project dependencies](./copying-project-dependencies.html) or [Unpacking project dependencies](./unpacking-project-dependencies.html) examples.
+This is similar to the [Copying project dependencies](./copying-project-dependencies.html) or [Unpacking project dependencies](./unpacking-project-dependencies.html) examples.
 
-Instead of using the project dependencies it uses their sources. Use the goal `copy-dependencies` to just copy the sources jars to a directory or `unpack-dependencies` to extract them. See the sample below:
+Instead of the project dependencies, it uses their source jars. Use the goal `copy-dependencies` to just copy the sources jars to a directory or `unpack-dependencies` to extract them. See the sample below:
 
 ```xml
 <project>

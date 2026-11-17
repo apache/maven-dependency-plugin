@@ -26,7 +26,7 @@ under the License.
 
 # Rewriting target path and file name
 
-When unpacking files, it is possible to rewrite each unpacked file's target path and file name within the target folder. This is useful e. g. to add or remove prefixes (like cutting away top level folders etc.):
+When unpacking files, it is possible to rewrite each unpacked file's target path and file name within the target folder. This is useful, for example, to add or remove prefixes, such as top-level folders:
 
 ```xml
 <project>
@@ -69,9 +69,9 @@ When unpacking files, it is possible to rewrite each unpacked file's target path
  </project>
 ```
 
-The above example effectively cuts away the prefix `x.y/z/` of each unpacked file's path, using a regular expression and a replacement expression. Two tricks need to be used here: First, the regular expression uses `\Q` and `\E` to demarcate pattern quoting, as the dot (`.`) is special character in a reqular expression. Second, due to a restriction of Maven's POM syntax, the replacement cannot be empty (this would skip the file). Instead a dot-slash (`./`) replacement is used, which is effectively a no-op for paths segments.
+The above example effectively cuts away the prefix `x.y/z/` of each unpacked file's path, using a regular expression and a replacement expression. Two tricks need to be used here: First, the regular expression uses `\Q` and `\E` to demarcate pattern quoting, as the dot (`.`) is a special character in a regular expression. Second, due to a restriction of Maven's POM syntax, the replacement cannot be empty (this would skip the file). Instead a dot-slash (`./`) replacement is used, which is effectively a no-op for path segments.
 
-Any Plexus File Mapper (i. e. implementation of the interface `org.codehaus.plexus.components.io.filemappers.FileMapper`) can be used, but there are three particularly useful.
+Any Plexus File Mapper (an implementation of the interface `org.codehaus.plexus.components.io.filemappers.FileMapper`) can be used, but three are particularly useful.
 
 The Regular Expression Mapper is useful to modify or cut away prefixes or suffixes, or to rewrite file extensions:
 
@@ -94,7 +94,7 @@ The Prefix File Mapper is useful to add prefixes:
  [...]
 ```
 
-The Flatten File Mapper removes the path completey, effectively putting all files in the same folder:
+The Flatten File Mapper removes the path completely, effectively putting all files in the same folder:
 
 ```xml
  [...]
@@ -102,4 +102,4 @@ The Flatten File Mapper removes the path completey, effectively putting all file
  [...]
 ```
 
-When multiple file mappers are given, the list gets executed from top to bottom. This might improve readability of the overal rewriting action compared to using a singular (typically complex) regular expression.
+When multiple file mappers are given, the list gets executed from top to bottom. This might improve readability of the overall rewriting action compared to using a singular (typically complex) regular expression.
