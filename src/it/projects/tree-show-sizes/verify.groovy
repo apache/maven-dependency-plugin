@@ -32,8 +32,8 @@ long root = jarSize("tree-sizes-root")
 long system = new File(basedir, "lib/system.jar").length()
 assertThat(system).isEqualTo(100L)
 long total = leaf + root + system
-// the sizes are formatted as bytes below 1 KB
-assertThat(total).isLessThan(1024L)
+// the sizes are formatted as bytes below 1 kB
+assertThat(total).isLessThan(1000L)
 
 assertThat(new File(basedir, "target/tree.txt").readLines()).containsExactly(
         "org.apache.maven.plugins.dependency.its:tree-show-sizes:jar:1.0-SNAPSHOT (total ${total} B)".toString(),
@@ -56,6 +56,6 @@ assertThat(node.children[1].totalSize).isEqualTo(0)
 
 // the DOT output ignores the parameter
 def dot = new File(basedir, "target/tree.dot").text
-assertThat(dot).contains("tree-sizes-root").doesNotContain("KB").doesNotContain("total")
+assertThat(dot).contains("tree-sizes-root").doesNotContain("kB").doesNotContain("total")
 
 return true

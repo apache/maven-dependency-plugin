@@ -26,7 +26,7 @@ def jarSize = { String artifactId ->
 }
 long leaf = jarSize("tree-sizes-leaf")
 long root = jarSize("tree-sizes-root")
-assertThat(leaf + root).isLessThan(1024L)
+assertThat(leaf + root).isLessThan(1000L)
 
 // the leaf is a direct dependency, so the one below tree-sizes-root is omitted: it shows no size, but the root
 // still brings it in, and the project counts it once

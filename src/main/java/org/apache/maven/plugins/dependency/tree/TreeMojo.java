@@ -196,11 +196,11 @@ public class TreeMojo extends AbstractMojo {
      * of the project, which is the size of all distinct dependencies, is less than the sum of the totals of its
      * dependencies. The totals are computed on the verbose tree even without <code>verbose</code>, and on the tree
      * before <code>includes</code> and <code>excludes</code> filter it. An artifact that cannot be resolved is shown as
-     * <code>(size unknown)</code> and counts as zero. A size is shown with the units B, KB, MB, GB and TB, where 1 KB
-     * is 1024 bytes.
+     * <code>(size unknown)</code> and counts as zero. A size is shown as Maven shows the files it downloads, with the
+     * units B, kB, MB, GB and TB, where 1 kB is 1000 bytes.
      * <p>
      * The sizes are shown for the output types <code>text</code>, as in
-     * <code>+- org.foo:foo-all:jar:2.0:compile (200 KB, total 1.5 MB)</code>, and <code>json</code>, as the numbers
+     * <code>+- org.foo:foo-all:jar:2.0:compile (200 kB, total 1.5 MB)</code>, and <code>json</code>, as the numbers
      * <code>size</code> and <code>totalSize</code> in bytes. The other output types ignore this parameter with a
      * warning and download nothing.
      *
