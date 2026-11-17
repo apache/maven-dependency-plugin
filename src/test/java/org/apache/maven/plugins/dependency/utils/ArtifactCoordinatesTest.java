@@ -20,12 +20,13 @@ package org.apache.maven.plugins.dependency.utils;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ArtifactCoordinatesTest {
 
@@ -67,7 +68,7 @@ class ArtifactCoordinatesTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"LATEST", "RELEASE", "'[1.0,2.0)'", "'(,2.0]'"})
+    @ValueSource(strings = {"LATEST", "RELEASE", "[1.0,2.0)", "(,2.0]"})
     void versionKeywordsAndRangesAreVersions(String version) {
         assertCoordinates("g:a:jar:" + version, version, "jar", null);
         assertCoordinates("g:a:" + version + ":jar", version, "jar", null);
@@ -100,7 +101,7 @@ class ArtifactCoordinatesTest {
             })
     void ambiguousOrMalformedStringsAreRejected(String artifact) {
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> parse(artifact));
-        assertEquals(true, e.getMessage().startsWith("Invalid artifact format: " + artifact), e.getMessage());
+        assertTrue(e.getMessage().startsWith("Invalid artifact format: " + artifact), e.getMessage());
     }
 
     @Test
@@ -155,7 +156,7 @@ class ArtifactCoordinatesTest {
     void theMavenFormRejectsEmptyTypeAndVersion() {
         for (String artifact : new String[] {"g:a::1.0", "g:a::cls:1.0", "g:a::1.0:test", "g:a::cls:1.0:test"}) {
             IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> parse(artifact), artifact);
-            assertEquals(true, e.getMessage().startsWith("Invalid artifact format: " + artifact), e.getMessage());
+            assertTrue(e.getMessage().startsWith("Invalid artifact format: " + artifact), e.getMessage());
         }
     }
 
@@ -197,14 +198,14 @@ class ArtifactCoordinatesTest {
     void sixPartsThatFitNeitherFormAreRejected(String artifact) {
         IllegalArgumentException e =
                 assertThrows(IllegalArgumentException.class, () -> parseWithDestFileName(artifact));
-        assertEquals(true, e.getMessage().contains("[:classifier[:destFileName]]"), e.getMessage());
+        assertTrue(e.getMessage().contains("[:classifier[:destFileName]]"), e.getMessage());
     }
 
     @Test
     void theLegacyFormWithoutDestFileNameKeepsItsOwnMessage() {
         IllegalArgumentException e =
                 assertThrows(IllegalArgumentException.class, () -> parse("g:a:1.0:jar:cls:renamed.jar"));
-        assertEquals(false, e.getMessage().contains("destFileName"), e.getMessage());
+        assertFalse(e.getMessage().contains("destFileName"), e.getMessage());
     }
 
     @Test

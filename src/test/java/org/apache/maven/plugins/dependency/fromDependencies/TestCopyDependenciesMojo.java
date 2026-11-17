@@ -644,7 +644,7 @@ class TestCopyDependenciesMojo {
 
     @Test
     @InjectMojo(goal = "copy-dependencies")
-    void testArtifactResolutionException(CopyDependenciesMojo mojo) throws MojoFailureException {
+    void testArtifactResolutionException(CopyDependenciesMojo mojo) throws Exception {
         dotestArtifactExceptions(mojo);
     }
 
@@ -669,8 +669,7 @@ class TestCopyDependenciesMojo {
 
     @Test
     @InjectMojo(goal = "copy-dependencies")
-    void testDontOverWriteRelease(CopyDependenciesMojo mojo)
-            throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
+    void testDontOverWriteRelease(CopyDependenciesMojo mojo) throws Exception {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact release = stubFactory.getReleaseArtifact();
@@ -700,8 +699,7 @@ class TestCopyDependenciesMojo {
 
     @Test
     @InjectMojo(goal = "copy-dependencies")
-    void testOverWriteRelease(CopyDependenciesMojo mojo)
-            throws MojoExecutionException, IOException, MojoFailureException {
+    void testOverWriteRelease(CopyDependenciesMojo mojo) throws Exception {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact release = stubFactory.getReleaseArtifact();
@@ -731,8 +729,7 @@ class TestCopyDependenciesMojo {
 
     @Test
     @InjectMojo(goal = "copy-dependencies")
-    void testDontOverWriteSnap(CopyDependenciesMojo mojo)
-            throws MojoExecutionException, IOException, MojoFailureException {
+    void testDontOverWriteSnap(CopyDependenciesMojo mojo) throws Exception {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact snap = stubFactory.getSnapshotArtifact();
@@ -762,7 +759,7 @@ class TestCopyDependenciesMojo {
 
     @Test
     @InjectMojo(goal = "copy-dependencies")
-    void testOverWriteSnap(CopyDependenciesMojo mojo) throws MojoExecutionException, IOException, MojoFailureException {
+    void testOverWriteSnap(CopyDependenciesMojo mojo) throws Exception {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact snap = stubFactory.getSnapshotArtifact();
@@ -793,7 +790,7 @@ class TestCopyDependenciesMojo {
 
     @Test
     @InjectMojo(goal = "copy-dependencies")
-    void testGetDependencies(CopyDependenciesMojo mojo) throws MojoExecutionException {
+    void testGetDependencies(CopyDependenciesMojo mojo) throws Exception {
         assertTrue(mojo.getResolvedDependencies(true)
                 .containsAll(mojo.getDependencySets(true).getResolvedDependencies()));
     }
@@ -856,7 +853,7 @@ class TestCopyDependenciesMojo {
 
     @Test
     @InjectMojo(goal = "copy-dependencies")
-    void testExcludeTestScope(CopyDependenciesMojo mojo) throws IOException, MojoFailureException {
+    void testExcludeTestScope(CopyDependenciesMojo mojo) throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
 
         mojo.excludeScope = "test";

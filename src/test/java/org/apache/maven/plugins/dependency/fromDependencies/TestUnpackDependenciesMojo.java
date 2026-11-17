@@ -21,7 +21,6 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 import javax.inject.Inject;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -189,7 +188,7 @@ class TestUnpackDependenciesMojo {
 
     @Test
     @InjectMojo(goal = "unpack-dependencies")
-    void testExcludeTestScope(UnpackDependenciesMojo mojo) throws IOException, MojoFailureException {
+    void testExcludeTestScope(UnpackDependenciesMojo mojo) throws Exception {
         mojo.getProject().setArtifacts(stubFactory.getScopedArtifacts());
         mojo.excludeScope = "test";
 
@@ -511,7 +510,7 @@ class TestUnpackDependenciesMojo {
 
     @Test
     @InjectMojo(goal = "unpack-dependencies")
-    void testArtifactResolutionException(UnpackDependenciesMojo mojo) throws MojoFailureException {
+    void testArtifactResolutionException(UnpackDependenciesMojo mojo) throws Exception {
         dotestArtifactExceptions(mojo);
     }
 

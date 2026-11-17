@@ -21,7 +21,6 @@ package org.apache.maven.plugins.dependency.tree;
 import javax.inject.Inject;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -276,7 +275,7 @@ class TestTreeMojo {
      * Test the JSON format serialization on DependencyNodes with circular dependence
      */
     @Test
-    void testTreeJsonCircularDependency() throws IOException {
+    void testTreeJsonCircularDependency() throws Exception {
         File outputFile = new File(tempDir, "tree1.json");
         Files.createDirectories(outputFile.getParentFile().toPath());
         outputFile.createNewFile();

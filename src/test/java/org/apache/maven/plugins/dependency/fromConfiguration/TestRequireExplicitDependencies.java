@@ -33,6 +33,7 @@ import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -118,7 +119,7 @@ class TestRequireExplicitDependencies {
         // the check passes; the execution then fails later, while resolving the artifact
         Exception e = assertThrows(Exception.class, mojo::execute);
 
-        assertTrue(!(e instanceof MojoFailureException), String.valueOf(e));
+        assertFalse((e instanceof MojoFailureException), String.valueOf(e));
     }
 
     @Test

@@ -19,7 +19,6 @@
 package org.apache.maven.plugins.dependency.tree;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -221,7 +220,7 @@ class DependencySizesTest {
     }
 
     @Test
-    void systemScopeUsesTheSystemPathNotTheResolver(@TempDir File dir) throws IOException {
+    void systemScopeUsesTheSystemPathNotTheResolver(@TempDir File dir) throws Exception {
         File jar = new File(dir, "system.jar");
         Files.write(jar.toPath(), new byte[123]);
         DependencyNode system = node(root, "system", "1.0");

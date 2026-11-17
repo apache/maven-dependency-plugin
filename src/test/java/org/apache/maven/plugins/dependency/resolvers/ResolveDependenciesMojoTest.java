@@ -56,13 +56,13 @@ class ResolveDependenciesMojoTest {
     }
 
     @Test
-    void testDependencyStatusLog() throws IOException {
+    void testDependencyStatusLog() throws Exception {
         Set<Artifact> artifacts = this.stubFactory.getMixedArtifacts();
         doTestDependencyStatusLog(artifacts);
     }
 
     @Test
-    void testDependencyStatusLogNullFiles() throws IOException {
+    void testDependencyStatusLogNullFiles() throws Exception {
         this.stubFactory.setCreateFiles(false);
         Set<Artifact> artifacts = this.stubFactory.getMixedArtifacts();
         doTestDependencyStatusLog(artifacts);
@@ -74,7 +74,7 @@ class ResolveDependenciesMojoTest {
     }
 
     @Test
-    void testOptionalDependencyFormatting() throws IOException {
+    void testOptionalDependencyFormatting() throws Exception {
         Set<Artifact> set = new HashSet<>();
         Artifact artifact =
                 stubFactory.createArtifact("g", "a", VersionRange.createFromVersion("1.0"), "test", "jar", null, true);
@@ -87,7 +87,7 @@ class ResolveDependenciesMojoTest {
     }
 
     @Test
-    void testModuleInfoIsAppendedToResolvedJars() throws IOException {
+    void testModuleInfoIsAppendedToResolvedJars() throws Exception {
         assumeTrue(hasModuleSystem(), "module names need Java 9 or later");
         ResolveDependenciesMojo mojo = newMojo(new DependencyStatusSets());
         mojo.outputFile = new File(tempDir, "list.txt");
@@ -100,7 +100,7 @@ class ResolveDependenciesMojoTest {
     }
 
     @Test
-    void testModuleInfoCanBeSwitchedOff() throws IOException {
+    void testModuleInfoCanBeSwitchedOff() throws Exception {
         assumeTrue(hasModuleSystem(), "module names need Java 9 or later");
         ResolveDependenciesMojo mojo = newMojo(new DependencyStatusSets());
         mojo.outputFile = new File(tempDir, "list.txt");

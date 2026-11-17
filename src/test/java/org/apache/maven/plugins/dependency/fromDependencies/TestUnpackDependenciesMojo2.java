@@ -21,7 +21,6 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 import javax.inject.Inject;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -102,8 +101,7 @@ class TestUnpackDependenciesMojo2 {
 
     @Test
     @InjectMojo(goal = "unpack-dependencies")
-    void testDontOverWriteRelease(UnpackDependenciesMojo mojo)
-            throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
+    void testDontOverWriteRelease(UnpackDependenciesMojo mojo) throws Exception {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact release = stubFactory.getReleaseArtifact();
@@ -122,8 +120,7 @@ class TestUnpackDependenciesMojo2 {
 
     @Test
     @InjectMojo(goal = "unpack-dependencies")
-    void testOverWriteRelease(UnpackDependenciesMojo mojo)
-            throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
+    void testOverWriteRelease(UnpackDependenciesMojo mojo) throws Exception {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact release = stubFactory.getReleaseArtifact();
@@ -143,8 +140,7 @@ class TestUnpackDependenciesMojo2 {
 
     @Test
     @InjectMojo(goal = "unpack-dependencies")
-    void testDontOverWriteSnap(UnpackDependenciesMojo mojo)
-            throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
+    void testDontOverWriteSnap(UnpackDependenciesMojo mojo) throws Exception {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact snap = stubFactory.getSnapshotArtifact();
@@ -165,8 +161,7 @@ class TestUnpackDependenciesMojo2 {
 
     @Test
     @InjectMojo(goal = "unpack-dependencies")
-    void testOverWriteSnap(UnpackDependenciesMojo mojo)
-            throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
+    void testOverWriteSnap(UnpackDependenciesMojo mojo) throws Exception {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact snap = stubFactory.getSnapshotArtifact();
@@ -187,8 +182,7 @@ class TestUnpackDependenciesMojo2 {
 
     @Test
     @InjectMojo(goal = "unpack-dependencies")
-    void testOverWriteIfNewer(UnpackDependenciesMojo mojo)
-            throws MojoExecutionException, InterruptedException, IOException, MojoFailureException {
+    void testOverWriteIfNewer(UnpackDependenciesMojo mojo) throws Exception {
 
         Set<Artifact> artifacts = new HashSet<>();
         Artifact snap = stubFactory.getSnapshotArtifact();
