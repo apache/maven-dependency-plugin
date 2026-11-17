@@ -848,7 +848,7 @@ class TestCopyMojo {
         // files only: a directory created for an item's output path is not a copied artifact
         String[] names = outputDirectory.list((dir, name) -> new File(dir, name).isFile());
         List<String> files = names == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(names));
-        Collections.sort(files);
+        files.sort(null);
         return files;
     }
 

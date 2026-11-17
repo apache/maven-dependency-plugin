@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -362,7 +361,7 @@ public class ResolveDependenciesMojo extends AbstractResolveMojo {
             artifactStringList.add(message + System.lineSeparator());
         }
         if (theSort) {
-            Collections.sort(artifactStringList);
+            artifactStringList.sort(null);
         }
         for (String artifactString : artifactStringList) {
             sb.append(artifactString);

@@ -39,7 +39,7 @@ public class ResolveFileFilter extends MarkerFileFilter {
     public boolean isArtifactIncluded(ArtifactItem item) throws ArtifactFilterException {
         handler.setArtifact(item.getArtifact());
         try {
-            return (!handler.isMarkerSet());
+            return !handler.isMarkerSet();
         } catch (MojoExecutionException e) {
             throw new ArtifactFilterException(e.getMessage(), e);
         }

@@ -284,7 +284,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
      */
     public String getArtifactManagementKey(Artifact artifact) {
         return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getType()
-                + ((artifact.getClassifier() != null) ? ":" + artifact.getClassifier() : "");
+                + (artifact.getClassifier() != null ? ":" + artifact.getClassifier() : "");
     }
 
     /**

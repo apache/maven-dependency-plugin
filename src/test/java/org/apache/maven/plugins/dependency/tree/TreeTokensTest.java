@@ -18,7 +18,7 @@
  */
 package org.apache.maven.plugins.dependency.tree;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -122,7 +122,7 @@ class TreeTokensTest {
                 capabilities("FUTURE_DESTINATION", "UTF-8"),
                 capabilities("CONSOLE", null),
                 capabilities("CONSOLE", 42),
-                capabilities("CONSOLE", Charset.forName("UTF-8")));
+                capabilities("CONSOLE", StandardCharsets.UTF_8));
     }
 
     private static Map<Object, Object> capabilities(Object destination, Object encoding) {

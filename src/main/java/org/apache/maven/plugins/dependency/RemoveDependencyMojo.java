@@ -163,9 +163,9 @@ public class RemoveDependencyMojo extends AbstractDependencyMojo {
             Model model = targetProject.getModel();
             if (model != null) {
                 String removeType =
-                        (coords.getType() != null && !coords.getType().isEmpty()) ? coords.getType() : "jar";
-                String removeClassifier = (coords.getClassifier() != null
-                                && !coords.getClassifier().isEmpty())
+                        coords.getType() != null && !coords.getType().isEmpty() ? coords.getType() : "jar";
+                String removeClassifier = coords.getClassifier() != null
+                                && !coords.getClassifier().isEmpty()
                         ? coords.getClassifier()
                         : "";
                 if (targetManaged) {

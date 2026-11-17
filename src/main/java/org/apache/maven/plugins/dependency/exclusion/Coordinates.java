@@ -35,7 +35,7 @@ import org.apache.maven.model.InputLocation;
  * When dealing with exclusions the version is not important. Only groupId and artifactId is used.
  * </p>
  */
-class Coordinates implements Comparable<Coordinates> {
+final class Coordinates implements Comparable<Coordinates> {
 
     private final String groupId;
 
