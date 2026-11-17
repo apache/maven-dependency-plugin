@@ -2,7 +2,6 @@
 title: Filtering the dependency tree
 author: 
   - Mark Hobson
-date: 2007-09-01
 ---
 
 <!--
@@ -26,23 +25,23 @@ under the License.
 
 # Filtering the dependency tree
 
-A project's dependency tree can be filtered to locate specific dependencies. For example, to find out why Velocity is being used by the Maven Dependency Plugin, we can execute the following in the project's directory:
+A project's dependency tree can be filtered to locate specific dependencies. For example, to find out why Commons Lang
+is on the class path of a project, run the following in the project's directory:
 
 ```shell
-mvn dependency:tree -Dincludes=velocity:velocity
+mvn dependency:tree -Dincludes=org.apache.commons:commons-lang3
 ```
 
 Which outputs:
 
 ```text
-[INFO] [dependency:tree]
-[INFO] org.apache.maven.plugins:maven-dependency-plugin:maven-plugin:2.0-alpha-5-SNAPSHOT
-[INFO] \- org.apache.maven.doxia:doxia-site-renderer:jar:1.0-alpha-8:compile
-[INFO]    \- org.codehaus.plexus:plexus-velocity:jar:1.1.3:compile
-[INFO]       \- velocity:velocity:jar:1.4:compile
+[INFO] org.example:app:jar:1.0
+[INFO] \- org.apache.commons:commons-text:jar:1.12.0:compile
+[INFO]    \- org.apache.commons:commons-lang3:jar:3.14.0:compile
 ```
 
-Thus we can see that Velocity is being brought in by Plexus Velocity, which in turn is being brought in by a direct dependency on Doxia Site Renderer.
+Thus we can see that Commons Lang is not declared by the project, but is brought in by its direct dependency on
+Commons Text.
 
 ## Filter pattern syntax
 

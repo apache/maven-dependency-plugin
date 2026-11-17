@@ -27,7 +27,7 @@ under the License.
 
 # Copying project dependencies
 
-Project dependencies are the dependencies declared in your pom. To copy them with their transitive dependencies, use the `dependency:copy-dependencies` mojo and configure the plugin like the sample below:
+Project dependencies are the dependencies declared in your pom. To copy them with their transitive dependencies, use the `dependency:copy-dependencies` goal and configure the plugin like the sample below:
 
 ```xml
 <project>

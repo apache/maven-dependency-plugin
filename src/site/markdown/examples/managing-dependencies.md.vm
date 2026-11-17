@@ -88,7 +88,13 @@ mvn dependency:add -Dgav=com.example:lib:1.0 -Dclassifier=sources
 
 #[[### Duplicate Detection]]#
 
-If the dependency already exists in the POM (matching on `groupId`, `artifactId`, `type`, and `classifier`), the goal fails with a descriptive error directing you to remove the existing dependency first:
+If the dependency already exists in the POM (matching on `groupId`, `artifactId`, `type`, and `classifier`), the goal fails with an error directing you to remove the existing dependency first:
+
+```text
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-dependency-plugin:${project.version}:add (default-cli) on project app: Dependency org.apache.commons:commons-lang3 already exists in pom.xml. Remove it first with dependency:remove, then re-add. -> [Help 1]
+```
+
+To change the scope or version of an existing dependency, remove it and add it again:
 
 ```shell
 mvn dependency:remove -Dgav=org.apache.commons:commons-lang3

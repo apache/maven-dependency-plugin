@@ -31,7 +31,7 @@ This is pretty similar to the [Copying Specific Artifacts](./copying-artifacts.h
 
 The archive format is chosen by the artifact type, or by the file extension when no unarchiver is registered for the type. The formats available are those of [Plexus Archiver](https://codehaus-plexus.github.io/plexus-archiver/), such as zip, jar, war, ear, tar, tar.gz, tar.bz2 and tar.xz, plus any unarchiver that a plugin dependency adds.
 
-To unpack the copied artifacts, use the `dependency:unpack` mojo and configure the plugin into something like the sample below:
+To unpack artifacts, use the `dependency:unpack` goal and configure the plugin like the sample below:
 
 ```xml
 <project>
@@ -52,9 +52,9 @@ To unpack the copied artifacts, use the `dependency:unpack` mojo and configure t
              <configuration>
                <artifactItems>
                  <artifactItem>
-                   <groupId>junit</groupId>
-                   <artifactId>junit</artifactId>
-                   <version>3.8.1</version>
+                   <groupId>org.apache.commons</groupId>
+                   <artifactId>commons-lang3</artifactId>
+                   <version>3.14.0</version>
                    <type>jar</type>
                    <overWrite>false</overWrite>
                    <outputDirectory>${esc.d}{project.build.directory}/alternateLocation</outputDirectory>
@@ -86,9 +86,9 @@ group ID and artifact ID. Otherwise, a version may be inferred from a transitive
 plugin compares the versions selected by the compile, runtime, and test dependency graphs. If those graphs select
 different versions, set `dependencyScope` on the `artifactItem` to `compile`, `runtime`, or `test`.
 
-# <a id="Unpacking_from_the_command_line"></a>Unpacking from the command line:
+# <a id="Unpacking_from_the_command_line"></a>Unpacking from the command line
 
-If you intend to configure this mojo for execution on the command line using:
+If you intend to configure this goal for execution on the command line using:
 
 ```shell
 mvn dependency:unpack
