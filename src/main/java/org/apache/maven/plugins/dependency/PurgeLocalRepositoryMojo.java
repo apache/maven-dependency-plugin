@@ -22,6 +22,11 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,7 +64,6 @@ import org.apache.maven.shared.artifact.filter.resolve.transform.ArtifactInclude
 import org.apache.maven.shared.artifact.filter.resolve.transform.EclipseAetherFilterTransformer;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.shared.utils.logging.MessageUtils;
-import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.aether.artifact.ArtifactType;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -446,7 +450,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
                 if (purgeDir.exists()) {
                     getLog().debug("Deleting directory: " + purgeDir);
                     try {
-                        FileUtils.deleteDirectory(purgeDir);
+                        PurgeLocalRepositoryMojo.deleteDirectory(purgeDir.toPath());
                     } catch (IOException e) {
                         throw new MojoExecutionException("Unable to purge directory: " + purgeDir);
                     }
@@ -672,7 +676,7 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
 
                 if (deleteTarget.isDirectory()) {
                     try {
-                        FileUtils.deleteDirectory(deleteTarget);
+                        PurgeLocalRepositoryMojo.deleteDirectory(deleteTarget.toPath());
                     } catch (IOException e) {
                         getLog().warn("Unable to purge local repository location: " + deleteTarget, e);
                     }
@@ -793,5 +797,45 @@ public class PurgeLocalRepositoryMojo extends AbstractMojo {
      */
     public void setSkip(boolean skip) {
         this.skip = skip;
+    }
+
+    static void deleteDirectory(final Path directory) throws IOException {
+        if (!Files.exists(directory)) {
+            return;
+        }
+        final IOException[] failure = new IOException[1];
+        Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                try {
+                    Files.delete(file);
+                } catch (IOException e) {
+                    failure[0] = e;
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                failure[0] = exc;
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+                if (exc != null) {
+                    failure[0] = exc;
+                }
+                try {
+                    Files.delete(dir);
+                } catch (IOException e) {
+                    failure[0] = e;
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        if (failure[0] != null) {
+            throw failure[0];
+        }
     }
 }
