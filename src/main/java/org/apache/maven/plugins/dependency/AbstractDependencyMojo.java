@@ -26,10 +26,8 @@ import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.pom.DependencyEntry;
-import org.apache.maven.plugins.dependency.utils.DependencySilentLog;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -42,17 +40,6 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
      * The Maven session.
      */
     protected final MavenSession session;
-
-    /**
-     * If the plugin should be silent.
-     *
-     * @since 2.0
-     * @deprecated to be removed in 3.13.0. Since 3.8.1 the copy and unpack goals log each artifact at debug
-     *             level, so remove this parameter from the configuration
-     */
-    @Deprecated
-    @Parameter(property = "silent", defaultValue = "false")
-    private boolean silent;
 
     /**
      * Skip plugin execution completely.
@@ -130,29 +117,6 @@ public abstract class AbstractDependencyMojo extends AbstractMojo {
      */
     public void setSkip(boolean skip) {
         this.skip = skip;
-    }
-
-    /**
-     * @return {@link #silent}
-     * @deprecated to be removed in 3.13.0
-     */
-    @Deprecated
-    protected final boolean isSilent() {
-        return silent;
-    }
-
-    /**
-     * @param silent {@link #silent}
-     * @deprecated to be removed in 3.13.0; no API replacement
-     */
-    @Deprecated
-    public void setSilent(boolean silent) {
-        this.silent = silent;
-        if (silent) {
-            setLog(new DependencySilentLog());
-        } else if (getLog() instanceof DependencySilentLog) {
-            setLog(new SystemStreamLog());
-        }
     }
 
     /**

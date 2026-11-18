@@ -22,18 +22,19 @@ assert file.exists()
 
 String buildLog = file.getText("UTF-8")
 
-assert buildLog.contains('[INFO] Resolved plugin: maven-clean-plugin-3.5.0.jar')
-assert buildLog.contains('[INFO] Resolved plugin dependency:')
-assert buildLog.contains('[INFO]       maven-clean-plugin-3.5.0.jar')
-assert buildLog.contains('[INFO]       plexus-utils-4.0.2.jar')
+assert buildLog.contains('[DEBUG] Resolved plugin: maven-clean-plugin-3.5.0.jar')
+assert buildLog.contains('[DEBUG] Resolved plugin dependency:')
+assert buildLog.contains('[DEBUG]       maven-clean-plugin-3.5.0.jar')
+assert buildLog.contains('[DEBUG]       plexus-utils-4.0.2.jar')
 
-assert buildLog.contains('[INFO] Resolved plugin: maven-jar-plugin-3.5.0.jar')
+assert buildLog.contains('[DEBUG] Resolved plugin: maven-jar-plugin-3.5.0.jar')
 
-assert buildLog.contains('[INFO] Resolved dependency: maven-core-3.9.11.jar')
-assert buildLog.contains('[INFO] Resolved dependency: maven-model-3.9.11.jar')
-assert buildLog.contains('[INFO] Resolved dependency: maven-settings-3.9.11.jar')
+assert buildLog.contains('[DEBUG] Resolved dependency: maven-core-3.9.11.jar')
+assert buildLog.contains('[DEBUG] Resolved dependency: maven-model-3.9.11.jar')
+assert buildLog.contains('[DEBUG] Resolved dependency: maven-settings-3.9.11.jar')
 
 assert buildLog.contains('[DEBUG] Skipped artifact org.apache.maven.its.dependency:module1:1.0-SNAPSHOT because it is present in the reactor')
 assert buildLog.contains('[DEBUG] Skipped dependency org.apache.maven.its.dependency:module1:1.0-SNAPSHOT because it is present in the reactor')
 
-
+// the go-offline messages are logged at debug level
+assert !buildLog.contains('[INFO] Resolved')

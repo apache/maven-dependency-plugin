@@ -22,9 +22,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-          <configuration>
-              <silent>true</silent>
-          </configuration>
       </plugin>
     </plugins>
   </build>

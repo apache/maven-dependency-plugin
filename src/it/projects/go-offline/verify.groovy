@@ -22,13 +22,14 @@ assert file.exists()
 
 String buildLog = file.getText("UTF-8")
 
-assert buildLog.contains('[INFO] Resolved plugin: maven-clean-plugin-3.5.0.jar')
-assert buildLog.contains('[INFO] Resolved plugin dependency:')
-assert buildLog.contains('[INFO]       maven-clean-plugin-3.5.0.jar')
-assert buildLog.contains('[INFO]       plexus-utils-4.0.2.jar')
+assert buildLog.contains('[DEBUG] Resolved plugin: maven-clean-plugin-3.5.0.jar')
+assert buildLog.contains('[DEBUG] Resolved plugin dependency:')
+assert buildLog.contains('[DEBUG]       maven-clean-plugin-3.5.0.jar')
+assert buildLog.contains('[DEBUG]       plexus-utils-4.0.2.jar')
 
-assert buildLog.contains('[INFO] Resolved dependency: maven-core-3.9.11.jar')
-assert buildLog.contains('[INFO] Resolved dependency: maven-model-3.9.11.jar')
-assert buildLog.contains('[INFO] Resolved dependency: maven-settings-3.9.11.jar')
+assert buildLog.contains('[DEBUG] Resolved dependency: maven-core-3.9.11.jar')
+assert buildLog.contains('[DEBUG] Resolved dependency: maven-model-3.9.11.jar')
+assert buildLog.contains('[DEBUG] Resolved dependency: maven-settings-3.9.11.jar')
 
-
+// the go-offline messages are logged at debug level
+assert !buildLog.contains('[INFO] Resolved')
