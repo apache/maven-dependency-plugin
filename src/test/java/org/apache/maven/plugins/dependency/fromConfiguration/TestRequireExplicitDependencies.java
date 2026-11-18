@@ -119,7 +119,7 @@ class TestRequireExplicitDependencies {
         // the check passes; the execution then fails later, while resolving the artifact
         Exception e = assertThrows(Exception.class, mojo::execute);
 
-        assertFalse((e instanceof MojoFailureException), String.valueOf(e));
+        assertFalse(e instanceof MojoFailureException, String.valueOf(e));
     }
 
     @Test
