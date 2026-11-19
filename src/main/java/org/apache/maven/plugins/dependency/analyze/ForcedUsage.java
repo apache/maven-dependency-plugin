@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.shared.dependency.analyzer.ArtifactKeys;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 
 /**
@@ -39,11 +40,11 @@ final class ForcedUsage {
     ForcedUsage(ProjectDependencyAnalysis analysis, String[] usedDependencies) {
         Set<String> usedDeclared = new HashSet<>();
         for (Artifact artifact : analysis.getUsedDeclaredArtifacts()) {
-            usedDeclared.add(key(artifact));
+            usedDeclared.add(ArtifactKeys.groupArtifactId(artifact));
         }
         // the analyzer first matches an entry against the unused declared artifacts, so such an entry is needed
         for (Artifact artifact : analysis.getUnusedDeclaredArtifacts()) {
-            usedDeclared.remove(key(artifact));
+            usedDeclared.remove(ArtifactKeys.groupArtifactId(artifact));
         }
         for (String entry : usedDependencies) {
             (usedDeclared.contains(entry) ? unneeded : toForce).add(entry);
@@ -66,9 +67,5 @@ final class ForcedUsage {
 
     static String message(String entry) {
         return "Unneeded forced usage of " + entry + ": the dependency is already detected as used";
-    }
-
-    private static String key(Artifact artifact) {
-        return artifact.getGroupId() + ":" + artifact.getArtifactId();
     }
 }
