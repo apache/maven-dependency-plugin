@@ -19,7 +19,10 @@
 package org.apache.maven.plugins.dependency.analyze;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.doxia.sink.Sink;
@@ -96,11 +99,49 @@ public class AnalyzeReportRenderer extends AbstractMavenReportRenderer {
             reported = true;
         }
 
+        // Generate the classes provided by more than one dependency:
+        Set<String> ambiguousClasses = analysis.getAmbiguousUsedDependencyClasses();
+        if (!ambiguousClasses.isEmpty()) {
+            startSection(getI18nString("AmbiguousUsedClasses"));
+            renderAmbiguousClassesTable(
+                    ambiguousClasses,
+                    analysis.getCandidateArtifactsByUsedClass(),
+                    analysis.getSelectedArtifactByUsedClass());
+            endSection();
+            reported = true;
+        }
+
         if (!reported) {
             text(getI18nString("noDependencyProblems"));
         }
 
         endSection();
+    }
+
+    private void renderAmbiguousClassesTable(
+            Set<String> ambiguousClasses, Map<String, Set<Artifact>> candidates, Map<String, Artifact> selected) {
+        startTable();
+        tableHeader(new String[] {"Used class", "Candidate artifacts", "Selected artifact"});
+
+        for (String className : ambiguousClasses) {
+            StringBuilder candidateList = new StringBuilder();
+            for (Artifact candidate : candidates.getOrDefault(className, Collections.<Artifact>emptySet())) {
+                if (candidateList.length() > 0) {
+                    candidateList.append(", ");
+                }
+                candidateList.append(coordinates(candidate));
+            }
+            Artifact selectedArtifact = selected.get(className);
+            tableRow(new String[] {
+                className, candidateList.toString(), selectedArtifact == null ? "" : coordinates(selectedArtifact)
+            });
+        }
+
+        endTable();
+    }
+
+    private static String coordinates(Artifact artifact) {
+        return artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getVersion();
     }
 
     private void renderDependenciesTable(Sink sink, Collection<Artifact> artifacts) {

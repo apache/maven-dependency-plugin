@@ -39,6 +39,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.dependency.analyzer.ArtifactKeys;
 
 /**
  * This mojo looks at the dependencies after final resolution and looks for mismatches in your dependencyManagement
@@ -222,7 +223,7 @@ public class AnalyzeDepMgt extends AbstractMojo {
      * @return the resulting GA
      */
     public String getExclusionKey(Artifact artifact) {
-        return artifact.getGroupId() + ":" + artifact.getArtifactId();
+        return ArtifactKeys.groupArtifactId(artifact);
     }
 
     /**
