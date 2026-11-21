@@ -21,6 +21,8 @@ package org.apache.maven.plugins.dependency.analyze;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
@@ -35,6 +38,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.dependency.analyzer.DependencyUsage;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalysis;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzer;
 import org.apache.maven.shared.dependency.analyzer.ProjectDependencyAnalyzerException;
@@ -68,7 +72,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean failOnWarning;
 
     /**
-     * Output used dependencies.
+     * Output used dependencies. Under the used undeclared and non-test scoped warnings, also list each dependency
+     * class involved and the project classes that use it.
      */
     @Parameter(property = "verbose", defaultValue = "false")
     private boolean verbose;
@@ -344,8 +349,11 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean checkDependencies() throws MojoExecutionException {
         ProjectDependencyAnalysis analysis;
         List<String> unneededForcedUsage = Collections.emptyList();
+        Map<Artifact, Set<DependencyUsage>> usages;
         try {
             analysis = createProjectDependencyAnalyzer().analyze(project, excludedClasses);
+            // read before forceDeclaredDependenciesUsage, which drops the usages of every used declared dependency
+            usages = usagesOf(analysis);
 
             if (usedDependencies != null) {
                 ForcedUsage forced = new ForcedUsage(analysis, usedDependencies);
@@ -427,7 +435,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
             logDependencyWarning("Used undeclared dependencies found:" + inProject());
 
             if (verbose) {
-                logArtifacts(usedUndeclaredWithClasses);
+                logArtifacts(usedUndeclaredWithClasses, usages);
             } else {
                 logArtifacts(usedUndeclaredWithClasses.keySet(), true);
             }
@@ -446,7 +454,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         if (!nonTestScope.isEmpty()) {
             logDependencyWarning("Non-test scoped test only dependencies found:" + inProject());
 
-            logArtifacts(nonTestScope, true);
+            logWarnedArtifacts(nonTestScope, usages);
             reported = true;
             warning = true;
         }
@@ -508,7 +516,34 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         }
     }
 
-    private void logArtifacts(Map<Artifact, Set<String>> artifacts) {
+    private static Map<Artifact, Set<DependencyUsage>> usagesOf(ProjectDependencyAnalysis analysis) {
+        Map<Artifact, Set<DependencyUsage>> usages = new HashMap<>(analysis.getUsedDeclaredArtifactsWithUsages());
+        usages.putAll(analysis.getUsedUndeclaredArtifactsWithUsages());
+        return usages;
+    }
+
+    private void logWarnedArtifacts(Set<Artifact> artifacts, Map<Artifact, Set<DependencyUsage>> usages) {
+        if (verbose) {
+            logArtifacts(withClasses(artifacts, usages), usages);
+        } else {
+            logArtifacts(artifacts, true);
+        }
+    }
+
+    private static Map<Artifact, Set<String>> withClasses(
+            Set<Artifact> artifacts, Map<Artifact, Set<DependencyUsage>> usages) {
+        Map<Artifact, Set<String>> withClasses = new LinkedHashMap<>();
+        for (Artifact artifact : artifacts) {
+            Set<String> classes = new HashSet<>();
+            for (DependencyUsage usage : usages.getOrDefault(artifact, Collections.emptySet())) {
+                classes.add(usage.getDependencyClass());
+            }
+            withClasses.put(artifact, classes);
+        }
+        return withClasses;
+    }
+
+    private void logArtifacts(Map<Artifact, Set<String>> artifacts, Map<Artifact, Set<DependencyUsage>> usages) {
         if (artifacts.isEmpty()) {
             getLog().info("   None");
         } else {
@@ -516,9 +551,20 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                 // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
                 entry.getKey().isSnapshot();
 
+                Map<String, Set<String>> usedBy = new HashMap<>();
+                for (DependencyUsage usage : usages.getOrDefault(entry.getKey(), Collections.emptySet())) {
+                    if (usage.getUsedBy() != null) {
+                        usedBy.computeIfAbsent(usage.getDependencyClass(), k -> new TreeSet<>())
+                                .add(usage.getUsedBy());
+                    }
+                }
+
                 logDependencyWarning("   " + entry.getKey());
-                for (String clazz : entry.getValue()) {
+                for (String clazz : new TreeSet<>(entry.getValue())) {
                     logDependencyWarning("      class " + clazz);
+                    for (String user : usedBy.getOrDefault(clazz, Collections.emptySet())) {
+                        logDependencyWarning("         used by " + user);
+                    }
                 }
             }
         }
