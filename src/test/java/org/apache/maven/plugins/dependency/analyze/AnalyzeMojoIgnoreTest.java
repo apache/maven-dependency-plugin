@@ -340,8 +340,111 @@ class AnalyzeMojoIgnoreTest {
         order.verify(log).warn("Used undeclared dependencies found: (in org.example:module-a)");
         order.verify(log).warn("   " + commonsIo);
         order.verify(log).warn("      class org.apache.commons.io.IOUtils");
+        order.verify(log).warn("         used by usedBy");
         order.verify(log).warn("Unused declared dependencies found: (in org.example:module-a)");
         order.verify(log).warn("   " + sharedUtils);
+    }
+
+    @Test
+    @InjectMojo(goal = "analyze-only")
+    @MojoParameter(name = "verbose", value = "true")
+    void verboseListsTheUsingClassesInSortedOrder(AnalyzeOnlyMojo mojo) throws Exception {
+        Artifact commonsIo = artifact("commons-io", "commons-io", "2.11.0", Artifact.SCOPE_COMPILE);
+        Set<DependencyUsage> used = new LinkedHashSet<>(Arrays.asList(
+                new DependencyUsage("org.apache.commons.io.IOUtils", "com.acme.Zeta"),
+                new DependencyUsage("org.apache.commons.io.FileUtils", "com.acme.Beta"),
+                new DependencyUsage("org.apache.commons.io.IOUtils", "com.acme.Alpha")));
+        usages(mojo, Collections.singletonMap(commonsIo, used));
+
+        mojo.execute();
+
+        InOrder order = inOrder(log);
+        order.verify(log).warn("   " + commonsIo);
+        order.verify(log).warn("      class org.apache.commons.io.FileUtils");
+        order.verify(log).warn("         used by com.acme.Beta");
+        order.verify(log).warn("      class org.apache.commons.io.IOUtils");
+        order.verify(log).warn("         used by com.acme.Alpha");
+        order.verify(log).warn("         used by com.acme.Zeta");
+    }
+
+    @Test
+    @InjectMojo(goal = "analyze-only")
+    @MojoParameter(name = "verbose", value = "true")
+    @MojoParameter(name = "usedDependencies", value = "org.apache.maven:maven-project")
+    void verboseShowsWhoUsesANonTestScopedDependencyAfterForcedUsage(AnalyzeOnlyMojo mojo) throws Exception {
+        setVariableValueToObject(mojo, "outputDirectory", outputDirectory);
+        when(analyzer.analyze(any(), any()))
+                .thenReturn(new ProjectDependencyAnalysis(
+                        Collections.singletonMap(
+                                MAVEN_MODEL,
+                                Collections.singleton(
+                                        new DependencyUsage("org.apache.maven.model.Model", "com.acme.ModelTest"))),
+                        Collections.emptyMap(),
+                        set(MAVEN_PROJECT),
+                        set(MAVEN_MODEL)));
+
+        mojo.execute();
+
+        InOrder order = inOrder(log);
+        order.verify(log).warn("Non-test scoped test only dependencies found: (in org.example:module-a)");
+        order.verify(log).warn("   " + MAVEN_MODEL);
+        order.verify(log).warn("      class org.apache.maven.model.Model");
+        order.verify(log).warn("         used by com.acme.ModelTest");
+    }
+
+    @Test
+    @InjectMojo(goal = "analyze-only")
+    void withoutVerboseNoClassesOrUsingClassesAreListed(AnalyzeOnlyMojo mojo) throws Exception {
+        Artifact commonsIo = artifact("commons-io", "commons-io", "2.11.0", Artifact.SCOPE_COMPILE);
+        usages(mojo, Collections.singletonMap(commonsIo, usedBy("org.apache.commons.io.IOUtils")));
+
+        mojo.execute();
+
+        verify(log).warn("   " + commonsIo);
+        verify(log, never()).warn("      class org.apache.commons.io.IOUtils");
+        verify(log, never()).warn("         used by usedBy");
+    }
+
+    @Test
+    @InjectMojo(goal = "analyze-only")
+    void withoutVerboseANonTestScopedDependencyIsListedAlone(AnalyzeOnlyMojo mojo) throws Exception {
+        nonTestScoped(mojo);
+
+        mojo.execute();
+
+        verify(log).warn("   " + MAVEN_MODEL);
+        verify(log, never()).warn("      class org.apache.maven.model.Model");
+        verify(log, never()).warn("         used by com.acme.ModelTest");
+    }
+
+    @Test
+    @InjectMojo(goal = "analyze-only")
+    @MojoParameter(name = "verbose", value = "true")
+    @MojoParameter(name = "failOnWarning", value = "true")
+    void verboseUsingClassesAreErrorsWithFailOnWarning(AnalyzeOnlyMojo mojo) throws Exception {
+        nonTestScoped(mojo);
+
+        assertThatThrownBy(mojo::execute)
+                .isInstanceOf(MojoExecutionException.class)
+                .hasMessage("Dependency problems found");
+        InOrder order = inOrder(log);
+        order.verify(log).error("   " + MAVEN_MODEL);
+        order.verify(log).error("      class org.apache.maven.model.Model");
+        order.verify(log).error("         used by com.acme.ModelTest");
+    }
+
+    /** An analysis whose only warning is a compile scoped dependency used by a test class. */
+    private void nonTestScoped(Mojo mojo) throws Exception {
+        setVariableValueToObject(mojo, "outputDirectory", outputDirectory);
+        when(analyzer.analyze(any(), any()))
+                .thenReturn(new ProjectDependencyAnalysis(
+                        Collections.singletonMap(
+                                MAVEN_MODEL,
+                                Collections.singleton(
+                                        new DependencyUsage("org.apache.maven.model.Model", "com.acme.ModelTest"))),
+                        Collections.emptyMap(),
+                        Collections.emptySet(),
+                        set(MAVEN_MODEL)));
     }
 
     @Test
