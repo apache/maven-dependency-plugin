@@ -58,7 +58,14 @@ class AnalyzeReportRendererTest {
     @Test
     void rendersAmbiguousUsedClassesWithCandidatesAndSelectedArtifact() {
         Artifact api = artifact("com.example", "api", "1.0");
-        Artifact shaded = artifact("com.example", "shaded", "2.0");
+        Artifact shaded = new DefaultArtifact(
+                "com.example",
+                "api",
+                "1.0",
+                Artifact.SCOPE_COMPILE,
+                "jar",
+                "shaded",
+                new DefaultArtifactHandler("jar"));
         Map<String, Set<Artifact>> candidates = new LinkedHashMap<>();
         candidates.put("com.example.Service", new LinkedHashSet<>(Arrays.asList(api, shaded)));
         Map<String, Artifact> selected = new LinkedHashMap<>();
@@ -78,7 +85,31 @@ class AnalyzeReportRendererTest {
         verify(sink, atLeastOnce()).text(written.capture());
         assertThat(written.getAllValues())
                 .contains(
-                        "com.example.Service", "com.example:api:1.0, com.example:shaded:2.0", "com.example:shaded:2.0");
+                        "report.analyze.AmbiguousUsedClasses",
+                        "com.example.Service",
+                        "com.example:api:jar:1.0, com.example:api:jar:shaded:1.0",
+                        "com.example:api:jar:shaded:1.0")
+                .doesNotContain("report.analyze.noDependencyProblems");
+    }
+
+    @Test
+    void rendersUsedClassesThatNoDependencyProvides() {
+        ProjectDependencyAnalysis analysis = new ProjectDependencyAnalysis(
+                Collections.emptyMap(),
+                Collections.emptyMap(),
+                Collections.emptySet(),
+                Collections.emptySet(),
+                Collections.singleton("com.missing.Gone"),
+                Collections.singletonMap("com.missing.Gone", Collections.emptySet()),
+                Collections.emptyMap());
+
+        render(analysis);
+
+        ArgumentCaptor<String> written = ArgumentCaptor.forClass(String.class);
+        verify(sink, atLeastOnce()).text(written.capture());
+        assertThat(written.getAllValues())
+                .contains("report.analyze.UnmappedUsedClasses", "com.missing.Gone")
+                .doesNotContain("report.analyze.noDependencyProblems");
     }
 
     @Test
@@ -89,6 +120,7 @@ class AnalyzeReportRendererTest {
         render(analysis);
 
         verify(sink, never()).text("report.analyze.AmbiguousUsedClasses");
+        verify(sink, never()).text("report.analyze.UnmappedUsedClasses");
     }
 
     private void render(ProjectDependencyAnalysis analysis) {

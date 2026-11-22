@@ -111,6 +111,20 @@ public class AnalyzeReportRenderer extends AbstractMavenReportRenderer {
             reported = true;
         }
 
+        // Generate the classes that no dependency provides:
+        Set<String> unmappedClasses = analysis.getUnmappedUsedDependencyClasses();
+        if (!unmappedClasses.isEmpty()) {
+            startSection(getI18nString("UnmappedUsedClasses"));
+            startTable();
+            tableHeader(new String[] {"Used class"});
+            for (String className : unmappedClasses) {
+                tableRow(new String[] {className});
+            }
+            endTable();
+            endSection();
+            reported = true;
+        }
+
         if (!reported) {
             text(getI18nString("noDependencyProblems"));
         }
@@ -141,7 +155,8 @@ public class AnalyzeReportRenderer extends AbstractMavenReportRenderer {
     }
 
     private static String coordinates(Artifact artifact) {
-        return artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getVersion();
+        // includes the type and the classifier, which can be all that tells two candidates apart
+        return artifact.getId();
     }
 
     private void renderDependenciesTable(Sink sink, Collection<Artifact> artifacts) {
