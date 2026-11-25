@@ -17,17 +17,13 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
 // Clean up test artifacts from local repository to ensure fresh test
 // This forces Maven to download artifacts from the fake-remote-repository
 // rather than using cached versions
-String[] foldersToDelete = [
-    "org/apache/maven/its/mdep592/test-parent",
-    "org/apache/maven/its/mdep592/test-child"
-];
+String[] foldersToDelete = ["org/apache/maven/its/mdep592/test-parent", "org/apache/maven/its/mdep592/test-child"]
 
-for ( String folderToDelete : foldersToDelete )
-{
-    assert new File( localRepositoryPath, folderToDelete ).deleteDir();
+for (String folderToDelete : foldersToDelete) {
+    assert new File(localRepositoryPath, folderToDelete).deleteDir()
 }

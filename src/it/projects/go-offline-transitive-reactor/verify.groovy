@@ -23,4 +23,4 @@ assert buildLog.contains('Resolved dependency: go-offline-transitive-reactor-ext
 assert !buildLog.contains('Resolved dependency: go-offline-transitive-reactor-b-1.0.jar')
 assert !buildLog.contains('/go-offline-transitive-reactor-b-1.0.jar')
 assert !new File(localRepositoryPath,
-        'org/apache/maven/its/dependency/go-offline-transitive-reactor-b/1.0/go-offline-transitive-reactor-b-1.0.jar').exists()
+'org/apache/maven/its/dependency/go-offline-transitive-reactor-b/1.0/go-offline-transitive-reactor-b-1.0.jar').exists()

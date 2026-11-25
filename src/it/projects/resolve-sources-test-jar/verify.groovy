@@ -19,8 +19,14 @@
 
 
 def lines = new File(basedir, "target/resolved.txt").readLines()*.trim()
-def notResolved = lines.findIndexOf { it.startsWith("The following files have NOT been resolved") }
+def notResolved = lines.findIndexOf {
+    it.startsWith("The following files have NOT been resolved")
+}
 def resolved = notResolved < 0 ? lines : lines.subList(0, notResolved)
 
-assert resolved.any { it.startsWith("org.apache.maven.its.dependency:ResourceArtifact:jar:sources:1.0") } : "Expected main sources in " + lines
-assert resolved.any { it.startsWith("org.apache.maven.its.dependency:ResourceArtifact:jar:test-sources:1.0") } : "Expected test-sources for the test-jar dependency in " + lines
+assert resolved.any {
+    it.startsWith("org.apache.maven.its.dependency:ResourceArtifact:jar:sources:1.0")
+} : "Expected main sources in " + lines
+assert resolved.any {
+    it.startsWith("org.apache.maven.its.dependency:ResourceArtifact:jar:test-sources:1.0")
+} : "Expected test-sources for the test-jar dependency in " + lines

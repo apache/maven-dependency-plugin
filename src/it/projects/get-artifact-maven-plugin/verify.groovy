@@ -17,17 +17,16 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
 String[] expectedFiles = [
     "org/apache/maven/its/dependency/get-artifact-maven-plugin/1.0/get-artifact-maven-plugin-1.0.jar",
     "org/apache/maven/its/dependency/get-artifact-maven-plugin/1.0/get-artifact-maven-plugin-1.0.pom"
-];
+]
 
-for ( String expectedFile : expectedFiles )
-{
-    File file = new File( localRepositoryPath, expectedFile );
-    assert file.isFile() : "Missing file " + file;
+for (String expectedFile : expectedFiles) {
+    File file = new File(localRepositoryPath, expectedFile)
+    assert file.isFile() : "Missing file " + file
 }
 
-return true;
+return true

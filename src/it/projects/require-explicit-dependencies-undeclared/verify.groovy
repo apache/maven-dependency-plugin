@@ -17,9 +17,9 @@
  * under the License.
  */
 
-String log = new File( basedir, "build.log" ).text
-assert log.contains( "requireExplicitDependencies is set" ) : "Missing failure message"
+String log = new File(basedir, "build.log").text
+assert log.contains("requireExplicitDependencies is set") : "Missing failure message"
 assert log.contains( "org.apache.maven.its.dependency:child-a:1.0-SNAPSHOT:jar is not declared as a dependency" ) : "Missing offending item"
 assert !new File( basedir, "child-b/target/dependency/DoNotDelete.xml" ).exists()
 
-return true;
+return true

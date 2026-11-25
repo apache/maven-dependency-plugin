@@ -17,6 +17,6 @@
  * under the License.
  */
 
-assert new File( basedir, 'target/dependency/remote-range-1.5.jar' ).isFile()
-assert !new File( basedir, 'target/dependency/remote-range-2.0.jar' ).exists()
-assert !new File( basedir, 'target/dependency/remote-range-1.0.jar' ).exists()
+assert new File(basedir, 'target/dependency/remote-range-1.5.jar').isFile()
+assert !new File(basedir, 'target/dependency/remote-range-2.0.jar').exists()
+assert !new File(basedir, 'target/dependency/remote-range-1.0.jar').exists()

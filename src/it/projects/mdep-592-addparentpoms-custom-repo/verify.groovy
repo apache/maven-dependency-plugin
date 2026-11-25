@@ -17,9 +17,9 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
-File outputDir = new File( basedir, "target/dependencies" );
+File outputDir = new File(basedir, "target/dependencies")
 
 String[] expectedFiles = [
     "org/apache/maven/its/mdep592/test-child/1.0/test-child-1.0.jar",
@@ -28,12 +28,11 @@ String[] expectedFiles = [
     // Without the fix, this file would be missing because the custom repository
     // would not be propagated to the ProjectBuildingRequest
     "org/apache/maven/its/mdep592/test-parent/1.0/test-parent-1.0.pom"
-];
+]
 
-for ( String expectedFile : expectedFiles )
-{
-    File file = new File( outputDir, expectedFile );
-    assert file.isFile() : "Missing file " + file;
+for (String expectedFile : expectedFiles) {
+    File file = new File(outputDir, expectedFile)
+    assert file.isFile() : "Missing file " + file
 }
 
-return true;
+return true

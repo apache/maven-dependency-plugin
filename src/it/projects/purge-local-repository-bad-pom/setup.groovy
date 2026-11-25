@@ -17,19 +17,18 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
-File localRepoDir = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository/1.0/" );
-localRepoDir.mkdirs();
+File localRepoDir = new File(localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository/1.0/")
+localRepoDir.mkdirs()
 
-File badPomSrc = new File( basedir, "bad-pom.xml" );
-File badPomDest = new File( localRepoDir, "purge-local-repository-1.0.pom" );
+File badPomSrc = new File(basedir, "bad-pom.xml")
+File badPomDest = new File(localRepoDir, "purge-local-repository-1.0.pom")
 
-System.out.println( "Moving bad pom: " + badPomSrc );
-if ( ! badPomSrc.renameTo( badPomDest ) )
-{
-    System.out.println( "Unable to move file: " + badPomSrc );
+System.out.println("Moving bad pom: " + badPomSrc)
+if (! badPomSrc.renameTo(badPomDest)) {
+    System.out.println("Unable to move file: " + badPomSrc)
 }
-System.out.println( "Moved to: " + badPomDest ); 
+System.out.println("Moved to: " + badPomDest)
 
-return true;
+return true

@@ -17,4 +17,4 @@
  * under the License.
  */
 
-assert new File( basedir, 'target/dependency/a1-1.0.0.jar' ).isFile();
+assert new File(basedir, 'target/dependency/a1-1.0.0.jar').isFile()

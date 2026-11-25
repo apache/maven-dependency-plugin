@@ -17,19 +17,18 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
 String[] expectedFiles = [
     "org/apache/maven/its/dependency/get-gav-dep/1.0/get-gav-dep-1.0.jar",
     "org/apache/maven/its/dependency/get-gav-dep/1.0/get-gav-dep-1.0.pom",
     "org/apache/maven/its/dependency/get-gav-dep-transitive/1.0/get-gav-dep-transitive-1.0.jar",
     "org/apache/maven/its/dependency/get-gav-dep-transitive/1.0/get-gav-dep-transitive-1.0.pom"
-];
+]
 
-for ( String expectedFile : expectedFiles )
-{
-    File file = new File( localRepositoryPath, expectedFile );
-    assert file.isFile() : "Missing file " + file;
+for (String expectedFile : expectedFiles) {
+    File file = new File(localRepositoryPath, expectedFile)
+    assert file.isFile() : "Missing file " + file
 }
 
-return true;
+return true

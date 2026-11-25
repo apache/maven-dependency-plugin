@@ -17,17 +17,17 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
 
-File file = new File( basedir, "target/dependency/unpack-fixture-1.0.jar" );
+File file = new File(basedir, "target/dependency/unpack-fixture-1.0.jar")
 
-assert file.isFile() : "Missing " + file;
+assert file.isFile() : "Missing " + file
 
-file = new File( basedir, "target/dependency/fixture" );
-assert file.isDirectory() : "Missing " + file;
+file = new File( basedir, "target/dependency/fixture" )
+assert file.isDirectory() : "Missing " + file
 
-file = new File( basedir, "target/repo/org/apache/maven/its/dependency/unpack-fixture/1.0/unpack-fixture-1.0.jar" );
-assert file.isFile() : "Missing " + file;
+file = new File( basedir, "target/repo/org/apache/maven/its/dependency/unpack-fixture/1.0/unpack-fixture-1.0.jar" )
+assert file.isFile() : "Missing " + file
 
-return true;
+return true

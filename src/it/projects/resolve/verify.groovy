@@ -19,7 +19,15 @@
 def lines = new File(basedir, "target/resolved.txt").readLines()*.trim()
 
 assert lines[0] == "The following files have been resolved:" : "Unexpected header in " + lines
-assert lines.any { it.startsWith("org.apache.maven:maven-project:jar:2.0.6:compile") } : "Expected the dependency in " + lines
-assert lines.any { it.startsWith("org.apache.maven:maven-model:jar:2.0.6:compile") } : "Expected a transitive dependency in " + lines
-assert lines.any { it.startsWith("junit:junit:jar:3.8.1:compile") } : "Expected a transitive dependency in " + lines
-assert !lines.any { it.startsWith("The following files have NOT been resolved") } : "Nothing may be unresolved in " + lines
+assert lines.any {
+    it.startsWith("org.apache.maven:maven-project:jar:2.0.6:compile")
+} : "Expected the dependency in " + lines
+assert lines.any {
+    it.startsWith("org.apache.maven:maven-model:jar:2.0.6:compile")
+} : "Expected a transitive dependency in " + lines
+assert lines.any {
+    it.startsWith("junit:junit:jar:3.8.1:compile")
+} : "Expected a transitive dependency in " + lines
+assert !lines.any {
+    it.startsWith("The following files have NOT been resolved")
+} : "Nothing may be unresolved in " + lines

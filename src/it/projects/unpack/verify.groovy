@@ -18,20 +18,19 @@
  */
 
 // the same archive unpacked by the execution (outputDirectory in the POM) and by the command line (-Dartifact)
-for ( outputDirectory in ["output spaces directory", "cli output directory"] )
-{
-    File file = new File( basedir, "target/" + outputDirectory );
-    assert file.isDirectory() : "Missing " + file;
+for (outputDirectory in ["output spaces directory", "cli output directory"]) {
+    File file = new File(basedir, "target/" + outputDirectory)
+    assert file.isDirectory() : "Missing " + file
 
-    file = new File( file, "qdox-1.5" );
-    assert file.isDirectory() : "Missing " + file;
+    file = new File(file, "qdox-1.5")
+    assert file.isDirectory() : "Missing " + file
 
-    file = new File( file, "build.xml" );
-    assert file.isFile() : "Missing " + file;
+    file = new File(file, "build.xml")
+    assert file.isFile() : "Missing " + file
 
     //until MDEP-242 is fixed, the next test will passed
-    file = new File( file.getParent(), "src" );
-    assert file.isDirectory() : "Missing " + file;
+    file = new File(file.getParent(), "src")
+    assert file.isDirectory() : "Missing " + file
 }
 
-return true;
+return true

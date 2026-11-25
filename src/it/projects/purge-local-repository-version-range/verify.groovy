@@ -17,22 +17,22 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
-File depJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-version-range-dep/1.0/purge-local-repository-version-range-dep-1.0.jar" );
+File depJar = new File(localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-version-range-dep/1.0/purge-local-repository-version-range-dep-1.0.jar")
 
-assert depJar.exists() : "Direct dependency jar was not re-resolved: " + depJar;
+assert depJar.exists() : "Direct dependency jar was not re-resolved: " + depJar
 
-File depPom = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-version-range-dep/1.0/purge-local-repository-version-range-dep-1.0.pom" );
+File depPom = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-version-range-dep/1.0/purge-local-repository-version-range-dep-1.0.pom" )
 
-assert depPom.exists() : "Direct dependency pom was not re-resolved: " + depPom;
+assert depPom.exists() : "Direct dependency pom was not re-resolved: " + depPom
 
-File transitiveDepJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-version-range-dep-2/1.0/purge-local-repository-version-range-dep-2-1.0.jar" );
+File transitiveDepJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-version-range-dep-2/1.0/purge-local-repository-version-range-dep-2-1.0.jar" )
 
-assert transitiveDepJar.exists() : "Transitive dep jar was not re-resolved: " + transitiveDepJar;
+assert transitiveDepJar.exists() : "Transitive dep jar was not re-resolved: " + transitiveDepJar
 
-File transitiveDepPom = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-version-range-dep-2/1.0/purge-local-repository-version-range-dep-2-1.0.pom" );
+File transitiveDepPom = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-version-range-dep-2/1.0/purge-local-repository-version-range-dep-2-1.0.pom" )
 
-assert transitiveDepPom.exists() : "Transitive dep pom was not re-resolved: " + transitiveDepPom;
+assert transitiveDepPom.exists() : "Transitive dep pom was not re-resolved: " + transitiveDepPom
 
-return true;
+return true

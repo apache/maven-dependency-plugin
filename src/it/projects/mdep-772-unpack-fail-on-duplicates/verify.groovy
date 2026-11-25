@@ -18,11 +18,10 @@
  */
 
 // the first entry was written and the second was not; nothing is marked as unpacked, so a repeated run fails again
-for ( dir in ["dependencies", "unpack"] )
-{
-    assert new File( basedir, "target/" + dir + "/same.txt" ).isFile() : dir + " should hold the first entry"
-    assert !new File( basedir, "target/" + dir + "/resource1.txt" ).exists() : dir + " should hold the mapped name only"
-    File markers = new File( basedir, "target/markers-" + dir )
+for (dir in ["dependencies", "unpack"]) {
+    assert new File(basedir, "target/" + dir + "/same.txt").isFile() : dir + " should hold the first entry"
+    assert !new File(basedir, "target/" + dir + "/resource1.txt").exists() : dir + " should hold the mapped name only"
+    File markers = new File(basedir, "target/markers-" + dir)
     assert !markers.exists() || markers.list().length == 0 : dir + " should not be marked as unpacked"
 }
 

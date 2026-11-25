@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.FileUtils
 
 // forces the download: every artifact of the IT is removed from the local repository first
-File dir = new File( localRepositoryPath, "org/apache/maven/its/dependency" );
-File[] artifacts = dir.listFiles( { File f -> f.getName().startsWith( "get-classpath-lib" ) } as FileFilter );
-if ( artifacts != null )
-{
-    for ( File artifact : artifacts )
-    {
-        FileUtils.deleteDirectory( artifact );
+File dir = new File(localRepositoryPath, "org/apache/maven/its/dependency")
+File[] artifacts = dir.listFiles({ File f ->
+    f.getName().startsWith("get-classpath-lib")
+} as FileFilter)
+if (artifacts != null) {
+    for (File artifact : artifacts) {
+        FileUtils.deleteDirectory(artifact)
     }
 }
 
-return true;
+return true

@@ -17,11 +17,11 @@
  * under the License.
  */
 
-File file = new File( basedir, "build.log" )
+File file = new File(basedir, "build.log")
 assert file.exists()
 
-String buildLog = file.getText( "UTF-8" )
-assert buildLog.contains( 'BUILD SUCCESS' )
-assert !buildLog.contains( 'BUILD FAILURE' )
+String buildLog = file.getText("UTF-8")
+assert buildLog.contains('BUILD SUCCESS')
+assert !buildLog.contains('BUILD FAILURE')
 
 return true

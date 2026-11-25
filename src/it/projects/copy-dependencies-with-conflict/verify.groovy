@@ -17,15 +17,15 @@
  * under the License.
  */
 
-File file = new File( basedir, "build.log" )
+File file = new File(basedir, "build.log")
 assert file.exists()
 
-String buildLog = file.getText( "UTF-8" )
-assert buildLog.contains( 'Multiple artifacts map to the same destination file' )
-assert buildLog.contains( 'org.apache.maven.its.dependency.a:conflict' )
-assert buildLog.contains( 'org.apache.maven.its.dependency.b:conflict' )
+String buildLog = file.getText("UTF-8")
+assert buildLog.contains('Multiple artifacts map to the same destination file')
+assert buildLog.contains('org.apache.maven.its.dependency.a:conflict')
+assert buildLog.contains('org.apache.maven.its.dependency.b:conflict')
 
-File copiedFile = new File( basedir, 'target/it/copy-dep-test-2/conflict-1.0.jar' )
+File copiedFile = new File(basedir, 'target/it/copy-dep-test-2/conflict-1.0.jar')
 assert !copiedFile.exists()
 
 return true

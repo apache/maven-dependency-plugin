@@ -19,9 +19,9 @@
 
 def logLines = new File(basedir, "build.log").readLines()
 def index = logLines.indexOf('[WARNING] test-module defines following unnecessary excludes')
-assert index > 0: "no messages in log"
+assert index> 0: "no messages in log"
 assert logLines[index..index + 2] == [
-        '[WARNING] test-module defines following unnecessary excludes',
-        '[WARNING]     org.apache.maven.its.dependency:b-with-dep:1.0.0',
-        '[WARNING]         - org.apache.maven.its.dependency:invalid-exclusion @ line: 39'
+    '[WARNING] test-module defines following unnecessary excludes',
+    '[WARNING]     org.apache.maven.its.dependency:b-with-dep:1.0.0',
+    '[WARNING]         - org.apache.maven.its.dependency:invalid-exclusion @ line: 39'
 ]

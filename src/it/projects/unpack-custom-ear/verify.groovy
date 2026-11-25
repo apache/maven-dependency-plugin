@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-def buildLog = new File( basedir, 'build.log' )
+def buildLog = new File(basedir, 'build.log')
 assert buildLog.exists()
 assert buildLog.length() != 0
-assert buildLog.text.contains( "[DEBUG] Found unArchiver: org.apache.maven.archiver.LogUnArchiver by type: custom-ear" )
+assert buildLog.text.contains("[DEBUG] Found unArchiver: org.apache.maven.archiver.LogUnArchiver by type: custom-ear")

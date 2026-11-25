@@ -17,30 +17,30 @@
  * under the License.
  */
 
-import java.io.*;
-import java.util.*;
+import java.io.*
+import java.util.*
 
-import org.codehaus.plexus.util.*;
+import org.codehaus.plexus.util.*
 
-String classpath = new File( basedir, "target/classpath.txt" ).getText( "UTF-8" );
+String classpath = new File(basedir, "target/classpath.txt").getText("UTF-8")
 
-classpath = StringUtils.replace( classpath, "PREFIX/", "" );
+classpath = StringUtils.replace(classpath, "PREFIX/", "")
 
-List actual = Arrays.asList( classpath.split( ":" ) );
+List actual = Arrays.asList(classpath.split(":"))
 
-List expected = new ArrayList();
-expected.add( "org.apache.maven.maven-profile-2.0.6.jar" );
-expected.add( "org.apache.maven.maven-model-2.0.6.jar" );
-expected.add( "org.codehaus.plexus.plexus-utils-1.4.1.jar" );
-expected.add( "org.codehaus.plexus.plexus-container-default-1.0-alpha-9-stable-1.jar" );
-expected.add( "junit.junit-3.8.1.jar" );
+List expected = new ArrayList()
+expected.add("org.apache.maven.maven-profile-2.0.6.jar")
+expected.add("org.apache.maven.maven-model-2.0.6.jar")
+expected.add("org.codehaus.plexus.plexus-utils-1.4.1.jar")
+expected.add("org.codehaus.plexus.plexus-container-default-1.0-alpha-9-stable-1.jar")
+expected.add("junit.junit-3.8.1.jar")
 // dependency with classifier in pom
-expected.add( "org.apache.maven.maven-project-2.0.6.jar" );
+expected.add("org.apache.maven.maven-project-2.0.6.jar")
 
-System.out.println( "Checking classpath... " );
-System.out.println( "Actual  : " + actual );
-System.out.println( "Expected: " + expected );
+System.out.println("Checking classpath... ")
+System.out.println("Actual  : " + actual)
+System.out.println("Expected: " + expected)
 
-assert actual.equals( expected ) : "Unexpected classpath";
+assert actual.equals(expected) : "Unexpected classpath"
 
-return true;
+return true

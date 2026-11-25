@@ -17,26 +17,33 @@
  * under the License.
  */
 
-import java.io.*;
-import java.util.*;
+import java.io.*
+import java.util.*
 
-def read = { String name -> new File( basedir, "module-b/target/" + name ).text.trim() }
+def read = { String name ->
+    new File(basedir, "module-b/target/" + name).text.trim()
+}
 
 // no prefix: the reactor module is its build output, the other artifact is in the local repository
-def noPrefix = read( "no-prefix.txt" ).split( File.pathSeparator ) as List
+def noPrefix = read("no-prefix.txt").split(File.pathSeparator) as List
 assert noPrefix.size() == 2
-assert noPrefix.any { it.replace( '\\', '/' ).endsWith( "/module-a/target/module-a-1.0-SNAPSHOT.jar" ) } : noPrefix
-assert noPrefix.any { it.replace( '\\', '/' ).endsWith( "/junit/junit/3.8.1/junit-3.8.1.jar" ) } : noPrefix
+assert noPrefix.any {
+    it.replace('\\', '/').endsWith("/module-a/target/module-a-1.0-SNAPSHOT.jar")
+} : noPrefix
+assert noPrefix.any {
+    it.replace( '\\', '/' ).endsWith( "/junit/junit/3.8.1/junit-3.8.1.jar" )
+} : noPrefix
 assert noPrefix.every { !it.startsWith( "repository" ) } : noPrefix
 
 // prefix without layout: file names only
 assert read( "prefix-only.txt" ).split( File.pathSeparator ) as Set ==
-    [ "repository" + File.separator + "module-a-1.0-SNAPSHOT.jar",
-      "repository" + File.separator + "junit-3.8.1.jar" ] as Set
+["repository" + File.separator + "module-a-1.0-SNAPSHOT.jar", "repository" + File.separator + "junit-3.8.1.jar"] as Set
 
 // prefix with layout: the same for the reactor module and the external artifact
 assert read( "layout.txt" ).split( ":" ) as Set ==
-    [ "repository/org/apache/maven/its/dependency/module-a/1.0-SNAPSHOT/module-a-1.0-SNAPSHOT.jar",
-      "repository/junit/junit/3.8.1/junit-3.8.1.jar" ] as Set
+[
+    "repository/org/apache/maven/its/dependency/module-a/1.0-SNAPSHOT/module-a-1.0-SNAPSHOT.jar",
+    "repository/junit/junit/3.8.1/junit-3.8.1.jar"
+] as Set
 
 return true

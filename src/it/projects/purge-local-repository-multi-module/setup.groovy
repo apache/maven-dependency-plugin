@@ -17,17 +17,16 @@
  * under the License.
  */
 
-import java.io.File;
+import java.io.File
 
-void createJar( String artifactId )
-{
-    File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/" + artifactId + "/1.0/" + artifactId + "-1.0.jar" );
+void createJar(String artifactId) {
+    File purgedJar = new File(localRepositoryPath, "org/apache/maven/its/dependency/" + artifactId + "/1.0/" + artifactId + "-1.0.jar")
 
-    purgedJar.getParentFile().mkdirs();
-    purgedJar.createNewFile();
+    purgedJar.getParentFile().mkdirs()
+    purgedJar.createNewFile()
 }
 
-createJar( "purged-a" );
-createJar( "purged-b" );
+createJar("purged-a")
+createJar("purged-b")
 
-return true;
+return true

@@ -17,9 +17,9 @@
  * under the License.
  */
 
-import java.io.File;
+import java.io.File
 
-File file = new File( basedir, "child2/target/dependency/this-is-an-empty-text-file-with-a-name-that-is-longer-than-100-characters-to-verify-that-the-name-is-fully-kept-when-unpacking-from-a-tar.txt" );
-assert file.isFile() : "Missing " + file;
+File file = new File(basedir, "child2/target/dependency/this-is-an-empty-text-file-with-a-name-that-is-longer-than-100-characters-to-verify-that-the-name-is-fully-kept-when-unpacking-from-a-tar.txt")
+assert file.isFile() : "Missing " + file
 
-return true;
+return true

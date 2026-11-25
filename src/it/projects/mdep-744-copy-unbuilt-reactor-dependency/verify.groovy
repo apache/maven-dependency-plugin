@@ -18,11 +18,11 @@
  */
 
 // The goals ran without any lifecycle phase, so the sibling modules must still be unbuilt.
-assert !new File( basedir, 'provided-module/target/provided-module-1.0-SNAPSHOT.jar' ).exists()
-assert !new File( basedir, 'test-module/target/test-module-1.0-SNAPSHOT.jar' ).exists()
+assert !new File(basedir, 'provided-module/target/provided-module-1.0-SNAPSHOT.jar').exists()
+assert !new File(basedir, 'test-module/target/test-module-1.0-SNAPSHOT.jar').exists()
 
 // The selected runtime dependency is copied, the provided and test siblings are not.
-File copied = new File( basedir, 'consumer/target/dependency/ResourceArtifact-1.0.jar' )
+File copied = new File(basedir, 'consumer/target/dependency/ResourceArtifact-1.0.jar')
 assert copied.isFile() : "Missing $copied"
 assert !new File( basedir, 'consumer/target/dependency/provided-module-1.0-SNAPSHOT.jar' ).exists()
 assert !new File( basedir, 'consumer/target/dependency/test-module-1.0-SNAPSHOT.jar' ).exists()

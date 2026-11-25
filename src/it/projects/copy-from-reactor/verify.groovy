@@ -17,18 +17,15 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
-File libDir = new File( basedir, "child-b/target/dependency" );
+File libDir = new File(basedir, "child-b/target/dependency")
 
-String[] expectedFiles = [
-    "child-a-1.0-SNAPSHOT.jar",
-];
+String[] expectedFiles = ["child-a-1.0-SNAPSHOT.jar",]
 
-for ( String expectedFile : expectedFiles )
-{
-    File file = new File( libDir, expectedFile );
-    assert file.isFile() : "Missing file " + file;
+for (String expectedFile : expectedFiles) {
+    File file = new File(libDir, expectedFile)
+    assert file.isFile() : "Missing file " + file
 }
 
-return true;
+return true

@@ -17,11 +17,11 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
-File htmlFile = new File( basedir, "target/reports/dependency-analysis.html" );
+File htmlFile = new File(basedir, "target/reports/dependency-analysis.html")
 
-assert htmlFile.isFile() : "Dependency analysis file missing " + htmlFile;
-assert htmlFile.length() > 0 : "Dependency analysis file empty " + htmlFile;
+assert htmlFile.isFile() : "Dependency analysis file missing " + htmlFile
+assert htmlFile.length() > 0 : "Dependency analysis file empty " + htmlFile
 
-return true;
+return true

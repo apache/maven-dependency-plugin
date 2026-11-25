@@ -17,7 +17,7 @@
  * under the License.
  */
 
-File classFile = new File( basedir, "target/classes/Main.class" )
+File classFile = new File(basedir, "target/classes/Main.class")
 assert classFile.exists()
 assert classFile.isFile() : "Build was not forked, class missing " + classFile
 

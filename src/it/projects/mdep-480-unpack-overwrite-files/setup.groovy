@@ -19,12 +19,11 @@
 
 // resource1.txt exists before the plugin runs and is OLDER than the archive entry: it must be kept all the same;
 // the ITs run "clean" first, so the directories are outside of target
-for ( dir in ["dependencies", "unpack"] )
-{
-    File existing = new File( basedir, dir + "/resource1.txt" )
+for (dir in ["dependencies", "unpack"]) {
+    File existing = new File(basedir, dir + "/resource1.txt")
     existing.parentFile.mkdirs()
     existing.text = "existing"
-    existing.setLastModified( 1000000000000L )
+    existing.setLastModified(1000000000000L)
 }
 
 return true

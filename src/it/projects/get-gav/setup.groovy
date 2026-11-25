@@ -17,15 +17,11 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
 
-String[] foldersToDelete = [
-    "org/apache/maven/its/dependency/get-gav-dep",
-    "org/apache/maven/its/dependency/get-gav-dep-transitive"
-];
+String[] foldersToDelete = ["org/apache/maven/its/dependency/get-gav-dep", "org/apache/maven/its/dependency/get-gav-dep-transitive"]
 
-for ( String folderToDelete : foldersToDelete )
-{
-    assert new File( localRepositoryPath, folderToDelete ).deleteDir();
+for (String folderToDelete : foldersToDelete) {
+    assert new File(localRepositoryPath, folderToDelete).deleteDir()
 }

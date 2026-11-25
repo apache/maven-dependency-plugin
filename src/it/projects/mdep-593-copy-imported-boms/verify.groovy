@@ -18,13 +18,29 @@
  */
 
 def base = 'org/apache/maven/its/mdep593'
-def always = ["lib/1.0/lib-1.0.jar", "lib/1.0/lib-1.0.pom", "lib-parent/1.0/lib-parent-1.0.pom", "grandparent/1.0/grandparent-1.0.pom"]
-def boms = ["bom-a/1.0/bom-a-1.0.pom",   // imported by lib-parent, a parent of the dependency, through ${bom.version}
-            "bom-b/1.0/bom-b-1.0.pom",   // imported by bom-a
-            "bom-parent/1.0/bom-parent-1.0.pom", // parent of bom-b
-            "bom-c/1.0/bom-c-1.0.pom"]   // imported by the project itself
+def always = [
+    "lib/1.0/lib-1.0.jar",
+    "lib/1.0/lib-1.0.pom",
+    "lib-parent/1.0/lib-parent-1.0.pom",
+    "grandparent/1.0/grandparent-1.0.pom"
+]
+def boms = [
+    "bom-a/1.0/bom-a-1.0.pom",
+    // imported by lib-parent, a parent of the dependency, through ${bom.version}
+    "bom-b/1.0/bom-b-1.0.pom",
+    // imported by bom-a
+    "bom-parent/1.0/bom-parent-1.0.pom",
+    // parent of bom-b
+    "bom-c/1.0/bom-c-1.0.pom"
+] // imported by the project itself
 
-always.each { assert new File(basedir, "target/parents-only/${base}/${it}").isFile() : "Missing ${it} in parents-only" }
-boms.each { assert !new File(basedir, "target/parents-only/${base}/${it}").exists() : "Unexpected ${it} in parents-only" }
-(always + boms).each { assert new File(basedir, "target/with-boms/${base}/${it}").isFile() : "Missing ${it} in with-boms" }
+always.each {
+    assert new File(basedir, "target/parents-only/${base}/${it}").isFile() : "Missing ${it} in parents-only"
+}
+boms.each {
+    assert !new File(basedir, "target/parents-only/${base}/${it}").exists() : "Unexpected ${it} in parents-only"
+}
+(always + boms).each {
+    assert new File(basedir, "target/with-boms/${base}/${it}").isFile() : "Missing ${it} in with-boms"
+}
 return true

@@ -16,20 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- 
-import java.io.*;
 
-String[] expectedFiles = [
-    "org/apache/maven/its/dependency/fake-remote-copy/1.0/fake-remote-copy-1.0.jar"
-];
+import java.io.*
 
-for ( String expectedFile : expectedFiles )
-{
-    File file = new File( localRepositoryPath, expectedFile );
-    assert file.isFile() : "Missing file " + file;
+String[] expectedFiles = ["org/apache/maven/its/dependency/fake-remote-copy/1.0/fake-remote-copy-1.0.jar"]
+
+for (String expectedFile : expectedFiles) {
+    File file = new File(localRepositoryPath, expectedFile)
+    assert file.isFile() : "Missing file " + file
 }
 
-File copied = new File( basedir, "target/dependency/fake-remote-copy-1.0.jar" );
-assert copied.exists() : "Missing file " + copied;
+File copied = new File(basedir, "target/dependency/fake-remote-copy-1.0.jar")
+assert copied.exists() : "Missing file " + copied
 
-return true;
+return true

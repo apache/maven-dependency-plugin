@@ -17,12 +17,12 @@
  * under the License.
  */
 
-assert new File( basedir, 'target/dependency/ResourceArtifact-1.0-client.jar' ).isFile()
+assert new File(basedir, 'target/dependency/ResourceArtifact-1.0-client.jar').isFile()
 
-String log = new File( basedir, 'build.log' ).text
-assert log.contains( '(first)' ) && log.contains( '(second)' )
-String afterSecond = log.substring( log.indexOf( '(second)' ) )
-assert afterSecond.contains( 'already exists in destination' )
-assert !afterSecond.contains( 'Overwriting ' )
+String log = new File(basedir, 'build.log').text
+assert log.contains('(first)') && log.contains('(second)')
+String afterSecond = log.substring(log.indexOf('(second)'))
+assert afterSecond.contains('already exists in destination')
+assert !afterSecond.contains('Overwriting ')
 
 return true

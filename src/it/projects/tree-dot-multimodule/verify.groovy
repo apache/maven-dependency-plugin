@@ -19,7 +19,9 @@
 
 import static org.assertj.core.api.Assertions.assertThat
 
-def lines = new File(basedir, "target/tree.dot").readLines()*.trim().findAll { it }
+def lines = new File(basedir, "target/tree.dot").readLines()*.trim().findAll {
+    it
+}
 
 // one graph for the whole reactor, opened by the first module
 assertThat(lines.findAll { it.startsWith("digraph ") }).hasSize(1)

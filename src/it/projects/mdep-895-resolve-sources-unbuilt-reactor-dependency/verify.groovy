@@ -17,12 +17,12 @@
  * under the License.
  */
 
-assert !new File( basedir, 'provided-module/target/provided-module-1.0-SNAPSHOT.jar' ).exists()
-assert !new File( basedir, 'test-module/target/test-module-1.0-SNAPSHOT.jar' ).exists()
+assert !new File(basedir, 'provided-module/target/provided-module-1.0-SNAPSHOT.jar').exists()
+assert !new File(basedir, 'test-module/target/test-module-1.0-SNAPSHOT.jar').exists()
 
 // With includeScope=runtime the sources of the runtime dependency are resolved and the siblings are not touched.
-String runtime = new File( basedir, 'consumer/target/resolved-runtime.txt' ).text
-assert runtime.contains( 'org.apache.maven.its.dependency:ResourceArtifact:jar:sources:1.0' ) : runtime
+String runtime = new File(basedir, 'consumer/target/resolved-runtime.txt').text
+assert runtime.contains('org.apache.maven.its.dependency:ResourceArtifact:jar:sources:1.0') : runtime
 assert !runtime.contains( 'provided-module' ) : runtime
 assert !runtime.contains( 'test-module' ) : runtime
 

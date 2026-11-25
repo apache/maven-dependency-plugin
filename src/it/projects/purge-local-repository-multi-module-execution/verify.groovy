@@ -17,16 +17,15 @@
  * under the License.
  */
 
-import java.io.File;
+import java.io.File
 
-void checkFilePurged( String artifactId )
-{
-    File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/" + artifactId + "/1.0/" + artifactId + "-1.0.jar" );
-        
-    assert !purgedJar.exists() : "JAR was not purged: " + purgedJar;
+void checkFilePurged(String artifactId) {
+    File purgedJar = new File(localRepositoryPath, "org/apache/maven/its/dependency/" + artifactId + "/1.0/" + artifactId + "-1.0.jar")
+
+    assert !purgedJar.exists() : "JAR was not purged: " + purgedJar
 }
 
-checkFilePurged( "purged-exec-a" );
-checkFilePurged( "purged-exec-b" );
+checkFilePurged("purged-exec-a")
+checkFilePurged("purged-exec-b")
 
-return true;
+return true
