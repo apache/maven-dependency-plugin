@@ -34,9 +34,7 @@ createJar( "not-purged-optional" );
 
 File purgedPom = new File( localRepositoryPath,
         "org/apache/maven/its/dependency/purged/1.0/purged-1.0.pom" );
-PrintWriter writer = new PrintWriter( purgedPom, "UTF-8" );
-try
-{
+purgedPom.withPrintWriter( "UTF-8" ) { writer ->
     writer.println( "<project>" );
     writer.println( "  <modelVersion>4.0.0</modelVersion>" );
     writer.println( "  <groupId>org.apache.maven.its.dependency</groupId>" );
@@ -51,10 +49,6 @@ try
     writer.println( "    </dependency>" );
     writer.println( "  </dependencies>" );
     writer.println( "</project>" );
-}
-finally
-{
-    writer.close();
 }
 
 return true;

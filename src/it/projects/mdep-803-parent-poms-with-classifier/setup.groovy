@@ -18,10 +18,9 @@
  */
 
 import java.util.jar.JarOutputStream
-import org.codehaus.plexus.util.FileUtils
 
 // Install a self-contained fixture into the Invoker's local repository.
-FileUtils.deleteDirectory(new File(localRepositoryPath, 'org/apache/maven/its/mdep803'))
+assert new File(localRepositoryPath, 'org/apache/maven/its/mdep803').deleteDir()
 def groupId = 'org.apache.maven.its.mdep803'
 def artifactDir = { String artifactId ->
     def dir = new File(localRepositoryPath, "org/apache/maven/its/mdep803/${artifactId}/1.0")

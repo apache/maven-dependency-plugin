@@ -18,7 +18,6 @@
  */
 
 import java.io.*;
-import org.codehaus.plexus.util.*;
 
 // Clean up test artifacts from local repository to ensure fresh test
 // This forces Maven to download artifacts from the fake-remote-repository
@@ -28,17 +27,7 @@ String[] foldersToDelete = [
     "org/apache/maven/its/mdep592/test-child"
 ];
 
-try
+for ( String folderToDelete : foldersToDelete )
 {
-    for ( String folderToDelete : foldersToDelete )
-    {
-        FileUtils.deleteDirectory( new File( localRepositoryPath, folderToDelete ) );
-    }
+    assert new File( localRepositoryPath, folderToDelete ).deleteDir();
 }
-catch( IOException e )
-{
-    e.printStackTrace();
-    return false;
-}
-
-return true;

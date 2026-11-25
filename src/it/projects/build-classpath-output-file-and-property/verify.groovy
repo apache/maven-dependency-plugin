@@ -18,11 +18,9 @@
  */
 
 import java.io.*;
-import java.util.*;
 
-import org.codehaus.plexus.util.*;
 
-String classpath = FileUtils.fileRead( new File( basedir, "target/classpath.txt" ) );
+String classpath = new File( basedir, "target/classpath.txt" ).getText( "UTF-8" );
 String expected = "PREFIX/get-artifact-1.0.jar:PREFIX/get-artifact-transitive-1.0.jar";
 
 assert classpath.equals( expected ) : "Unexpected classpath";

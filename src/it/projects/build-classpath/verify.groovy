@@ -22,7 +22,7 @@ import java.util.*;
 
 import org.codehaus.plexus.util.*;
 
-String classpath = FileUtils.fileRead( new File( basedir, "target/classpath.txt" ) );
+String classpath = new File( basedir, "target/classpath.txt" ).getText( "UTF-8" );
 
 classpath = StringUtils.replace( classpath, "PREFIX/", "" );
 

@@ -22,7 +22,7 @@ import java.io.*;
 File projectProperties = new File( basedir, "target/project.properties" );
 
 Properties props = new Properties();
-props.load( new FileInputStream( projectProperties ) );
+projectProperties.withInputStream { props.load( it ) };
 
 String fixtureJarPath = props.getProperty( "org.apache.maven.its.dependency:unpack-fixture:jar" );
 assert fixtureJarPath != null : "org.apache.maven.its.dependency:unpack-fixture:jar is null";

@@ -19,24 +19,13 @@
 
 import java.io.*;
 
-import org.codehaus.plexus.util.*;
 
 String[] foldersToDelete = [
     "org/apache/maven/its/dependency/get-remote-repositories-dep",
     "org/apache/maven/its/dependency/get-remote-repositories-dep-transitive"
 ];
 
-try
+for ( String folderToDelete : foldersToDelete )
 {
-    for ( String folderToDelete : foldersToDelete )
-    {
-        FileUtils.deleteDirectory( new File( localRepositoryPath, folderToDelete ) );
-    }
+    assert new File( localRepositoryPath, folderToDelete ).deleteDir();
 }
-catch ( IOException e )
-{
-    e.printStackTrace();
-    return false;
-}
-
-return true;
