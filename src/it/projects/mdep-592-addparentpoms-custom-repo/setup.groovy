@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 // Clean up test artifacts from local repository to ensure fresh test
 // This forces Maven to download artifacts from the fake-remote-repository
 // rather than using cached versions

@@ -17,9 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
-
 String[] foldersToDelete = ["org/apache/maven/its/dependency/fake-remote-copy"]
 
 for (String folderToDelete : foldersToDelete) {

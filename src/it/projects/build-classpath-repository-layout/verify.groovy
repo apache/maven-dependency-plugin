@@ -17,9 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-import java.util.*
-
 def read = { String name ->
     new File(basedir, "module-b/target/" + name).text.trim()
 }

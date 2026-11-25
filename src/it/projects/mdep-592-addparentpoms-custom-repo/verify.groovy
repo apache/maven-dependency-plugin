@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 File outputDir = new File(basedir, "target/dependencies")
 
 String[] expectedFiles = [

@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 String[] expectedFiles = ["org/apache/maven/its/dependency/fake-remote-unpack/1.0/fake-remote-unpack-1.0.jar"]
 
 for (String expectedFile : expectedFiles) {

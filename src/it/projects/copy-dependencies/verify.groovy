@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 void checkExpected(File dir, String[] expectedFiles) {
     for (String expectedFile : expectedFiles) {
         File file = new File(dir, expectedFile)

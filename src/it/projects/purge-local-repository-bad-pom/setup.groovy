@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 File localRepoDir = new File(localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository/1.0/")
 localRepoDir.mkdirs()
 

@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 static void checkMessagedInLogs(logLines, messages) {
     def index = logLines.indexOf(messages[0])
     assert index> 0: "no messages: '" + messages[0] + "' in log"

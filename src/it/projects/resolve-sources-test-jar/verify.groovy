@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 def lines = new File(basedir, "target/resolved.txt").readLines()*.trim()
 def notResolved = lines.findIndexOf {
     it.startsWith("The following files have NOT been resolved")

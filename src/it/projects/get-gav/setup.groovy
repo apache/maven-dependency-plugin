@@ -17,9 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
-
 String[] foldersToDelete = ["org/apache/maven/its/dependency/get-gav-dep", "org/apache/maven/its/dependency/get-gav-dep-transitive"]
 
 for (String folderToDelete : foldersToDelete) {

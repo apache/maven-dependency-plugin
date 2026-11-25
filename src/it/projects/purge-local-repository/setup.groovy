@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 void createJar(String artifactId) {
     File jar = new File(localRepositoryPath,
             "org/apache/maven/its/dependency/" + artifactId + "/1.0/" + artifactId + "-1.0.jar")

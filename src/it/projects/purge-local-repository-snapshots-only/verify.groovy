@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 File nonPurgedJar = new File(localRepositoryPath, "org/apache/maven/its/dependency/purge/snapshots/purged-snapshots-only/1.0/purged-snapshots-only-1.0.jar")
 
 assert nonPurgedJar.exists() : "JAR was purged: " + nonPurgedJar
