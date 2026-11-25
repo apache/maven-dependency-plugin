@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 File projectProperties = new File(basedir, "target/project.properties")
 
 Properties props = new Properties()

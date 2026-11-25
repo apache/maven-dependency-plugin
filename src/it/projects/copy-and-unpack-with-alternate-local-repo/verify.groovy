@@ -17,9 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
-
 File file = new File(basedir, "target/dependency/unpack-fixture-1.0.jar")
 
 assert file.isFile() : "Missing " + file

@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 File depDir = new File(localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-non-transitive-dep/1.0")
 
 assert !depDir.exists() : "Directory was not deleted: " + depDir

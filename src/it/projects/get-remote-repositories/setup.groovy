@@ -17,9 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
-
 String[] foldersToDelete = [
     "org/apache/maven/its/dependency/get-remote-repositories-dep",
     "org/apache/maven/its/dependency/get-remote-repositories-dep-transitive"

@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 String[] expectedFiles = [
     "org/apache/maven/its/dependency/get-artifact-no-transitive-dep/1.0/get-artifact-no-transitive-dep-1.0.jar",
     "org/apache/maven/its/dependency/get-artifact-no-transitive-dep/1.0/get-artifact-no-transitive-dep-1.0.pom"

@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 String[] expectedFiles = [
     "org/apache/maven/its/dependency/get-artifact-maven-plugin/1.0/get-artifact-maven-plugin-1.0.jar",
     "org/apache/maven/its/dependency/get-artifact-maven-plugin/1.0/get-artifact-maven-plugin-1.0.pom"

@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 File libDir = new File(basedir, "child-b/target/dependency")
 
 String[] expectedFiles = ["child-a-1.0-SNAPSHOT.jar",]

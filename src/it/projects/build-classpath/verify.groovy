@@ -17,9 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-import java.util.*
-
 import org.codehaus.plexus.util.*
 
 String classpath = new File(basedir, "target/classpath.txt").getText("UTF-8")

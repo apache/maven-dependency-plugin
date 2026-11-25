@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 File depJar = new File(localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-version-range-dep/1.0/purge-local-repository-version-range-dep-1.0.jar")
 
 assert depJar.exists() : "Direct dependency jar was not re-resolved: " + depJar

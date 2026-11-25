@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.io.*
-
 File htmlFile = new File(basedir, "target/reports/dependency-analysis.html")
 
 assert htmlFile.isFile() : "Dependency analysis file missing " + htmlFile
