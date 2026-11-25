@@ -17,6 +17,6 @@
  * under the License.
  */
 
-def resolved = new File( basedir, "target/resolved.txt" ).text
-assert !( resolved =~ /maven-surefire-plugin/ ) : "Surefire plugin should be excluded!"
+def resolved = new File(basedir, "target/resolved.txt").text
+assert !(resolved =~ /maven-surefire-plugin/) : "Surefire plugin should be excluded!"
 assert !( resolved =~ /maven-dependency-plugin/ ) : "Dependency plugin should be excluded!"

@@ -17,14 +17,14 @@
  * under the License.
  */
 
-[ 'test-jar': 'tests', 'ejb-client': 'client', 'explicit-classifier': 'client' ].each { directory, classifier ->
-    File output = new File( basedir, 'target/' + directory )
-    assert new File( output, 'ResourceArtifact-1.0-' + classifier + '.jar' ).isFile()
-    assert new File( output, classifier + '.txt' ).isFile()
-    assert !new File( output, 'ResourceArtifact-1.0.jar' ).exists()
-    assert !new File( output, 'resource1.txt' ).exists()
-    if ( classifier == 'client' ) {
-        assert !new File( output, 'tests.txt' ).exists()
+['test-jar': 'tests', 'ejb-client': 'client', 'explicit-classifier': 'client'].each { directory, classifier ->
+    File output = new File(basedir, 'target/' + directory)
+    assert new File(output, 'ResourceArtifact-1.0-' + classifier + '.jar').isFile()
+    assert new File(output, classifier + '.txt').isFile()
+    assert !new File(output, 'ResourceArtifact-1.0.jar').exists()
+    assert !new File(output, 'resource1.txt').exists()
+    if (classifier == 'client') {
+        assert !new File(output, 'tests.txt').exists()
     }
 }
 

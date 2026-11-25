@@ -17,13 +17,12 @@
  * under the License.
  */
 
-void checkFileAbsence( String path )
-{
-    File depJar = new File( localRepositoryPath, path )
+void checkFileAbsence(String path) {
+    File depJar = new File(localRepositoryPath, path)
     assert !depJar.exists() : "Dependency jar was not purged: " + depJar
 }
 
-checkFileAbsence( "org/apache/maven/its/dependency/purged-without-pom/1.0/purged-without-pom-1.0.jar" )
+checkFileAbsence("org/apache/maven/its/dependency/purged-without-pom/1.0/purged-without-pom-1.0.jar")
 
-String buildLog = new File( basedir, "build.log" ).getText( "UTF-8" )
-assert buildLog.contains( 'Deleting 1 manual dependency from ' )
+String buildLog = new File(basedir, "build.log").getText("UTF-8")
+assert buildLog.contains('Deleting 1 manual dependency from ')

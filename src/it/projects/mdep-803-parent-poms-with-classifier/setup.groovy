@@ -54,6 +54,6 @@ new JarOutputStream(new FileOutputStream(new File(artifactDir('library'), 'libra
 ['grandparent', 'classified'].each { artifactId ->
     new File(artifactDir(artifactId), "${artifactId}-1.0-sources.pom").text =
             new File(artifactDir(artifactId), "${artifactId}-1.0.pom").text.replace(
-                    '</project>', '<description>sources attachment</description></project>')
+            '</project>', '<description>sources attachment</description></project>')
 }
 return true

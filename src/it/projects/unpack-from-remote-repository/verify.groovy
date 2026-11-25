@@ -17,19 +17,16 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
-String[] expectedFiles = [
-    "org/apache/maven/its/dependency/fake-remote-unpack/1.0/fake-remote-unpack-1.0.jar"
-];
+String[] expectedFiles = ["org/apache/maven/its/dependency/fake-remote-unpack/1.0/fake-remote-unpack-1.0.jar"]
 
-for ( String expectedFile : expectedFiles )
-{
-    File file = new File( localRepositoryPath, expectedFile );
-    assert file.isFile() : "Missing file " + file;
+for (String expectedFile : expectedFiles) {
+    File file = new File(localRepositoryPath, expectedFile)
+    assert file.isFile() : "Missing file " + file
 }
 
-File unpacked = new File( basedir, "target/dependency/META-INF/MANIFEST.MF" );
-assert unpacked.exists() : "Missing file " + unpacked;
+File unpacked = new File(basedir, "target/dependency/META-INF/MANIFEST.MF")
+assert unpacked.exists() : "Missing file " + unpacked
 
-return true;
+return true

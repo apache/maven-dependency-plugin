@@ -17,14 +17,14 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
-File depDir = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-non-transitive-dep/1.0" );
+File depDir = new File(localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-non-transitive-dep/1.0")
 
-assert !depDir.exists() : "Directory was not deleted: " + depDir;
+assert !depDir.exists() : "Directory was not deleted: " + depDir
 
-File transitiveDepDir = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-non-transitive-dep-2/1.0" );
+File transitiveDepDir = new File( localRepositoryPath, "org/apache/maven/its/dependency/purge-local-repository-non-transitive-dep-2/1.0" )
 
-assert transitiveDepDir.exists() : "Transitive dep was purged: " + transitiveDepDir;
+assert transitiveDepDir.exists() : "Transitive dep was purged: " + transitiveDepDir
 
-return true;
+return true

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- 
-assert new File( localRepositoryPath, 'org/apache/maven/its/dependency/remote-repositories-copy/1.0/remote-repositories-copy-1.0.jar' ).isFile()
-assert new File( localRepositoryPath, 'org/apache/maven/its/dependency/remote-repositories-unpack/1.0/remote-repositories-unpack-1.0.jar' ).isFile()
 
-assert new File( basedir, 'target/dependency/remote-repositories-copy-1.0.jar' ).isFile()
-assert new File( basedir, 'target/unpacked/META-INF/MANIFEST.MF' ).isFile()
+assert new File(localRepositoryPath, 'org/apache/maven/its/dependency/remote-repositories-copy/1.0/remote-repositories-copy-1.0.jar').isFile()
+assert new File(localRepositoryPath, 'org/apache/maven/its/dependency/remote-repositories-unpack/1.0/remote-repositories-unpack-1.0.jar').isFile()
+
+assert new File(basedir, 'target/dependency/remote-repositories-copy-1.0.jar').isFile()
+assert new File(basedir, 'target/unpacked/META-INF/MANIFEST.MF').isFile()

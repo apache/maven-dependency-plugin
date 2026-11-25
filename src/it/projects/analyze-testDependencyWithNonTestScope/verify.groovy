@@ -21,15 +21,15 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 
-File htmlFile = new File( basedir, "target/reports/dependency-analysis.html" )
+File htmlFile = new File(basedir, "target/reports/dependency-analysis.html")
 assert htmlFile.isFile() : "Dependency analysis file missing " + htmlFile
 assert htmlFile.length() > 0 : "Dependency analysis file empty " + htmlFile
 
 Document doc = Jsoup.parse( htmlFile, "UTF-8" )
 Elements entry = doc.select( "#bodyColumn > section > section:nth-child(5) > table > tbody > tr.b" )
 assert entry.size() == 1 : "Table entry under CompileScopedTestDependencies header has " + entry.size() +
-    " rows but exactly 1 was expected " + htmlFile
+" rows but exactly 1 was expected " + htmlFile
 
 String groupId = entry.first().select( "td:nth-child(1)" ).text()
 assert groupId == "junit" : "Table entry under CompileScopedTestDependencies header groupId is not junit. Value is " +
-    groupId + " in " + htmlFile
+groupId + " in " + htmlFile

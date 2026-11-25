@@ -17,11 +17,11 @@
  * under the License.
  */
 
-File htmlFile = new File( basedir, "target/reports/dependency-analysis.html" );
-assert htmlFile.isFile() && htmlFile.length() > 0 : "Dependency analysis report missing " + htmlFile;
+File htmlFile = new File(basedir, "target/reports/dependency-analysis.html")
+assert htmlFile.isFile() && htmlFile.length() > 0 : "Dependency analysis report missing " + htmlFile
 
-String log = new File( basedir, "build.log" ).getText( "UTF-8" );
-assert log.contains( ":compile (default-compile)" ) : "expected the explicitly requested compile phase to run";
-assert !log.contains( ":testCompile (default-testCompile)" ) : "analyze-report-only must not fork test-compile";
+String log = new File( basedir, "build.log" ).getText( "UTF-8" )
+assert log.contains( ":compile (default-compile)" ) : "expected the explicitly requested compile phase to run"
+assert !log.contains( ":testCompile (default-testCompile)" ) : "analyze-report-only must not fork test-compile"
 
-return true;
+return true

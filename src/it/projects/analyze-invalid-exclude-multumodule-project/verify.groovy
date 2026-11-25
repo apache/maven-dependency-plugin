@@ -20,12 +20,11 @@
 
 static void checkMessagedInLogs(logLines, messages) {
     def index = logLines.indexOf(messages[0])
-    assert index > 0: "no messages: '" + messages[0] + "' in log"
+    assert index> 0: "no messages: '" + messages[0] + "' in log"
 
     def logMessages = logLines[index..index + messages.size() - 1]
 
     assert logMessages == messages
-
 }
 
 def file = new File(basedir, "build.log")
@@ -34,17 +33,16 @@ assert file.exists()
 def logLines = buildLog = file.readLines()
 
 checkMessagedInLogs(logLines, [
-        '[WARNING] Test defines following unnecessary excludes',
-        '[WARNING]     org.apache.maven.its.dependency:a-with-dep:1.0.0',
-        '[WARNING]         - org.apache.maven.its.dependency:invalid-exclusion1 @ line: 52'
+    '[WARNING] Test defines following unnecessary excludes',
+    '[WARNING]     org.apache.maven.its.dependency:a-with-dep:1.0.0',
+    '[WARNING]         - org.apache.maven.its.dependency:invalid-exclusion1 @ line: 52'
 ])
 
 checkMessagedInLogs(logLines, [
-        '[WARNING] test-module1 defines following unnecessary excludes',
-        '[WARNING]     org.apache.maven.its.dependency:a-with-dep:1.0.0',
-        '[WARNING]         - org.apache.maven.its.dependency:invalid-exclusion2 @ line: 40',
-        '[WARNING]         - org.apache.maven.its.dependency:invalid-exclusion3 @ line: 48'
-
+    '[WARNING] test-module1 defines following unnecessary excludes',
+    '[WARNING]     org.apache.maven.its.dependency:a-with-dep:1.0.0',
+    '[WARNING]         - org.apache.maven.its.dependency:invalid-exclusion2 @ line: 40',
+    '[WARNING]         - org.apache.maven.its.dependency:invalid-exclusion3 @ line: 48'
 ])
 
 assert logLines.count('[INFO] No problems with dependencies exclusions') == 1

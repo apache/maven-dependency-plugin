@@ -31,4 +31,4 @@ assertThat(new File(basedir, "module-a/target/tree.txt"))
 assertThat(new File(basedir, "module-b/target/tree.txt"))
         .hasSameTextualContentAs(new File(basedir, "module-b/" + expected))
 
-return true;
+return true

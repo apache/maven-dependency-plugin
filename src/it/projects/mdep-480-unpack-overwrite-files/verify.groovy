@@ -18,10 +18,9 @@
  */
 
 // -Dmdep.unpack.overWriteFiles=false from cli.properties reaches both goals; resource2.txt did not exist
-for ( dir in ["dependencies", "unpack"] )
-{
-    assert new File( basedir, dir + "/resource1.txt" ).text == "existing" : dir + " should be kept"
-    assert new File( basedir, dir + "/resource2.txt" ).isFile()
+for (dir in ["dependencies", "unpack"]) {
+    assert new File(basedir, dir + "/resource1.txt").text == "existing" : dir + " should be kept"
+    assert new File(basedir, dir + "/resource2.txt").isFile()
 }
 
 return true

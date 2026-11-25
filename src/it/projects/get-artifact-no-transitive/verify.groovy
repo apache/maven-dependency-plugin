@@ -17,28 +17,26 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
 String[] expectedFiles = [
     "org/apache/maven/its/dependency/get-artifact-no-transitive-dep/1.0/get-artifact-no-transitive-dep-1.0.jar",
     "org/apache/maven/its/dependency/get-artifact-no-transitive-dep/1.0/get-artifact-no-transitive-dep-1.0.pom"
-];
+]
 
-for ( String expectedFile : expectedFiles )
-{
-    File file = new File( localRepositoryPath, expectedFile );
-    assert file.isFile() : "Missing file " + file;
+for (String expectedFile : expectedFiles) {
+    File file = new File(localRepositoryPath, expectedFile)
+    assert file.isFile() : "Missing file " + file
 }
 
 String[] notExpectedFiles = [
     "org/apache/maven/its/dependency/get-artifact-no-transitive-dep-transitive/1.0/get-artifact-no-transitive-dep-transitive-1.0.jar",
     "org/apache/maven/its/dependency/get-artifact-no-transitive-dep-transitive/1.0/get-artifact-no-transitive-dep-transitive-1.0.pom"
-];
+]
 
-for ( String notExpectedFile : notExpectedFiles )
-{
-    File file = new File( localRepositoryPath, notExpectedFile );
-    assert !file.isFile() : "Existing file " + file;
+for (String notExpectedFile : notExpectedFiles) {
+    File file = new File(localRepositoryPath, notExpectedFile)
+    assert !file.isFile() : "Existing file " + file
 }
 
-return true;
+return true

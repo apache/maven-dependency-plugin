@@ -23,6 +23,10 @@ def artifacts = lines.findAll { it.contains(":jar:") }
 // the direct dependency and one that only the POM chain knows about
 assert artifacts.contains("org.apache.maven:maven-project:jar:2.0.6:compile") : "Expected the dependency in " + lines
 assert artifacts.contains("org.apache.maven:maven-model:jar:2.0.6:compile") : "Expected a transitive dependency in " + lines
-assert !lines.any { it.startsWith("The following files have NOT been resolved") } : "Nothing may be unresolved in " + lines
+assert !lines.any {
+    it.startsWith("The following files have NOT been resolved")
+} : "Nothing may be unresolved in " + lines
 // collect reads POMs only, so no jar is resolved and no module name can be read from one
-assert !artifacts.any { it.contains(" -- module ") } : "collect must not resolve jars: " + lines
+assert !artifacts.any {
+    it.contains(" -- module ")
+} : "collect must not resolve jars: " + lines

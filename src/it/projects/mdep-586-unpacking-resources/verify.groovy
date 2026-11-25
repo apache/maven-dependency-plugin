@@ -17,11 +17,11 @@
  * under the License.
  */
 
-File file = new File( basedir, "build.log" )
+File file = new File(basedir, "build.log")
 assert file.isFile()
 
-File file1 = new File( basedir, "resources1/resource1.txt" )
+File file1 = new File(basedir, "resources1/resource1.txt")
 assert file1.isFile()
 
-File file2 = new File( basedir, "resources2/resource2.txt" )
+File file2 = new File(basedir, "resources2/resource2.txt")
 assert file2.isFile()

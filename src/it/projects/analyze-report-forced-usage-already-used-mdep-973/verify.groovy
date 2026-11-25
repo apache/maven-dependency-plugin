@@ -17,11 +17,11 @@
  * under the License.
  */
 
-File htmlFile = new File( basedir, "target/reports/dependency-analysis.html" );
-assert htmlFile.isFile() && htmlFile.length() > 0 : "Dependency analysis report missing " + htmlFile;
+File htmlFile = new File(basedir, "target/reports/dependency-analysis.html")
+assert htmlFile.isFile() && htmlFile.length() > 0 : "Dependency analysis report missing " + htmlFile
 
-String log = new File( basedir, "build.log" ).getText( "UTF-8" );
+String log = new File( basedir, "build.log" ).getText( "UTF-8" )
 assert log.contains( "Unneeded forced usage of org.apache.maven:maven-model" ) :
-    "expected a warning about the unneeded forced usage";
+"expected a warning about the unneeded forced usage"
 
-return true;
+return true

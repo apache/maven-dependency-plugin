@@ -19,7 +19,9 @@
 
 import static org.assertj.core.api.Assertions.assertThat
 
-def lines = new File(basedir, "target/transitive.txt").readLines().collect { it.trim() }
+def lines = new File(basedir, "target/transitive.txt").readLines().collect {
+    it.trim()
+}
 assertThat(lines).noneMatch { it.contains("list-excludes-holder") }
 assertThat(lines).contains("org.apache.maven.its.dependency:ResourceArtifact:jar:1.0:compile")
 

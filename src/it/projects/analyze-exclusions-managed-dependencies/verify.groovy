@@ -23,6 +23,8 @@ assert logLines.count('[ERROR] managed-exclusions defines following unnecessary 
 // Maven 3.10 and 4 log BUILD FAILURE at ERROR, 3.9 at INFO
 assert logLines.count { it.endsWith('] BUILD SUCCESS') } == 1
 assert logLines.count { it.endsWith('] BUILD FAILURE') } == 1
-assert logLines.any { it.startsWith('[ERROR]         - org.apache.maven.its.dependency:c-without-dep @ line:') }
+assert logLines.any {
+    it.startsWith('[ERROR]         - org.apache.maven.its.dependency:c-without-dep @ line:')
+}
 
 return true

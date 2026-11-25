@@ -17,14 +17,11 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
 
-String[] foldersToDelete = [
-    "org/apache/maven/its/dependency/remote-range"
-];
+String[] foldersToDelete = ["org/apache/maven/its/dependency/remote-range"]
 
-for ( String folderToDelete : foldersToDelete )
-{
-    assert new File( localRepositoryPath, folderToDelete ).deleteDir();
+for (String folderToDelete : foldersToDelete) {
+    assert new File(localRepositoryPath, folderToDelete).deleteDir()
 }

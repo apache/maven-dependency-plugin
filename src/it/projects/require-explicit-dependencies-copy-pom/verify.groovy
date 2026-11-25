@@ -17,7 +17,7 @@
  * under the License.
  */
 
-File copied = new File( basedir, "child-b/target/dependency/child-a-1.0-SNAPSHOT.jar" )
+File copied = new File(basedir, "child-b/target/dependency/child-a-1.0-SNAPSHOT.jar")
 assert copied.isFile() : "Missing file " + copied
 
-return true;
+return true

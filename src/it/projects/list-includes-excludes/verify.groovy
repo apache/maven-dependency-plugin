@@ -23,7 +23,9 @@ def resolved = { String name ->
     new File(basedir, "target/" + name + ".txt").readLines()
             .collect { it.trim() }
             .findAll { it.startsWith("org.apache.maven.its.dependency:") }
-            .collect { it.replaceFirst(/^org\.apache\.maven\.its\.dependency:/, "") }
+            .collect {
+                it.replaceFirst(/^org\.apache\.maven\.its\.dependency:/, "")
+            }
 }
 
 assertThat(resolved("includes")).containsExactlyInAnyOrder("mdep510-dep:jar:1.0:compile", "version-range:jar:2.0:compile")

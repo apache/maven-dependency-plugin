@@ -17,11 +17,11 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
-File purgedJar = new File( localRepositoryPath, "org/apache/maven/its/dependency/purged-without-pom/1.0/purged-without-pom-1.0.jar" );
+File purgedJar = new File(localRepositoryPath, "org/apache/maven/its/dependency/purged-without-pom/1.0/purged-without-pom-1.0.jar")
 
-purgedJar.getParentFile().mkdirs();
-purgedJar.createNewFile();
+purgedJar.getParentFile().mkdirs()
+purgedJar.createNewFile()
 
-return true;
+return true

@@ -24,7 +24,9 @@ def sources = ['library-1.0-sources.jar', 'grandparent-1.0-sources.pom', 'classi
 ['sources', 'sources-jar', 'excluded-parent'].each { name ->
     def expected = parents + dependencyPoms + sources
     if (name == 'sources-jar') {
-        expected = expected.collect { it.endsWith('-sources.pom') ? it.replace('-sources.pom', '-sources.jar') : it }
+        expected = expected.collect {
+            it.endsWith('-sources.pom') ? it.replace('-sources.pom', '-sources.jar') : it
+        }
     }
     if (name == 'excluded-parent') {
         expected = expected - 'dependency-parent-1.0.pom'

@@ -17,12 +17,12 @@
  * under the License.
  */
 
-File all = new File( basedir, 'child-b/target/default' )
-assert new File( all, 'child-a-1.0-SNAPSHOT.jar' ).isFile()
-assert new File( all, 'ResourceArtifact-1.0.jar' ).isFile()
+File all = new File(basedir, 'child-b/target/default')
+assert new File(all, 'child-a-1.0-SNAPSHOT.jar').isFile()
+assert new File(all, 'ResourceArtifact-1.0.jar').isFile()
 
-File withoutReactor = new File( basedir, 'child-b/target/exclude-reactor' )
-assert !new File( withoutReactor, 'child-a-1.0-SNAPSHOT.jar' ).exists()
-assert new File( withoutReactor, 'ResourceArtifact-1.0.jar' ).isFile()
+File withoutReactor = new File(basedir, 'child-b/target/exclude-reactor')
+assert !new File(withoutReactor, 'child-a-1.0-SNAPSHOT.jar').exists()
+assert new File(withoutReactor, 'ResourceArtifact-1.0.jar').isFile()
 
 return true

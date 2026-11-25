@@ -17,15 +17,25 @@
  * under the License.
  */
 def lines = new File(basedir, "target/resolved.txt").readLines()*.trim()
-def notResolved = lines.findIndexOf { it.startsWith("The following files have NOT been resolved") }
+def notResolved = lines.findIndexOf {
+    it.startsWith("The following files have NOT been resolved")
+}
 def resolved = notResolved < 0 ? lines : lines.subList(0, notResolved)
 def missing = notResolved < 0 ? [] : lines.subList(notResolved, lines.size())
 
 assert lines[0] == "The following files have been resolved:" : "Unexpected header in " + lines
-assert resolved.any { it.startsWith("org.apache.maven:maven-project:jar:sources:2.0.8") } : "Expected the sources of the dependency in " + lines
-assert resolved.any { it.startsWith("org.apache.maven:maven-model:jar:sources:2.0.8") } : "Expected the sources of a transitive dependency in " + lines
+assert resolved.any {
+    it.startsWith("org.apache.maven:maven-project:jar:sources:2.0.8")
+} : "Expected the sources of the dependency in " + lines
+assert resolved.any {
+    it.startsWith("org.apache.maven:maven-model:jar:sources:2.0.8")
+} : "Expected the sources of a transitive dependency in " + lines
 // some old dependencies have no sources on Central (which ones differs between Maven 3 and 4 and over time); they are
 // listed instead of failing the build, so only check that whatever is listed is a sources jar
 def missingSources = missing.drop(1).findAll { it }
-assert missingSources.every { it.contains(":jar:sources:") } : "Expected only sources jars among the missing in " + lines
-assert resolved.every { it.contains(":jar:sources:") || it.startsWith("The following") || !it } : "Expected only sources jars among the resolved in " + lines
+assert missingSources.every {
+    it.contains(":jar:sources:")
+} : "Expected only sources jars among the missing in " + lines
+assert resolved.every {
+    it.contains(":jar:sources:") || it.startsWith("The following") || !it
+} : "Expected only sources jars among the resolved in " + lines

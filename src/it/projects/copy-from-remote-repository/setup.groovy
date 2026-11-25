@@ -17,14 +17,11 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
 
-String[] foldersToDelete = [
-    "org/apache/maven/its/dependency/fake-remote-copy"
-];
+String[] foldersToDelete = ["org/apache/maven/its/dependency/fake-remote-copy"]
 
-for ( String folderToDelete : foldersToDelete )
-{
-    assert new File( localRepositoryPath, folderToDelete ).deleteDir();
+for (String folderToDelete : foldersToDelete) {
+    assert new File(localRepositoryPath, folderToDelete).deleteDir()
 }

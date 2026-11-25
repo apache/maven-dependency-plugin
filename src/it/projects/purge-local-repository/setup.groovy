@@ -17,38 +17,37 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
-void createJar( String artifactId )
-{
-    File jar = new File( localRepositoryPath,
-            "org/apache/maven/its/dependency/" + artifactId + "/1.0/" + artifactId + "-1.0.jar" );
-    jar.getParentFile().mkdirs();
-    jar.createNewFile();
+void createJar(String artifactId) {
+    File jar = new File(localRepositoryPath,
+            "org/apache/maven/its/dependency/" + artifactId + "/1.0/" + artifactId + "-1.0.jar")
+    jar.getParentFile().mkdirs()
+    jar.createNewFile()
 }
 
-createJar( "purged" );
-createJar( "not-purged-test" );
-createJar( "not-purged-provided" );
-createJar( "not-purged-optional" );
+createJar("purged")
+createJar("not-purged-test")
+createJar("not-purged-provided")
+createJar("not-purged-optional")
 
-File purgedPom = new File( localRepositoryPath,
-        "org/apache/maven/its/dependency/purged/1.0/purged-1.0.pom" );
-purgedPom.withPrintWriter( "UTF-8" ) { writer ->
-    writer.println( "<project>" );
-    writer.println( "  <modelVersion>4.0.0</modelVersion>" );
-    writer.println( "  <groupId>org.apache.maven.its.dependency</groupId>" );
-    writer.println( "  <artifactId>purged</artifactId>" );
-    writer.println( "  <version>1.0</version>" );
-    writer.println( "  <dependencies>" );
-    writer.println( "    <dependency>" );
-    writer.println( "      <groupId>org.apache.maven.its.dependency</groupId>" );
-    writer.println( "      <artifactId>not-purged-optional</artifactId>" );
-    writer.println( "      <version>1.0</version>" );
-    writer.println( "      <optional>true</optional>" );
-    writer.println( "    </dependency>" );
-    writer.println( "  </dependencies>" );
-    writer.println( "</project>" );
+File purgedPom = new File(localRepositoryPath,
+        "org/apache/maven/its/dependency/purged/1.0/purged-1.0.pom")
+purgedPom.withPrintWriter("UTF-8") { writer ->
+    writer.println("<project>")
+    writer.println("  <modelVersion>4.0.0</modelVersion>")
+    writer.println("  <groupId>org.apache.maven.its.dependency</groupId>")
+    writer.println("  <artifactId>purged</artifactId>")
+    writer.println("  <version>1.0</version>")
+    writer.println("  <dependencies>")
+    writer.println("    <dependency>")
+    writer.println("      <groupId>org.apache.maven.its.dependency</groupId>")
+    writer.println("      <artifactId>not-purged-optional</artifactId>")
+    writer.println("      <version>1.0</version>")
+    writer.println("      <optional>true</optional>")
+    writer.println("    </dependency>")
+    writer.println("  </dependencies>")
+    writer.println("</project>")
 }
 
-return true;
+return true

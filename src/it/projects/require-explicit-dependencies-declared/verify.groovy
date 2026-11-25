@@ -17,7 +17,7 @@
  * under the License.
  */
 
-File unpacked = new File( basedir, "child-b/target/dependency/DoNotDelete.xml" )
+File unpacked = new File(basedir, "child-b/target/dependency/DoNotDelete.xml")
 assert unpacked.isFile() : "Missing file " + unpacked
 
-return true;
+return true

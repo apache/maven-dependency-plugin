@@ -17,15 +17,14 @@
  * under the License.
  */
 
-import java.io.*;
+import java.io.*
 
 
 String[] foldersToDelete = [
     "org/apache/maven/its/dependency/remote-repositories-copy",
     "org/apache/maven/its/dependency/remote-repositories-unpack"
-];
+]
 
-for ( String folderToDelete : foldersToDelete )
-{
-    assert new File( localRepositoryPath, folderToDelete ).deleteDir();
+for (String folderToDelete : foldersToDelete) {
+    assert new File(localRepositoryPath, folderToDelete).deleteDir()
 }

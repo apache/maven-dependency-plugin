@@ -17,5 +17,5 @@
  * under the License.
  */
 
-def resolved = new File( basedir, "target/resolved.txt" ).text
-assert !( resolved =~ /child-a/ ) : "Reactor plugin 'child-a' should be excluded!"
+def resolved = new File(basedir, "target/resolved.txt").text
+assert !(resolved =~ /child-a/) : "Reactor plugin 'child-a' should be excluded!"
