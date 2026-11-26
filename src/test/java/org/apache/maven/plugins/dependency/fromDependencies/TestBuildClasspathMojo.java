@@ -21,7 +21,9 @@ package org.apache.maven.plugins.dependency.fromDependencies;
 import javax.inject.Inject;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.maven.api.plugin.testing.InjectMojo;
@@ -233,6 +235,82 @@ class TestBuildClasspathMojo {
         // negative control: without the layout the same flags change the name
         mojo.setUseRepositoryLayout(false);
         assertEquals(sep("repository/org.test.lib.jar"), layoutPath(mojo, artifact));
+    }
+
+    @Test
+    @InjectMojo(goal = "build-classpath")
+    void testClasspathFileAndPropertyHoldTheSameString(BuildClasspathMojo mojo) throws Exception {
+        when(project.getArtifacts())
+                .thenReturn(orderedArtifacts(
+                        artifact("org.test", "get-artifact", "1.0", ""),
+                        artifact("org.test", "get-artifact-transitive", "1.0", "")));
+
+        File out = new File(testDir, "target/classpath.txt");
+        mojo.setOutputFile(out);
+        mojo.setOutputProperty("classpath.property");
+        mojo.setPrefix("PREFIX");
+        mojo.setFileSeparator("/");
+        mojo.setPathSeparator(":");
+        mojo.execute();
+
+        String expected = "PREFIX/get-artifact-1.0.jar:PREFIX/get-artifact-transitive-1.0.jar";
+        assertEquals(expected, mojo.readClasspathFile());
+        assertEquals(expected, project.getProperties().getProperty("classpath.property"));
+    }
+
+    @Test
+    @InjectMojo(goal = "build-classpath")
+    void testClasspathKeepsClassifierAndOrder(BuildClasspathMojo mojo) throws Exception {
+        when(project.getArtifacts())
+                .thenReturn(orderedArtifacts(
+                        artifact("org.apache.maven", "maven-profile", "2.0.6", ""),
+                        artifact("junit", "junit", "3.8.1", ""),
+                        artifact("org.apache.maven", "maven-project", "2.0.6", "sources")));
+
+        mojo.setOutputFile(new File(testDir, "classpath.txt"));
+        mojo.setPrefix("PREFIX");
+        mojo.setFileSeparator("/");
+        mojo.setPathSeparator(":");
+        mojo.execute();
+
+        assertEquals(
+                "PREFIX/maven-profile-2.0.6.jar:PREFIX/junit-3.8.1.jar:PREFIX/maven-project-2.0.6-sources.jar",
+                mojo.readClasspathFile());
+    }
+
+    @Test
+    @InjectMojo(goal = "build-classpath")
+    void testClasspathWithPrependGroupIdAndStripClassifier(BuildClasspathMojo mojo) throws Exception {
+        when(project.getArtifacts())
+                .thenReturn(orderedArtifacts(
+                        artifact("org.apache.maven", "maven-profile", "2.0.6", ""),
+                        artifact("org.codehaus.plexus", "plexus-utils", "1.4.1", ""),
+                        artifact("org.apache.maven", "maven-project", "2.0.6", "sources")));
+
+        mojo.setOutputFile(new File(testDir, "classpath.txt"));
+        mojo.setPrefix("PREFIX");
+        mojo.setFileSeparator("/");
+        mojo.setPathSeparator(":");
+        mojo.setPrependGroupId(true);
+        mojo.setStripClassifier(true);
+        mojo.execute();
+
+        assertEquals(
+                "PREFIX/org.apache.maven.maven-profile-2.0.6.jar"
+                        + ":PREFIX/org.codehaus.plexus.plexus-utils-1.4.1.jar"
+                        + ":PREFIX/org.apache.maven.maven-project-2.0.6.jar",
+                mojo.readClasspathFile());
+    }
+
+    private static Artifact artifact(String groupId, String artifactId, String version, String classifier) {
+        Artifact artifact = new DefaultArtifact(
+                groupId, artifactId, version, null, "jar", classifier, new DefaultArtifactHandler("jar"));
+        artifact.setFile(new File("repo", artifactId + "-" + version + ".jar"));
+        return artifact;
+    }
+
+    private static Set<Artifact> orderedArtifacts(Artifact... artifacts) {
+        return new LinkedHashSet<>(Arrays.asList(artifacts));
     }
 
     private Set<Artifact> getArtifacts() {
