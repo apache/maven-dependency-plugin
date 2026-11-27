@@ -592,7 +592,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
         for (String className : ambiguous) {
             getLog().info("   class " + className);
             for (Artifact candidate : candidates.getOrDefault(className, Collections.emptySet())) {
-                // called because artifact will set the version to -SNAPSHOT only if I do this. MNG-2961
+                // isSnapshot() normalises the version of a timestamped snapshot (MNG-2961)
                 candidate.isSnapshot();
                 getLog().info("      in " + candidate
                         + (candidate.equals(selected.get(className)) ? " (selected)" : ""));
