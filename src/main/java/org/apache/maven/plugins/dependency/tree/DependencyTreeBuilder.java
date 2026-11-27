@@ -155,7 +155,11 @@ class DependencyTreeBuilder {
         return artifact + (artifact.isOptional() ? " (optional)" : "");
     }
 
-    private static VerboseInfo verboseInfo(org.eclipse.aether.graph.DependencyNode node, Artifact artifact) {
+    /**
+     * What the verbose tree records about a node. A node that lost to another node is a duplicate if the winner has the
+     * same version, such as the same timestamped snapshot, and a conflict otherwise.
+     */
+    static VerboseInfo verboseInfo(org.eclipse.aether.graph.DependencyNode node, Artifact artifact) {
         org.eclipse.aether.graph.DependencyNode winner =
                 (org.eclipse.aether.graph.DependencyNode) node.getData().get(ConflictResolver.NODE_DATA_WINNER);
         String winnerVersion = null;
@@ -163,7 +167,7 @@ class DependencyTreeBuilder {
         String omittedReason = null;
         if (winner != null) {
             winnerVersion = winner.getArtifact().getBaseVersion();
-            omittedReason = winnerVersion.equals(artifact.getVersion())
+            omittedReason = winner.getArtifact().getVersion().equals(artifact.getVersion())
                     ? VerboseInfo.OMITTED_FOR_DUPLICATE
                     : VerboseInfo.OMITTED_FOR_CONFLICT;
         } else {
