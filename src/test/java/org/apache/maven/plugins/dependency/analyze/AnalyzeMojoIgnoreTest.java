@@ -394,6 +394,53 @@ class AnalyzeMojoIgnoreTest {
 
     @Test
     @InjectMojo(goal = "analyze-only")
+    @MojoParameter(name = "verbose", value = "true")
+    @MojoParameter(name = "failOnWarning", value = "true")
+    void verboseListsAmbiguousAndUnmappedClasses(AnalyzeOnlyMojo mojo) throws Exception {
+        setVariableValueToObject(mojo, "outputDirectory", outputDirectory);
+        when(analyzer.analyze(any(), any())).thenReturn(analysisWithAmbiguousAndUnmappedClasses());
+
+        mojo.execute();
+
+        InOrder order = inOrder(log);
+        order.verify(log).info("Used classes found in more than one dependency:");
+        order.verify(log).info("   class org.apache.maven.model.Model");
+        order.verify(log).info("      in " + MAVEN_MODEL);
+        order.verify(log).info("      in " + MAVEN_MODEL_3 + " (selected)");
+        order.verify(log).info("Used classes not found in any dependency:");
+        order.verify(log).info("   class com.missing.Gone");
+        verify(log, never()).info("No dependency problems found");
+    }
+
+    @Test
+    @InjectMojo(goal = "analyze-only")
+    void withoutVerboseAmbiguousAndUnmappedClassesAreNotListed(AnalyzeOnlyMojo mojo) throws Exception {
+        setVariableValueToObject(mojo, "outputDirectory", outputDirectory);
+        when(analyzer.analyze(any(), any())).thenReturn(analysisWithAmbiguousAndUnmappedClasses());
+
+        mojo.execute();
+
+        verify(log).info("No dependency problems found");
+        verify(log, never()).info("Used classes found in more than one dependency:");
+        verify(log, never()).info("Used classes not found in any dependency:");
+    }
+
+    private static ProjectDependencyAnalysis analysisWithAmbiguousAndUnmappedClasses() {
+        Map<String, Set<Artifact>> candidates = new LinkedHashMap<>();
+        candidates.put("org.apache.maven.model.Model", new LinkedHashSet<>(Arrays.asList(MAVEN_MODEL, MAVEN_MODEL_3)));
+        candidates.put("com.missing.Gone", Collections.emptySet());
+        return new ProjectDependencyAnalysis(
+                Collections.emptyMap(),
+                Collections.emptyMap(),
+                Collections.emptySet(),
+                Collections.emptySet(),
+                new LinkedHashSet<>(Arrays.asList("org.apache.maven.model.Model", "com.missing.Gone")),
+                candidates,
+                Collections.singletonMap("org.apache.maven.model.Model", MAVEN_MODEL_3));
+    }
+
+    @Test
+    @InjectMojo(goal = "analyze-only")
     void withoutVerboseNoClassesOrUsingClassesAreListed(AnalyzeOnlyMojo mojo) throws Exception {
         Artifact commonsIo = artifact("commons-io", "commons-io", "2.11.0", Artifact.SCOPE_COMPILE);
         usages(mojo, Collections.singletonMap(commonsIo, usedBy("org.apache.commons.io.IOUtils")));

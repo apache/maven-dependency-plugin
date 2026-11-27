@@ -73,7 +73,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
 
     /**
      * Output used dependencies. Under the used undeclared and non-test scoped warnings, also list each dependency
-     * class involved and the project classes that use it.
+     * class involved and the project classes that use it. Since 3.12.0, also list the used classes that more than one
+     * dependency contains, with the dependency the analysis selected, and the used classes that no dependency contains.
      */
     @Parameter(property = "verbose", defaultValue = "false")
     private boolean verbose;
@@ -349,11 +350,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
     private boolean checkDependencies() throws MojoExecutionException {
         ProjectDependencyAnalysis analysis;
         List<String> unneededForcedUsage = Collections.emptyList();
-        Map<Artifact, Set<DependencyUsage>> usages;
         try {
             analysis = createProjectDependencyAnalyzer().analyze(project, excludedClasses);
-            // read before forceDeclaredDependenciesUsage, which drops the usages of every used declared dependency
-            usages = usagesOf(analysis);
 
             if (usedDependencies != null) {
                 ForcedUsage forced = new ForcedUsage(analysis, usedDependencies);
@@ -370,6 +368,7 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
             analysis = analysis.ignoreNonCompile();
         }
 
+        Map<Artifact, Set<DependencyUsage>> usages = usagesOf(analysis);
         Set<Artifact> usedDeclared = new LinkedHashSet<>(analysis.getUsedDeclaredArtifacts());
         Map<Artifact, Set<String>> usedUndeclaredWithClasses =
                 new LinkedHashMap<>(analysis.getUsedUndeclaredArtifactsWithClasses());
@@ -480,6 +479,8 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
             reported = true;
         }
 
+        reported |= verbose && logUsedClassDetails(analysis);
+
         if (outputXML) {
             writeDependencyXML(usedUndeclaredWithClasses.keySet());
         }
@@ -568,6 +569,52 @@ public abstract class AbstractAnalyzeMojo extends AbstractMojo {
                 }
             }
         }
+    }
+
+    private boolean logUsedClassDetails(ProjectDependencyAnalysis analysis) {
+        boolean ambiguous = logAmbiguousClasses(analysis);
+        boolean unmapped = logUnmappedClasses(analysis);
+        return ambiguous || unmapped;
+    }
+
+    /**
+     * Lists the used classes that more than one dependency contains, with the dependency the analysis selected.
+     */
+    private boolean logAmbiguousClasses(ProjectDependencyAnalysis analysis) {
+        Set<String> ambiguous = analysis.getAmbiguousUsedDependencyClasses();
+        if (ambiguous.isEmpty()) {
+            return false;
+        }
+
+        getLog().info("Used classes found in more than one dependency:");
+        Map<String, Set<Artifact>> candidates = analysis.getCandidateArtifactsByUsedClass();
+        Map<String, Artifact> selected = analysis.getSelectedArtifactByUsedClass();
+        for (String className : ambiguous) {
+            getLog().info("   class " + className);
+            for (Artifact candidate : candidates.getOrDefault(className, Collections.emptySet())) {
+                // isSnapshot() normalises the version of a timestamped snapshot (MNG-2961)
+                candidate.isSnapshot();
+                getLog().info("      in " + candidate
+                        + (candidate.equals(selected.get(className)) ? " (selected)" : ""));
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Lists the used classes that no dependency contains.
+     */
+    private boolean logUnmappedClasses(ProjectDependencyAnalysis analysis) {
+        Set<String> unmapped = analysis.getUnmappedUsedDependencyClasses();
+        if (unmapped.isEmpty()) {
+            return false;
+        }
+
+        getLog().info("Used classes not found in any dependency:");
+        for (String className : unmapped) {
+            getLog().info("   class " + className);
+        }
+        return true;
     }
 
     private String inProject() {
